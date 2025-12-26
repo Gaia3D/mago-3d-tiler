@@ -116,7 +116,7 @@ public class Batched3DModel implements ContentModel {
             Matrix4d sceneTransformMatrix = rootNode.getTransformMatrix();
             rotationMatrix4d.mul(sceneTransformMatrix, sceneTransformMatrix);
 
-            double[] rtcCenter = new double[3];
+            Double[] rtcCenter = new Double[3];
             rtcCenter[0] = worldTransformMatrix.m30();
             rtcCenter[1] = worldTransformMatrix.m31();
             rtcCenter[2] = worldTransformMatrix.m32();
@@ -196,6 +196,19 @@ public class Batched3DModel implements ContentModel {
         }
 
         int byteLength = 28 + featureTableJSONByteLength + batchTableJSONByteLength + glbBytes.length;
+        boolean isFeatureTableAligned = (28 + featureTableJSONByteLength) % 8 == 0;
+        int featureTablePadLength = 0;
+        if (!isFeatureTableAligned) {
+            featureTablePadLength = 8 - ((28 + featureTableJSONByteLength) % 8);
+            byteLength += featureTablePadLength;
+            featureTableJSONByteLength += featureTablePadLength;
+        }
+        boolean isFileAligned = byteLength % 8 == 0;
+        int lastPadLength = 0;
+        if (!isFileAligned) {
+            lastPadLength = 8 - (byteLength % 8);
+            byteLength += lastPadLength;
+        }
 
         File b3dmOutputFile = outputRoot.resolve(nodeCode + "." + MAGIC).toFile();
         try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(b3dmOutputFile)))) {
@@ -206,15 +219,29 @@ public class Batched3DModel implements ContentModel {
             stream.writeInt(featureTableJSONByteLength);
             int featureTableBinaryByteLength = 0;
             stream.writeInt(featureTableBinaryByteLength);
-            // 28-byte header (next 8 bytes)
+
             stream.writeInt(batchTableJSONByteLength);
             int batchTableBinaryByteLength = 0;
             stream.writeInt(batchTableBinaryByteLength);
+            // 28-byte header (next 8 bytes)
             stream.writePureText(featureTableJson);
+            if (featureTablePadLength > 0) {
+                byte[] featureTablePadding = new byte[featureTablePadLength];
+                for (int i = 0; i < featureTablePadLength; i++) {
+                    featureTablePadding[i] = 0x20;
+                }
+                stream.write(featureTablePadding);
+            }
             stream.writePureText(batchTableJson);
-            // body
             stream.write(glbBytes);
             glbBytes = null;
+            if (lastPadLength > 0) {
+                byte[] filePadding = new byte[lastPadLength];
+                for (int i = 0; i < lastPadLength; i++) {
+                    filePadding[i] = 0x20;
+                }
+                stream.write(filePadding);
+            }
         } catch (Exception e) {
             log.error("[ERROR] :", e);
         }

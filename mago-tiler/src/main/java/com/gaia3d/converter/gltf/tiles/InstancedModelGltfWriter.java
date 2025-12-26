@@ -101,8 +101,8 @@ public class InstancedModelGltfWriter extends GltfWriter {
         Node rootNode = initNode();
         initScene(gltf, rootNode);
 
-        double[] rtcCenterOrigin = featureTable.getRtcCenter();
-        rootNode.setTranslation(new float[]{(float) rtcCenterOrigin[0], (float) rtcCenterOrigin[1], (float) rtcCenterOrigin[2]});
+        Double[] rtcCenterOrigin = featureTable.getRtcCenter();
+        rootNode.setTranslation(new float[]{(float) rtcCenterOrigin[0].doubleValue(), (float) rtcCenterOrigin[1].doubleValue(), (float) rtcCenterOrigin[2].doubleValue()});
 
         if (gltfOptions.isUseQuantization()) {
             gltf.addExtensionsUsed(ExtensionConstant.MESH_QUANTIZATION.getExtensionName());
@@ -337,6 +337,12 @@ public class InstancedModelGltfWriter extends GltfWriter {
             Matrix4d quantizationMatrix = Quantization.computeQuantizationMatrix(originalTransformMatrix, positions);
             unsignedShortsPositions = Quantization.quantizeUnsignedShorts(positions, originalTransformMatrix, quantizationMatrix);
             node.setMatrix(quantizationMatrix.get(new float[16]));
+
+            if (node.getRotation() != null && node.getTranslation() != null) {
+                log.warn("[WARN] When using quantization, rotation and translation are ignored.");
+                node.setRotation(null);
+                node.setTranslation(null);
+            }
         }
 
         float[] normals = gaiaMesh.getNormals();

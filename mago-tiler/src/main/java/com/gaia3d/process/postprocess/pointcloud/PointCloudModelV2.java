@@ -135,7 +135,7 @@ public class PointCloudModelV2 implements ContentModel {
         featureTable.setPointsLength(vertexLength);
 
         if (!globalOptions.isClassicTransformMatrix()) {
-            double[] rtcCenter = new double[3];
+            Double[] rtcCenter = new Double[3];
             rtcCenter[0] = transformMatrix.m30();
             rtcCenter[1] = transformMatrix.m31();
             rtcCenter[2] = transformMatrix.m32();

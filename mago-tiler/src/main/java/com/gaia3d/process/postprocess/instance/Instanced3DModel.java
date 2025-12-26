@@ -152,7 +152,7 @@ public class Instanced3DModel implements ContentModel {
 
         GaiaFeatureTable featureTable = new GaiaFeatureTable();
         if (!globalOptions.isClassicTransformMatrix()) {
-            double[] rtcCenter = new double[3];
+            Double[] rtcCenter = new Double[3];
             rtcCenter[0] = transformMatrix.m30();
             rtcCenter[1] = transformMatrix.m31();
             rtcCenter[2] = transformMatrix.m32();
@@ -232,6 +232,37 @@ public class Instanced3DModel implements ContentModel {
             createInstance(gltfOutputFile, contentInfo, tileInfos.get(0));
         }
 
+        boolean isFeatureTableAligned = (32 + featureTableJSONByteLength) % 8 == 0;
+        int featureTablePadLength = 0;
+        if (!isFeatureTableAligned) {
+            featureTablePadLength = 8 - ((32 + featureTableJSONByteLength) % 8);
+            byteLength += featureTablePadLength;
+            featureTableJSONByteLength += featureTablePadLength;
+            log.info("FeatureTable padded length: {}", featureTablePadLength);
+        }
+
+        boolean featureTableBinaryAligned = featureTableBinaryByteLength % 8 == 0;
+        int featureTableBinaryPadLength = 0;
+        if (!featureTableBinaryAligned) {
+            featureTableBinaryPadLength = 8 - (featureTableBinaryByteLength % 8);
+            byteLength += featureTableBinaryPadLength;
+            featureTableBinaryByteLength += featureTableBinaryPadLength;
+        }
+
+        boolean urlAligned = (gltfUrl.length()) % 8 == 0;
+        int urlPadLength = 0;
+        if (!urlAligned) {
+            urlPadLength = 8 - (gltfUrl.length() % 8);
+            byteLength += urlPadLength;
+        }
+
+        boolean isFileAligned = byteLength % 8 == 0;
+        int lastPadLength = 0;
+        if (!isFileAligned) {
+            lastPadLength = 8 - (byteLength % 8);
+            byteLength += lastPadLength;
+        }
+
         File i3dmOutputFile = outputRoot.resolve(nodeCode + "." + MAGIC).toFile();
         try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(i3dmOutputFile)))) {
             // 32-byte header (first 20 bytes)
@@ -249,10 +280,40 @@ public class Instanced3DModel implements ContentModel {
 
             // body
             stream.writePureText(featureTableJson);
+            if (featureTablePadLength > 0) {
+                byte[] featureTablePadding = new byte[featureTablePadLength];
+                for (int i = 0; i < featureTablePadLength; i++) {
+                    featureTablePadding[i] = 0x20;
+                }
+                stream.write(featureTablePadding);
+            }
             stream.write(featureTableBytes);
+            if (featureTableBinaryPadLength > 0) {
+                byte[] featureTableBinaryPadding = new byte[featureTableBinaryPadLength];
+                for (int i = 0; i < featureTableBinaryPadLength; i++) {
+                    featureTableBinaryPadding[i] = 0x00;
+                }
+                stream.write(featureTableBinaryPadding);
+            }
+
             stream.writePureText(batchTableJson);
             //stream.write(new byte[0]);
             stream.writePureText(gltfUrl);// padding
+            if (urlPadLength > 0) {
+                byte[] urlPadding = new byte[urlPadLength];
+                for (int i = 0; i < urlPadLength; i++) {
+                    urlPadding[i] = 0x20;
+                }
+                stream.write(urlPadding);
+            }
+
+            if (lastPadLength > 0) {
+                byte[] filePadding = new byte[lastPadLength];
+                for (int i = 0; i < lastPadLength; i++) {
+                    filePadding[i] = 0x20;
+                }
+                stream.write(filePadding);
+            }
         } catch (Exception e) {
             log.error("[ERROR] :", e);
         }

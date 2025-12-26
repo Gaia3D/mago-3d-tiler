@@ -35,11 +35,11 @@ public class TilesetV2 extends Tileset {
         this.asset = new AssetV1();
         this.asset.setVersion("1.1");
 
-        String extensionName = ExtensionConstant.EX_3DTILES_CONTENT_GLTF.getExtensionName();
-        this.extensionsUsed.add(extensionName);
-
-        Extension3DTilesContentGltf extension3DTilesContentGltf = new Extension3DTilesContentGltf();
-        this.extensions.put(extensionName, extension3DTilesContentGltf);
+        // Add 3DTILES_content_gltf extension
+        //String extensionName = ExtensionConstant.EX_3DTILES_CONTENT_GLTF.getExtensionName();
+        //this.extensionsUsed.add(extensionName);
+        //Extension3DTilesContentGltf extension3DTilesContentGltf = new Extension3DTilesContentGltf();
+        //this.extensions.put(extensionName, extension3DTilesContentGltf);
     }
 
     @JsonIgnore

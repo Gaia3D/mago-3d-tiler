@@ -209,13 +209,13 @@ public class PointCloudModel implements ContentModel {
 
         GaiaFeatureTable featureTable = new GaiaFeatureTable();
         featureTable.setPointsLength(vertexLength);
-        featureTable.setQuantizedVolumeOffset(new float[]{(float) quantizationOffset.x, (float) quantizationOffset.y, (float) quantizationOffset.z});
-        featureTable.setQuantizedVolumeScale(new float[]{(float) quantizationScale.x, (float) quantizationScale.y, (float) quantizationScale.z});
+        featureTable.setQuantizedVolumeOffset(new Float[]{(float) quantizationOffset.x, (float) quantizationOffset.y, (float) quantizationOffset.z});
+        featureTable.setQuantizedVolumeScale(new Float[]{(float) quantizationScale.x, (float) quantizationScale.y, (float) quantizationScale.z});
         featureTable.setPositionQuantized(new ByteAddress(0, ComponentType.UNSIGNED_SHORT, DataType.VEC3));
         featureTable.setColor(new ByteAddress(positionBytes.length, ComponentType.UNSIGNED_BYTE, DataType.VEC3));
 
         if (!globalOptions.isClassicTransformMatrix()) {
-            double[] rtcCenter = new double[3];
+            Double[] rtcCenter = new Double[3];
             rtcCenter[0] = transformMatrix.m30();
             rtcCenter[1] = transformMatrix.m31();
             rtcCenter[2] = transformMatrix.m32();

@@ -14,16 +14,16 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class GaiaFeatureTable {
     @JsonProperty("BATCH_LENGTH")
-    private int batchLength;
+    private Integer batchLength;
 
     @JsonProperty("RTC_CENTER")
-    private double[] rtcCenter = new double[3];
+    private Double[] rtcCenter = new Double[3];
 
     /* Instanced3DModel */
     @JsonProperty("INSTANCES_LENGTH")
-    private int instancesLength;
+    private Integer instancesLength;
     @JsonProperty("EAST_NORTH_UP")
-    private boolean eastNorthUp;
+    private Boolean eastNorthUp;
     @JsonProperty("NORMAL_RIGHT")
     private ByteAddress normalRight;
     @JsonProperty("NORMAL_UP")
@@ -34,13 +34,13 @@ public class GaiaFeatureTable {
     /* PointCloud */
     // POSITION = POSITION_QUANTIZED * QUANTIZED_VOLUME_SCALE / 65535.0 + QUANTIZED_VOLUME_OFFSET
     @JsonProperty("POINTS_LENGTH")
-    private int pointsLength;
+    private Integer pointsLength;
     @JsonProperty("POSITION_QUANTIZED")
     private ByteAddress positionQuantized;
     @JsonProperty("QUANTIZED_VOLUME_SCALE")
-    private float[] quantizedVolumeScale = new float[3];
+    private Float[] quantizedVolumeScale;
     @JsonProperty("QUANTIZED_VOLUME_OFFSET")
-    private float[] quantizedVolumeOffset = new float[3];
+    private Float[] quantizedVolumeOffset;
 
     @JsonProperty("POSITION")
     private ByteAddress position;

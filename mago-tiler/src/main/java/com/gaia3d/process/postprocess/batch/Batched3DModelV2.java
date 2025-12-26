@@ -85,7 +85,7 @@ public class Batched3DModelV2 implements ContentModel {
             Matrix4d sceneTransformMatrix = rootNode.getTransformMatrix();
             rotationMatrix4d.mul(sceneTransformMatrix, sceneTransformMatrix);
 
-            double[] rtcCenter = new double[3];
+            Double[] rtcCenter = new Double[3];
             rtcCenter[0] = worldTransformMatrix.m30();
             rtcCenter[1] = worldTransformMatrix.m31();
             rtcCenter[2] = worldTransformMatrix.m32();

@@ -23,6 +23,7 @@ class I3dmReleaseTest {
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-ot", "i3dm",
                 "-c", "5186",
+                "--tilesVersion", "1.0",
         };
         MagoTestConfig.execute(args);
     }

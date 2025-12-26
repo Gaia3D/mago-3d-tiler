@@ -93,7 +93,7 @@ public class BatchedModelGltfWriter extends GltfWriter {
         Node rootNode = initNode();
         initScene(gltf, rootNode);
 
-        double[] rtcCenterOrigin = featureTable.getRtcCenter();
+        Double[] rtcCenterOrigin = featureTable.getRtcCenter();
         double rctCenterX = rtcCenterOrigin[0];
         double rctCenterY = rtcCenterOrigin[1];
         double rctCenterZ = rtcCenterOrigin[2];
@@ -242,7 +242,6 @@ public class BatchedModelGltfWriter extends GltfWriter {
 
         Quaterniond rotationQuaternion = rotationMatrix.getNormalizedRotation(new Quaterniond());
         node.setRotation(new float[]{(float) rotationQuaternion.x, (float) rotationQuaternion.y, (float) rotationQuaternion.z, (float) rotationQuaternion.w});
-
         node.setTranslation(translation);
 
         node.setName(gaiaNode.getName());
@@ -269,6 +268,12 @@ public class BatchedModelGltfWriter extends GltfWriter {
             Matrix4d quantizationMatrix = Quantization.computeQuantizationMatrix(originalTransformMatrix, positions);
             unsignedShortsPositions = Quantization.quantizeUnsignedShorts(positions, originalTransformMatrix, quantizationMatrix);
             node.setMatrix(quantizationMatrix.get(new float[16]));
+
+            if (node.getRotation() != null && node.getTranslation() != null) {
+                log.warn("[WARN] When using quantization, rotation and translation are ignored.");
+                node.setRotation(null);
+                node.setTranslation(null);
+            }
         }
 
         float[] normals = gaiaMesh.getNormals();

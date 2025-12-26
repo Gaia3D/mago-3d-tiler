@@ -70,7 +70,7 @@ public class PointCloudGltfWriter extends GltfWriter {
         /*double[] rtcCenterOrigin = featureTable.getRtcCenter();
         rootNode.setTranslation(new float[]{(float) rtcCenterOrigin[0], (float) rtcCenterOrigin[2], (float) -rtcCenterOrigin[1]});*/
 
-        double[] rtcCenterOrigin = featureTable.getRtcCenter();
+        Double[] rtcCenterOrigin = featureTable.getRtcCenter();
         double rctCenterX = rtcCenterOrigin[0];
         double rctCenterY = rtcCenterOrigin[1];
         double rctCenterZ = rtcCenterOrigin[2];

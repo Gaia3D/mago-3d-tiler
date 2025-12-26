@@ -29,7 +29,7 @@ class PntsReleaseTest {
         String path = "P00-hwangyonggak-las";
         String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-OLD",
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-old",
                 "-c", "32652",
                 "-tilesVersion", "1.0",
                 "--temp", "C:\\temp\\",

@@ -28,6 +28,42 @@ class B3dmReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void batched01Old() {
+        String path = "B01-wangsuk2-3ds";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-old",
+                "-c", "5186",
+                "--tilesVersion", "1.0",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void batched01QT() {
+        String path = "B01-wangsuk2-3ds";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-qt",
+                "-c", "5186",
+                "--quantize",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void batched01QTOld() {
+        String path = "B01-wangsuk2-3ds";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-qt-old",
+                "-c", "5186",
+                "--tilesVersion", "1.0",
                 "--quantize",
         };
         MagoTestConfig.execute(args);
