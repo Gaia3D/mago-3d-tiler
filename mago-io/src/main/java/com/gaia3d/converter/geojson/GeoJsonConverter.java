@@ -151,8 +151,12 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                         return;
                     }
                     String attributeString = castStringFromObject(attribute, "Null");
-                    //log.debug("{} : {}", attributeDescriptor.getName(), attributeString);
-                    attributes.put(attributeDescriptor.getName().getLocalPart(), attributeString);
+                    // check attribute name start with digit
+                    String attributeName = attributeDescriptor.getName().getLocalPart();
+                    if (Character.isDigit(attributeName.charAt(0))) {
+                        attributeName = "_" + attributeName;
+                    }
+                    attributes.put(attributeName, attributeString);
                 });
 
                 for (LineString lineString : lineStrings) {

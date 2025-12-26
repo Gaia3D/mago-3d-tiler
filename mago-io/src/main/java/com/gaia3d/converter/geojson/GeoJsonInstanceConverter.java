@@ -140,7 +140,12 @@ public class GeoJsonInstanceConverter implements AttributeReader {
                             return;
                         }
                         String attributeString = castStringFromObject(attribute, "null");
-                        attributes.put(attributeDescriptor.getName().getLocalPart(), attributeString);
+                        // check attribute name start with digit
+                        String attributeName = attributeDescriptor.getName().getLocalPart();
+                        if (Character.isDigit(attributeName.charAt(0))) {
+                            attributeName = "_" + attributeName;
+                        }
+                        attributes.put(attributeName, attributeString);
                     });
 
                     double x = point.getX();
