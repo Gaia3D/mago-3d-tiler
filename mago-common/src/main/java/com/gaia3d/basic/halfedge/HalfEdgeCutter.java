@@ -17,8 +17,12 @@ import java.util.Map;
 
 @Slf4j
 public class HalfEdgeCutter {
-    public static void getPlanesGridXYZForBox(GaiaBoundingBox bbox, double gridSpacing, List<GaiaAAPlane> resultPlanesYZ,
-                                              List<GaiaAAPlane> resultPlanesXZ, List<GaiaAAPlane> resultPlanesXY, HalfEdgeOctreeFaces resultOctree) {
+    public static void getPlanesGridXYZForBox(GaiaBoundingBox bbox,
+                                              double gridSpacing,
+                                              List<GaiaAAPlane> resultPlanesYZ,
+                                              List<GaiaAAPlane> resultPlanesXZ,
+                                              List<GaiaAAPlane> resultPlanesXY,
+                                              HalfEdgeOctreeFaces resultOctree) {
         // Note: the grid is regularly spaced in the 3 axis
         double maxSize = bbox.getMaxSize();
         int desiredDepth = (int) Math.ceil(HalfEdgeUtils.log2(maxSize / gridSpacing));
@@ -70,8 +74,11 @@ public class HalfEdgeCutter {
     }
 
 
-    public static List<HalfEdgeScene> cutHalfEdgeSceneByGaiaAAPlanes(HalfEdgeScene halfEdgeScene, List<GaiaAAPlane> planes,
-                                                                     HalfEdgeOctreeFaces resultOctree, boolean scissorTextures, boolean makeSkirt) {
+    public static List<HalfEdgeScene> cutHalfEdgeSceneByGaiaAAPlanes(HalfEdgeScene halfEdgeScene,
+                                                                     List<GaiaAAPlane> planes,
+                                                                     HalfEdgeOctreeFaces resultOctree,
+                                                                     boolean scissorTextures,
+                                                                     boolean makeSkirt) {
         double error = 1e-5; //
         int planesCount = planes.size();
         for (int i = 0; i < planesCount; i++) {
@@ -127,7 +134,9 @@ public class HalfEdgeCutter {
         return resultScenes;
     }
 
-    public static HalfEdgeScene cutHalfEdgeSceneGridXYZ(HalfEdgeScene halfEdgeScene, double gridSpacing, HalfEdgeOctreeFaces resultOctree) {
+    public static HalfEdgeScene cutHalfEdgeSceneGridXYZ(HalfEdgeScene halfEdgeScene,
+                                                        double gridSpacing,
+                                                        HalfEdgeOctreeFaces resultOctree) {
         GaiaBoundingBox bbox = halfEdgeScene.getBoundingBox();
 
         List<GaiaAAPlane> resultPlanesYZ = new ArrayList<>();
@@ -328,7 +337,9 @@ public class HalfEdgeCutter {
         return newSurface;
     }
 
-    public static HalfEdgeSurface createHalfEdgeSurfaceByFacesCopy(List<HalfEdgeFace> faces, boolean checkClassifyId, boolean checkBestCameraDirectionType) {
+    public static HalfEdgeSurface createHalfEdgeSurfaceByFacesCopy(List<HalfEdgeFace> faces,
+                                                                   boolean checkClassifyId,
+                                                                   boolean checkBestCameraDirectionType) {
         Map<HalfEdgeVertex, HalfEdgeVertex> vertexToNewVertexMap = new HashMap<>();
 
         List<HalfEdgeVertex> facesVertices = HalfEdgeUtils.getVerticesOfFaces(faces, null);

@@ -1,7 +1,5 @@
 package com.gaia3d.basic.halfedge;
 
-import com.gaia3d.basic.model.GaiaTextureScissorData;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

@@ -40,7 +40,8 @@ public class HalfEdgeUtils {
     }
 
 
-    public static GaiaScene gaiaSceneFromHalfEdgeFaces(List<HalfEdgeFace> halfEdgeFaces, Map<GaiaFace, HalfEdgeFace> mapGaiaFaceToHalfEdgeFace) {
+    public static GaiaScene gaiaSceneFromHalfEdgeFaces(List<HalfEdgeFace> halfEdgeFaces,
+                                                       Map<GaiaFace, HalfEdgeFace> mapGaiaFaceToHalfEdgeFace) {
         GaiaScene gaiaScene = new GaiaScene();
         GaiaNode gaiaRootNode = new GaiaNode();
         gaiaScene.getNodes().add(gaiaRootNode);
@@ -189,7 +190,9 @@ public class HalfEdgeUtils {
         return gaiaSurface;
     }
 
-    public static GaiaFace gaiaFaceFromHalfEdgeFace(HalfEdgeFace halfEdgeFace, Map<HalfEdgeVertex, GaiaVertex> mapHalfEdgeVertexToGaiaVertex, Map<GaiaVertex, Integer> mapGaiaVertexToIndex) {
+    public static GaiaFace gaiaFaceFromHalfEdgeFace(HalfEdgeFace halfEdgeFace,
+                                                    Map<HalfEdgeVertex, GaiaVertex> mapHalfEdgeVertexToGaiaVertex,
+                                                    Map<GaiaVertex, Integer> mapGaiaVertexToIndex) {
         if (halfEdgeFace == null) {
             return null;
         }
@@ -228,7 +231,8 @@ public class HalfEdgeUtils {
         return gaiaFace;
     }
 
-    private static HalfEdgeSurface getHalfEdgeSurfaceRegularNetWithSkirt(int numCols, int numRows, float[][] depthValues, GaiaBoundingBox bbox) {
+    private static HalfEdgeSurface getHalfEdgeSurfaceRegularNetWithSkirt(int numCols, int numRows, float[][] depthValues,
+                                                                         GaiaBoundingBox bbox) {
         HalfEdgeSurface halfEdgeSurface = new HalfEdgeSurface();
         double minX = bbox.getMinX();
         double minY = bbox.getMinY();
@@ -396,7 +400,8 @@ public class HalfEdgeUtils {
         return halfEdgeSurface;
     }
 
-    private static HalfEdgeSurface getHalfEdgeSurfaceRegularNet(int numCols, int numRows, float[][] depthValues, GaiaBoundingBox bbox) {
+    private static HalfEdgeSurface getHalfEdgeSurfaceRegularNet(int numCols, int numRows, float[][] depthValues,
+                                                                GaiaBoundingBox bbox) {
         HalfEdgeSurface halfEdgeSurface = new HalfEdgeSurface();
         double minX = bbox.getMinX();
         double minY = bbox.getMinY();
@@ -517,7 +522,8 @@ public class HalfEdgeUtils {
         return halfEdgeSurface;
     }
 
-    public static HalfEdgeScene getHalfEdgeSceneRectangularNet(int numCols, int numRows, float[][] depthValues, GaiaBoundingBox bbox, boolean makeVerticalSkirt) {
+    public static HalfEdgeScene getHalfEdgeSceneRectangularNet(int numCols, int numRows, float[][] depthValues,
+                                                               GaiaBoundingBox bbox, boolean makeVerticalSkirt) {
         // Create halfEdgeScene
         HalfEdgeScene halfEdgeScene = new HalfEdgeScene();
         GaiaAttribute gaiaAttribute = new GaiaAttribute();
@@ -726,66 +732,6 @@ public class HalfEdgeUtils {
         return resultMapVertexAllFacesIndices;
     }
 
-    public boolean getWeldedFacesWithFace(HalfEdgeSurface surface, HalfEdgeFace face, List<HalfEdgeFace> resultWeldedFaces,
-                                          Set<HalfEdgeFace> mapVisitedFaces,
-                                          MapVertexAllFacesIndices mapVertexAllFacesIndices) {
-        List<HalfEdgeFace> weldedFacesAux = new ArrayList<>();
-        List<HalfEdgeFace> faces = new ArrayList<>();
-        faces.add(face);
-
-//        Map<HalfEdgeFace, HalfEdgeFace> weldedUniqueFacesMap = new HashMap<>();
-//        // get the faces connected with the face by vertex
-//        List<HalfEdgeVertex> faceVertices = face.getVertices(null);
-//        for (HalfEdgeVertex vertex : faceVertices) {
-//            List<HalfEdgeFace> vertexFaces = vertexFacesMap.get(vertex);
-//            if (vertexFaces != null) {
-//                for (HalfEdgeFace vertexFace : vertexFaces) {
-//                    if (vertexFace.getStatus() == ObjectStatus.DELETED) {
-//                        continue;
-//                    }
-//                    weldedUniqueFacesMap.put(vertexFace, vertexFace);
-//                }
-//            }
-//        }
-
-        boolean finished = false;
-        int counter = 0;
-        while (!finished)// && counter < 10000000)
-        {
-            List<HalfEdgeFace> newAddedfaces = new ArrayList<>();
-            int facesCount = faces.size();
-            for (int i = 0; i < facesCount; i++) {
-                HalfEdgeFace currFace = faces.get(i);
-                if (currFace.getStatus() == ObjectStatus.DELETED) {
-                    continue;
-                }
-
-                if (mapVisitedFaces.contains(currFace)) {
-                    continue;
-                }
-
-                resultWeldedFaces.add(currFace);
-                //weldedUniqueFacesMap.put(currFace, currFace);
-                mapVisitedFaces.add(currFace);
-                weldedFacesAux.clear();
-                currFace.getWeldedFaces(weldedFacesAux, mapVisitedFaces, mapVertexAllFacesIndices,
-                        surface.getFaces());
-                newAddedfaces.addAll(weldedFacesAux);
-            }
-
-            if (newAddedfaces.isEmpty()) {
-                finished = true;
-            } else {
-                faces.clear();
-                faces.addAll(newAddedfaces);
-            }
-
-            counter++;
-        }
-
-        return true;
-    }
-
     public static List<HalfEdgeVertex> getVerticesOfFaces(List<HalfEdgeFace> faces, List<HalfEdgeVertex> resultVertices) {
         Map<HalfEdgeVertex, HalfEdgeVertex> MapVertices = new HashMap<>();
         if (resultVertices == null) {
@@ -862,7 +808,10 @@ public class HalfEdgeUtils {
         return halfEdgeSurface;
     }
 
-    public static HalfEdgeFace halfEdgeFaceFromGaiaFace(GaiaFace gaiaFace, List<GaiaVertex> gaiaVertices, HalfEdgeSurface halfEdgeSurfaceOwner, Map<GaiaVertex, HalfEdgeVertex> mapGaiaVertexToHalfEdgeVertex) {
+    public static HalfEdgeFace halfEdgeFaceFromGaiaFace(GaiaFace gaiaFace,
+                                                        List<GaiaVertex> gaiaVertices,
+                                                        HalfEdgeSurface halfEdgeSurfaceOwner,
+                                                        Map<GaiaVertex, HalfEdgeVertex> mapGaiaVertexToHalfEdgeVertex) {
         HalfEdgeFace halfEdgeFace = new HalfEdgeFace();
 
         // indices
@@ -900,19 +849,6 @@ public class HalfEdgeUtils {
         halfEdgeFace.setId(gaiaFace.getId());
 
         return halfEdgeFace;
-    }
-
-    private static HalfEdgePrimitive getCopyHalfEdgePrimitive(HalfEdgePrimitive halfEdgePrimitive) {
-        HalfEdgePrimitive copyHalfEdgePrimitive = new HalfEdgePrimitive();
-
-        // copy surfaces
-        List<HalfEdgeSurface> halfEdgeSurfaces = halfEdgePrimitive.getSurfaces();
-        for (HalfEdgeSurface halfEdgeSurface : halfEdgeSurfaces) {
-            HalfEdgeSurface newHalfEdgeSurface = getCopyHalfEdgeSurface(halfEdgeSurface);
-            copyHalfEdgePrimitive.getSurfaces().add(newHalfEdgeSurface);
-        }
-
-        return copyHalfEdgePrimitive;
     }
 
     private static HalfEdgeSurface getCopyHalfEdgeSurface(HalfEdgeSurface halfEdgeSurface) {
@@ -999,82 +935,8 @@ public class HalfEdgeUtils {
         return copyHalfEdgeSurface;
     }
 
-    public static List<HalfEdgeScene> getCopyHalfEdgeScenesByFaceClassifyId(HalfEdgeScene halfEdgeScene, List<HalfEdgeScene> resultHalfEdgeScenes) {
-        // TEST FUNCTION
-        if (resultHalfEdgeScenes == null) {
-            resultHalfEdgeScenes = new ArrayList<>();
-        }
-
-        Map<Integer, HalfEdgeScene> mapClassifyIdToHalfEdgeScene = new HashMap<>();
-        GaiaAttribute gaiaAttribute = halfEdgeScene.getAttribute();
-
-        // test : delete faces with classifyId = 1
-        HalfEdgeScene halfEdgeScene1 = halfEdgeScene.clone();
-        HalfEdgeScene halfEdgeScene2 = halfEdgeScene.clone();
-
-        halfEdgeScene1.deleteFacesWithClassifyId(2);
-        halfEdgeScene2.deleteFacesWithClassifyId(1);
-
-        if (halfEdgeScene1.getTrianglesCount() > 0) {
-            resultHalfEdgeScenes.add(halfEdgeScene1);
-        }
-
-        if (halfEdgeScene2.getTrianglesCount() > 0) {
-            resultHalfEdgeScenes.add(halfEdgeScene2);
-        }
-
-        return resultHalfEdgeScenes;
-    }
-
-    public static List<HalfEdgeScene> getCopyHalfEdgeScenesByFaceClassifyId_original(HalfEdgeScene halfEdgeScene, List<HalfEdgeScene> resultHalfEdgeScenes) {
-        if (resultHalfEdgeScenes == null) {
-            resultHalfEdgeScenes = new ArrayList<>();
-        }
-
-        Map<Integer, HalfEdgeScene> mapClassifyIdToHalfEdgeScene = new HashMap<>();
-        GaiaAttribute gaiaAttribute = halfEdgeScene.getAttribute();
-
-        int nodesCount = halfEdgeScene.getNodes().size();
-        for (int j = 0; j < nodesCount; j++) {
-            HalfEdgeNode rootNode = halfEdgeScene.getNodes().get(j);
-            Map<Integer, HalfEdgeNode> mapClassifyIdToNode = getMapHalfEdgeNodeByFaceClassifyId(rootNode, null);
-            for (Integer key : mapClassifyIdToNode.keySet()) {
-                int faceClassifyId = key;
-                HalfEdgeNode halfEdgeNode = mapClassifyIdToNode.get(faceClassifyId);
-                HalfEdgeScene halfEdgeSceneCopy = mapClassifyIdToHalfEdgeScene.get(faceClassifyId);
-                if (halfEdgeSceneCopy == null) {
-                    halfEdgeSceneCopy = new HalfEdgeScene();
-
-                    // copy original path
-                    halfEdgeSceneCopy.setOriginalPath(halfEdgeScene.getOriginalPath());
-
-                    // copy gaiaAttributes
-                    GaiaAttribute newGaiaAttribute = gaiaAttribute.getCopy();
-                    halfEdgeSceneCopy.setAttribute(newGaiaAttribute);
-
-                    mapClassifyIdToHalfEdgeScene.put(faceClassifyId, halfEdgeSceneCopy);
-                }
-                halfEdgeSceneCopy.getNodes().add(halfEdgeNode);
-            }
-
-        }
-
-        for (Integer key : mapClassifyIdToHalfEdgeScene.keySet()) {
-            HalfEdgeScene halfEdgeSceneCopy = mapClassifyIdToHalfEdgeScene.get(key);
-
-            // copy materials
-            List<GaiaMaterial> gaiaMaterials = halfEdgeScene.getMaterials();
-            for (GaiaMaterial gaiaMaterial : gaiaMaterials) {
-                GaiaMaterial newGaiaMaterial = gaiaMaterial.clone();
-                halfEdgeSceneCopy.getMaterials().add(newGaiaMaterial);
-            }
-            resultHalfEdgeScenes.add(halfEdgeSceneCopy);
-        }
-
-        return resultHalfEdgeScenes;
-    }
-
-    private static Map<Integer, HalfEdgeNode> getMapHalfEdgeNodeByFaceClassifyId(HalfEdgeNode halfEdgeNode, Map<Integer, HalfEdgeNode> resultClassifyIdToNode) {
+    private static Map<Integer, HalfEdgeNode> getMapHalfEdgeNodeByFaceClassifyId(HalfEdgeNode halfEdgeNode,
+                                                                                 Map<Integer, HalfEdgeNode> resultClassifyIdToNode) {
         if (resultClassifyIdToNode == null) {
             resultClassifyIdToNode = new HashMap<>();
         }
@@ -1127,7 +989,8 @@ public class HalfEdgeUtils {
         return resultClassifyIdToNode;
     }
 
-    private static Map<Integer, HalfEdgeMesh> getMapHalfEdgeMeshByFaceClassifyId(HalfEdgeMesh halfEdgeMesh, Map<Integer, HalfEdgeMesh> resultMap) {
+    private static Map<Integer, HalfEdgeMesh> getMapHalfEdgeMeshByFaceClassifyId(HalfEdgeMesh halfEdgeMesh,
+                                                                                 Map<Integer, HalfEdgeMesh> resultMap) {
         if (resultMap == null) {
             resultMap = new HashMap<>();
         }
@@ -1152,7 +1015,8 @@ public class HalfEdgeUtils {
         return resultMap;
     }
 
-    private static Map<Integer, HalfEdgePrimitive> getMapHalfEdgePrimitiveByFaceClassifyId(HalfEdgePrimitive halfEdgePrimitive, Map<Integer, HalfEdgePrimitive> resultMap) {
+    private static Map<Integer, HalfEdgePrimitive> getMapHalfEdgePrimitiveByFaceClassifyId(HalfEdgePrimitive halfEdgePrimitive,
+                                                                                           Map<Integer, HalfEdgePrimitive> resultMap) {
         if (resultMap == null) {
             resultMap = new HashMap<>();
         }
@@ -1181,7 +1045,8 @@ public class HalfEdgeUtils {
 
     }
 
-    private static Map<Integer, HalfEdgeSurface> getMapHalfEdgeSurfaceByFaceClassifyId(HalfEdgeSurface halfEdgeSurface, Map<Integer, HalfEdgeSurface> resultHalfEdgeSurfaces) {
+    private static Map<Integer, HalfEdgeSurface> getMapHalfEdgeSurfaceByFaceClassifyId(HalfEdgeSurface halfEdgeSurface,
+                                                                                       Map<Integer, HalfEdgeSurface> resultHalfEdgeSurfaces) {
         if (resultHalfEdgeSurfaces == null) {
             resultHalfEdgeSurfaces = new HashMap<>();
         }
@@ -1316,7 +1181,13 @@ public class HalfEdgeUtils {
         return longest / height;
     }
 
-    private static void getWeldableVertexMap(Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster, List<GaiaVertex> vertices, double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
+    private static void getWeldableVertexMap(Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster,
+                                             List<GaiaVertex> vertices,
+                                             double error,
+                                             boolean checkTexCoord,
+                                             boolean checkNormal,
+                                             boolean checkColor,
+                                             boolean checkBatchId) {
         Map<GaiaVertex, GaiaVertex> visitedMap = new HashMap<>();
         int verticesCount = vertices.size();
         for (int i = 0; i < verticesCount; i++) {
@@ -1340,7 +1211,13 @@ public class HalfEdgeUtils {
         }
     }
 
-    public static void weldVerticesGaiaSurface(GaiaSurface gaiaSurface, List<GaiaVertex> gaiaVertices, double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
+    public static void weldVerticesGaiaSurface(GaiaSurface gaiaSurface,
+                                               List<GaiaVertex> gaiaVertices,
+                                               double error,
+                                               boolean checkTexCoord,
+                                               boolean checkNormal,
+                                               boolean checkColor,
+                                               boolean checkBatchId) {
         // Weld the vertices
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
         gaiaVertices.forEach(gaiaVertex -> {
@@ -1422,35 +1299,6 @@ public class HalfEdgeUtils {
         }
         gaiaVertices.clear();
         gaiaVertices.addAll(newVerticesArray);
-    }
-
-    public static Map<PlaneType, List<HalfEdgeFace>> makeMapPlaneTypeFacesList(List<HalfEdgeFace> facesList, Map<PlaneType, List<HalfEdgeFace>> mapPlaneTypeFacesList) {
-        if (mapPlaneTypeFacesList == null) {
-            mapPlaneTypeFacesList = new HashMap<>();
-        }
-        int facesCount = facesList.size();
-        for (int i = 0; i < facesCount; i++) {
-            HalfEdgeFace face = facesList.get(i);
-            PlaneType planeType = face.getBestPlaneToProject();
-            List<HalfEdgeFace> faces = mapPlaneTypeFacesList.computeIfAbsent(planeType, k -> new ArrayList<>());
-            faces.add(face);
-        }
-        return mapPlaneTypeFacesList;
-    }
-
-    public static Map<CameraDirectionType, List<HalfEdgeFace>> makeMapCameraDirectionTypeFacesList(List<HalfEdgeFace> facesList) {
-        Map<CameraDirectionType, List<HalfEdgeFace>> mapCameraDirectionFacesList = new HashMap<>();
-        List<HalfEdgeFace> faces;
-
-        int facesCount = facesList.size();
-        for (int i = 0; i < facesCount; i++) {
-            HalfEdgeFace face = facesList.get(i);
-            CameraDirectionType cameraDirectionType = face.getCameraDirectionType();
-            faces = mapCameraDirectionFacesList.computeIfAbsent(cameraDirectionType, k -> new ArrayList<>());
-            faces.add(face);
-
-        }
-        return mapCameraDirectionFacesList;
     }
 
     public static GaiaBoundingBox getBoundingBoxOfFaces(List<HalfEdgeFace> faces) {

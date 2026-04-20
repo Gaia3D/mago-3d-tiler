@@ -169,9 +169,6 @@ public class HalfEdgeDecimaterUtils {
         List<GaiaOctree<HalfEdgeVertex>> nodesWithContents = octreeVertices.extractOctreesWithContents();
         // end new*******************
 
-//        List<HalfEdgeOctreeFaces> nodesWithContents2 = new ArrayList<>();
-//        octree.extractOctreesWithContents(nodesWithContents2);
-
         int nodesWithContentsCount = nodesWithContents.size();
         for (int i = 0; i < nodesWithContentsCount; i++) {
             HalfEdgeOctreeVertices node = (HalfEdgeOctreeVertices) nodesWithContents.get(i);
