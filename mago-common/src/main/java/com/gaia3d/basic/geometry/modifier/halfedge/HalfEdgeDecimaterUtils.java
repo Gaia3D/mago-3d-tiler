@@ -1464,6 +1464,10 @@ public class HalfEdgeDecimaterUtils {
         List<HalfEdgeVertex> vertices = halfEdgeSurface.getVertices();
         if (vertices == null || vertices.isEmpty()) return;
 
+        //final double clusterDotThreshold = 0.95; // ~18°
+        final double clusterDotThreshold = 0.90; // ~25.84°
+        final int maxSafety = 100;
+
         for (HalfEdgeVertex v : vertices) {
 
             HalfEdge startEdge = v.getOutingHalfEdge();
@@ -1473,7 +1477,7 @@ public class HalfEdgeDecimaterUtils {
             }
 
             // ============================================
-            // 🔁 recorrer 1-ring
+            // 🔁 1. recoger normales del 1-ring
             // ============================================
             List<Vector3d> normals = new ArrayList<>();
 
@@ -1488,11 +1492,11 @@ public class HalfEdgeDecimaterUtils {
 
                     Vector3d n = face.getNormal();
 
-                    // recalcular si hace falta
                     if (n == null || n.lengthSquared() == 0) {
                         List<HalfEdgeVertex> verts = face.getVertices(null);
                         n = HalfEdgeUtils.calculateNormalAsConvex(verts, null);
-                        if (n != null) {
+
+                        if (n != null && n.lengthSquared() > 0) {
                             n.normalize();
                             face.setNormal(n);
                         }
@@ -1503,49 +1507,71 @@ public class HalfEdgeDecimaterUtils {
                     }
                 }
 
-                // avanzar en el anillo
                 HalfEdge twin = edge.getTwin();
                 if (twin == null) break;
 
                 edge = twin.getNext();
 
                 safety++;
-                if (safety > 100) break; // evitar loops corruptos
+                if (safety > maxSafety) break;
 
             } while (edge != startEdge);
 
-            // ============================================
-            // 📉 calcular rugosidad
-            // ============================================
             int nCount = normals.size();
-
             if (nCount < 2) {
                 v.setRoughness(0.0f);
+                v.setClassifyId(1);
                 continue;
             }
 
-            // promedio
+            // ============================================
+            // 📉 2. varianza de normales
+            // ============================================
             Vector3d avgNormal = new Vector3d();
+
             for (Vector3d n : normals) {
                 avgNormal.add(n);
             }
             avgNormal.normalize();
 
-            // varianza
-            float variance = 0.0f;
+            double variance = 0.0;
 
             for (Vector3d n : normals) {
                 double dot = avgNormal.dot(n);
                 dot = Math.max(-1.0, Math.min(1.0, dot));
-                variance += (float) (1.0f - dot);
+                variance += (1.0 - dot);
             }
 
             variance /= nCount;
 
             // ============================================
-            // 📏 opcional: factor de escala
+            // 🧠 3. clustering de normales
+            // ============================================
+            List<Vector3d> clusters = new ArrayList<>();
+
+            for (Vector3d n : normals) {
+
+                boolean found = false;
+
+                for (Vector3d c : clusters) {
+                    if (n.dot(c) > clusterDotThreshold) {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    clusters.add(new Vector3d(n));
+                }
+            }
+
+            int clusterCount = clusters.size();
+
+            // ============================================
+            // 📏 4. factor de escala (opcional pero útil)
             // ============================================
             double avgLen = 0.0;
+            double maxLen = 0.0;
             int lenCount = 0;
 
             edge = startEdge;
@@ -1555,7 +1581,9 @@ public class HalfEdgeDecimaterUtils {
                 if (edge == null) break;
 
                 if (edge.getStatus() != ObjectStatus.DELETED) {
-                    avgLen += edge.getLength();
+                    double len = edge.getLength();
+                    avgLen += len;
+                    maxLen = Math.max(maxLen, len);
                     lenCount++;
                 }
 
@@ -1565,105 +1593,39 @@ public class HalfEdgeDecimaterUtils {
                 edge = twin.getNext();
 
                 safety++;
-                if (safety > 100) break;
+                if (safety > maxSafety) break;
 
             } while (edge != startEdge);
 
+            double scaleFactor = 1.0;
             if (lenCount > 0) {
                 avgLen /= lenCount;
-
-                double maxLen = 0.0;
-
-                edge = startEdge;
-                safety = 0;
-
-                do {
-                    if (edge == null) break;
-
-                    if (edge.getStatus() != ObjectStatus.DELETED) {
-                        maxLen = Math.max(maxLen, edge.getLength());
-                    }
-
-                    HalfEdge twin = edge.getTwin();
-                    if (twin == null) break;
-
-                    edge = twin.getNext();
-
-                    safety++;
-                    if (safety > 100) break;
-
-                } while (edge != startEdge);
-
-                double scaleFactor = (avgLen > 0.0) ? (maxLen / avgLen) : 1.0;
-
-                // combinar
-                variance *= (float) scaleFactor;
-            }
-
-//            Rugosidad	Significado
-//            0.0 – 0.03	plano
-//            0.03 – 0.1	suave
-//            0.1 – 0.2	irregular
-//            > 0.2	rugoso (césped)
-
-            log.debug("Roughness : " + variance);
-            v.setRoughness(variance);
-        }
-    }
-
-    public static void calculateVerticesRoughness_original(HalfEdgeSurface halfEdgeSurface) {
-        List<HalfEdgeVertex> vertices = halfEdgeSurface.getVertices();
-        Map<HalfEdgeVertex, List<HalfEdge>> vertexAllOutingEdgesMap = getMapVertexAllOutingEdges(null, halfEdgeSurface.getHalfEdges());
-        for (HalfEdgeVertex vertex : vertices) {
-            List<HalfEdge> outingEdges = vertexAllOutingEdgesMap.get(vertex);
-            //List<Vector3d> normals = new ArrayList<>();
-            Vector3d weightedNormalSum = new Vector3d(0, 0, 0);
-            double totalArea = 0.0;
-            for (HalfEdge outingEdge : outingEdges) {
-                if (outingEdge.getStatus() == ObjectStatus.DELETED) {
-                    continue;
-                }
-                HalfEdgeFace face = outingEdge.getFace();
-                Vector3d normal = face.getNormal();
-                if (normal == null) {
-                    normal = face.calculatePlaneNormal();
-                }
-
-                if (normal != null) {
-                    double area = face.calculateArea();
-                    totalArea += area;
-                    normal.x *= area;
-                    normal.y *= area;
-                    normal.z *= area;
-                    //normals.add(normal);
-                    weightedNormalSum.add(normal);
+                if (avgLen > 0.0) {
+                    scaleFactor = maxLen / avgLen;
                 }
             }
 
-            weightedNormalSum.normalize();
-            Vector3d avgNormal = weightedNormalSum;
+            // ============================================
+            // 🎯 5. RUGOSIDAD FINAL (CLAVE)
+            // ============================================
 
-            // calculate roughness of the vertex by the normals of the outing edges
-            double roughnessSum = 0.0;
-            for (HalfEdge outingEdge : outingEdges) {
-                if (outingEdge.getStatus() == ObjectStatus.DELETED) {
-                    continue;
-                }
-                HalfEdgeFace face = outingEdge.getFace();
-                double area = face.calculateArea();
-                Vector3d normal = face.getNormal();
-                double dot = normal.dot(avgNormal);
+            double roughness;
 
-                // clamp para evitar NaN por errores numéricos
-                dot = Math.max(-1.0, Math.min(1.0, dot));
-
-                double angle = Math.acos(dot);
-
-                roughnessSum += area * angle;
+            if (clusterCount <= 2) {
+                // 👉 plano / escalera / esquina
+                roughness = variance * 0.5;
+            }
+            else if (clusterCount <= 4) {
+                // 👉 algo complejo pero estructurado
+                roughness = variance;
+            }
+            else {
+                // 👉 ruido real (césped)
+                roughness = variance * scaleFactor * 1.5;
             }
 
-            double roughness = roughnessSum / totalArea;
-            vertex.setRoughness((float) roughness);
+            v.setRoughness((float) roughness);
+            v.setClassifyId(clusterCount);
         }
     }
 }
