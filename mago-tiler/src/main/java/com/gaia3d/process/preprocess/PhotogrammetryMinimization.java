@@ -22,7 +22,7 @@ public class PhotogrammetryMinimization implements PreProcess {
             normalCleaner.apply(scene);
             //scene.deleteNormals();
             // 1rst, must weld vertices
-            double error = 1e-4;
+            double error = 1e-8;
             log.info("[Pre][Photogrammetry] Welding vertices in GaiaScene : {}", tileInfo.getTempPath());
 
             GaiaWeldOptions weldOptions = GaiaWeldOptions.builder()
@@ -37,7 +37,6 @@ public class PhotogrammetryMinimization implements PreProcess {
 
             GaiaSceneCleaner cleaner = new GaiaSceneCleaner();
             cleaner.apply(scene);
-            //scene.deleteDegeneratedFaces();
 
             log.info("[Pre][Photogrammetry] Minimize GaiaScene LOD 0 , Path : {}", tileInfo.getTempPath());
 

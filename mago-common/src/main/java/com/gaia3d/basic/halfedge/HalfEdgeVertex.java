@@ -13,7 +13,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Setter
@@ -33,7 +35,7 @@ public class HalfEdgeVertex implements Serializable {
     private int id = -1;
     private int outingHalfEdgeId = -1;
     private int classifyId = -1; // auxiliary variable
-    private double roughness = 0.0; // auxiliary variable
+    private float roughness = 0.0f; // auxiliary variable
 
     public HalfEdgeVertex(GaiaVertex vertex) {
         copyFromGaiaVertex(vertex);
@@ -170,18 +172,26 @@ public class HalfEdgeVertex implements Serializable {
             resultHalfEdges = new ArrayList<>();
         }
 
+        Set<HalfEdge> visited = new HashSet<>();
+
         boolean isInterior = true; // init as true
         HalfEdge currentEdge = this.outingHalfEdge;
         resultHalfEdges.add(currentEdge);
         HalfEdge currTwin = currentEdge.getTwin();
+        visited.add(currentEdge);
         if (currTwin == null) {
             isInterior = false;
         } else {
             HalfEdge nextOutingEdge = currTwin.getNext();
             while (nextOutingEdge != this.outingHalfEdge) {
+                if(visited.contains(nextOutingEdge)) {
+                    break;
+                }
+                visited.add(nextOutingEdge);
                 resultHalfEdges.add(nextOutingEdge);
-                if (resultHalfEdges.size() > 100) {
-                    log.info("Error: HalfEdgeVertex.getOutingHalfEdges() : resultHalfEdges.size() > 100");
+                if (resultHalfEdges.size() > 50) {
+                    log.error("Error: HalfEdgeVertex.getOutingHalfEdges() : outingHalfEdges.size() > 50");
+                    return resultHalfEdges;
                 }
                 currTwin = nextOutingEdge.getTwin();
                 if (currTwin == null) {
@@ -205,6 +215,10 @@ public class HalfEdgeVertex implements Serializable {
             HalfEdge prevEdge = outingEdge.getPrev();
             HalfEdge prevTwin = prevEdge.getTwin();
             while (prevTwin != null && prevTwin != outingEdge) {
+                if(visited.contains(prevTwin)) {
+                    break;
+                }
+                visited.add(prevTwin);
                 resultHalfEdges.add(prevTwin);
                 prevEdge = prevTwin.getPrev();
                 if (prevEdge == null) {

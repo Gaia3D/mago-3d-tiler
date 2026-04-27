@@ -161,13 +161,7 @@ public class GaiaFace extends FaceStructure implements Serializable {
             Vector3d vectorB = vertex2.getPosition();
             Vector3d vectorC = vertex3.getPosition();
 
-            if (vectorA.distance(vectorB) < error || vectorA.distance(vectorC) < error || vectorB.distance(vectorC) < error) {
-                return true;
-            }
-
-            // check if the area of the triangle is zero.
-            double area = GeometryUtils.getTriangleArea(vertex1, vertex2, vertex3);
-            if (area < error) {
+            if (vectorA.distance(vectorB) == 0.0 || vectorA.distance(vectorC) == 0.0 || vectorB.distance(vectorC) == 0.0) {
                 return true;
             }
         }

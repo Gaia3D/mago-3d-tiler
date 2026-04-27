@@ -1859,7 +1859,11 @@ public class Engine {
         colorFbo.unbind();
 
         // colorCoded render
-        RenderableGaiaScene renderableSceneCurrent = gaiaScenesContainer.getRenderableGaiaScenes().get(0);
+        RenderableGaiaScene renderableSceneCurrent = null;
+        if(gaiaScenesContainer.getRenderableGaiaScenes().size() > 0) {
+            renderableSceneCurrent = gaiaScenesContainer.getRenderableGaiaScenes().get(0);
+        }
+
         gaiaScenesContainer.getRenderableGaiaScenes().clear();
         gaiaScenesContainer.getRenderableGaiaScenes().add(renderableScene);
 
@@ -1876,7 +1880,9 @@ public class Engine {
 
         // restore the current renderableScene
         gaiaScenesContainer.getRenderableGaiaScenes().clear();
-        gaiaScenesContainer.getRenderableGaiaScenes().add(renderableSceneCurrent);
+        if(renderableSceneCurrent != null) {
+            gaiaScenesContainer.getRenderableGaiaScenes().add(renderableSceneCurrent);
+        }
 
         // check the colorCoded image
         colorCodeFbo.bind();

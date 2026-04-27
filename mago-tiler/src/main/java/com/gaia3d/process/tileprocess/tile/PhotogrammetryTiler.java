@@ -1662,7 +1662,15 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         scene.clear();
     }
 
-    public List<TileInfo> cutHalfEdgeSceneByGaiaAAPlanesAndSaveTileInfos(HalfEdgeScene halfEdgeScene, List<GaiaAAPlane> planes, HalfEdgeOctreeFaces resultOctree, boolean scissorTextures, boolean makeSkirt, Path cutTempLodPath, Matrix4d transformMatrix, TileInfo motherTileInfo, int lod) {
+    public List<TileInfo> cutHalfEdgeSceneByGaiaAAPlanesAndSaveTileInfos(HalfEdgeScene halfEdgeScene,
+                                                                         List<GaiaAAPlane> planes,
+                                                                         HalfEdgeOctreeFaces resultOctree,
+                                                                         boolean scissorTextures,
+                                                                         boolean makeSkirt,
+                                                                         Path cutTempLodPath,
+                                                                         Matrix4d transformMatrix,
+                                                                         TileInfo motherTileInfo,
+                                                                         int lod) {
         TileTransformInfo tileTransformInfo = motherTileInfo.getTileTransformInfo();
         Vector3d geoCoordPosition = tileTransformInfo.getPosition();
 

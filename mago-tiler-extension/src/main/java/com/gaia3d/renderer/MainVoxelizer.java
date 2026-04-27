@@ -588,7 +588,6 @@ public class MainVoxelizer implements IAppLogic {
             weldingParametersLod.setCheckTexCoords(false);
             HalfEdgeDecimatorSmallTriangles decimatorSmallTriangles = new HalfEdgeDecimatorSmallTriangles(decimateParameters);
             decimatorSmallTriangles.apply(halfEdgeSceneToDecimate);
-            //halfEdgeSceneToDecimate.decimateOnlySmallTriangles(decimateParametersLod, smallTriangleHedgeSize, 3.0);
 
             gaiaScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneToDecimate);
             cleaner.apply(gaiaScene);
@@ -878,6 +877,7 @@ public class MainVoxelizer implements IAppLogic {
                 gaiaSet = GaiaSet.readFile(path);
                 gaiaScene = new GaiaScene(gaiaSet);
                 gaiaSceneCopy = new GaiaScene(gaiaSet);
+
                 GaiaNode gaiaNode = gaiaSceneCopy.getNodes().getFirst();
                 gaiaNode.setTransformMatrix(new Matrix4d(sceneTMatLC));
                 gaiaNode.setPreMultipliedTransformMatrix(new Matrix4d(sceneTMatLC));

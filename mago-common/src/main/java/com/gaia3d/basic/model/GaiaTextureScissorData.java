@@ -39,6 +39,14 @@ public class GaiaTextureScissorData {
         return true;
     }
 
+    public boolean merge(GaiaTextureScissorData other) {
+        texCoordBoundary.addBoundingRectangle(other.texCoordBoundary);
+        faces.addAll(other.faces);
+        other.faces.clear(); // clear the faces of the other.
+
+        return true;
+    }
+
     public boolean isMergeable(GaiaTextureScissorData other) {
         if (texCoordBoundary == null || other.texCoordBoundary == null) {
             return false;

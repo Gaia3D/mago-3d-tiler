@@ -13,6 +13,8 @@ import org.joml.Vector2d;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.Raster;
+import java.awt.image.WritableRaster;
 import java.util.*;
 import java.util.List;
 
@@ -465,11 +467,23 @@ public class TextureAtlasManager {
         log.debug("HalfEdgeSurface.scissorTextures() : draw the images into textureAtlas.");
         Graphics2D g2d = textureAtlas.getBufferedImage().createGraphics();
         int textureAtlasDatasCount = texAtlasDatasList.size();
+        log.debug(("TextureAtlasDatesCount : " + textureAtlasDatasCount));
+
+        WritableRaster atlasRaster = textureAtlas.getBufferedImage().getRaster();
+
         for (int i = 0; i < textureAtlasDatasCount; i++) {
+            log.debug("current atlas data : " + i + " / " + textureAtlasDatasCount);
             TexturesAtlasData textureAtlasData = texAtlasDatasList.get(i);
             GaiaRectangle batchedBoundary = textureAtlasData.getBatchedBoundary();
 
             BufferedImage subImage = textureAtlasData.getTextureImage();
+
+            Raster subRaster = subImage.getRaster();
+
+            int x = (int) batchedBoundary.getMinX();
+            int y = (int) batchedBoundary.getMinY();
+
+            atlasRaster.setRect(x, y, subRaster);
 
 //            GaiaRectangle currentBoundary = textureAtlasData.getCurrentBoundary();
 //            GaiaRectangle originBoundary = textureAtlasData.getOriginalBoundary();
@@ -482,7 +496,7 @@ public class TextureAtlasManager {
 //            g2d.drawImage(randomColoredImage, (int) batchedBoundary.getMinX(), (int) batchedBoundary.getMinY(), null); // test code
 //            // end test.--------------------------------------------------------------------------------------------------------------------------------
 
-            g2d.drawImage(subImage, (int) batchedBoundary.getMinX(), (int) batchedBoundary.getMinY(), null); // original code
+            //g2d.drawImage(subImage, (int) batchedBoundary.getMinX(), (int) batchedBoundary.getMinY(), null); // original code
 
         }
         g2d.dispose();
