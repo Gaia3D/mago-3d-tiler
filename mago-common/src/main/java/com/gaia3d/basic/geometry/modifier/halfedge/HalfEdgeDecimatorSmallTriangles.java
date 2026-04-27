@@ -1,7 +1,7 @@
 package com.gaia3d.basic.geometry.modifier.halfedge;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.geometry.modifier.transform.HalfEdgeModifier;
+import com.gaia3d.basic.geometry.modifier.HalfEdgeModifier;
 import com.gaia3d.basic.geometry.octree.GaiaOctree;
 import com.gaia3d.basic.geometry.octree.HalfEdgeOctreeFaces;
 import com.gaia3d.basic.halfedge.*;
