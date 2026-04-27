@@ -609,8 +609,8 @@ class UnitTest {
 
     @Test
     void test_RealisticMesh_LeeDongHun_Data_BANSONG_someBuildings() {
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\BANSONG_someBuildings\\";
-        String outputPath = "D:\\data\\mago-server\\output\\BANSONG_someBuildings\\";
+        String inputPath = "E:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\BANSONG_someBuildings\\";
+        String outputPath = "E:\\data\\mago-server\\output\\BANSONG_someBuildings_20260427\\";
 
         String[] args = new String[]{
                 "-i", inputPath,
