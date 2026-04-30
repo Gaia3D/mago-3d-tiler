@@ -1,6 +1,7 @@
 package com.gaia3d.modifier.billboard;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.geometry.modifier.texcoord.FlipYTexCoordinate;
 import com.gaia3d.basic.geometry.modifier.transform.GaiaBaker;
 import com.gaia3d.basic.geometry.modifier.transform.GaiaScaler;
 import com.gaia3d.basic.geometry.modifier.transform.GaiaScalerOptions;
@@ -28,6 +29,16 @@ class BillboardCloudCreatorTest {
     static {
         LoggingConfiguration.initConsoleLogger();
         LoggingConfiguration.setLevel(Level.INFO);
+    }
+
+    @Test
+    void resizeModel() {
+        //String inputPath = "D:\\data\\mago-3d-tiler\\build-sample\\sample-tree\\broad.glb";
+        //String inputPath = "D:\\data\\mago-3d-tiler\\build-sample\\sample-tree\\bamboo.glb";
+        //String inputPath = "D:\\data\\mago-3d-tiler\\build-sample\\sample-tree\\needle.glb";
+        String inputPath = "D:\\data\\mago-3d-tiler\\build-sample\\sample-tree\\mixed.glb";
+        String outputPath = "H:\\workspace\\billboardclouds-output";
+        rescaleScene(inputPath, outputPath);
     }
 
     @Test
@@ -162,8 +173,16 @@ class BillboardCloudCreatorTest {
         convertBC(lods, inputPath, outputPath);
     }
 
+    private void rescaleScene(String inputPath, String outputPath) {
+        GaiaScene scene = prepareScene(inputPath, true);
+        File inputFile = new File(inputPath);
+        String inputFileName = inputFile.getName();
+        File outputFile = new File(outputPath, inputFileName.replace(".glb", "_resized.glb"));
+        writeGlb(scene, outputFile.getAbsolutePath());
+    }
+
     private void convertBC(List<BillboardCloudOptions> lods, String inputPath, String outputPath) {
-        GaiaScene scene = prepareScene(inputPath);
+        GaiaScene scene = prepareScene(inputPath, false);
         File inputFile = new File(inputPath);
         String inputFileName = inputFile.getName();
         File outputFile = new File(outputPath, inputFileName.replace(".glb", "-bc.glb"));
@@ -180,7 +199,7 @@ class BillboardCloudCreatorTest {
         }
     }
 
-    private GaiaScene prepareScene(String inputPath) {
+    private GaiaScene prepareScene(String inputPath, boolean flipY) {
         // 1rst, load the tree model from the given path
         log.info("Loading tree model from path: {}", inputPath);
         AssimpConverterOptions options = AssimpConverterOptions.builder()
@@ -190,8 +209,10 @@ class BillboardCloudCreatorTest {
         List<GaiaScene> gaiaScenes = assimpConverter.load(inputPath);
 
         // Flip Y tex-coordinates
-        //FlipYTexCoordinate flipYTexCoordinate = new FlipYTexCoordinate();
-        //gaiaScenes.forEach(flipYTexCoordinate::flip);
+        if (flipY) {
+            FlipYTexCoordinate flipYTexCoordinate = new FlipYTexCoordinate();
+            gaiaScenes.forEach(flipYTexCoordinate::flip);
+        }
 
         //List<GaiaScene> resultGaiaScenes = new ArrayList<>();
         //TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();

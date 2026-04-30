@@ -294,6 +294,8 @@ public class ForestExperimentalTest {
         garisanJat();
         GlobalOptions.recreateInstance();
         garisanNak();
+
+        garisanMerge();
     }
 
     @Test

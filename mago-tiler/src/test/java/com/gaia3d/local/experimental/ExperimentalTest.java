@@ -11,6 +11,17 @@ import java.io.File;
 public class ExperimentalTest {
 
     @Test
+    void problemseoul() {
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getTempPath("problemseoul.geojson").getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath("problemseoul").getAbsolutePath(),
+                "-c", "4326",
+                "-heightColumn", "A16"
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
     void validateShape() {
         String path = "buld_DJ";
         String[] args = new String[]{

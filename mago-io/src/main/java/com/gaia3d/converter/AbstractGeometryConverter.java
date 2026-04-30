@@ -158,7 +158,12 @@ public abstract class AbstractGeometryConverter {
         } else if (heightObject instanceof Double) {
             result = result + (double) heightObject;
         } else if (heightObject instanceof String) {
-            result = Double.parseDouble((String) heightObject);
+            try {
+                result = Double.parseDouble((String) heightObject);
+            } catch (NumberFormatException e) {
+                log.warn("Failed to parse height value: {}", heightObject);
+                return minimumHeight;
+            }
         }
 
         if (result < minimumHeight) {
