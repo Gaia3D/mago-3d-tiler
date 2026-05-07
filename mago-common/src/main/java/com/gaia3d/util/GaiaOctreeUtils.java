@@ -8,7 +8,9 @@ import java.util.List;
 
 public class GaiaOctreeUtils {
 
-    public static void getFaceDataListOfNode(GaiaScene sceneParent, GaiaNode node, List<GaiaFaceData> resultFaceDataList) {
+    public static void getFaceDataListOfNode(GaiaScene sceneParent,
+                                             GaiaNode node,
+                                             List<GaiaFaceData> resultFaceDataList) {
         // 1rst, check meshes.
         if (node.getMeshes() != null) {
             for (int i = 0, length = node.getMeshes().size(); i < length; i++) {

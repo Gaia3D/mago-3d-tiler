@@ -2,6 +2,7 @@ package com.gaia3d.basic.geometry.octree;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.entities.GaiaTriangle;
+import com.gaia3d.basic.model.GaiaVertex;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,7 @@ import java.util.List;
 public class GaiaOctreeFaces extends GaiaOctree<GaiaFaceData> {
     private int limitDepth = 5;
     private double limitSize = 1.0; // Minimum size of the bounding box to stop subdividing
+    private int limitFacesCount = 10;
     private boolean contentsCanBeInMultipleChildren = false;
 
     public GaiaOctreeFaces(GaiaOctree<GaiaFaceData> parent, GaiaBoundingBox boundingBox) {
@@ -29,7 +31,11 @@ public class GaiaOctreeFaces extends GaiaOctree<GaiaFaceData> {
 
     @Override
     public GaiaOctreeFaces createChild(GaiaBoundingBox childBoundingBox) {
-        return new GaiaOctreeFaces(this, childBoundingBox);
+        GaiaOctreeFaces childFaces = new GaiaOctreeFaces(this, childBoundingBox);
+        childFaces.setLimitDepth(limitDepth);
+        childFaces.setLimitSize(limitSize);
+        childFaces.setLimitFacesCount(limitFacesCount);
+        return childFaces;
     }
 
     public void distributeContentsByCenterPoint() {
@@ -99,6 +105,11 @@ public class GaiaOctreeFaces extends GaiaOctree<GaiaFaceData> {
     public boolean intersects(GaiaTriangle triangle) {
         GaiaBoundingBox bbox = this.getBoundingBox();
         return bbox.intersectsTriangle(triangle);
+    }
+
+    public boolean intersects(GaiaVertex vertex) {
+        GaiaBoundingBox bbox = this.getBoundingBox();
+        return bbox.intersectsPoint(vertex.getPosition());
     }
 
     public void distributeContentsByIntersection() {

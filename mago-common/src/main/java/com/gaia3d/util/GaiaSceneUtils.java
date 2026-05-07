@@ -31,6 +31,26 @@ public class GaiaSceneUtils {
         return scene;
     }
 
+    public static GaiaBoundingBox calculateBBoxOfFaces(List<GaiaFace> faces, List<GaiaVertex> vertices){
+        GaiaBoundingBox boundingBox = null;
+        int facesCount = faces.size();
+        for(GaiaFace face : faces){
+            int[] indices = face.getIndices();
+            int indicesCount = indices.length;
+            for(int i = 0; i < indicesCount; i++){
+                GaiaVertex vertex = vertices.get(indices[i]);
+                Vector3d position = vertex.getPosition();
+
+                if(boundingBox == null){
+                    boundingBox = new GaiaBoundingBox();
+                }
+
+                boundingBox.addPoint(position);
+            }
+        }
+        return boundingBox;
+    }
+
     public static boolean checkSceneMaterials(GaiaScene scene) {
         for (GaiaNode node : scene.getNodes()) {
             for (GaiaMesh mesh : node.getMeshes()) {

@@ -85,11 +85,54 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         }
     }
 
-    public int[] getIndices() {
+    public int[] getIndices_original() {
         int[] resultIndices = new int[0];
         for (GaiaSurface surface : surfaces) {
             resultIndices = ArrayUtils.addAll(resultIndices, surface.getIndices());
         }
+        return resultIndices;
+    }
+
+    public int[] getIndices() {
+        if (surfaces == null || surfaces.isEmpty()) {
+            return new int[0];
+        }
+
+        int totalLength = 0;
+
+        for (GaiaSurface surface : surfaces) {
+            if (surface == null) {
+                continue;
+            }
+
+            int[] indices = surface.getIndices();
+
+            if (indices == null || indices.length == 0) {
+                continue;
+            }
+
+            totalLength += indices.length;
+        }
+
+        int[] resultIndices = new int[totalLength];
+
+        int offset = 0;
+
+        for (GaiaSurface surface : surfaces) {
+            if (surface == null) {
+                continue;
+            }
+
+            int[] indices = surface.getIndices();
+
+            if (indices == null || indices.length == 0) {
+                continue;
+            }
+
+            System.arraycopy(indices, 0, resultIndices, offset, indices.length);
+            offset += indices.length;
+        }
+
         return resultIndices;
     }
 

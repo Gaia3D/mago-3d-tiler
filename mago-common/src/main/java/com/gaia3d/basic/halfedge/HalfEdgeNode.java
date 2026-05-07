@@ -213,56 +213,6 @@ public class HalfEdgeNode implements Serializable {
         return clonedNode;
     }
 
-    public void writeFile(ObjectOutputStream outputStream) {
-        try {
-            // transformMatrix
-            outputStream.writeObject(transformMatrix);
-            // preMultipliedTransformMatrix
-            outputStream.writeObject(preMultipliedTransformMatrix);
-            // meshes
-            outputStream.writeInt(meshes.size());
-            for (HalfEdgeMesh mesh : meshes) {
-                mesh.writeFile(outputStream);
-            }
-
-            // children
-            outputStream.writeInt(children.size());
-            for (HalfEdgeNode child : children) {
-                child.writeFile(outputStream);
-            }
-
-        } catch (Exception e) {
-            log.error("[ERROR] Error Log : ", e);
-        }
-    }
-
-    public void readFile(ObjectInputStream inputStream) {
-        try {
-            // transformMatrix
-            transformMatrix = (Matrix4d) inputStream.readObject();
-            // preMultipliedTransformMatrix
-            preMultipliedTransformMatrix = (Matrix4d) inputStream.readObject();
-            // meshes
-            int meshesSize = inputStream.readInt();
-            for (int i = 0; i < meshesSize; i++) {
-                HalfEdgeMesh mesh = new HalfEdgeMesh();
-                mesh.readFile(inputStream);
-                meshes.add(mesh);
-            }
-
-            // children
-            int childrenSize = inputStream.readInt();
-            for (int i = 0; i < childrenSize; i++) {
-                HalfEdgeNode child = new HalfEdgeNode();
-                child.readFile(inputStream);
-                children.add(child);
-            }
-
-        } catch (Exception e) {
-            log.error("[ERROR] Error Log : ", e);
-        }
-    }
-
     public void scissorTextures(List<GaiaMaterial> materials) {
         for (HalfEdgeMesh mesh : meshes) {
             mesh.scissorTextures(materials);

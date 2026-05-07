@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.lwjgl.opengl.GL30;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.opengl.GL11.glPixelStorei;
@@ -93,6 +94,35 @@ public class Fbo {
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
+        int channels;
+        if (format == GL30.GL_RGB) {
+            channels = 3;
+        } else if (format == GL30.GL_RGBA) {
+            channels = 4;
+        } else {
+            throw new IllegalArgumentException("Unsupported pixel format: " + format);
+        }
+
+        ByteBuffer pixels = ByteBuffer.allocateDirect(fboWidth * fboHeight * channels);
+
+        GL30.glReadPixels(
+                0,
+                0,
+                fboWidth,
+                fboHeight,
+                format,
+                GL30.GL_UNSIGNED_BYTE,
+                pixels
+        );
+
+        pixels.rewind();
+        return pixels;
+    }
+
+    public ByteBuffer readPixels_original(int format) {
+        glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
         ByteBuffer pixels = ByteBuffer.allocateDirect(fboWidth * fboHeight * 4);
         GL30.glReadPixels(0, 0, fboWidth, fboHeight, format, GL30.GL_UNSIGNED_BYTE, pixels);
         return pixels;
@@ -106,6 +136,117 @@ public class Fbo {
     }
 
     public BufferedImage getBufferedImage(int bufferedImageType) {
+        final int width = this.getFboWidth();
+        final int height = this.getFboHeight();
+
+        final boolean isRgb = bufferedImageType == BufferedImage.TYPE_INT_RGB;
+        final boolean isArgb = bufferedImageType == BufferedImage.TYPE_INT_ARGB;
+
+        if (!isRgb && !isArgb) {
+            throw new IllegalArgumentException(
+                    "Only TYPE_INT_RGB and TYPE_INT_ARGB are supported."
+            );
+        }
+
+        final int format = isRgb ? GL30.GL_RGB : GL30.GL_RGBA;
+        final int channels = isRgb ? 3 : 4;
+
+        ByteBuffer byteBuffer = this.readPixels(format);
+
+        BufferedImage image = new BufferedImage(width, height, bufferedImageType);
+        int[] imageData = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
+
+        for (int y = 0; y < height; y++) {
+            int dstY = height - y - 1;
+            int dstOffset = dstY * width;
+
+            for (int x = 0; x < width; x++) {
+                int r = byteBuffer.get() & 0xFF;
+                int g = byteBuffer.get() & 0xFF;
+                int b = byteBuffer.get() & 0xFF;
+                int a = 255;
+
+                if (channels == 4) {
+                    a = byteBuffer.get() & 0xFF;
+                }
+
+                imageData[dstOffset + x] =
+                        (a << 24) |
+                                (r << 16) |
+                                (g << 8) |
+                                b;
+            }
+        }
+
+        return image;
+    }
+
+    public void getBufferedImageInto(
+            int bufferedImageType,
+            BufferedImage image,
+            ByteBuffer byteBuffer
+    ) {
+        final int width = this.getFboWidth();
+        final int height = this.getFboHeight();
+
+        if (bufferedImageType != BufferedImage.TYPE_INT_ARGB) {
+            throw new IllegalArgumentException("This optimized method currently supports only TYPE_INT_ARGB.");
+        }
+
+        if (image == null) {
+            throw new IllegalArgumentException("image is null.");
+        }
+
+        if (image.getWidth() != width || image.getHeight() != height) {
+            throw new IllegalArgumentException("image size does not match FBO size.");
+        }
+
+        if (image.getType() != BufferedImage.TYPE_INT_ARGB) {
+            throw new IllegalArgumentException("image must be TYPE_INT_ARGB.");
+        }
+
+        final int requiredCapacity = width * height * 4;
+
+        if (byteBuffer == null || byteBuffer.capacity() < requiredCapacity) {
+            throw new IllegalArgumentException("byteBuffer is null or too small.");
+        }
+
+        byteBuffer.clear();
+
+        GL30.glReadPixels(
+                0,
+                0,
+                width,
+                height,
+                GL30.GL_RGBA,
+                GL30.GL_UNSIGNED_BYTE,
+                byteBuffer
+        );
+
+        byteBuffer.rewind();
+
+        int[] imageData = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
+
+        for (int y = 0; y < height; y++) {
+            int dstY = height - y - 1;
+            int dstOffset = dstY * width;
+
+            for (int x = 0; x < width; x++) {
+                int r = byteBuffer.get() & 0xFF;
+                int g = byteBuffer.get() & 0xFF;
+                int b = byteBuffer.get() & 0xFF;
+                int a = byteBuffer.get() & 0xFF;
+
+                imageData[dstOffset + x] =
+                        (a << 24) |
+                                (r << 16) |
+                                (g << 8) |
+                                b;
+            }
+        }
+    }
+
+    public BufferedImage getBufferedImage_original(int bufferedImageType) {
         int format = GL30.GL_RGBA;
 
         if (bufferedImageType == BufferedImage.TYPE_INT_RGB) {

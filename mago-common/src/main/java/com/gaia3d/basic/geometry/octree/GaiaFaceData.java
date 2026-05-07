@@ -22,7 +22,7 @@ public class GaiaFaceData {
     private GaiaPrimitive primitiveParent = null;
     private GaiaBoundingBox boundingBox = null;
     private Vector3d centerPoint = null;
-    private Vector4d primaryColor = null;
+    //private Vector4d primaryColor = null;
     private GaiaPlane plane = null;
     private GaiaTriangle triangle = null;
 

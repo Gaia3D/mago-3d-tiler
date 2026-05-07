@@ -30,7 +30,7 @@ public class HalfEdgeDecimatorSmallTriangles extends HalfEdgeModifier {
         int trianglesCount = surface.getTrianglesCount();
         log.debug("trianglesCount: {}", trianglesCount);
 
-        if(trianglesCount > 100000){
+        if(trianglesCount > 200000){
             applySurfaceByOctree(productTransformMatrix, vertices, surface);
         } else {
             applySurfaceDirect(productTransformMatrix, vertices, surface);
@@ -94,7 +94,7 @@ public class HalfEdgeDecimatorSmallTriangles extends HalfEdgeModifier {
         // end classify vertices.---
 
         // calculate roughness og vertices.
-        HalfEdgeDecimaterUtils.calculateVerticesRoughness(surface);
+        //HalfEdgeDecimaterUtils.calculateVerticesRoughness(surface);
         // end calculate roughness of vertices.---
 
         double smallTrianglesMinSize = decimateParameters.getSmallTrianglesMinSize();
@@ -255,7 +255,7 @@ public class HalfEdgeDecimatorSmallTriangles extends HalfEdgeModifier {
         // end classify vertices.---------------------------------------------------
 
         // calculate roughness og vertices.
-        HalfEdgeDecimaterUtils.calculateVerticesRoughness(surface);
+        //HalfEdgeDecimaterUtils.calculateVerticesRoughness(surface);
         // end calculate roughness of vertices.---
 
 
@@ -519,11 +519,11 @@ public class HalfEdgeDecimatorSmallTriangles extends HalfEdgeModifier {
         double roughness = startVertex.getRoughness();
 
         if (halfEdge.getLength() > hedgeMinLength) {
-            if(roughness < 1.5) {
+            //if(roughness < 1.5) {
                 if (!HalfEdgeDecimaterUtils.decideIfCollapseCheckingFacesOnlySmallTriangles(halfEdge, vertexAllOutingEdgesMap, mapVertexToSamePosVertices, maxDiffAngDeg, maxAspectRatio, smallHedgeSize, smallTriangleMinSize)) {
                     return false;
                 }
-            }
+            //}
         }
         // end check if collapse
 

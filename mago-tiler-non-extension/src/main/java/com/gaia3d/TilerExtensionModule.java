@@ -53,6 +53,10 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     }
 
     @Override
+    public void textureAwareReMesh(List<SceneInfo> sceneInfos, List<GaiaScene> resultScenes, ReMeshParameters reMeshParams, GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize, String outputPathString, String nodeName, int lod) {
+    }
+
+    @Override
     public void integralReMeshByObliqueCameraV2(List<SceneInfo> sceneInfos, List<HalfEdgeScene> resultHalfEdgeScenes, ReMeshParameters reMeshParams, GaiaBoundingBox nodeBBox,
                                                 Matrix4d nodeTMatrix, int maxScreenSize, String outputPathString, String nodeName, int lod) {
     }

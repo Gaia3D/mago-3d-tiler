@@ -28,13 +28,16 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.*;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -377,7 +380,268 @@ public class Engine {
         return renderableSceneColorCoded;
     }
 
+    private int createEmptyRgbaTexture(
+            int width,
+            int height,
+            int minFilter,
+            int magFilter,
+            int wrapS,
+            int wrapT
+    ) {
+        int textureId = GL20.glGenTextures();
+
+        GL20.glBindTexture(GL20.GL_TEXTURE_2D, textureId);
+
+        GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_MIN_FILTER, minFilter);
+        GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_MAG_FILTER, magFilter);
+        GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_WRAP_S, wrapS);
+        GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_WRAP_T, wrapT);
+
+        GL20.glTexImage2D(
+                GL20.GL_TEXTURE_2D,
+                0,
+                GL30.GL_RGBA8,
+                width,
+                height,
+                0,
+                GL30.GL_RGBA,
+                GL20.GL_UNSIGNED_BYTE,
+                (ByteBuffer) null
+        );
+
+        GL20.glBindTexture(GL20.GL_TEXTURE_2D, 0);
+
+        return textureId;
+    }
+
+    private BufferedImage convertToIntArgb(BufferedImage source) {
+        if (source.getType() == BufferedImage.TYPE_INT_ARGB) {
+            return source;
+        }
+
+        BufferedImage converted = new BufferedImage(
+                source.getWidth(),
+                source.getHeight(),
+                BufferedImage.TYPE_INT_ARGB
+        );
+
+        Graphics2D g = converted.createGraphics();
+        g.drawImage(source, 0, 0, null);
+        g.dispose();
+
+        return converted;
+    }
+
+    private void updateTextureFromBufferedImage(int textureId, BufferedImage image) {
+        final int width = image.getWidth();
+        final int height = image.getHeight();
+
+        BufferedImage argbImage;
+
+        if (image.getType() == BufferedImage.TYPE_INT_ARGB) {
+            argbImage = image;
+        } else {
+            argbImage = convertToIntArgb(image);
+        }
+
+        int[] imageData = ((DataBufferInt) argbImage.getRaster().getDataBuffer()).getData();
+
+        ByteBuffer uploadBuffer = BufferUtils.createByteBuffer(width * height * 4);
+
+        for (int y = 0; y < height; y++) {
+            int srcOffset = y * width;
+
+            for (int x = 0; x < width; x++) {
+                int argb = imageData[srcOffset + x];
+
+                byte a = (byte) ((argb >> 24) & 0xFF);
+                byte r = (byte) ((argb >> 16) & 0xFF);
+                byte g = (byte) ((argb >> 8) & 0xFF);
+                byte b = (byte) (argb & 0xFF);
+
+                uploadBuffer.put(r);
+                uploadBuffer.put(g);
+                uploadBuffer.put(b);
+                uploadBuffer.put(a);
+            }
+        }
+
+        uploadBuffer.flip();
+
+        GL20.glBindTexture(GL20.GL_TEXTURE_2D, textureId);
+
+        GL20.glTexSubImage2D(
+                GL20.GL_TEXTURE_2D,
+                0,
+                0,
+                0,
+                width,
+                height,
+                GL30.GL_RGBA,
+                GL20.GL_UNSIGNED_BYTE,
+                uploadBuffer
+        );
+
+        GL20.glBindTexture(GL20.GL_TEXTURE_2D, 0);
+    }
+
     public BufferedImage eliminateBackGroundColor(BufferedImage originalImage, Vector4f backgroundColor) {
+        if (originalImage == null) return null;
+
+        final int fboWidth = originalImage.getWidth();
+        final int fboHeight = originalImage.getHeight();
+
+        if (fboWidth <= 0 || fboHeight <= 0) return null;
+
+        final int iterationsCount = 10;
+        final int bufferedImageType = BufferedImage.TYPE_INT_ARGB;
+
+        final int minFilter = GL20.GL_NEAREST;
+        final int magFilter = GL20.GL_NEAREST;
+        final int wrapS = GL20.GL_CLAMP_TO_EDGE;
+        final int wrapT = GL20.GL_CLAMP_TO_EDGE;
+
+        ScreenQuad localScreenQuad = new ScreenQuad();
+
+        ShaderProgram shaderProgram = null;
+        int textureId = -1;
+
+        boolean depthTestWasEnabled = GL20.glIsEnabled(GL20.GL_DEPTH_TEST);
+        boolean cullFaceWasEnabled = GL20.glIsEnabled(GL20.GL_CULL_FACE);
+        boolean blendWasEnabled = GL20.glIsEnabled(GL20.GL_BLEND);
+
+        try {
+            Fbo fbo = fboManager.getOrCreateFbo("default", fboWidth, fboHeight);
+            fbo.bind();
+
+            GL20.glViewport(0, 0, fboWidth, fboHeight);
+            GL20.glDisable(GL20.GL_DEPTH_TEST);
+            GL20.glDisable(GL20.GL_CULL_FACE);
+            GL20.glDisable(GL20.GL_BLEND);
+
+            ShaderManager shaderManager = getShaderManager();
+            shaderProgram = shaderManager.getShaderProgram("eliminateBackGroundColor");
+            shaderProgram.bind();
+
+            UniformsMap uniformsMap = shaderProgram.getUniformsMap();
+            uniformsMap.setUniform1i("uTexture", 0);
+            uniformsMap.setUniform1f("uScreenWidth", (float) fboWidth);
+            uniformsMap.setUniform1f("uScreenHeight", (float) fboHeight);
+            uniformsMap.setUniform3fv(
+                    "uBackgroundColor",
+                    new Vector3f(backgroundColor.x, backgroundColor.y, backgroundColor.z)
+            );
+
+            // ------------------------------------------------------------
+            // 1) Crear una imagen reutilizable
+            // ------------------------------------------------------------
+            BufferedImage workingImage;
+
+            if (originalImage.getType() == BufferedImage.TYPE_INT_ARGB) {
+                // Podemos empezar usando directamente la original.
+                // Ojo: luego workingImage será reemplazada por reusableImage.
+                workingImage = originalImage;
+            } else {
+                workingImage = convertToIntArgb(originalImage);
+            }
+
+            BufferedImage reusableImage = new BufferedImage(
+                    fboWidth,
+                    fboHeight,
+                    BufferedImage.TYPE_INT_ARGB
+            );
+
+            // ------------------------------------------------------------
+            // 2) Crear un ByteBuffer reutilizable para glReadPixels
+            // ------------------------------------------------------------
+            ByteBuffer readBuffer = BufferUtils.createByteBuffer(fboWidth * fboHeight * 4);
+
+            // ------------------------------------------------------------
+            // 3) Crear una textura una sola vez
+            // ------------------------------------------------------------
+            textureId = createEmptyRgbaTexture(
+                    fboWidth,
+                    fboHeight,
+                    minFilter,
+                    magFilter,
+                    wrapS,
+                    wrapT
+            );
+
+            GL20.glActiveTexture(GL20.GL_TEXTURE0);
+
+            for (int i = 0; i < iterationsCount; i++) {
+                // --------------------------------------------------------
+                // Subir la imagen actual a la misma textura
+                // --------------------------------------------------------
+                updateTextureFromBufferedImage(textureId, workingImage);
+
+                // --------------------------------------------------------
+                // Renderizar
+                // --------------------------------------------------------
+                fbo.bind();
+
+                GL20.glViewport(0, 0, fboWidth, fboHeight);
+                GL20.glClearColor(0f, 0f, 0f, 0f);
+                GL20.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+
+                GL20.glActiveTexture(GL20.GL_TEXTURE0);
+                GL20.glBindTexture(GL20.GL_TEXTURE_2D, textureId);
+
+                localScreenQuad.render();
+
+                // --------------------------------------------------------
+                // Leer el FBO dentro del BufferedImage reutilizable
+                // --------------------------------------------------------
+                fbo.getBufferedImageInto(
+                        BufferedImage.TYPE_INT_ARGB,
+                        reusableImage,
+                        readBuffer
+                );
+
+                workingImage = reusableImage;
+            }
+
+            return reusableImage;
+
+        } catch (Exception e) {
+            log.error("[ERROR] Error eliminating background color : ", e);
+            return null;
+
+        } finally {
+            if (shaderProgram != null) {
+                shaderProgram.unbind();
+            }
+
+            GL20.glBindTexture(GL20.GL_TEXTURE_2D, 0);
+
+            if (textureId != -1) {
+                GL20.glDeleteTextures(textureId);
+            }
+
+            if (depthTestWasEnabled) {
+                GL20.glEnable(GL20.GL_DEPTH_TEST);
+            } else {
+                GL20.glDisable(GL20.GL_DEPTH_TEST);
+            }
+
+            if (cullFaceWasEnabled) {
+                GL20.glEnable(GL20.GL_CULL_FACE);
+            } else {
+                GL20.glDisable(GL20.GL_CULL_FACE);
+            }
+
+            if (blendWasEnabled) {
+                GL20.glEnable(GL20.GL_BLEND);
+            } else {
+                GL20.glDisable(GL20.GL_BLEND);
+            }
+
+            localScreenQuad.cleanup();
+        }
+    }
+
+    public BufferedImage eliminateBackGroundColor_original(BufferedImage originalImage, Vector4f backgroundColor) {
         if (originalImage == null) return null;
 
         int fboWidth = originalImage.getWidth();
@@ -429,7 +693,6 @@ public class Engine {
                 int textureId = RenderableTexturesUtils.createGlTextureFromBufferedImage(image, minFilter, magFilter, wrapS, wrapT, resizeToPowerOf2);
                 GL20.glBindTexture(GL20.GL_TEXTURE_2D, textureId);
 
-                //screenQuad.render();
                 localScreenQuad.render();
 
                 // make the bufferImage

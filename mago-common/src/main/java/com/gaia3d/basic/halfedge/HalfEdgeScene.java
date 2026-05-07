@@ -31,49 +31,49 @@ public class HalfEdgeScene implements Serializable {
     private List<GaiaMaterial> materials = new ArrayList<>();
     private GaiaBoundingBox boundingBox = null;
 
-    public static HalfEdgeScene readFile(String folderPathString, String fileName) throws FileNotFoundException {
-        Path folderPath = Paths.get(folderPathString);
-        Path filePath = folderPath.resolve(fileName);
-        File file = filePath.toFile();
-        try {
-            HalfEdgeScene halfEdgeScene = new HalfEdgeScene();
-            FileInputStream fileInputStream = new FileInputStream(file);
-            BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
-            ObjectInputStream inputStream = new ObjectInputStream(bufferedInputStream);
-
-            // read originalPath, gaiaBoundingBox, attribute
-            String originalPath = inputStream.readUTF();
-            halfEdgeScene.originalPath = Paths.get(originalPath);
-
-            halfEdgeScene.gaiaBoundingBox = (GaiaBoundingBox) inputStream.readObject();
-            halfEdgeScene.attribute = (GaiaAttribute) inputStream.readObject();
-
-            // Read nodes
-            int nodesSize = inputStream.readInt();
-            for (int i = 0; i < nodesSize; i++) {
-                HalfEdgeNode node = new HalfEdgeNode();
-                node.readFile(inputStream);
-                halfEdgeScene.nodes.add(node);
-            }
-
-            // Read materials
-            int materialsSize = inputStream.readInt();
-            for (int i = 0; i < materialsSize; i++) {
-                GaiaMaterial material = (GaiaMaterial) inputStream.readObject();
-                halfEdgeScene.materials.add(material);
-            }
-
-            inputStream.close();
-            bufferedInputStream.close();
-            fileInputStream.close();
-
-            return halfEdgeScene;
-        } catch (Exception e) {
-            log.error("[ERROR] GaiaSet Read Error : ", e);
-        }
-
-        return null;
-    }
+//    public static HalfEdgeScene readFile(String folderPathString, String fileName) throws FileNotFoundException {
+//        Path folderPath = Paths.get(folderPathString);
+//        Path filePath = folderPath.resolve(fileName);
+//        File file = filePath.toFile();
+//        try {
+//            HalfEdgeScene halfEdgeScene = new HalfEdgeScene();
+//            FileInputStream fileInputStream = new FileInputStream(file);
+//            BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
+//            ObjectInputStream inputStream = new ObjectInputStream(bufferedInputStream);
+//
+//            // read originalPath, gaiaBoundingBox, attribute
+//            String originalPath = inputStream.readUTF();
+//            halfEdgeScene.originalPath = Paths.get(originalPath);
+//
+//            halfEdgeScene.gaiaBoundingBox = (GaiaBoundingBox) inputStream.readObject();
+//            halfEdgeScene.attribute = (GaiaAttribute) inputStream.readObject();
+//
+//            // Read nodes
+//            int nodesSize = inputStream.readInt();
+//            for (int i = 0; i < nodesSize; i++) {
+//                HalfEdgeNode node = new HalfEdgeNode();
+//                node.readFile(inputStream);
+//                halfEdgeScene.nodes.add(node);
+//            }
+//
+//            // Read materials
+//            int materialsSize = inputStream.readInt();
+//            for (int i = 0; i < materialsSize; i++) {
+//                GaiaMaterial material = (GaiaMaterial) inputStream.readObject();
+//                halfEdgeScene.materials.add(material);
+//            }
+//
+//            inputStream.close();
+//            bufferedInputStream.close();
+//            fileInputStream.close();
+//
+//            return halfEdgeScene;
+//        } catch (Exception e) {
+//            log.error("[ERROR] GaiaSet Read Error : ", e);
+//        }
+//
+//        return null;
+//    }
 
     public List<GaiaMaterial> getCopyMaterials() {
         List<GaiaMaterial> copyMaterials = new ArrayList<>();
@@ -308,49 +308,6 @@ public class HalfEdgeScene implements Serializable {
             } else {
                 FileUtils.copyFile(imageFile, outputImageFile);
             }
-        }
-    }
-
-    public void writeFile(String folderPathString, String fileName) throws FileNotFoundException {
-        Path folderPath = Paths.get(folderPathString);
-        Path filePath = folderPath.resolve(fileName);
-        File file = filePath.toFile();
-        try {
-            FileOutputStream fileOutputStream = new FileOutputStream(file);
-            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
-            ObjectOutputStream outputStream = new ObjectOutputStream(bufferedOutputStream);
-
-            // write originalPath, gaiaBoundingBox, attribute
-            String originalPath = this.originalPath.toString();
-            outputStream.writeUTF(originalPath);
-
-            outputStream.writeObject(gaiaBoundingBox);
-            outputStream.writeObject(attribute);
-
-            // Write nodes
-            outputStream.writeInt(nodes.size());
-            for (HalfEdgeNode node : nodes) {
-                node.writeFile(outputStream);
-            }
-
-            // Write materials
-            outputStream.writeInt(materials.size());
-            for (GaiaMaterial material : materials) {
-                outputStream.writeObject(material);
-            }
-
-            // Copy images to the temp directory
-            for (GaiaMaterial material : materials) {
-                copyTextures(material, folderPath);
-            }
-
-            outputStream.close();
-            bufferedOutputStream.close();
-            fileOutputStream.close();
-
-        } catch (Exception e) {
-            log.error("[ERROR] GaiaSet Write Error : ", e);
-            file.delete();
         }
     }
 
@@ -668,14 +625,5 @@ public class HalfEdgeScene implements Serializable {
             facesCount += node.getFacesCount();
         }
         return facesCount;
-    }
-
-    public boolean TEST_checkTexCoords() {
-//        for (HalfEdgeNode node : nodes) {
-//            if (!node.TEST_checkTexCoords()) {
-//                return false;
-//            }
-//        }
-        return true;
     }
 }

@@ -29,6 +29,8 @@ public interface ExtensionModuleFrame {
 
     void decimateNetSurfaceAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, HalfEdgeOctreeFaces octree, List<GaiaAAPlane> cuttingPlanes, double depthTexPixelsForMeter, double screenPixelsForMeter, boolean makeHorizontalSkirt);
 
+    void textureAwareReMesh(List<SceneInfo> sceneInfos, List<GaiaScene> resultScenes, ReMeshParameters reMeshParams, GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize, String outputPathString, String nodeName, int lod);
+
     void integralReMeshByObliqueCameraV2(List<SceneInfo> sceneInfos, List<HalfEdgeScene> resultHalfEdgeScenes, ReMeshParameters reMeshParams, GaiaBoundingBox nodeBBox,
                                          Matrix4d nodeTMatrix, int maxScreenSize, String outputPathString, String nodeName, int lod);
 

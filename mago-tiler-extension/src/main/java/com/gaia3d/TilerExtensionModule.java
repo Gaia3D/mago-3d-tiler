@@ -64,6 +64,13 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     }
 
     @Override
+    public void textureAwareReMesh(List<SceneInfo> sceneInfos, List<GaiaScene> resultScenes, ReMeshParameters reMeshParams, GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize, String outputPathString, String nodeName, int lod) {
+        if (voxelizer == null) voxelizer = new MainVoxelizer();
+        voxelizer.textureAwareReMesh(sceneInfos, resultScenes, reMeshParams, nodeBBox, nodeTMatrix, maxScreenSize, outputPathString, nodeName, lod);
+        deleteObjects();
+    }
+
+    @Override
     public void integralReMeshByObliqueCameraV2(List<SceneInfo> sceneInfos, List<HalfEdgeScene> resultHalfEdgeScenes, ReMeshParameters reMeshParams, GaiaBoundingBox nodeBBox,
                                                 Matrix4d nodeTMatrix, int maxScreenSize, String outputPathString, String nodeName, int lod) {
         if (voxelizer == null) voxelizer = new MainVoxelizer();
@@ -106,4 +113,6 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
             voxelizer = null;
         }
     }
+
+
 }

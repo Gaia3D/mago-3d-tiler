@@ -96,7 +96,9 @@ public class GaiaSurface extends SurfaceStructure implements Serializable {
         return clonedSurface;
     }
 
-    private boolean getFacesWeldedWithFaces(List<GaiaFace> masterFaces, List<GaiaFace> resultFaces, Map<GaiaFace, GaiaFace> mapVisitedFaces) {
+    private boolean getFacesWeldedWithFaces(List<GaiaFace> masterFaces,
+                                            List<GaiaFace> resultFaces,
+                                            Map<GaiaFace, GaiaFace> mapVisitedFaces) {
         boolean newFaceAdded = false;
         Map<Integer, Integer> mapIndices = new HashMap<>();
 

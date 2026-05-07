@@ -381,6 +381,47 @@ public class ImageUtils {
     }
 
     public static BufferedImage changeBackgroundColor(BufferedImage image, Color oldColor, Color newColor) {
+        if (image == null || oldColor == null || newColor == null) {
+            return image;
+        }
+
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        int oldRGB = oldColor.getRGB();
+        int newRGB = newColor.getRGB();
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int argb = image.getRGB(x, y);
+
+                if (argb == oldRGB) {
+                    image.setRGB(x, y, newRGB);
+                }
+            }
+        }
+
+        return image;
+    }
+
+    public static BufferedImage changeBackgroundColor_original_2(BufferedImage image, Color oldColor, Color newColor) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                Color pixel = new Color(image.getRGB(i, j), true);
+                if (pixel.getRGB() == oldColor.getRGB()) {
+                    image.setRGB(i, j, newColor.getRGB());
+                } else {
+                    image.setRGB(i, j, image.getRGB(i, j));
+                }
+            }
+        }
+        image.flush();
+        return image;
+    }
+
+    public static BufferedImage changeBackgroundColor_original(BufferedImage image, Color oldColor, Color newColor) {
         int width = image.getWidth();
         int height = image.getHeight();
         BufferedImage newImage = new BufferedImage(width, height, image.getType());

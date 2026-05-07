@@ -9,7 +9,7 @@ import lombok.Setter;
 @Builder
 public class GaiaWeldOptions {
     @Builder.Default
-    private double error = 1e-4;
+    private double error = 1e-8;
     @Builder.Default
     private boolean checkTexCoord = true;
     @Builder.Default

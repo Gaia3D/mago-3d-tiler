@@ -70,9 +70,6 @@ public class BoundingVolume implements Serializable {
             // minZ, maxZ (altitude)
             region[4] = boundingBox.getMinZ();
             region[5] = boundingBox.getMaxZ();
-            for (int i = 0; i < region.length; i++) {
-                region[i] = DecimalUtils.cutFast(region[i]);
-            }
         } else if (BoundingVolumeType.BOX == type) {
             box = new double[12];
             // center
@@ -97,9 +94,6 @@ public class BoundingVolume implements Serializable {
             sphere[1] = center.y;
             sphere[2] = center.z;
             sphere[3] = boundingBox.getLongestDistance();
-            for (int i = 0; i < sphere.length; i++) {
-                sphere[i] = DecimalUtils.cutFast(sphere[i]);
-            }
         } else {
             log.error("Unsupported bounding volume type: {}", type);
         }

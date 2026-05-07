@@ -1017,33 +1017,33 @@ public class GeometryUtils {
         return resultScene;
     }
 
-    public static Vector4d getAverageColor(List<GaiaFaceData> faceDataList) {
-        Vector4d resultColor = new Vector4d();
-        resultColor.set(0.0, 0.0, 0.0, 0.0);
-        int averageColorCount = 0;
-        for (GaiaFaceData faceData : faceDataList) {
-            Vector4d color = faceData.getPrimaryColor();
-            if (color == null) {
-                continue;
-            }
-            resultColor.x += color.x;
-            resultColor.y += color.y;
-            resultColor.z += color.z;
-            resultColor.w += color.w;
-            averageColorCount++;
-        }
-
-        if (averageColorCount == 0) {
-            return null;
-        }
-
-        resultColor.x /= averageColorCount;
-        resultColor.y /= averageColorCount;
-        resultColor.z /= averageColorCount;
-        resultColor.w /= averageColorCount;
-
-        return resultColor;
-    }
+//    public static Vector4d getAverageColor(List<GaiaFaceData> faceDataList) {
+//        Vector4d resultColor = new Vector4d();
+//        resultColor.set(0.0, 0.0, 0.0, 0.0);
+//        int averageColorCount = 0;
+//        for (GaiaFaceData faceData : faceDataList) {
+//            Vector4d color = faceData.getPrimaryColor();
+//            if (color == null) {
+//                continue;
+//            }
+//            resultColor.x += color.x;
+//            resultColor.y += color.y;
+//            resultColor.z += color.z;
+//            resultColor.w += color.w;
+//            averageColorCount++;
+//        }
+//
+//        if (averageColorCount == 0) {
+//            return null;
+//        }
+//
+//        resultColor.x /= averageColorCount;
+//        resultColor.y /= averageColorCount;
+//        resultColor.z /= averageColorCount;
+//        resultColor.w /= averageColorCount;
+//
+//        return resultColor;
+//    }
 
     public static List<Vector3d> getCleanPoints3dArray(List<Vector3d> pointsArray, List<Vector3d> cleanPointsArray, double error) {
         // Here checks uroborus, and check if there are adjacent points in the same position
@@ -1290,6 +1290,10 @@ public class GeometryUtils {
         result[1] = (int) (reversedResult[1] * 255.0f);
         result[2] = (int) (reversedResult[2] * 255.0f);
         result[3] = (int) (reversedResult[3] * 255.0f);
+
+    }
+
+    public static void getFaceDataListOfScene(GaiaScene parentScene, List<GaiaFaceData> resultFaceDataList) {
 
     }
 }

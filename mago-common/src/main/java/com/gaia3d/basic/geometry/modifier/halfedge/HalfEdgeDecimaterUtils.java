@@ -1628,4 +1628,177 @@ public class HalfEdgeDecimaterUtils {
             v.setClassifyId(clusterCount);
         }
     }
+
+    //public static void smoothRoughness(HalfEdgeSurface surface, int iterations) {
+
+    public static void smoothRoughness(HalfEdgeSurface surface, int iterations) {
+
+        if (iterations <= 0) return;
+
+        final int maxSafety = 100;
+
+        for (int it = 0; it < iterations; it++) {
+
+            Map<HalfEdgeVertex, Float> newValues = new HashMap<>();
+
+            for (HalfEdgeVertex v : surface.getVertices()) {
+
+                if (v.getStatus() == ObjectStatus.DELETED) continue;
+
+                HalfEdge start = v.getOutingHalfEdge();
+                if (start == null) {
+                    newValues.put(v, v.getRoughness());
+                    continue;
+                }
+
+                // ============================
+                // 🔥 acumuladores con pesos
+                // ============================
+                double weightedSum = 0.0;
+                double weightSum = 0.0;
+
+                // 👉 incluir el propio vértice (MUY importante)
+                double selfWeight = 1.0;
+                weightedSum += v.getRoughness() * selfWeight;
+                weightSum += selfWeight;
+
+                HalfEdge edge = start;
+                int safety = 0;
+
+                do {
+                    if (edge == null) break;
+
+                    HalfEdge twin = edge.getTwin();
+                    if (twin == null) break;
+
+                    HalfEdgeVertex v2 = twin.getStartVertex();
+
+                    if (v2 != null && v2.getStatus() != ObjectStatus.DELETED) {
+
+                        double dist = v.getPosition().distance(v2.getPosition());
+
+                        // evitar división por 0
+                        double w = 1.0 / (dist + 1e-6);
+
+                        weightedSum += v2.getRoughness() * w;
+                        weightSum += w;
+                    }
+
+                    edge = twin.getNext();
+
+                    safety++;
+                    if (safety > maxSafety) break;
+
+                } while (edge != start);
+
+                float smoothed = (float) (weightedSum / weightSum);
+
+                newValues.put(v, smoothed);
+            }
+
+            // aplicar resultados
+            for (Map.Entry<HalfEdgeVertex, Float> entry : newValues.entrySet()) {
+                entry.getKey().setRoughness(entry.getValue());
+            }
+        }
+    }
+
+    public static List<HalfEdgeVertex> getNeighbors(HalfEdgeVertex v) {
+
+        List<HalfEdgeVertex> neighbors = new ArrayList<>();
+
+        HalfEdge start = v.getOutingHalfEdge();
+        if (start == null) return neighbors;
+
+        HalfEdge edge = start;
+        int safety = 0;
+
+        do {
+            HalfEdge twin = edge.getTwin();
+            if (twin == null) break;
+
+            HalfEdgeVertex v2 = twin.getStartVertex();
+            if (v2 != null) {
+                neighbors.add(v2);
+            }
+
+            edge = twin.getNext();
+
+            safety++;
+            if (safety > 100) break;
+
+        } while (edge != start);
+
+        return neighbors;
+    }
+
+    public static List<List<HalfEdgeVertex>> buildRegions(HalfEdgeSurface surface, float roughnessTolerance) {
+
+        List<List<HalfEdgeVertex>> regions = new ArrayList<>();
+        Set<HalfEdgeVertex> visited = new HashSet<>();
+
+        for (HalfEdgeVertex v : surface.getVertices()) {
+
+            if (visited.contains(v)) continue;
+            if (v.getStatus() == ObjectStatus.DELETED) continue;
+
+            List<HalfEdgeVertex> region = new ArrayList<>();
+            Queue<HalfEdgeVertex> queue = new LinkedList<>();
+
+            queue.add(v);
+            visited.add(v);
+
+            float baseRoughness = v.getRoughness();
+
+            while (!queue.isEmpty()) {
+
+                HalfEdgeVertex current = queue.poll();
+                region.add(current);
+
+                for (HalfEdgeVertex n : getNeighbors(current)) {
+
+                    if (visited.contains(n)) continue;
+                    if (n.getStatus() == ObjectStatus.DELETED) continue;
+
+                    double diff = Math.abs(n.getRoughness() - baseRoughness);
+
+                    if (diff < roughnessTolerance) {
+                        visited.add(n);
+                        queue.add(n);
+                    }
+                }
+            }
+
+            regions.add(region);
+        }
+
+        return regions;
+    }
+
+    public static void classifyRegions(List<List<HalfEdgeVertex>> regions) {
+
+        int BIG_REGION = 200;       // ajustar según mesh
+        double ROUGH_THRESHOLD = 0.12;
+
+        for (List<HalfEdgeVertex> region : regions) {
+
+            double avgRoughness = 0.0;
+
+            for (HalfEdgeVertex v : region) {
+                avgRoughness += v.getRoughness();
+            }
+
+            avgRoughness /= region.size();
+
+            boolean isGrass =
+                    (region.size() > BIG_REGION) &&
+                            (avgRoughness > ROUGH_THRESHOLD);
+
+            int classifyId = isGrass ? 1 : 0;
+
+            for (HalfEdgeVertex v : region) {
+                v.setClassifyId(classifyId);
+            }
+        }
+    }
 }

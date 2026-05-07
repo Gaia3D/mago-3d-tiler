@@ -56,13 +56,50 @@ public class DecimateParameters {
         weldingParameters.setCheckTexCoords(true);
     }
 
-    public void setAsLod(int lod) {
+    public void setByLod(int lod) {
+        // smallHedgeSize = 0.02 (scivile)
+        // smallHedgeSize = 1.0 (sangam)
         if (lod == 0) {
-            setBasicValues(5.0, 0.01, 0.01, 40.0, 1000000, 5, 1.0);
+            setBasicValues(4.0,
+                    0.01,
+                    0.0,
+                    40.0,
+                    1000000,
+                    5,
+                    1.0);
         } else if (lod == 1) {
-            setBasicValues(12.0, 0.01, 0.9, 40.0, 1000000, 5, 1.0);
+            setBasicValues(
+                    7.0,
+                    0.0001,
+                    0.9,
+                    40.0,
+                    1000000,
+                    5,
+                    0.02);
         } else if (lod == 2) {
-            setBasicValues(12.0, 0.01, 0.9, 40.0, 1000000, 5, 1.0);
+            setBasicValues(10.0,
+                    0.0001,
+                    0.9,
+                    40.0,
+                    1000000,
+                    5,
+                    0.02);
+        } else if (lod == 3) {
+            setBasicValues(10.0,
+                    0.0001,
+                    0.9,
+                    40.0,
+                    1000000,
+                    5,
+                    0.02);
+        } else if (lod > 3) {
+            setBasicValues(10.0,
+                    0.0001,
+                    0.9,
+                    40.0,
+                    1000000,
+                    5,
+                    0.02);
         }
     }
 }

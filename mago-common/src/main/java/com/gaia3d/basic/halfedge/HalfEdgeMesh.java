@@ -84,30 +84,6 @@ public class HalfEdgeMesh implements Serializable {
         }
     }
 
-    public void writeFile(ObjectOutputStream outputStream) {
-        try {
-            outputStream.writeInt(primitives.size());
-            for (HalfEdgePrimitive primitive : primitives) {
-                primitive.writeFile(outputStream);
-            }
-        } catch (Exception e) {
-            log.error("[ERROR] Error Log : ", e);
-        }
-    }
-
-    public void readFile(ObjectInputStream inputStream) {
-        try {
-            int primitivesSize = inputStream.readInt();
-            for (int i = 0; i < primitivesSize; i++) {
-                HalfEdgePrimitive primitive = new HalfEdgePrimitive();
-                primitive.readFile(inputStream);
-                primitives.add(primitive);
-            }
-        } catch (Exception e) {
-            log.error("[ERROR] Error Log : ", e);
-        }
-    }
-
     public List<HalfEdgeSurface> extractSurfaces(List<HalfEdgeSurface> resultHalfEdgeSurfaces) {
         if (resultHalfEdgeSurfaces == null) {
             resultHalfEdgeSurfaces = new ArrayList<>();

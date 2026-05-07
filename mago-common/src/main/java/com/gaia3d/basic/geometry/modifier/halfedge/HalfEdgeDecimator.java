@@ -33,7 +33,7 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
         int trianglesCount = surface.getTrianglesCount();
         log.debug("trianglesCount: {}", trianglesCount);
 
-        if(trianglesCount > 100000){
+        if(trianglesCount > 200000){
             applySurfaceByOctree(productTransformMatrix, vertices, surface);
         } else {
             applySurfaceDirect(productTransformMatrix, vertices, surface);
@@ -96,14 +96,15 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
         }
         // end classify vertices.---
 
-        // calculate roughness og vertices.
-        HalfEdgeDecimaterUtils.calculateVerticesRoughness(surface);
-        // end calculate roughness of vertices.---
-
         List<HalfEdge> resultHalfEdgesSortedByLength = new ArrayList<>();
         double smallHedgeSize = decimateParameters.getSmallHedgeSize();
 
         while (!finished && iteration < maxIterations) {
+
+            // calculate roughness og vertices.
+            //HalfEdgeDecimaterUtils.calculateVerticesRoughness(surface);
+            //classifySurfaceTypes(surface);
+            // end calculate roughness of vertices.---
 
             resultHalfEdgesSortedByLength.clear();
             resultHalfEdgesSortedByLength = HalfEdgeDecimaterUtils.getHalfEdgesSortedByLength(resultHalfEdgesSortedByLength, halfEdges);
@@ -254,11 +255,6 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
         }
         // end classify vertices.---------------------------------------------------
 
-        // calculate roughness og vertices.
-        HalfEdgeDecimaterUtils.calculateVerticesRoughness(surface);
-        // end calculate roughness of vertices.---
-
-
         Set<HalfEdge> leafOctreeHalfEdges= new HashSet<>();
         List<HalfEdge> faceHalfEdges = new ArrayList<>();
         boolean finished = false;
@@ -267,6 +263,12 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
         int iteration = 0;
         while (!finished && iteration < maxIterations) {
             log.debug("Decimate Iteration: " + iteration);
+
+            // calculate roughness og vertices.
+            //HalfEdgeDecimaterUtils.calculateVerticesRoughness(surface);
+            //classifySurfaceTypes(surface);
+            // end calculate roughness of vertices.---
+
             // make octree.***********
             log.debug("Making octree");
             HalfEdgeOctreeFaces octreeFaces = new HalfEdgeOctreeFaces(null, boundingBox);
@@ -312,6 +314,8 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
                 hedgesCollapsedInIteration += hedgesCollapsedCount;
             }
 
+            log.info("Total edges collapsed: " + hedgesCollapsedInIteration + " iteration: " + iteration);
+
             // delete objects that status is DELETED
             log.debug("Finished Iteration: " + iteration);
             log.debug("Deleting degenerated faces");
@@ -331,8 +335,6 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
             log.debug("Welding vertices");
             surface.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
 
-            log.info("Total edges collapsed: " + hedgesCollapsedInIteration + " iteration: " + iteration);
-
             if(hedgesCollapsedInIteration == 0) {
                 finished = true;
             }
@@ -340,6 +342,21 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
             iteration++;
         }
 
+    }
+
+    public void classifySurfaceTypes(HalfEdgeSurface surface) {
+
+        // 1. rugosidad
+        HalfEdgeDecimaterUtils.calculateVerticesRoughness(surface);
+
+        // 2. suavizado (muy importante)
+        HalfEdgeDecimaterUtils.smoothRoughness(surface,2);
+
+        // 3. regiones
+        List<List<HalfEdgeVertex>> regions = HalfEdgeDecimaterUtils.buildRegions(surface, 0.05f);
+
+        // 4. clasificación final
+        HalfEdgeDecimaterUtils.classifyRegions(regions);
     }
 
     protected int decimateSurface(Matrix4d productTransformMatrix,
@@ -633,12 +650,14 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
 //        > 0.2	rugoso (césped)
         double roughness = startVertex.getRoughness();
 
+        boolean isNoisySurface = (startVertex.getClassifyId() == 1);
+
         if (halfEdge.getLength() > hedgeMinLength) {
-            if(roughness < 1.5) {
+            //if(!isNoisySurface) {
                 if (!HalfEdgeDecimaterUtils.decideIfCollapseCheckingFaces_original(halfEdge, vertexAllOutingEdgesMap, mapVertexToSamePosVertices, maxDiffAngDeg, maxAspectRatio, smallHedgeSize)) {
                     return false;
                 }
-            }
+            //}
 
             double minAreaEpsilon = 0.0;
 //            if (!HalfEdgeDecimaterUtils.decideIfCollapseRobust(halfEdge,

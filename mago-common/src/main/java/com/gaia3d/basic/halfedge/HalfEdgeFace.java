@@ -21,9 +21,7 @@ public class HalfEdgeFace implements Serializable {
     private HalfEdge halfEdge = null;
     private Vector3d normal = null;
     private ObjectStatus status = ObjectStatus.ACTIVE;
-    private String note = null;
     private int id = -1;
-    private int halfEdgeId = -1;
 
     // auxiliary variables
     private int classifyId = -1; // use to classify the face for some purpose
@@ -40,10 +38,8 @@ public class HalfEdgeFace implements Serializable {
             this.normal = new Vector3d(face.normal);
         }
         this.status = face.status;
-        this.note = face.note;
         this.id = face.id;
         this.classifyId = face.classifyId;
-        this.halfEdgeId = face.halfEdgeId;
         this.bestPlaneToProject = face.bestPlaneToProject;
         this.cameraDirectionType = face.cameraDirectionType;
     }
@@ -220,43 +216,6 @@ public class HalfEdgeFace implements Serializable {
         return true;
     }
 
-    public void writeFile(ObjectOutputStream outputStream) {
-        try {
-            if (normal != null) {
-                outputStream.writeBoolean(true);
-                outputStream.writeObject(normal);
-            } else {
-                outputStream.writeBoolean(false);
-            }
-
-            outputStream.writeObject(status);
-
-            halfEdgeId = -1;
-            if (halfEdge != null) {
-                halfEdgeId = halfEdge.getId();
-            }
-            outputStream.writeInt(halfEdgeId);
-        } catch (Exception e) {
-            log.error("[ERROR] : ", e);
-        }
-    }
-
-    public void readFile(ObjectInputStream inputStream) {
-        try {
-            boolean hasNormal = inputStream.readBoolean();
-            if (hasNormal) {
-                normal = (Vector3d) inputStream.readObject();
-            } else {
-                normal = null;
-            }
-
-            status = (ObjectStatus) inputStream.readObject();
-            halfEdgeId = inputStream.readInt();
-        } catch (Exception e) {
-            log.error("[ERROR] : ", e);
-        }
-    }
-
     public List<HalfEdgeFace> getAdjacentFaces(List<HalfEdgeFace> resultAdjacentFaces) {
         if (this.halfEdge == null) {
             return resultAdjacentFaces;
@@ -283,17 +242,28 @@ public class HalfEdgeFace implements Serializable {
     public boolean getWeldedFaces(List<HalfEdgeFace> resultWeldedFaces,
                                   Set<HalfEdgeFace> mapVisitedFaces,
                                   MapVertexAllFacesIndices mapVertexAllFacesIndices,
-                                  List<HalfEdgeFace> motherFaces) {
+                                  List<HalfEdgeFace> motherFaces,
+                                  List<HalfEdgeFace> memSaveAdjacentFaces,
+                                  List<HalfEdgeVertex> memSaveVertices) {
         if (this.halfEdge == null) {
             return false;
+        }
+
+        if(memSaveAdjacentFaces == null) {
+            memSaveAdjacentFaces = new ArrayList<>();
+        }
+
+        if (memSaveVertices == null) {
+            memSaveVertices = new ArrayList<>();
         }
 
         mapVisitedFaces.add(this);
         resultWeldedFaces.add(this);
 
-        List<HalfEdgeFace> adjacentFaces = this.getAdjacentFaces(null);
-        if (adjacentFaces != null) {
-            for (HalfEdgeFace adjacentFace : adjacentFaces) {
+        memSaveAdjacentFaces.clear();
+        memSaveAdjacentFaces = this.getAdjacentFaces(memSaveAdjacentFaces);
+        if (memSaveAdjacentFaces != null) {
+            for (HalfEdgeFace adjacentFace : memSaveAdjacentFaces) {
                 if (adjacentFace != null) {
                     // check if is visited
                     if (!mapVisitedFaces.contains(adjacentFace)) {
@@ -302,9 +272,9 @@ public class HalfEdgeFace implements Serializable {
                 }
             }
         }
-
-        List<HalfEdgeVertex> vertices = this.getVertices(null);
-        for (HalfEdgeVertex vertex : vertices) {
+        memSaveVertices.clear();
+        memSaveVertices = this.getVertices(memSaveVertices);
+        for (HalfEdgeVertex vertex : memSaveVertices) {
             int vertexIdx = vertex.getId();
             int facesCount = mapVertexAllFacesIndices.getFaceCountOfVertex(vertexIdx);
             for (int i = 0; i < facesCount; i++) {
@@ -401,7 +371,9 @@ public class HalfEdgeFace implements Serializable {
         return true;
     }
 
+    @Deprecated
     public GaiaRectangle getTexCoordBoundingRectangle(GaiaRectangle resultRectangle, boolean invertY) {
+        // use "public GaiaRectangle getTexCoordBoundingRectangle(GaiaRectangle resultRectangle, boolean invertY, List<HalfEdgeVertex> memSaveVertices)"
         List<HalfEdgeVertex> vertices = this.getVertices(null);
         if (vertices == null) {
             return resultRectangle;
@@ -414,6 +386,41 @@ public class HalfEdgeFace implements Serializable {
         int verticesSize = vertices.size();
         for (int i = 0; i < verticesSize; i++) {
             HalfEdgeVertex vertex = vertices.get(i);
+            Vector2d texCoord = vertex.getTexcoords();
+            double x = texCoord.x;
+            double y = texCoord.y;
+
+            if (invertY) {
+                y = 1.0 - y;
+            }
+            if (i == 0) {
+                resultRectangle.setMinX(x);
+                resultRectangle.setMaxX(x);
+                resultRectangle.setMinY(y);
+                resultRectangle.setMaxY(y);
+            } else {
+                resultRectangle.addPoint(x, y);
+            }
+        }
+
+        return resultRectangle;
+    }
+
+    public GaiaRectangle getTexCoordBoundingRectangle(GaiaRectangle resultRectangle,
+                                                      boolean invertY,
+                                                      List<HalfEdgeVertex> memSaveVertices) {
+        memSaveVertices = this.getVertices(memSaveVertices);
+        if (memSaveVertices == null) {
+            return resultRectangle;
+        }
+
+        if (resultRectangle == null) {
+            resultRectangle = new GaiaRectangle();
+        }
+
+        int verticesSize = memSaveVertices.size();
+        for (int i = 0; i < verticesSize; i++) {
+            HalfEdgeVertex vertex = memSaveVertices.get(i);
             Vector2d texCoord = vertex.getTexcoords();
             double x = texCoord.x;
             double y = texCoord.y;

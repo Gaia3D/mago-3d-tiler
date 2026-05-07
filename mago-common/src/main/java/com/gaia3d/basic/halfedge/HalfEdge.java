@@ -17,17 +17,12 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 public class HalfEdge implements Serializable {
-    public String note = null;
     private HalfEdge twin = null;
     private HalfEdge next = null;
     private HalfEdgeVertex startVertex = null;
     private HalfEdgeFace face = null;
     private ObjectStatus status = ObjectStatus.ACTIVE;
     private int id = -1;
-    private int twinId = -1;
-    private int nextId = -1;
-    private int startVertexId = -1;
-    private int faceId = -1;
     private int classifyId = -1; // auxiliary variable
 
     public void setStartVertex(HalfEdgeVertex startVertex) {
@@ -456,46 +451,6 @@ public class HalfEdge implements Serializable {
         }
 
         return true;
-    }
-
-    public void writeFile(ObjectOutputStream outputStream) {
-        try {
-            // twinId
-            int twinId = twin == null ? -1 : twin.id;
-            outputStream.writeInt(twinId);
-            // nextId
-            int nextId = next == null ? -1 : next.id;
-            outputStream.writeInt(nextId);
-            // startVertexId
-            int startVertexId = startVertex == null ? -1 : startVertex.getId();
-            outputStream.writeInt(startVertexId);
-            // faceId
-            int faceId = face == null ? -1 : face.getId();
-            outputStream.writeInt(faceId);
-            // status
-            outputStream.writeObject(status);
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void readFile(ObjectInputStream inputStream) {
-        try {
-            // twinId
-            twinId = inputStream.readInt();
-            // nextId
-            nextId = inputStream.readInt();
-            // startVertexId
-            startVertexId = inputStream.readInt();
-            // faceId
-            faceId = inputStream.readInt();
-            // status
-            status = (ObjectStatus) inputStream.readObject();
-
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public boolean intersectsPlane(PlaneType planeType, Vector3d planePosition, double error) {
