@@ -113,6 +113,16 @@ public class BoundingVolume implements Serializable {
         }
     }
 
+    public void cutFastRegionDecimals() {
+        if(this.region == null) return;
+        this.region[0] = DecimalUtils.cutFast(this.region[0]);
+        this.region[1] = DecimalUtils.cutFast(this.region[1]);
+        this.region[2] = DecimalUtils.cutFast(this.region[2]);
+        this.region[3] = DecimalUtils.cutFast(this.region[3]);
+        this.region[4] = DecimalUtils.cutFast(this.region[4]);
+        this.region[5] = DecimalUtils.cutFast(this.region[5]);
+    }
+
     public enum BoundingVolumeType {
         BOX,
         SPHERE,

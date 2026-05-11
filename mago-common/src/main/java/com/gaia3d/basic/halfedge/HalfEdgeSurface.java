@@ -1700,6 +1700,15 @@ public class HalfEdgeSurface implements Serializable {
         List<List<HalfEdgeFace>> mergedWeldedFacesGroups = new ArrayList<>();
         mergeWeldedFacesGroupsByTexCoords(weldedFacesGroups_, mergedWeldedFacesGroups);
 
+        //*************************************************************************************************
+        // Before do scissoring and atlasing, check:
+        // If the sum of GaiaTextureScissorData-rectangle is aprox 1.0, then do not scissor.
+        if(!checkIfNecessaryScissorTextures(mergedWeldedFacesGroups)) {
+            log.debug("NO NEED Scissor textures");
+            return;
+        }
+        // End checking------------------------------------------------------------------------------------
+
         // now, for each faceGroup, create a scissorData
         // there are 2 types of scissorData :
         // 1- more width than height.
@@ -2112,6 +2121,60 @@ public class HalfEdgeSurface implements Serializable {
         diffuseTextures.set(0, textureAtlas); // set the textureAtlas
     }
 
+    private GaiaRectangle getTexCoordBoundingRectangle(List<HalfEdgeFace> faces, boolean invertTexCoordY, GaiaRectangle resultTexCoordBRect) {
+        if(resultTexCoordBRect == null) {
+            resultTexCoordBRect = new GaiaRectangle();
+        }
+        boolean texCoordBBoxStarted = false;
+        List<HalfEdgeVertex> memSaveVertices = new ArrayList<>();
+        int facesCount = faces.size();
+        GaiaRectangle faceTexCoordBRect = new GaiaRectangle();
+        for (int i = 0; i < facesCount; i++) {
+            HalfEdgeFace face = faces.get(i);
+            if (face.getStatus() == ObjectStatus.DELETED) {
+                continue;
+            }
+            memSaveVertices.clear();
+            faceTexCoordBRect = face.getTexCoordBoundingRectangle(faceTexCoordBRect, invertTexCoordY, memSaveVertices);
+
+            if (!texCoordBBoxStarted) {
+                resultTexCoordBRect.copyFrom(faceTexCoordBRect);
+                texCoordBBoxStarted = true;
+            } else {
+                resultTexCoordBRect.addBoundingRectangle(faceTexCoordBRect);
+            }
+        }
+
+        return resultTexCoordBRect;
+    }
+
+    private boolean checkIfNecessaryScissorTextures(List<List<HalfEdgeFace>> mergedWeldedFacesGroups){
+        // If the sum of GaiaTextureScissorData-rectangle is aprox 1.0, then do not scissor.
+        int weldedFacesGroupsCount = mergedWeldedFacesGroups.size();
+        boolean invertTexCoordY = false;// original
+        List<HalfEdgeVertex> memSaveVertices = new ArrayList<>();
+        double totalTextureUsedArea = 0.0;
+        for (int i = 0; i < weldedFacesGroupsCount; i++) {
+            GaiaRectangle groupTexCoordBRect = new GaiaRectangle();
+            List<HalfEdgeFace> weldedFacesGroup = mergedWeldedFacesGroups.get(i);
+            int weldedFacesCount = weldedFacesGroup.size();
+            if (weldedFacesCount == 0) {
+                continue;
+            }
+            groupTexCoordBRect = getTexCoordBoundingRectangle(weldedFacesGroup, invertTexCoordY, groupTexCoordBRect);
+
+            double width = groupTexCoordBRect.getWidth();
+            double height = groupTexCoordBRect.getHeight();
+
+            totalTextureUsedArea += width * height;
+        }
+
+        if(totalTextureUsedArea > 0.75) {
+            return false;
+        }
+        return true;
+    }
+
     public void scissorTexturesByMotherScene(GaiaMaterial material, GaiaMaterial motherMaterial) {
         // Provisionally scissor only the "DiffuseTexture"
         if (material == null) {
@@ -2145,26 +2208,44 @@ public class HalfEdgeSurface implements Serializable {
         List<List<HalfEdgeFace>> mergedWeldedFacesGroups = new ArrayList<>();
         mergeWeldedFacesGroupsByTexCoords(weldedFacesGroups_, mergedWeldedFacesGroups);
 
+        List<HalfEdgeVertex> memSaveVertices = new ArrayList<>();
+        int weldedFacesGroupsCount = mergedWeldedFacesGroups.size();
+        boolean invertTexCoordY = false;// original
+
+        //*************************************************************************************************
+        // Before do scissoring and atlasing, check:
+        // If the sum of GaiaTextureScissorData-rectangle is aprox 1.0, then do not scissor.
+        if(!checkIfNecessaryScissorTextures(mergedWeldedFacesGroups)) {
+            // if exist motherMaterial, the copy the texture.
+            log.debug("NO NEED Scissor textures by Mother material");
+            if(motherMaterial != null){
+                GaiaMaterial motherMaterialCopy2 = motherMaterial.clone();
+                material.setTextures(motherMaterialCopy2.getTextures());
+            }
+            return;
+        }
+        // End checking------------------------------------------------------------------------------------
+
         // now, for each faceGroup, create a scissorData
         // there are 2 types of scissorData :
         // 1- more width than height.
         // 2- more height than width.
         List<GaiaTextureScissorData> textureScissorDatasWidth = new ArrayList<>();
         List<GaiaTextureScissorData> textureScissorDatasHeight = new ArrayList<>();
-        int weldedFacesGroupsCount = mergedWeldedFacesGroups.size();
+
 
         List<HalfEdgeVertex> faceVertices = new ArrayList<>();
         Map<HalfEdgeVertex, HalfEdgeVertex> groupVertexMap = new HashMap<>();
         Map<HalfEdgeVertex, HalfEdgeVertex> visitedVertexMap = new HashMap<>();
 
-        List<HalfEdgeVertex> memSaveVertices = new ArrayList<>();
-        boolean invertTexCoordY = false;// original
+
+
         for (int i = 0; i < weldedFacesGroupsCount; i++) {
             GaiaRectangle groupTexCoordBRect = new GaiaRectangle();
             List<HalfEdgeFace> weldedFacesGroup = mergedWeldedFacesGroups.get(i);
             int weldedFacesCount = weldedFacesGroup.size();
             if (weldedFacesCount == 0) {
-
+                continue;
             }
             boolean texCoordBBoxStarted = false;
             for (int j = 0; j < weldedFacesCount; j++) {
@@ -2234,8 +2315,6 @@ public class HalfEdgeSurface implements Serializable {
             GaiaRectangle noExpandedRect = new GaiaRectangle(minPixelPosX, minPixelPosY, maxPixelPosX, maxPixelPosY);
             textureScissorData.setNoExpandedBoundary(noExpandedRect);
 
-//            double width = groupTexCoordBRect.getWidthInt(); // original.***
-//            double height = groupTexCoordBRect.getHeightInt(); // original.***
             double width = groupTexCoordBRect.getWidth();
             double height = groupTexCoordBRect.getHeight();
 
@@ -2312,6 +2391,24 @@ public class HalfEdgeSurface implements Serializable {
         if (maxWidth == 0 || maxHeight == 0) {
             log.warn("[WARN] HalfEdgeSurface.scissorTextures() : maxWidth == 0 || maxHeight == 0.");
             return;
+        }
+
+        if(maxWidth > 18192 || maxHeight > 18192){
+            int hola = 0;
+            if(!checkIfNecessaryScissorTextures(mergedWeldedFacesGroups)) {
+                // if exist motherMaterial, the copy the texture.
+                log.debug("NO NEED Scissor textures by Mother material");
+                if(motherMaterial != null){
+                    GaiaMaterial motherMaterialCopy2 = motherMaterial.clone();
+                    material.setTextures(motherMaterialCopy2.getTextures());
+                }
+                return;
+            }
+        }
+
+        // textureMother.texWidth, textureMother.texHeight
+        if(maxWidth > texWidth || maxHeight > texHeight){
+            // do not scissor the textura. Use the mother texture.
         }
 
         visitedVertexMap.clear();

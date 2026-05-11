@@ -18,7 +18,7 @@ import static org.lwjgl.opengl.GL11.*;
 public class IntegralReMeshParameters {
     private Map<String, Fbo> colorFboMap = new java.util.HashMap<>();
     private Map<String, Fbo> colorCodeFboMap = new java.util.HashMap<>();
-    private Vector4f backgroundColor = new Vector4f(0.5f, 0.0f, 0.0f, 1.0f);
+    private Vector4f backgroundColor = new Vector4f(0.5f, 0.5f, 0.5f, 1.0f);
 
     public void clear() {
         colorFboMap.clear();

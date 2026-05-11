@@ -57,20 +57,6 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     }
 
     @Override
-    public void decimateNetSurfaceAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, HalfEdgeOctreeFaces octree, List<GaiaAAPlane> cuttingPlanes, double depthTexPixelsForMeter, double screenPixelsForMeter, boolean makeHorizontalSkirt) {
-        if (renderer == null) renderer = new MainRenderer();
-        renderer.decimateNetSurfaceAndCutByObliqueCamera(scenes, resultHalfEdgeScenes, decimateParameters, octree, cuttingPlanes, depthTexPixelsForMeter, screenPixelsForMeter, makeHorizontalSkirt);
-        deleteObjects();
-    }
-
-    @Override
-    public void textureAwareReMesh(List<SceneInfo> sceneInfos, List<GaiaScene> resultScenes, ReMeshParameters reMeshParams, GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize, String outputPathString, String nodeName, int lod) {
-        if (voxelizer == null) voxelizer = new MainVoxelizer();
-        voxelizer.textureAwareReMesh(sceneInfos, resultScenes, reMeshParams, nodeBBox, nodeTMatrix, maxScreenSize, outputPathString, nodeName, lod);
-        deleteObjects();
-    }
-
-    @Override
     public void integralReMeshByObliqueCameraV2(List<SceneInfo> sceneInfos, List<HalfEdgeScene> resultHalfEdgeScenes, ReMeshParameters reMeshParams, GaiaBoundingBox nodeBBox,
                                                 Matrix4d nodeTMatrix, int maxScreenSize, String outputPathString, String nodeName, int lod) {
         if (voxelizer == null) voxelizer = new MainVoxelizer();
@@ -84,13 +70,6 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
                                                 Matrix4d nodeTMatrix, int maxScreenSize, String outputPathString, String nodeName, int lod) {
         if (voxelizer == null) voxelizer = new MainVoxelizer();
         voxelizer.integralDecimateByObliqueCamera(sceneInfos, resultHalfEdgeScenes, decimateParameters, nodeBBox, nodeTMatrix, maxScreenSize, outputPathString, nodeName, lod);
-        deleteObjects();
-    }
-
-    @Override
-    public void voxelize(List<GaiaScene> scenes, List<VoxelGrid3D> resultVoxelGrids, List<GaiaScene> resultGaiaScenes, VoxelizeParameters voxelizeParameters) {
-        if (voxelizer == null) voxelizer = new MainVoxelizer();
-        voxelizer.voxelize(scenes, resultVoxelGrids, resultGaiaScenes, voxelizeParameters);
         deleteObjects();
     }
 
