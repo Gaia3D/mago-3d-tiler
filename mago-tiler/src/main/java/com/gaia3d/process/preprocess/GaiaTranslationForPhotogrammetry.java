@@ -42,7 +42,9 @@ public class GaiaTranslationForPhotogrammetry implements PreProcess {
 
         GaiaBoundingBox bboxLC = new GaiaBoundingBox();
         this.transformSceneVertexPositionsToLocalCoords(gaiaScene, centerGeoCoord, bboxLC);
-        centerGeoCoord.z = getTerrainHeightFromCartographic(centerGeoCoord);
+        Vector3d offset = globalOptions.getTranslateOffset();
+        double zOffset = offset == null ? 0.0d : offset.z;
+        centerGeoCoord.z = getTerrainHeightFromCartographic(centerGeoCoord) + zOffset;
 
         // calculate cartographic bounding box
         double[] centerCartesianWC = GlobeUtils.geographicToCartesianWgs84(centerGeoCoord.x, centerGeoCoord.y, centerGeoCoord.z);
