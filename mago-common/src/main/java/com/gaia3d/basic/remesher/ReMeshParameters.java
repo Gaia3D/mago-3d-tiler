@@ -20,6 +20,8 @@ public class ReMeshParameters {
     Map<Vector3i, Vector3d> cellAveragePositions;
     Vector3d scenePositionRelToCellGrid; // Scene position relative to the cell grid origin.
     double angleDeg = 50.0;
+    TileBoundaryAnchors tileBoundaryAnchors = null;
+    GlobalBoundaryAnchors globalBoundaryAnchors = null;
 
     public ReMeshParameters() {
         this.cellAveragePositions = new HashMap<>();

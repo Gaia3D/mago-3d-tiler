@@ -517,57 +517,6 @@ public class GaiaFrontierFinder {
         return buildOriginalBoundaryVertexFlags(weldedIndices, weldedBoundary);
     }
 
-    public void findBoundaryVerticesFromIndices(
-            List<GaiaVertex> vertices,
-            int[] indices,
-            double tolerance,
-            int[] weldedIndices,
-            boolean[] frontierVertices
-    ) {
-        if (vertices == null || vertices.isEmpty()) {
-            return;
-        }
-
-        int vertexCount = vertices.size();
-
-        if (weldedIndices == null || weldedIndices.length < vertexCount) {
-            throw new IllegalArgumentException("weldedIndices is null or too small");
-        }
-
-        if (frontierVertices == null || frontierVertices.length < vertexCount) {
-            throw new IllegalArgumentException("frontierVertices is null or too small");
-        }
-
-        java.util.Arrays.fill(frontierVertices, false);
-        java.util.Arrays.fill(weldedIndices, -1);
-
-        if (indices == null || indices.length < 3) {
-            return;
-        }
-
-        buildWeldedVertexIndicesFromIndices(
-                vertices,
-                indices,
-                tolerance,
-                weldedIndices
-        );
-
-        int weldedVertexCount = getWeldedVertexCount(weldedIndices);
-
-        boolean[] weldedBoundary =
-                buildWeldedBoundaryVertexFlagsFromIndices_SortEdges(
-                        indices,
-                        weldedIndices,
-                        weldedVertexCount
-                );
-
-        fillOriginalBoundaryVertexFlags(
-                weldedIndices,
-                weldedBoundary,
-                frontierVertices
-        );
-    }
-
     private static void fillOriginalBoundaryVertexFlags(
             int[] weldedIndices,
             boolean[] weldedBoundary,
