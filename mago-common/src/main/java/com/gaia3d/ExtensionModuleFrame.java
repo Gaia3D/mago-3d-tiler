@@ -30,8 +30,8 @@ public interface ExtensionModuleFrame {
     void integralReMeshByObliqueCameraV2(List<SceneInfo> sceneInfos, List<HalfEdgeScene> resultHalfEdgeScenes, ReMeshParameters reMeshParams, GaiaBoundingBox nodeBBox,
                                          Matrix4d nodeTMatrix, int maxScreenSize, String outputPathString, String nodeName, int lod);
 
-    void integralDecimateByObliqueCamera(List<SceneInfo> sceneInfos, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, GaiaBoundingBox nodeBBox,
-                                         Matrix4d nodeTMatrix, int maxScreenSize, String outputPathString, String nodeName, int lod);
+    void integralDecimateByObliqueCamera(List<SceneInfo> sceneInfos, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, ReMeshParameters reMeshParams,
+                                         GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize, String outputPathString, String nodeName, int lod);
 
     void makeBillBoard(List<GaiaScene> scenes, List<GaiaScene> resultScenes, int verticalPlanesCount, int horizontalPlanesCount);
 

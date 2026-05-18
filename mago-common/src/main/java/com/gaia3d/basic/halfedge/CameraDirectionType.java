@@ -25,7 +25,7 @@ public enum CameraDirectionType {
     CAMERA_DIRECTION_XPOS_YPOS_ZPOS,
     CAMERA_DIRECTION_XPOS_YNEG_ZPOS,
     CAMERA_DIRECTION_XNEG_YPOS_ZPOS,
-    CAMERA_DIRECTION_XNEG_YNEG_ZPOS;
+    CAMERA_DIRECTION_XNEG_YNEG_ZPOS,;
 
     public static Vector3d getCameraDirection(CameraDirectionType cameraDirectionType) {
         Vector3d result = new Vector3d();

@@ -142,6 +142,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         /* End lod 0 processes */
 
         DecimateParameters decimateParameters = new DecimateParameters();
+        ReMeshParameters reMeshParamsLod2Lod3 = new ReMeshParameters();
         for (int d = 1; d <= projectMaxDepthIdx; d++) {
             lod = d;
             tileInfosCopy.clear();
@@ -168,7 +169,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             currDepth = projectMaxDepthIdx - lod;
             cuttedTileInfos.clear();
             cuttingAndScissorProcessST(tileInfosCopy, lod, root, cuttedTileInfos, projectMaxDepthIdx); // original
-            if (integralDecimateScenes(cuttedTileInfos, lod, currDepth, root, projectMaxDepthIdx, decimateParameters, screenPixelsForMeter)) {
+            if (integralDecimateScenes(cuttedTileInfos, lod, currDepth, root, projectMaxDepthIdx, decimateParameters, reMeshParamsLod2Lod3, screenPixelsForMeter)) {
                 break;
             }
 
@@ -870,7 +871,14 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         return nodeTMatrix;
     }
 
-    public boolean integralDecimateScenes(List<TileInfo> tileInfos, int lod, int nodeDepth, Node rootNode, int maxDepth, DecimateParameters decimateParameters, double screenPixelsForMeter) {
+    public boolean integralDecimateScenes(List<TileInfo> tileInfos,
+                                          int lod,
+                                          int nodeDepth,
+                                          Node rootNode,
+                                          int maxDepth,
+                                          DecimateParameters decimateParameters,
+                                          ReMeshParameters reMeshParams,
+                                          double screenPixelsForMeter) {
         // 1rst, find all tileInfos that intersects with the node
         log.info("Creating reMeshed nodes for nodeDepth : " + nodeDepth + " of maxDepth : " + maxDepth);
         List<Node> nodes = new ArrayList<>();
@@ -1006,7 +1014,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             List<HalfEdgeScene> resultHalfEdgeScenes = new ArrayList<>();
             String outputPathString = globalOptions.getOutputPath();
             String nodeName = "node_L_" + nodeDepth + "_" + i;
-            tilerExtensionModule.integralDecimateByObliqueCamera(sceneInfos, resultHalfEdgeScenes, decimateParameters, nodeBBoxLC, nodeTMatrix, maxScreenSize, outputPathString, nodeName, lod);
+            tilerExtensionModule.integralDecimateByObliqueCamera(sceneInfos, resultHalfEdgeScenes, decimateParameters, reMeshParams, nodeBBoxLC, nodeTMatrix, maxScreenSize, outputPathString, nodeName, lod);
             //
             if (resultHalfEdgeScenes.isEmpty()) {
                 log.warn("IntegralReMesh resultHalfEdgeScenes is empty.");

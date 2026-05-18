@@ -952,6 +952,136 @@ public class Engine {
         }
     }
 
+    public void makeIntegralBoxTexturesByObliqueCamera9DirectionsUpAndDown(HalfEdgeScene halfEdgeScene, double screenPixelsForMeter, int bufferImageType, GaiaBoundingBox integralBox,
+                                                                  IntegralReMeshParameters integralReMeshParameters,
+                                                                  Map<Integer, Map<GaiaFace, HalfEdgeFace>> mapClassifyIdToGaiaFaceToHalfEdgeFace,
+                                                                  Map<Integer, Map<GaiaFace, CameraDirectionTypeInfo>> mapClassifyIdToGaiaFaceToCameraDirectionTypeInfo,
+                                                                  Map<Integer, Map<CameraDirectionType, GaiaBoundingBox>> mapClassificationCamDirTypeBBox,
+                                                                  Map<Integer, Map<CameraDirectionType, Matrix4d>> mapClassificationCamDirTypeModelViewMatrix,
+                                                                  Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapClassificationCamDirTypeFacesList,
+                                                                  FaceVisibilityDataManager faceVisibilityDataManager) {
+        //*************************************************************
+        // Inside of integralBox, there are all scenes of the node.
+        //*************************************************************
+        // 1rst, extract all surfaces
+        List<HalfEdgeSurface> surfaces = halfEdgeScene.extractSurfaces(null);
+
+        Map<Integer, List<HalfEdgeFace>> facesClassificationMap = new HashMap<>();
+        int surfacesCount = surfaces.size();
+        for (int i = 0; i < surfacesCount; i++) {
+            HalfEdgeSurface surface = surfaces.get(i);
+            int facesCount = surface.getFaces().size();
+            for (int j = 0; j < facesCount; j++) {
+                HalfEdgeFace face = surface.getFaces().get(j);
+                int classificationId = face.getClassifyId();
+                List<HalfEdgeFace> facesList = facesClassificationMap.computeIfAbsent(classificationId, k -> new ArrayList<>());
+                facesList.add(face);
+            }
+        }
+
+        // create 5 color fbos and 5 colorCoded fbos
+//        int fboWidth = 1024;
+//        int fboHeight = 1024;
+
+        Fbo colorFbo_ZNEG = integralReMeshParameters.getColorFboMap().get("ZNEG");
+        Fbo colorFbo_XPOS_ZNEG = integralReMeshParameters.getColorFboMap().get("XPOS_ZNEG");
+        Fbo colorFbo_XNEG_ZNEG = integralReMeshParameters.getColorFboMap().get("XNEG_ZNEG");
+        Fbo colorFbo_YPOS_ZNEG = integralReMeshParameters.getColorFboMap().get("YPOS_ZNEG");
+        Fbo colorFbo_YNEG_ZNEG = integralReMeshParameters.getColorFboMap().get("YNEG_ZNEG");
+
+        Fbo colorCodedFbo_ZNEG = integralReMeshParameters.getColorCodeFboMap().get("ZNEG");
+        Fbo colorCodedFbo_XPOS_ZNEG = integralReMeshParameters.getColorCodeFboMap().get("XPOS_ZNEG");
+        Fbo colorCodedFbo_XNEG_ZNEG = integralReMeshParameters.getColorCodeFboMap().get("XNEG_ZNEG");
+        Fbo colorCodedFbo_YPOS_ZNEG = integralReMeshParameters.getColorCodeFboMap().get("YPOS_ZNEG");
+        Fbo colorCodedFbo_YNEG_ZNEG = integralReMeshParameters.getColorCodeFboMap().get("YNEG_ZNEG");
+
+        CameraDirectionType cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_UNKNOWN;
+        int classifiedFacesCount = facesClassificationMap.size();
+        int count = 0;
+        boolean testBool = false;
+        for (Map.Entry<Integer, List<HalfEdgeFace>> entry : facesClassificationMap.entrySet()) {
+            log.debug("makeBoxTexturesByObliqueCamera : " + count + " / " + classifiedFacesCount);
+
+            int classificationId = entry.getKey();
+            List<HalfEdgeFace> facesList = entry.getValue();
+
+            Map<GaiaFace, HalfEdgeFace> mapGaiaFaceToHalfEdgeFace = mapClassifyIdToGaiaFaceToHalfEdgeFace.computeIfAbsent(classificationId, k -> new HashMap<>());
+            Map<GaiaFace, CameraDirectionTypeInfo> mapGaiaFaceToCameraDirectionTypeInfo = mapClassifyIdToGaiaFaceToCameraDirectionTypeInfo.computeIfAbsent(classificationId, k -> new HashMap<>());
+
+            GaiaScene gaiaSceneFromFaces = HalfEdgeUtils.gaiaSceneFromHalfEdgeFaces(facesList, mapGaiaFaceToHalfEdgeFace);
+            RenderableGaiaScene renderableGaiaSceneColorCoded = getColorCodedRenderableScene(gaiaSceneFromFaces);
+
+            // now, set projection matrix as orthographic, and set camera's position and target
+            // calculate the projectionMatrix for the camera
+            int maxScreenSize = boxRenderingMaxSize;
+
+            // to calculate the texCoords, we need the transformed bbox and the modelViewMatrix
+            Map<CameraDirectionType, GaiaBoundingBox> mapCameraDirectionTypeBBox = mapClassificationCamDirTypeBBox.computeIfAbsent(classificationId, k -> new HashMap<>());
+            Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix = mapClassificationCamDirTypeModelViewMatrix.computeIfAbsent(classificationId, k -> new HashMap<>());
+
+            Vector4f backgroundColor = new Vector4f(0.5f, 0.5f, 0.5f, 0.0f); // grey color, alpha=0
+
+            // ZNeg texture
+            cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_ZNEG;
+            BufferedImage imageZNeg = makeIntegralColorCodeTextureByCameraDirectionAndBBox(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
+                    mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType, backgroundColor, integralBox,
+                    colorFbo_ZNEG, colorCodedFbo_ZNEG);
+
+            // YPosZNeg texture
+            cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_YPOS_ZNEG;
+            BufferedImage imageYpoZNeg = makeIntegralColorCodeTextureByCameraDirectionAndBBox(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
+                    mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType, backgroundColor, integralBox,
+                    colorFbo_YPOS_ZNEG, colorCodedFbo_YPOS_ZNEG);
+
+            // XNegZNeg texture
+            cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_XNEG_ZNEG;
+            BufferedImage imageXNegZNeg = makeIntegralColorCodeTextureByCameraDirectionAndBBox(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
+                    mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType, backgroundColor, integralBox,
+                    colorFbo_XNEG_ZNEG, colorCodedFbo_XNEG_ZNEG);
+
+            // YNegZNeg texture
+            cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_YNEG_ZNEG;
+            BufferedImage imageYNegZNeg = makeIntegralColorCodeTextureByCameraDirectionAndBBox(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
+                    mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType, backgroundColor, integralBox,
+                    colorFbo_YNEG_ZNEG, colorCodedFbo_YNEG_ZNEG);
+
+            // XPosZNeg texture
+            cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_XPOS_ZNEG;
+            BufferedImage imageXPosZNeg = makeIntegralColorCodeTextureByCameraDirectionAndBBox(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
+                    mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType, backgroundColor, integralBox,
+                    colorFbo_XPOS_ZNEG, colorCodedFbo_XPOS_ZNEG);
+
+            // camera targating to UP direction.*********************************************************
+            // XPosYPosZNeg texture
+            cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_XPOS_YPOS_ZPOS;
+            BufferedImage imageXPosYPosZNeg = makeIntegralColorCodeTextureByCameraDirectionAndBBox(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
+                    mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType, backgroundColor, integralBox,
+                    integralReMeshParameters.getColorFboMap().get("XPOS_YPOS_ZPOS"), integralReMeshParameters.getColorCodeFboMap().get("XPOS_YPOS_ZPOS"));
+
+            // XNegYPosZNeg texture
+            cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_XNEG_YPOS_ZPOS;
+            BufferedImage imageXNegYPosZNeg = makeIntegralColorCodeTextureByCameraDirectionAndBBox(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
+                    mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType, backgroundColor, integralBox,
+                    integralReMeshParameters.getColorFboMap().get("XNEG_YPOS_ZPOS"), integralReMeshParameters.getColorCodeFboMap().get("XNEG_YPOS_ZPOS"));
+
+            // XPosYNegZNeg texture
+            cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_XPOS_YNEG_ZPOS;
+            BufferedImage imageXPosYNegZNeg = makeIntegralColorCodeTextureByCameraDirectionAndBBox(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
+                    mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType, backgroundColor, integralBox,
+                    integralReMeshParameters.getColorFboMap().get("XPOS_YNEG_ZPOS"), integralReMeshParameters.getColorCodeFboMap().get("XPOS_YNEG_ZPOS"));
+
+            // XNegYNegZNeg texture
+            cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_XNEG_YNEG_ZPOS;
+            BufferedImage imageXNegYNegZNeg = makeIntegralColorCodeTextureByCameraDirectionAndBBox(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
+                    mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType, backgroundColor, integralBox,
+                    integralReMeshParameters.getColorFboMap().get("XNEG_YNEG_ZPOS"), integralReMeshParameters.getColorCodeFboMap().get("XNEG_YNEG_ZPOS"));
+
+
+            // delete the renderableScene-colorCoded
+            renderableGaiaSceneColorCoded.deleteGLBuffers();
+        }
+    }
+
     public void makeBoxTexturesByObliqueCamera(HalfEdgeScene halfEdgeScene, double screenPixelsForMeter, int bufferImageType) {
         // Must know all faces classification ids
         // 1rst, extract all surfaces
@@ -2019,7 +2149,7 @@ public class Engine {
         GaiaBoundingBox expandedBBox = targetBbox.clone();
         double expandedMaxSize = expandedBBox.getMaxSize();
         //expandedBBox.expand(expandedMaxSize * 0.02);
-        expandedBBox.expand(expandedMaxSize * 100.0); // provisionally large expansion. In integralMode, the targetBbox is centered in the origin.
+        expandedBBox.expand(expandedMaxSize * 1000.0); // provisionally large expansion. In integralMode, the targetBbox is centered in the origin.
 
         Vector3d targetBBoxCenter = targetBbox.getCenter();
 

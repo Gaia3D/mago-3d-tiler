@@ -66,10 +66,10 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
 
     @Override
     public void integralDecimateByObliqueCamera(List<SceneInfo> sceneInfos, List<HalfEdgeScene> resultHalfEdgeScenes,
-                                                DecimateParameters decimateParameters, GaiaBoundingBox nodeBBox,
+                                                DecimateParameters decimateParameters, ReMeshParameters reMeshParams,GaiaBoundingBox nodeBBox,
                                                 Matrix4d nodeTMatrix, int maxScreenSize, String outputPathString, String nodeName, int lod) {
         if (voxelizer == null) voxelizer = new MainVoxelizer();
-        voxelizer.integralDecimateByObliqueCamera(sceneInfos, resultHalfEdgeScenes, decimateParameters, nodeBBox, nodeTMatrix, maxScreenSize, outputPathString, nodeName, lod);
+        voxelizer.integralDecimateByObliqueCamera(sceneInfos, resultHalfEdgeScenes, decimateParameters, reMeshParams, nodeBBox, nodeTMatrix, maxScreenSize, outputPathString, nodeName, lod);
         deleteObjects();
     }
 

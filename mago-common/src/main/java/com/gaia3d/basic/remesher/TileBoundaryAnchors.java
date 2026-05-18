@@ -35,6 +35,27 @@ public class TileBoundaryAnchors {
                 .add(meshId);
     }
 
+    public Vector3d getAverage(Vector3i cellIndex) {
+        return getFrontierAverage(cellIndex);
+    }
+
+    public Vector3d getAverageCopy(Vector3i cellIndex) {
+        Vector3d avg = getFrontierAverage(cellIndex);
+        if (avg == null) {
+            return null;
+        }
+
+        return new Vector3d(avg);
+    }
+
+    public boolean hasAverage(Vector3i cellIndex) {
+        if (cellIndex == null) {
+            return false;
+        }
+
+        return frontierAveragePositions.containsKey(cellIndex);
+    }
+
     public void calculateAveragePositions() {
         frontierAveragePositions.clear();
 
