@@ -7,6 +7,8 @@ import com.gaia3d.basic.geometry.modifier.topology.GaiaWelder;
 import com.gaia3d.basic.geometry.octree.GaiaFaceData;
 import com.gaia3d.basic.geometry.octree.GaiaOctree;
 import com.gaia3d.basic.geometry.octree.GaiaOctreeFaces;
+import com.gaia3d.basic.geometry.octree.OctreeBBoxInfo;
+import com.gaia3d.basic.halfedge.HalfEdgeUtils;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.remesher.information.GaiaStatistics;
 import com.gaia3d.util.GaiaOctreeUtils;
@@ -295,7 +297,6 @@ public class GeometryOnlyReMesherByOctree {
     public GeometryOnlyReMesherByOctree() {
     }
 
-
     public void reMeshScene(GaiaScene scene,
                             GaiaStatistics sceneStatsOptional,
                             GaiaBoundingBox nodeBBoxOptional) {
@@ -504,6 +505,56 @@ public class GeometryOnlyReMesherByOctree {
             List<GaiaVertex> verticesSelected = verticesToReMesh.stream().toList();
             ReMesh(verticesSelected);
         }
+    }
+
+    public OctreeBBoxInfo calculateBoundingBoxForLeafDistInfo(
+            GaiaBoundingBox currBBox,
+            double leafDist
+    ) {
+        if (currBBox == null || leafDist <= 0.0) {
+            return new OctreeBBoxInfo(currBBox, 0, 0.0, 0.0);
+        }
+
+        double currCubeSize = currBBox.getMaxSize();
+
+        if (currCubeSize <= 0.0) {
+            return new OctreeBBoxInfo(currBBox, 0, currCubeSize, currCubeSize);
+        }
+
+        int maxDepth = 0;
+
+        if (currCubeSize > leafDist) {
+            maxDepth = (int) Math.ceil(
+                    HalfEdgeUtils.log2(currCubeSize / leafDist)
+            );
+        }
+
+        double rootCubeSize = leafDist * Math.pow(2.0, maxDepth);
+        double leafSize = rootCubeSize / Math.pow(2.0, maxDepth);
+
+        double cx = (currBBox.getMinX() + currBBox.getMaxX()) * 0.5;
+        double cy = (currBBox.getMinY() + currBBox.getMaxY()) * 0.5;
+        double cz = (currBBox.getMinZ() + currBBox.getMaxZ()) * 0.5;
+
+        double half = rootCubeSize * 0.5;
+
+        GaiaBoundingBox resultBBox = new GaiaBoundingBox();
+
+        resultBBox.setMinX(cx - half);
+        resultBBox.setMaxX(cx + half);
+
+        resultBBox.setMinY(cy - half);
+        resultBBox.setMaxY(cy + half);
+
+        resultBBox.setMinZ(cz - half);
+        resultBBox.setMaxZ(cz + half);
+
+        return new OctreeBBoxInfo(
+                resultBBox,
+                maxDepth,
+                rootCubeSize,
+                leafSize
+        );
     }
 
     public void reMeshPrimitive(GaiaPrimitive primitive, GaiaNode parentNode, GaiaScene parentScene, GaiaBoundingBox nodeBBoxOptional) {

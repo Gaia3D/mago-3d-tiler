@@ -2196,10 +2196,18 @@ public class Engine {
         float near = -maxZ; // test large near and far
         float far = -minZ;
 
+
+
         float maxSize = Math.max(xLength, yLength);
         float zOffSet = maxSize * 0.001f;
         if (zOffSet < 0.4) {
             zOffSet = 0.4f;
+        }
+
+        float zSize = maxZ - minZ;
+        if(zSize < 2.0){
+            log.debug("near-far so close");
+            zOffSet += 1.0;
         }
 
         far += zOffSet; // make a little more far

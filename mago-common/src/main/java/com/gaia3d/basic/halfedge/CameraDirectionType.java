@@ -86,16 +86,16 @@ public enum CameraDirectionType {
                 result.set(-1, -1, -z);
                 break;
             case CAMERA_DIRECTION_XPOS_YPOS_ZPOS:
-                result.set(1, 1, z);
+                result.set(1, 1, 0);
                 break;
             case CAMERA_DIRECTION_XPOS_YNEG_ZPOS:
-                result.set(1, -1, z);
+                result.set(1, -1, 0);
                 break;
             case CAMERA_DIRECTION_XNEG_YPOS_ZPOS:
-                result.set(-1, 1, z);
+                result.set(-1, 1, 0);
                 break;
             case CAMERA_DIRECTION_XNEG_YNEG_ZPOS:
-                result.set(0, -1, z);
+                result.set(0, -1, 0);
                 break;
             default:
                 break;

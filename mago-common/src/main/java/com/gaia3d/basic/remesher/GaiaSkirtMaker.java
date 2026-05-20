@@ -310,7 +310,8 @@ public class GaiaSkirtMaker {
                             nodeBBox,
                             tolerance,
                             skirtDepth,
-                            maxSegmentLength
+                            maxSegmentLength,
+                            faceNormal
                     );
 
                     if (added > 0) {
@@ -352,7 +353,8 @@ public class GaiaSkirtMaker {
             GaiaBoundingBox nodeBBox,
             double tolerance,
             double skirtDepth,
-            double maxSegmentLength
+            double maxSegmentLength,
+            Vector3d faceNormal
     ) {
         if (vertices == null || skirtSurface == null ||
                 originalToSkirt == null || createdEdges == null ||
@@ -400,14 +402,18 @@ public class GaiaSkirtMaker {
                 vertices,
                 originalToSkirt,
                 v0,
-                skirtDepth
+                skirtDepth,
+                side,
+                faceNormal
         );
 
         int skirtVertex1 = getOrCreateSkirtVertex(
                 vertices,
                 originalToSkirt,
                 v1,
-                skirtDepth
+                skirtDepth,
+                side,
+                faceNormal
         );
 
         if (skirtVertex0 < 0 || skirtVertex1 < 0) {
@@ -486,11 +492,41 @@ public class GaiaSkirtMaker {
         return side;
     }
 
+    private Vector3d getInsetDirectionOppositeFaceNormalXY(
+            Vector3d faceNormal,
+            double epsilon
+    ) {
+        if (faceNormal == null) {
+            return null;
+        }
+
+        Vector3d dir = new Vector3d(
+                -faceNormal.x,
+                -faceNormal.y,
+                0.0
+        );
+
+        double lenSq = dir.x * dir.x + dir.y * dir.y;
+
+        if (lenSq < epsilon * epsilon) {
+            return null;
+        }
+
+        double invLen = 1.0 / Math.sqrt(lenSq);
+        dir.x *= invLen;
+        dir.y *= invLen;
+        dir.z = 0.0;
+
+        return dir;
+    }
+
     private int getOrCreateSkirtVertex(
             List<GaiaVertex> vertices,
             Map<Integer, Integer> originalToSkirt,
             int originalIndex,
-            double skirtDepth
+            double skirtDepth,
+            BoundarySide side,
+            Vector3d faceNormal
     ) {
         if (vertices == null || originalToSkirt == null) {
             return -1;
@@ -513,7 +549,29 @@ public class GaiaSkirtMaker {
         }
 
         GaiaVertex skirtVertex = original.clone();
-        skirtVertex.getPosition().z -= skirtDepth;
+
+        double effectiveSkirtDepth = skirtDepth;
+
+        if (faceNormal != null) {
+            effectiveSkirtDepth = Math.abs(faceNormal.z) * skirtDepth;
+        }
+
+        skirtVertex.getPosition().z -= effectiveSkirtDepth;
+
+        //skirtVertex.getPosition().z -= skirtDepth;
+
+//        // now move little to center of the node.
+//        double offset = skirtDepth * 0.15;
+//        // offset to inverse dir of faceNormal.
+//        Vector3d normalInv = getInsetDirectionOppositeFaceNormalXY(
+//                faceNormal,
+//                1e-8
+//        );
+//
+//        if(normalInv != null){
+//            skirtVertex.getPosition().x += normalInv.x * offset;
+//            skirtVertex.getPosition().y += normalInv.y * offset;
+//        }
 
         int skirtIndex = vertices.size();
         vertices.add(skirtVertex);
