@@ -4,6 +4,7 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
+import com.gaia3d.command.mago.ProcessOptions;
 import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.GlobeUtils;
@@ -15,6 +16,7 @@ import org.geotools.geometry.Position2D;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
+import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 
@@ -31,6 +33,11 @@ public class GaiaTranslationForPhotogrammetry implements PreProcess {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         FormatType inputType = globalOptions.getInputFormat();
 
+        if (inputType == FormatType.KML) {
+            // Nothing to do.
+            return tileInfo;
+        }
+
         GaiaScene gaiaScene = tileInfo.getScene();
         GaiaNode rootNode = gaiaScene.getNodes().get(0);
         Matrix4d transform = rootNode.getTransformMatrix();
@@ -41,7 +48,7 @@ public class GaiaTranslationForPhotogrammetry implements PreProcess {
         Vector3d centerGeoCoord = getPosition(inputType, gaiaScene);
 
         GaiaBoundingBox bboxLC = new GaiaBoundingBox();
-        this.transformSceneVertexPositionsToLocalCoords(gaiaScene, centerGeoCoord, bboxLC);
+        bboxLC = this.transformSceneVertexPositionsToLocalCoords(gaiaScene, centerGeoCoord, bboxLC);
         Vector3d offset = globalOptions.getTranslateOffset();
         double zOffset = offset == null ? 0.0d : offset.z;
         centerGeoCoord.z = getTerrainHeightFromCartographic(centerGeoCoord) + zOffset;
@@ -94,7 +101,10 @@ public class GaiaTranslationForPhotogrammetry implements PreProcess {
         return tileInfo;
     }
 
-    private void transformSceneVertexPositionsToLocalCoords(GaiaScene scene, Vector3d geoCoordReference, GaiaBoundingBox resultBBoxLocalCoords) {
+    private GaiaBoundingBox transformSceneVertexPositionsToLocalCoords(GaiaScene scene, Vector3d geoCoordReference, GaiaBoundingBox resultBBoxLocalCoords) {
+        if(resultBBoxLocalCoords == null) {
+            resultBBoxLocalCoords = new GaiaBoundingBox();
+        }
         double[] centerCartesianWC = GlobeUtils.geographicToCartesianWgs84(geoCoordReference.x, geoCoordReference.y, geoCoordReference.z);
         Matrix4d transformMatrixAtCenter = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerCartesianWC[0], centerCartesianWC[1], centerCartesianWC[2]);
         Matrix4d globalTMatrixInv = new Matrix4d(transformMatrixAtCenter);
@@ -107,6 +117,8 @@ public class GaiaTranslationForPhotogrammetry implements PreProcess {
         for (GaiaNode rootNode : rootNodes) {
             this.setNodesTransformMatrixAsIdentity(rootNode);
         }
+
+        return resultBBoxLocalCoords;
     }
 
     private void transformNodeVertexPositionsToLocalCoords(GaiaNode node, Matrix4d globalTMatrixInv, Matrix4d parentMatrix, GaiaBoundingBox resultBBoxLC) {
@@ -191,13 +203,17 @@ public class GaiaTranslationForPhotogrammetry implements PreProcess {
 
     private Vector3d getPosition(FormatType formatType, GaiaScene gaiaScene) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
-        Vector3d position;
+        Vector3d position = null;
         Vector3d offset = globalOptions.getTranslateOffset();
         if (offset == null) {
             offset = new Vector3d();
         }
 
-        if (formatType == FormatType.CITYGML || formatType == FormatType.INDOORGML || formatType == FormatType.SHP || formatType == FormatType.GEOJSON || formatType == FormatType.GEO_PACKAGE) {
+        if (formatType == FormatType.CITYGML ||
+                formatType == FormatType.INDOORGML ||
+                formatType == FormatType.SHP ||
+                formatType == FormatType.GEOJSON ||
+                formatType == FormatType.GEO_PACKAGE) {
             GaiaNode rootNode = gaiaScene.getNodes().get(0);
             Matrix4d transform = rootNode.getTransformMatrix();
             Vector3d center = new Vector3d(transform.get(3, 0), transform.get(3, 1), 0.0d);
