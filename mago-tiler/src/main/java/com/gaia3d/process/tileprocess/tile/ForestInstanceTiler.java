@@ -28,7 +28,11 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("ALL")
@@ -36,7 +40,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class ForestInstanceTiler extends DefaultTiler implements Tiler {
 
-    private static final GlobalOptions globalOptions = GlobalOptions.getInstance();
+    private GlobalOptions globalOptions = GlobalOptions.getInstance();
     private final double maximumGeometricError = 128;
     private double instanceGeometricError = 1.0;
     private final double maximumDistance = 1000.0; // 250m
@@ -156,19 +160,18 @@ public class ForestInstanceTiler extends DefaultTiler implements Tiler {
             List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
                 List<TileInfo> childTileInfos = childrenScenes.get(index);
-                Collections.shuffle(childTileInfos);
+                shuffleStable(childTileInfos, parentNode.getNodeCode(), index);
                 Node childNode = createContentNode(parentNode, childTileInfos, inheritanceTileInfos, index);
                 if (childNode != null) {
                     parentNode.getChildren().add(childNode);
                     Content content = childNode.getContent();
                     if (content != null) {
                         ContentInfo contentInfo = content.getContentInfo();
-                        List<TileInfo> remainTileInfos = contentInfo.getRemainTileInfos();
 
-                        List<List<TileInfo>> distributedInheritanceTileInfos = squareBoundingVolume.distributeScene(contentInfo.getTileInfos());
-                        List<TileInfo> newInheritanceTileInfos = distributedInheritanceTileInfos.get(index);
                         if (isRefineAdd) {
-                            createNode(childNode, remainTileInfos, newInheritanceTileInfos, nodeDepth + 1);
+                            if (shouldDescendRefineAdd(contentInfo)) {
+                                createNode(childNode, childTileInfos, contentInfo.getTileInfos(), nodeDepth + 1);
+                            }
                         } else {
                             createNode(childNode, childTileInfos, inheritanceTileInfos, nodeDepth + 1);
                         }
@@ -184,14 +187,29 @@ public class ForestInstanceTiler extends DefaultTiler implements Tiler {
                 Content content = childNode.getContent();
                 if (content != null) {
                     ContentInfo contentInfo = content.getContentInfo();
-                    List<TileInfo> remainTileInfos = contentInfo.getRemainTileInfos();
 
-                    createNode(childNode, remainTileInfos, inheritanceTileInfos, nodeDepth + 1);
+                    if (isRefineAdd && shouldDescendRefineAdd(contentInfo)) {
+                        createNode(childNode, tileInfos, contentInfo.getTileInfos(), nodeDepth + 1);
+                    } else if (!isRefineAdd) {
+                        createNode(childNode, tileInfos, inheritanceTileInfos, nodeDepth + 1);
+                    }
                 } else {
                     createNode(childNode, tileInfos, inheritanceTileInfos, nodeDepth + 1);
                 }
             }
         }
+    }
+
+    private boolean shouldDescendRefineAdd(ContentInfo contentInfo) {
+        return contentInfo.getLod().getLevel() > globalOptions.getMinLod();
+    }
+
+    private void shuffleStable(List<TileInfo> tileInfos, String parentNodeCode, int childIndex) {
+        tileInfos.sort(Comparator
+                .comparingInt(TileInfo::getSerial)
+                .thenComparing(tileInfo -> tileInfo.getName() == null ? "" : tileInfo.getName()));
+        long seed = 31L * parentNodeCode.hashCode() + childIndex;
+        Collections.shuffle(tileInfos, new Random(seed));
     }
 
     private Node createLogicalNode(Node parentNode, List<TileInfo> tileInfos, int index) {
@@ -248,8 +266,13 @@ public class ForestInstanceTiler extends DefaultTiler implements Tiler {
             nodeCode = nodeCode + "C";
         }
         LevelOfDetail lod = getLodByNodeCode(minLod, maxLod, nodeCode);
+        boolean terminalRefineAddContent = refineAdd && lod.getLevel() <= minLevel;
         if (lod == LevelOfDetail.NONE) {
-            return null;
+            if (!refineAdd) {
+                return null;
+            }
+            lod = minLod;
+            terminalRefineAddContent = true;
         }
 
         if (refineAdd) {
@@ -286,20 +309,31 @@ public class ForestInstanceTiler extends DefaultTiler implements Tiler {
         List<TileInfo> totalResultInfos;
 
         if (refineAdd) {
-            resultInfos = tileInfos.stream()
-                    .limit(divideSize)
-                    .collect(Collectors.toList());
-            remainInfos = tileInfos.stream()
-                    .skip(divideSize)
-                    .collect(Collectors.toList());
+            if (terminalRefineAddContent) {
+                resultInfos = tileInfos.stream()
+                        .limit(tileInfos.size())
+                        .collect(Collectors.toList());
+                remainInfos = tileInfos.stream()
+                        .skip(tileInfos.size())
+                        .collect(Collectors.toList());
+            } else {
+                resultInfos = tileInfos.stream()
+                        .limit(divideSize)
+                        .collect(Collectors.toList());
+                remainInfos = tileInfos.stream()
+                        .skip(divideSize)
+                        .collect(Collectors.toList());
+            }
             totalResultInfos = new ArrayList<>(resultInfos);
 
             if (inheritanceTileInfos != null && !inheritanceTileInfos.isEmpty()) {
                 List<TileInfo> tempInheritanceTileInfos = boundingVolume.getVolumeIncludeScenes(inheritanceTileInfos, childBoundingBox);
-                totalResultInfos.addAll(tempInheritanceTileInfos);
+                Set<TileInfo> deduplicatedTileInfos = new LinkedHashSet<>(totalResultInfos);
+                deduplicatedTileInfos.addAll(tempInheritanceTileInfos);
+                totalResultInfos = new ArrayList<>(deduplicatedTileInfos);
             }
 
-            if (remainInfos.isEmpty() && lod != LevelOfDetail.LOD0) {
+            if (remainInfos.isEmpty() && lod != LevelOfDetail.LOD0 && !terminalRefineAddContent) {
                 remainInfos.addAll(tileInfos);
             }
         } else {

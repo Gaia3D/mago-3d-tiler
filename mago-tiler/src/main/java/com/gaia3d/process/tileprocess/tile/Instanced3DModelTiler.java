@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
 
-    private static final GlobalOptions globalOptions = GlobalOptions.getInstance();
+    private GlobalOptions globalOptions = GlobalOptions.getInstance();
     private final double maximumGeometricError = 64.0;
     private double instanceGeometricError = 1.0;
     private final double maximumDistance = 1000.0; // 1km
@@ -244,8 +244,13 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
             nodeCode = nodeCode + "C";
         }
         LevelOfDetail lod = getLodByNodeCode(minLod, maxLod, nodeCode);
+        boolean terminalRefineAddContent = refineAdd && lod.getLevel() <= minLevel;
         if (lod == LevelOfDetail.NONE) {
-            return null;
+            if (!refineAdd) {
+                return null;
+            }
+            lod = minLod;
+            terminalRefineAddContent = true;
         }
 
         if (refineAdd) {
@@ -281,12 +286,21 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         List<TileInfo> remainInfos;
 
         if (refineAdd) {
-            resultInfos = tileInfos.stream()
-                    .limit(divideSize)
-                    .collect(Collectors.toList());
-            remainInfos = tileInfos.stream()
-                    .skip(divideSize)
-                    .collect(Collectors.toList());
+            if (terminalRefineAddContent) {
+                resultInfos = tileInfos.stream()
+                        .limit(tileInfos.size())
+                        .collect(Collectors.toList());
+                remainInfos = tileInfos.stream()
+                        .skip(tileInfos.size())
+                        .collect(Collectors.toList());
+            } else {
+                resultInfos = tileInfos.stream()
+                        .limit(divideSize)
+                        .collect(Collectors.toList());
+                remainInfos = tileInfos.stream()
+                        .skip(divideSize)
+                        .collect(Collectors.toList());
+            }
         } else {
             resultInfos = tileInfos.stream()
                     .limit(tileInfos.size())
