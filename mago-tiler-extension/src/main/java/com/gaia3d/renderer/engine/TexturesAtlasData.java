@@ -15,7 +15,7 @@ import java.awt.image.BufferedImage;
 public class TexturesAtlasData {
     private int classifyId = -1;
     private PlaneType planeType = PlaneType.UNKNOWN;
-    private CameraDirectionType cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_UNKNOWN;
+    private CameraDirectionType cameraDirectionType = CameraDirectionType.UNKNOWN;
     private BufferedImage textureImage;
     private GaiaRectangle originalBoundary;
     private GaiaRectangle currentBoundary;

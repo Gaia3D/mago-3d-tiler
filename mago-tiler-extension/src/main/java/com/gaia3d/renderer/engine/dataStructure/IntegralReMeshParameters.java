@@ -1,5 +1,6 @@
 package com.gaia3d.renderer.engine.dataStructure;
 
+import com.gaia3d.basic.halfedge.CameraDirectionType;
 import com.gaia3d.renderer.engine.fbo.Fbo;
 import com.gaia3d.renderer.engine.fbo.FboManager;
 import lombok.Getter;
@@ -8,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.GL20;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -25,45 +27,21 @@ public class IntegralReMeshParameters {
         colorCodeFboMap.clear();
     }
 
-    public void createFBOsObliqueCamera(FboManager fboManager, int fboWidth, int fboHeight, int minFilter, int magFilter) {
-        Fbo colorFbo_ZNEG = fboManager.getOrCreateFbo("ZNEG", fboWidth, fboHeight, minFilter, magFilter);
-        Fbo colorFbo_XPOS_ZNEG = fboManager.getOrCreateFbo("XPOS_ZNEG", fboWidth, fboHeight, minFilter, magFilter);
-        Fbo colorFbo_XNEG_ZNEG = fboManager.getOrCreateFbo("XNEG_ZNEG", fboWidth, fboHeight, minFilter, magFilter);
-        Fbo colorFbo_YPOS_ZNEG = fboManager.getOrCreateFbo("YPOS_ZNEG", fboWidth, fboHeight, minFilter, magFilter);
-        Fbo colorFbo_YNEG_ZNEG = fboManager.getOrCreateFbo("YNEG_ZNEG", fboWidth, fboHeight, minFilter, magFilter);
+    public void createFBOsByCameraDirectionsType(FboManager fboManager, int fboWidth, int fboHeight, int minFilter, int magFilter, List<CameraDirectionType> cameraDirectionTypes) {
+        for (CameraDirectionType cameraDirectionType : cameraDirectionTypes) {
+            Fbo colorFbo = fboManager.getOrCreateFbo(cameraDirectionType.name(), fboWidth, fboHeight, minFilter, magFilter);
+            colorFboMap.put(cameraDirectionType.name(), colorFbo);
 
-        colorFboMap.put("ZNEG", colorFbo_ZNEG);
-        colorFboMap.put("XPOS_ZNEG", colorFbo_XPOS_ZNEG);
-        colorFboMap.put("XNEG_ZNEG", colorFbo_XNEG_ZNEG);
-        colorFboMap.put("YPOS_ZNEG", colorFbo_YPOS_ZNEG);
-        colorFboMap.put("YNEG_ZNEG", colorFbo_YNEG_ZNEG);
+            Fbo colorCodedFbo = fboManager.getOrCreateFbo("ColorCoded_" + cameraDirectionType.name(), fboWidth, fboHeight);
+            colorCodeFboMap.put(cameraDirectionType.name(), colorCodedFbo);
 
-        Fbo colorCodedFbo_ZNEG = fboManager.getOrCreateFbo("ColorCoded_ZNEG", fboWidth, fboHeight);
-        Fbo colorCodedFbo_XPOS_ZNEG = fboManager.getOrCreateFbo("ColorCoded_XPOS_ZNEG", fboWidth, fboHeight);
-        Fbo colorCodedFbo_XNEG_ZNEG = fboManager.getOrCreateFbo("ColorCoded_XNEG_ZNEG", fboWidth, fboHeight);
-        Fbo colorCodedFbo_YPOS_ZNEG = fboManager.getOrCreateFbo("ColorCoded_YPOS_ZNEG", fboWidth, fboHeight);
-        Fbo colorCodedFbo_YNEG_ZNEG = fboManager.getOrCreateFbo("ColorCoded_YNEG_ZNEG", fboWidth, fboHeight);
+            // initialize the fbos
+            Vector4f clearColor = backgroundColor;
+            initFbo(colorFbo, clearColor, true);
 
-        colorCodeFboMap.put("ZNEG", colorCodedFbo_ZNEG);
-        colorCodeFboMap.put("XPOS_ZNEG", colorCodedFbo_XPOS_ZNEG);
-        colorCodeFboMap.put("XNEG_ZNEG", colorCodedFbo_XNEG_ZNEG);
-        colorCodeFboMap.put("YPOS_ZNEG", colorCodedFbo_YPOS_ZNEG);
-        colorCodeFboMap.put("YNEG_ZNEG", colorCodedFbo_YNEG_ZNEG);
-
-        // initialize the fbos
-        Vector4f clearColor = backgroundColor;
-        initFbo(colorFbo_ZNEG, clearColor, true);
-        initFbo(colorFbo_XPOS_ZNEG, clearColor, true);
-        initFbo(colorFbo_XNEG_ZNEG, clearColor, true);
-        initFbo(colorFbo_YPOS_ZNEG, clearColor, true);
-        initFbo(colorFbo_YNEG_ZNEG, clearColor, true);
-
-        Vector4f colorCodeClearColor = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
-        initFbo(colorCodedFbo_ZNEG, colorCodeClearColor, true);
-        initFbo(colorCodedFbo_XPOS_ZNEG, colorCodeClearColor, true);
-        initFbo(colorCodedFbo_XNEG_ZNEG, colorCodeClearColor, true);
-        initFbo(colorCodedFbo_YPOS_ZNEG, colorCodeClearColor, true);
-        initFbo(colorCodedFbo_YNEG_ZNEG, colorCodeClearColor, true);
+            Vector4f colorCodeClearColor = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
+            initFbo(colorCodedFbo, colorCodeClearColor, true);
+        }
     }
 
     public void createFBOsObliqueCamera9Directions(FboManager fboManager, int fboWidth, int fboHeight, int minFilter, int magFilter) {
