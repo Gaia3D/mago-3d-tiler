@@ -21,25 +21,6 @@ class RealisticReleaseTest {
                 "-pg",
                 "-c", "5187",
                 "-rotateX", "90",
-                //"-leaveTemp",
-                //"-glb",
-                //"-debug",
-        };
-        MagoTestConfig.execute(args);
-    }
-
-    @Test
-    void realistic01V1() {
-        String path = "R01-bansong-part-obj";
-        String[] args = new String[]{
-                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-V1",
-                "-it", "obj",
-                "-log", MagoTestConfig.getLogPath(path).getAbsolutePath() + "-V1",
-                "-pg",
-                "-c", "5187",
-                "-rotateX", "90",
-                //"-debug",
         };
         MagoTestConfig.execute(args);
     }
@@ -165,7 +146,7 @@ class RealisticReleaseTest {
         MagoTestConfig.execute(args);
     }
 
-    @Disabled
+    //@Disabled
     @Test
     void realistic07() {
         String path = "R07-sejong-bridge-ifc";

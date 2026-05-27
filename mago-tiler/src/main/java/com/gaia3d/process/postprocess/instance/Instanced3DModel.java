@@ -229,7 +229,7 @@ public class Instanced3DModel implements ContentModel {
 
         File gltfOutputFile = outputRoot.resolve(gltfUrl).toFile();
         if (!gltfOutputFile.exists()) {
-            createInstance(gltfOutputFile, contentInfo, tileInfos.get(0));
+            createInstance(gltfOutputFile, contentInfo, tileInfos.getFirst());
         }
 
         boolean isFeatureTableAligned = (32 + featureTableJSONByteLength) % 8 == 0;
@@ -336,8 +336,7 @@ public class Instanced3DModel implements ContentModel {
                 GaiaBatcher gaiaBatcher = new GaiaBatcher();
                 GaiaSet gaiaSet = gaiaBatcher.runBatching(batchTileInfos, contentInfo.getNodeCode(), contentInfo.getLod());
                 GaiaScene resultGaiaScene = new GaiaScene(gaiaSet);
-
-                GaiaBoundingBox boundingBox = resultGaiaScene.updateBoundingBox();
+                resultGaiaScene.updateBoundingBox();
                 gltfWriter.writeGlb(resultGaiaScene, file);
             }
         } catch (Exception e) {

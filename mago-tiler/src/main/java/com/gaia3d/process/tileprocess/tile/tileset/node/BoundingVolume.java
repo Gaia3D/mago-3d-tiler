@@ -101,6 +101,18 @@ public class BoundingVolume implements Serializable {
 
     public BoundingVolume(BoundingVolume boundingVolume) {
         this.type = boundingVolume.type;
+        if (this.type == null) {
+            if (boundingVolume.region != null) {
+                this.type = BoundingVolumeType.REGION;
+            } else if (boundingVolume.box != null) {
+                this.type = BoundingVolumeType.BOX;
+            } else if (boundingVolume.sphere != null) {
+                this.type = BoundingVolumeType.SPHERE;
+            } else {
+                log.error("Bounding volume type is not specified and cannot be inferred from the bounding volume data.");
+                throw new IllegalArgumentException("Bounding volume type is not specified and cannot be inferred from the bounding volume data.");
+            }
+        }
         if (BoundingVolumeType.REGION == type) {
             region = new double[6];
             System.arraycopy(boundingVolume.region, 0, region, 0, 6);
