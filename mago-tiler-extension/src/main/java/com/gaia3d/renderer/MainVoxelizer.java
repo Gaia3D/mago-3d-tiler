@@ -1237,10 +1237,6 @@ public class MainVoxelizer implements IAppLogic {
                                                 String outputPathString,
                                                 String nodeName,
                                                 int lod) {
-        if(lod < 4){
-            integralReMeshByObliqueCameraV2UpAndDown(sceneInfos, resultHalfEdgeScenes, reMeshParams, nodeBBox, nodeTMatrix, maxScreenSize, outputPathString, nodeName, lod);
-            return;
-        }
         // Note: There are only one scene in the scene list
         // Must init gl
         try {

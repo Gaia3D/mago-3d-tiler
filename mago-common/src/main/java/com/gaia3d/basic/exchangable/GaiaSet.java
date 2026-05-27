@@ -138,7 +138,7 @@ public class GaiaSet implements Serializable {
         int dividedNumber = serial / 10000;
 
         String tempFileName = this.attribute.getIdentifier().toString() + "." + FormatType.TEMP.getExtension();
-        Path tempDir = path.resolve(this.projectName).resolve(String.valueOf(dividedNumber));
+        Path tempDir = path.resolve(this.projectName + this.attribute.getIdentifier()).resolve(String.valueOf(dividedNumber));
         File tempDirFile = tempDir.toFile();
         if (tempDirFile.mkdirs()) {
             log.debug("Directory created: {}", tempDir);
