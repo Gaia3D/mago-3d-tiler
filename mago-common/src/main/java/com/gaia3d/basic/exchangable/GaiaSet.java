@@ -62,7 +62,7 @@ public class GaiaSet implements Serializable {
         return newGaiaSet;
     }
 
-    public static GaiaSet readFile(Path path) throws FileNotFoundException {
+    public static GaiaSet readFile(Path path) throws IOException {
         File input = path.toFile();
         Path imagesPath = path.getParent().resolve("images");
         try (ObjectInputStream inputStream = new ObjectInputStream(new BufferedInputStream(new FileInputStream(input)))) {
@@ -80,9 +80,9 @@ public class GaiaSet implements Serializable {
             }
             return gaiaSet;
         } catch (Exception e) {
-            log.error("[ERROR] GaiaSet Read Error : ", e);
+            log.error("[ERROR] GaiaSet Read Error : {}", path, e);
+            throw new IOException("Failed to read GaiaSet file: " + path, e);
         }
-        return null;
     }
 
     public GaiaBoundingBox getBoundingBox() {

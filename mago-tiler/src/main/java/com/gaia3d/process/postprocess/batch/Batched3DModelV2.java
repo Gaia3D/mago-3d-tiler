@@ -36,7 +36,7 @@ public class Batched3DModelV2 implements ContentModel {
         GltfWriterOptions gltfOptions = GltfWriterOptions.builder()
                 .build();
         GlobalOptions globalOptions = GlobalOptions.getInstance();
-        if (globalOptions.getTilesVersion().equals("1.0")) {
+        if ("1.0".equals(globalOptions.getTilesVersion())) {
             gltfOptions.setUriImage(true);
         }
         if (globalOptions.isUseQuantization()) {

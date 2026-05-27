@@ -66,7 +66,7 @@ public class GeoPackageConverter extends AbstractGeometryConverter implements Co
         InnerRingRemover innerRingRemover = new InnerRingRemover();
 
         List<AttributeFilter> attributeFilters = parametricOptions.getAttributeFilters();
-        boolean isDefaultCrs = parametricOptions.getSourceCrs().equals(new CRSFactory().createFromName("EPSG:3857"));
+        boolean isDefaultCrs = Objects.equals(parametricOptions.getSourceCrs(), new CRSFactory().createFromName("EPSG:3857"));
         boolean flipCoordinate = parametricOptions.isFlipCoordinate();
         String heightColumnName = parametricOptions.getHeightColumnName();
         String altitudeColumnName = parametricOptions.getAltitudeColumnName();

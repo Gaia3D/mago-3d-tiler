@@ -191,7 +191,7 @@ public class LasConverter {
 
     private CoordinateReferenceSystem getProjCRS(LASHeader header, boolean isForceCrs) {
         AtomicReference<CoordinateReferenceSystem> atomicCrs = new AtomicReference<>(options.getSourceCrs());
-        boolean isDefaultCrs = options.getSourceCrs().equals(GlobeUtils.wgs84);
+        boolean isDefaultCrs = java.util.Objects.equals(options.getSourceCrs(), GlobeUtils.wgs84);
         if (!isForceCrs && isDefaultCrs) {
             try {
                 Iterable<LASVariableLengthRecord> records = header.getVariableLengthRecords();

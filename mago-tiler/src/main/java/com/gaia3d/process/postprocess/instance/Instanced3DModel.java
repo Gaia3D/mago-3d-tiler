@@ -48,7 +48,7 @@ public class Instanced3DModel implements ContentModel {
         if (globalOptions.isUseQuantization()) {
             gltfOptions.setUseQuantization(true);
         }
-        if (globalOptions.getTilesVersion().equals("1.0")) {
+        if ("1.0".equals(globalOptions.getTilesVersion())) {
             gltfOptions.setUriImage(true);
         }
 

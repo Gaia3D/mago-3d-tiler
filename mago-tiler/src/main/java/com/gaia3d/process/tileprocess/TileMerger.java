@@ -94,7 +94,7 @@ public class TileMerger {
 
         for (File tilesetJson : tilesetJsons) {
             try {
-                if (globalOptions.getTilesVersion().equals("1.0")) {
+                if ("1.0".equals(globalOptions.getTilesVersion())) {
                     Tileset tileset = objectMapper.readValue(tilesetJson, Tileset.class);
                     tilesetMap.put(tilesetJson, tileset);
                 } else {
@@ -173,7 +173,7 @@ public class TileMerger {
 
         geometricError = Math.min(geometricError, globalOptions.getMaxGeometricError());
 
-        if (globalOptions.getTilesVersion().equals("1.0")) {
+        if ("1.0".equals(globalOptions.getTilesVersion())) {
             AssetV1 asset = new AssetV1();
             mergedTileset.setAsset(asset);
         } else {

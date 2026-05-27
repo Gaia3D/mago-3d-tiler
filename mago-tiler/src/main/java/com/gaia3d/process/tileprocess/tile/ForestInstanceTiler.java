@@ -73,7 +73,7 @@ public class ForestInstanceTiler extends DefaultTiler implements Tiler {
         }
 
         Tileset tileset;
-        if (globalOptions.getTilesVersion().equals("1.0")) {
+        if ("1.0".equals(globalOptions.getTilesVersion())) {
             tileset = new Tileset();
             AssetV1 asset = new AssetV1();
             tileset.setAsset(asset);
@@ -113,6 +113,12 @@ public class ForestInstanceTiler extends DefaultTiler implements Tiler {
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
+        try {
+            java.nio.file.Files.createDirectories(outputPath);
+        } catch (IOException e) {
+            log.error("[ERROR] Failed to create output directory: {}", outputPath, e);
+            throw new TileProcessingException("Failed to create output directory: " + outputPath, e);
+        }
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(tilesetFile))) {
             String result = objectMapper.writeValueAsString(tileset);
             log.info("[Tile][Tileset] write 'tileset.json' file.");
@@ -369,7 +375,7 @@ public class ForestInstanceTiler extends DefaultTiler implements Tiler {
             contentInfo.setTempTileInfos(resultInfos);
             contentInfo.setRemainTileInfos(remainInfos);
             Content content = new Content();
-            if (globalOptions.getTilesVersion().equals("1.0")) {
+            if ("1.0".equals(globalOptions.getTilesVersion())) {
                 content.setUri("data/" + nodeCode + ".i3dm");
             } else {
                 content.setUri("data/" + nodeCode + ".glb");
