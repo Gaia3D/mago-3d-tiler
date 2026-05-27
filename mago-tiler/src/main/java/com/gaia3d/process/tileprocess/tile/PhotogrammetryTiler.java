@@ -294,7 +294,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         }
 
         Tileset tileset;
-        if (globalOptions.getTilesVersion().equals("1.0")) {
+        if ("1.0".equals(globalOptions.getTilesVersion())) {
             tileset = new Tileset();
             AssetV1 asset = new AssetV1();
             tileset.setAsset(asset);
@@ -840,7 +840,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             contentInfo.setTransformMatrix(nodeTMatrix);
 
             Content content = new Content();
-            if (globalOptions.getTilesVersion().equals("1.0")) {
+            if ("1.0".equals(globalOptions.getTilesVersion())) {
                 content.setUri("data/" + nodeCode + ".b3dm");
             } else {
                 content.setUri("data/" + nodeCode + ".glb");
@@ -1070,7 +1070,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             contentInfo.setTransformMatrix(nodeTMatrix);
 
             Content content = new Content();
-            if (globalOptions.getTilesVersion().equals("1.0")) {
+            if ("1.0".equals(globalOptions.getTilesVersion())) {
                 content.setUri("data/" + nodeCode + ".b3dm");
             } else {
                 content.setUri("data/" + nodeCode + ".glb");
@@ -1293,7 +1293,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             contentInfo.setTransformMatrix(nodeTMatrix);
 
             Content content = new Content();
-            if (globalOptions.getTilesVersion().equals("1.0")) {
+            if ("1.0".equals(globalOptions.getTilesVersion())) {
                 content.setUri("data/" + nodeCode + ".b3dm");
             } else {
                 content.setUri("data/" + nodeCode + ".glb");
@@ -1588,7 +1588,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         return new GaiaBoundingBox(minLonDegCut, minLatDegCut, geoCoordLeftDownBottom.z, maxLonDegCut, maxLatDegCut, geoCoordLeftDownUp.z, false);
     }
 
-    private void cutRectangleCakeOneShoot(List<TileInfo> tileInfos, int lod, BoundingVolume rootNodeBoundingVolume, int depthIdx, List<TileInfo> resultTileInfos) throws FileNotFoundException {
+    private void cutRectangleCakeOneShoot(List<TileInfo> tileInfos, int lod, BoundingVolume rootNodeBoundingVolume, int depthIdx, List<TileInfo> resultTileInfos) throws IOException {
         // Note : tileInfos must contain only one tileInfo
         // now, cut the scene by the divisions
         boolean someSceneCut = false;
@@ -1910,6 +1910,12 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         //objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         //objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
+        try {
+            java.nio.file.Files.createDirectories(outputPath);
+        } catch (IOException e) {
+            log.error("[ERROR] Failed to create output directory: {}", outputPath, e);
+            throw new TileProcessingException("Failed to create output directory: " + outputPath, e);
+        }
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(tilesetFile))) {
             String result = objectMapper.writeValueAsString(tileset);
             log.info("[Tile][Tileset] write 'tileset.json' file.");
@@ -2059,7 +2065,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 contentInfo.setTransformMatrix(transformMatrix);
 
                 Content content = new Content();
-                if (globalOptions.getTilesVersion().equals("1.0")) {
+                if ("1.0".equals(globalOptions.getTilesVersion())) {
                     content.setUri("data/" + nodeCode + ".b3dm");
                 } else {
                     content.setUri("data/" + nodeCode + ".glb");
@@ -2136,7 +2142,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             contentInfo.setTransformMatrix(transformMatrix);
 
             Content content = new Content();
-            if (globalOptions.getTilesVersion().equals("1.0")) {
+            if ("1.0".equals(globalOptions.getTilesVersion())) {
                 content.setUri("data/" + nodeCode + ".b3dm");
             } else {
                 content.setUri("data/" + nodeCode + ".glb");

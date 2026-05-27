@@ -502,7 +502,7 @@ public class ExperimentalTest {
                 "-ot", "i3dm",
                 "-refineAdd",
                 "-instance", MagoTestConfig.getInputPath(path).getAbsolutePath() + "/lite.glb",
-                "-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                "-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
         };
         MagoTestConfig.execute(args);
     }
@@ -515,7 +515,7 @@ public class ExperimentalTest {
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5179",
                 "-it", "geojson",
-                "-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                "-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
         };
         MagoTestConfig.execute(args);
     }

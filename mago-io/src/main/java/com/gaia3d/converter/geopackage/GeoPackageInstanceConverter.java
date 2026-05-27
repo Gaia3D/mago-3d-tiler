@@ -57,7 +57,7 @@ public class GeoPackageInstanceConverter implements AttributeReader {
 
         List<AttributeFilter> attributeFilters = parametricOptions.getAttributeFilters();
         List<TileTransformInfo> result = new ArrayList<>();
-        boolean isDefaultCrs = parametricOptions.getSourceCrs().equals(new CRSFactory().createFromName("EPSG:3857"));
+        boolean isDefaultCrs = Objects.equals(parametricOptions.getSourceCrs(), new CRSFactory().createFromName("EPSG:3857"));
         String altitudeColumnName = parametricOptions.getAltitudeColumnName();
         String headingColumnName = parametricOptions.getHeadingColumnName();
         String heightColumnName = parametricOptions.getHeightColumnName();

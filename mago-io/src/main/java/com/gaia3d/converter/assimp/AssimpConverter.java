@@ -137,7 +137,7 @@ public class AssimpConverter implements Converter {
         String fileName = file.getName();
         Path originalPath = file.toPath();
 
-        FormatType formatType = FormatType.fromExtension(FilenameUtils.getExtension(fileName));
+        FormatType formatType = FormatType.requireFromExtension(FilenameUtils.getExtension(fileName));
         GaiaScene gaiaScene = new GaiaScene();
 
         AINode aiNode = aiScene.mRootNode();
@@ -192,7 +192,7 @@ public class AssimpConverter implements Converter {
     }
 
     private GaiaScene convertScene(AIScene aiScene, String filePath, String fileName) {
-        FormatType formatType = FormatType.fromExtension(FilenameUtils.getExtension(fileName));
+        FormatType formatType = FormatType.requireFromExtension(FilenameUtils.getExtension(fileName));
         GaiaScene gaiaScene = new GaiaScene();
         AINode aiNode = aiScene.mRootNode();
         List<String> embeddedTextures = getEmbeddedTexturePath(aiScene, filePath, fileName);

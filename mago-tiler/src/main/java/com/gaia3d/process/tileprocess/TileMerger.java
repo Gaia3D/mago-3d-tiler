@@ -28,7 +28,7 @@ import java.util.Map;
 @Slf4j
 public class TileMerger {
 
-    private static final GlobalOptions globalOptions = GlobalOptions.getInstance();
+    private GlobalOptions globalOptions = GlobalOptions.getInstance();
     private final int MINIMUM_DEPTH = 2;
     private final int MAXIMUM_DEPTH = 16;
 
@@ -43,11 +43,7 @@ public class TileMerger {
         // find all tileset.json files
         log.info("[Merge] searching for tileset.json files in {}.", inputPath);
         List<File> tilesetJsons;
-        if (globalOptions.isRecursive()) {
-            tilesetJsons = findAllTilesetJsons(inputPath);
-        } else {
-            tilesetJsons = findAllTilesetJsons(inputPath, MINIMUM_DEPTH);
-        }
+        tilesetJsons = findAllTilesetJsons(inputPath);
         log.info("[Merge] found {} tileset.json files.", tilesetJsons.size());
         if (tilesetJsons.isEmpty()) {
             log.warn("[Merge] No tileset.json files found.");
@@ -98,7 +94,7 @@ public class TileMerger {
 
         for (File tilesetJson : tilesetJsons) {
             try {
-                if (globalOptions.getTilesVersion().equals("1.0")) {
+                if ("1.0".equals(globalOptions.getTilesVersion())) {
                     Tileset tileset = objectMapper.readValue(tilesetJson, Tileset.class);
                     tilesetMap.put(tilesetJson, tileset);
                 } else {
@@ -177,7 +173,7 @@ public class TileMerger {
 
         geometricError = Math.min(geometricError, globalOptions.getMaxGeometricError());
 
-        if (globalOptions.getTilesVersion().equals("1.0")) {
+        if ("1.0".equals(globalOptions.getTilesVersion())) {
             AssetV1 asset = new AssetV1();
             mergedTileset.setAsset(asset);
         } else {

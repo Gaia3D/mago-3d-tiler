@@ -53,7 +53,7 @@ public class ShapeInstanceConverter implements AttributeReader {
     public List<TileTransformInfo> readAll(File file) {
 
         List<AttributeFilter> attributeFilters = parametricOptions.getAttributeFilters();
-        boolean isDefaultCrs = parametricOptions.getSourceCrs().equals(new CRSFactory().createFromName("EPSG:3857"));
+        boolean isDefaultCrs = Objects.equals(parametricOptions.getSourceCrs(), new CRSFactory().createFromName("EPSG:3857"));
         String altitudeColumnName = parametricOptions.getAltitudeColumnName();
         String headingColumnName = parametricOptions.getHeadingColumnName();
         String scaleColumnName = parametricOptions.getScaleColumnName();

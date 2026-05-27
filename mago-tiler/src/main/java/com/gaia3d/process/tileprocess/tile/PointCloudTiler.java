@@ -57,7 +57,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         root.setGeometricError(geographicError);
         BoundingVolume boundingVolume = new BoundingVolume(globalBoundingBox, BoundingVolume.BoundingVolumeType.REGION);
 
-        // root만 큐브로
+        // Fit the root bounding volume to the cube.
         root.setBoundingVolume(boundingVolume);
         root.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
         try {
@@ -68,7 +68,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         }
 
         Tileset tileset;
-        if (globalOptions.getTilesVersion().equals("1.0")) {
+        if ("1.0".equals(globalOptions.getTilesVersion())) {
             tileset = new Tileset();
             AssetV1 asset = new AssetV1();
             tileset.setAsset(asset);
@@ -108,6 +108,12 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
+        try {
+            java.nio.file.Files.createDirectories(outputPath.toPath());
+        } catch (IOException e) {
+            log.error("[ERROR] Failed to create output directory: {}", outputPath, e);
+            throw new TileProcessingException("Failed to create output directory: " + outputPath, e);
+        }
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(tilesetFile))) {
             String result = objectMapper.writeValueAsString(tileset);
             log.info("[Tile][Tileset] write 'tileset.json' file.");
@@ -151,6 +157,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
 
     @Override
     protected double calcGeometricError(List<TileInfo> tileInfos) {
+        validatePointCloudTileInfos(tileInfos, "PointCloudTiler.calcGeometricError");
         return tileInfos.stream().mapToDouble(tileInfo -> {
             GaiaBoundingBox boundingBox = tileInfo.getPointCloud().getGaiaBoundingBox();
             return boundingBox.getLongestDistance();
@@ -159,6 +166,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
 
     @Override
     protected GaiaBoundingBox calcCartographicBoundingBox(List<TileInfo> tileInfos) {
+        validatePointCloudTileInfos(tileInfos, "PointCloudTiler.calcCartographicBoundingBox");
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
         tileInfos.forEach(tileInfo -> {
             GaiaBoundingBox localBoundingBox = tileInfo.getPointCloud().getGaiaBoundingBox();
@@ -452,7 +460,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         contentInfo.setTileInfos(tileInfos);
 
         Content content = new Content();
-        if (globalOptions.getTilesVersion().equals("1.0")) {
+        if ("1.0".equals(globalOptions.getTilesVersion())) {
             content.setUri("data/" + childNode.getNodeCode() + ".pnts");
         } else {
             content.setUri("data/" + childNode.getNodeCode() + ".glb");

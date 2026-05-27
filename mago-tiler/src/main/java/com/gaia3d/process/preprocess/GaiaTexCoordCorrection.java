@@ -57,7 +57,7 @@ public class GaiaTexCoordCorrection implements PreProcess {
     private FormatType getFormatTypeFromScene(GaiaScene gaiaScene) {
         Path scenePath = gaiaScene.getOriginalPath();
         String extension = FilenameUtils.getExtension(scenePath.toString());
-        return FormatType.fromExtension(extension);
+        return FormatType.requireFromExtension(extension);
     }
 
     private boolean isInvertTexCoordsYAxis(FormatType formatType) {

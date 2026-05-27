@@ -88,4 +88,12 @@ public enum FormatType {
                 .findFirst()
                 .orElse(null);
     }
+
+    public static FormatType requireFromExtension(String extension) {
+        FormatType formatType = fromExtension(extension);
+        if (formatType == null) {
+            throw new IllegalArgumentException("Unsupported format extension: " + extension);
+        }
+        return formatType;
+    }
 }

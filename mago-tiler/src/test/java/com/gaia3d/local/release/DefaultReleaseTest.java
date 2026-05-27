@@ -74,12 +74,11 @@ class DefaultReleaseTest {
     @Test
     void runWithSimple() throws IOException {
         /*
-        "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-terrain", MagoTestConfig.getInputPath(path).getAbsolutePath() + "/seoul.tif",
-                "-c", "5186"
+            "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+            "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+            "-terrain", MagoTestConfig.getInputPath(path).getAbsolutePath() + "/seoul.tif",
+            "-c", "5186"
          */
-
         String path = "B06-seoul-yeouido-shp";
         List<String> argList = new ArrayList<>();
         argList.add("java");

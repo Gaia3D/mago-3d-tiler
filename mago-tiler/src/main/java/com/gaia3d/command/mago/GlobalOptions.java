@@ -218,9 +218,9 @@ public class GlobalOptions {
             if (inputType == null || StringUtils.isEmpty(inputType)) {
                 inputFormat = OptionsCorrector.findInputFormatType(new File(instance.getInputPath()), isRecursive);
             } else {
-                inputFormat = FormatType.fromExtension(inputType);
+                inputFormat = FormatType.requireFromExtension(inputType);
             }
-            inputFormat = inputFormat == null ? FormatType.fromExtension(GlobalConstants.DEFAULT_INPUT_FORMAT) : inputFormat;
+            inputFormat = inputFormat == null ? FormatType.requireFromExtension(GlobalConstants.DEFAULT_INPUT_FORMAT) : inputFormat;
             instance.setInputFormat(inputFormat);
 
             FormatType outputFormat;
@@ -228,7 +228,7 @@ public class GlobalOptions {
             if (outputType == null) {
                 outputFormat = OptionsCorrector.findOutputFormatType(instance.getInputFormat());
             } else {
-                outputFormat = FormatType.fromExtension(outputType);
+                outputFormat = FormatType.requireFromExtension(outputType);
             }
             if (outputFormat == null) {
                 throw new IllegalArgumentException("Invalid output format: " + outputType);

@@ -8,7 +8,6 @@ import java.io.File;
 
 @Slf4j
 public class MagoTestConfig {
-    //public static final String OUTPUT_PATH = "E:/data/mago-server/output";
     public static final String OUTPUT_PATH = "H:/workspace/mago-server/output";
     public static final String SSD_INPUT_PATH = "H:/workspace/mago-3d-tiler";
     public static final String INPUT_PATH = "D:/data/mago-3d-tiler/release-sample";
