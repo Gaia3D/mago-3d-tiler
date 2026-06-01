@@ -2,6 +2,9 @@ package com.gaia3d.basic.halfedge;
 
 import org.joml.Vector3d;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public enum CameraDirectionType {
     UNKNOWN,
     XPOS,
@@ -139,6 +142,24 @@ public enum CameraDirectionType {
                 result = cameraDirectionType;
             }
         }
+        return result;
+    }
+
+    public static List<CameraDirectionType> get9ObliqueCameraDirectionTypes(List<CameraDirectionType> result){
+        if(result == null){
+            result = new ArrayList<>();
+        }
+
+        result.add(ZNEG);
+        result.add(XPOS_ZNEG);
+        result.add(XNEG_ZNEG);
+        result.add(YPOS_ZNEG);
+        result.add(YNEG_ZNEG);
+        result.add(XPOS_YPOS_ZNEG);
+        result.add(XPOS_YNEG_ZNEG);
+        result.add(XNEG_YPOS_ZNEG);
+        result.add(XNEG_YNEG_ZNEG);
+
         return result;
     }
 

@@ -1103,7 +1103,7 @@ public class Engine {
             }
         }
 
-        List<TexturesAtlasData> texturesAtlasDataList = new ArrayList<>();
+        List<com.gaia3d.basic.texture.atlas.TexturesAtlasData> texturesAtlasDataList = new ArrayList<>();
 
         Map<Integer, Map<GaiaFace, HalfEdgeFace>> mapClassifyIdToGaiaFaceToHalfEdgeFace = new HashMap<>();
         Map<Integer, Map<GaiaFace, CameraDirectionTypeInfo>> mapClassifyIdToGaiaFaceToCameraDirectionTypeInfo = new HashMap<>();
@@ -1161,7 +1161,7 @@ public class Engine {
             imageZNeg = eliminateBackGroundColor(imageZNeg, backgroundColor);
 
             if (imageZNeg != null) {
-                TexturesAtlasData texturesAtlasDataYPosZNeg = new TexturesAtlasData();
+                com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataYPosZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
                 texturesAtlasDataYPosZNeg.setClassifyId(classificationId);
                 texturesAtlasDataYPosZNeg.setCameraDirectionType(CameraDirectionType.ZNEG);
                 texturesAtlasDataYPosZNeg.setTextureImage(imageZNeg);
@@ -1176,7 +1176,7 @@ public class Engine {
                 imageYpoZNeg = eliminateBackGroundColor(imageYpoZNeg, backgroundColor);
 
                 if (imageYpoZNeg != null) {
-                    TexturesAtlasData texturesAtlasDataYPosZNeg = new TexturesAtlasData();
+                    com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataYPosZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
                     texturesAtlasDataYPosZNeg.setClassifyId(classificationId);
                     texturesAtlasDataYPosZNeg.setCameraDirectionType(CameraDirectionType.YPOS_ZNEG);
                     texturesAtlasDataYPosZNeg.setTextureImage(imageYpoZNeg);
@@ -1190,7 +1190,7 @@ public class Engine {
                 imageXNegZNeg = eliminateBackGroundColor(imageXNegZNeg, backgroundColor);
 
                 if (imageXNegZNeg != null) {
-                    TexturesAtlasData texturesAtlasDataXNegZNeg = new TexturesAtlasData();
+                    com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataXNegZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
                     texturesAtlasDataXNegZNeg.setClassifyId(classificationId);
                     texturesAtlasDataXNegZNeg.setCameraDirectionType(CameraDirectionType.XNEG_ZNEG);
                     texturesAtlasDataXNegZNeg.setTextureImage(imageXNegZNeg);
@@ -1204,7 +1204,7 @@ public class Engine {
                 imageYNegZNeg = eliminateBackGroundColor(imageYNegZNeg, backgroundColor);
 
                 if (imageYNegZNeg != null) {
-                    TexturesAtlasData texturesAtlasDataYNegZNeg = new TexturesAtlasData();
+                    com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataYNegZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
                     texturesAtlasDataYNegZNeg.setClassifyId(classificationId);
                     texturesAtlasDataYNegZNeg.setCameraDirectionType(CameraDirectionType.YNEG_ZNEG);
                     texturesAtlasDataYNegZNeg.setTextureImage(imageYNegZNeg);
@@ -1218,7 +1218,7 @@ public class Engine {
                 imageXPosZNeg = eliminateBackGroundColor(imageXPosZNeg, backgroundColor);
 
                 if (imageXPosZNeg != null) {
-                    TexturesAtlasData texturesAtlasDataXPosZNeg = new TexturesAtlasData();
+                    com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataXPosZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
                     texturesAtlasDataXPosZNeg.setClassifyId(classificationId);
                     texturesAtlasDataXPosZNeg.setCameraDirectionType(CameraDirectionType.XPOS_ZNEG);
                     texturesAtlasDataXPosZNeg.setTextureImage(imageXPosZNeg);
@@ -1231,7 +1231,7 @@ public class Engine {
                         mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType, backgroundColor);
                 imageXPosYPosZNeg = eliminateBackGroundColor(imageXPosYPosZNeg, backgroundColor);
                 if (imageXPosYPosZNeg != null) {
-                    TexturesAtlasData texturesAtlasDataXPosYPosZNeg = new TexturesAtlasData();
+                    com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataXPosYPosZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
                     texturesAtlasDataXPosYPosZNeg.setClassifyId(classificationId);
                     texturesAtlasDataXPosYPosZNeg.setCameraDirectionType(CameraDirectionType.XPOS_YPOS_ZNEG);
                     texturesAtlasDataXPosYPosZNeg.setTextureImage(imageXPosYPosZNeg);
@@ -1244,7 +1244,7 @@ public class Engine {
                         mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType, backgroundColor);
                 imageXNegYPosZNeg = eliminateBackGroundColor(imageXNegYPosZNeg, backgroundColor);
                 if (imageXNegYPosZNeg != null) {
-                    TexturesAtlasData texturesAtlasDataXNegYPosZNeg = new TexturesAtlasData();
+                    com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataXNegYPosZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
                     texturesAtlasDataXNegYPosZNeg.setClassifyId(classificationId);
                     texturesAtlasDataXNegYPosZNeg.setCameraDirectionType(CameraDirectionType.XNEG_YPOS_ZNEG);
                     texturesAtlasDataXNegYPosZNeg.setTextureImage(imageXNegYPosZNeg);
@@ -1257,7 +1257,7 @@ public class Engine {
                         mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType, backgroundColor);
                 imageXPosYNegZNeg = eliminateBackGroundColor(imageXPosYNegZNeg, backgroundColor);
                 if (imageXPosYNegZNeg != null) {
-                    TexturesAtlasData texturesAtlasDataXPosYNegZNeg = new TexturesAtlasData();
+                    com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataXPosYNegZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
                     texturesAtlasDataXPosYNegZNeg.setClassifyId(classificationId);
                     texturesAtlasDataXPosYNegZNeg.setCameraDirectionType(CameraDirectionType.XPOS_YNEG_ZNEG);
                     texturesAtlasDataXPosYNegZNeg.setTextureImage(imageXPosYNegZNeg);
@@ -1270,7 +1270,7 @@ public class Engine {
                         mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType, backgroundColor);
                 imageXNegYNegZNeg = eliminateBackGroundColor(imageXNegYNegZNeg, backgroundColor);
                 if (imageXNegYNegZNeg != null) {
-                    TexturesAtlasData texturesAtlasDataXNegYNegZNeg = new TexturesAtlasData();
+                    com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataXNegYNegZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
                     texturesAtlasDataXNegYNegZNeg.setClassifyId(classificationId);
                     texturesAtlasDataXNegYNegZNeg.setCameraDirectionType(CameraDirectionType.XNEG_YNEG_ZNEG);
                     texturesAtlasDataXNegYNegZNeg.setTextureImage(imageXNegYNegZNeg);
@@ -1401,7 +1401,7 @@ public class Engine {
             }
         }
 
-        TextureAtlasManager textureAtlasManager = new TextureAtlasManager();
+        com.gaia3d.basic.texture.atlas.TextureAtlasManager textureAtlasManager = new com.gaia3d.basic.texture.atlas.TextureAtlasManager();
         textureAtlasManager.doAtlasTextureProcess(texturesAtlasDataList);
         textureAtlasManager.recalculateTexCoordsAfterTextureAtlasingObliqueCamera(halfEdgeScene, texturesAtlasDataList, mapClassificationCamDirTypeFacesList);
 
@@ -1422,7 +1422,7 @@ public class Engine {
         GaiaTexture atlasTexture = textureAtlasManager.makeAtlasTexture(texturesAtlasDataList, bufferImageType);
 
         // delete texturesAtlasDataList
-        for (TexturesAtlasData texturesAtlasData : texturesAtlasDataList) {
+        for (com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasData : texturesAtlasDataList) {
             texturesAtlasData.deleteObjects();
         }
 

@@ -25,6 +25,7 @@ public class GaiaStatistics {
 //    normalVariance ≈ 0.15  -> algo rugoso
 //    normalVariance ≈ 0.25+ -> bastante caótico
 //    normalVariance ≈ 0.40+ -> muy caótico
+    private double normalVarianceWeightedSum = 0.0;
 
     public double verticalRange = 0.0;
     public double areaFoldRatio = 0.0;
@@ -112,8 +113,10 @@ public class GaiaStatistics {
         this.edgeSizeTotal += other.edgeSizeTotal;
         this.edgeSizeCount += other.edgeSizeCount;
 
-        this.minEdgeSize = Math.min(this.minEdgeSize, other.minEdgeSize);
-        this.maxEdgeSize = Math.max(this.maxEdgeSize, other.maxEdgeSize);
+        if (other.edgeSizeCount > 0) {
+            this.minEdgeSize = Math.min(this.minEdgeSize, other.minEdgeSize);
+            this.maxEdgeSize = Math.max(this.maxEdgeSize, other.maxEdgeSize);
+        }
 
         this.minX = Math.min(this.minX, other.minX);
         this.minY = Math.min(this.minY, other.minY);
@@ -123,7 +126,7 @@ public class GaiaStatistics {
         this.maxY = Math.max(this.maxY, other.maxY);
         this.maxZ = Math.max(this.maxZ, other.maxZ);
 
-        this.normalVariance += other.normalVariance * other.areaTotal;
+        this.normalVarianceWeightedSum += other.normalVariance * other.areaTotal;
     }
 
     public void finishAccumulatedStatistics() {
@@ -145,13 +148,17 @@ public class GaiaStatistics {
         double projectedAreaXZ = sizeX * sizeZ;
         double projectedAreaYZ = sizeY * sizeZ;
 
-        double maxProjectedArea = Math.max(projectedAreaXY, Math.max(projectedAreaXZ, projectedAreaYZ));
+        double maxProjectedArea = Math.max(
+                projectedAreaXY,
+                Math.max(projectedAreaXZ, projectedAreaYZ)
+        );
+
         maxProjectedArea = Math.max(maxProjectedArea, EPSILON);
 
         this.trianglesDensity = this.trianglesCount / maxProjectedArea;
         this.areaFoldRatio = this.areaTotal / maxProjectedArea;
 
-        this.normalVariance = this.normalVariance / this.areaTotal;
+        this.normalVariance = this.normalVarianceWeightedSum / this.areaTotal;
     }
 
     public static GaiaStatistics calculateStatistics(GaiaPrimitive primitive) {

@@ -122,8 +122,8 @@ public class MainRendererBillBoard implements IAppLogic {
         int bufferImageType = BufferedImage.TYPE_INT_ARGB;
         List<BufferedImage> resultBufferedImages = new ArrayList<>();
 
-        List<TexturesAtlasData> albedoTexturesAtlasDataList = new ArrayList<>();
-        List<TexturesAtlasData> normalTexturesAtlasDataList = new ArrayList<>();
+        List<com.gaia3d.basic.texture.atlas.TexturesAtlasData> albedoTexturesAtlasDataList = new ArrayList<>();
+        List<com.gaia3d.basic.texture.atlas.TexturesAtlasData> normalTexturesAtlasDataList = new ArrayList<>();
 
         List<GaiaFace> faces = new ArrayList<>();
         int classifyId = 0;
@@ -150,12 +150,12 @@ public class MainRendererBillBoard implements IAppLogic {
             BufferedImage albedoImage = resultBufferedImages.get(0);
             BufferedImage normalImage = resultBufferedImages.get(1);
 
-            TexturesAtlasData albedoTexturesAtlasData = new TexturesAtlasData();
+            com.gaia3d.basic.texture.atlas.TexturesAtlasData albedoTexturesAtlasData = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             albedoTexturesAtlasData.setTextureImage(albedoImage);
             albedoTexturesAtlasData.setClassifyId(classifyId);
             albedoTexturesAtlasDataList.add(albedoTexturesAtlasData);
 
-            TexturesAtlasData normalTexturesAtlasData = new TexturesAtlasData();
+            com.gaia3d.basic.texture.atlas.TexturesAtlasData normalTexturesAtlasData = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             normalTexturesAtlasData.setTextureImage(normalImage);
             normalTexturesAtlasData.setClassifyId(classifyId);
             normalTexturesAtlasDataList.add(normalTexturesAtlasData);
@@ -197,12 +197,12 @@ public class MainRendererBillBoard implements IAppLogic {
             BufferedImage albedoImage = resultBufferedImages.get(0);
             BufferedImage normalImage = resultBufferedImages.get(1);
 
-            TexturesAtlasData albedoTexturesAtlasData = new TexturesAtlasData();
+            com.gaia3d.basic.texture.atlas.TexturesAtlasData albedoTexturesAtlasData = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             albedoTexturesAtlasData.setTextureImage(albedoImage);
             albedoTexturesAtlasData.setClassifyId(classifyId);
             albedoTexturesAtlasDataList.add(albedoTexturesAtlasData);
 
-            TexturesAtlasData normalTexturesAtlasData = new TexturesAtlasData();
+            com.gaia3d.basic.texture.atlas.TexturesAtlasData normalTexturesAtlasData = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             normalTexturesAtlasData.setTextureImage(normalImage);
             normalTexturesAtlasData.setClassifyId(classifyId);
             normalTexturesAtlasDataList.add(normalTexturesAtlasData);
@@ -211,7 +211,7 @@ public class MainRendererBillBoard implements IAppLogic {
             classifyId++;
         }
 
-        TextureAtlasManager textureAtlasManager = new TextureAtlasManager();
+        com.gaia3d.basic.texture.atlas.TextureAtlasManager textureAtlasManager = new com.gaia3d.basic.texture.atlas.TextureAtlasManager();
         textureAtlasManager.doAtlasTextureProcess(albedoTexturesAtlasDataList);
         textureAtlasManager.copyAtlasTextureProcess(albedoTexturesAtlasDataList, normalTexturesAtlasDataList);
         treeScene.joinAllSurfaces();

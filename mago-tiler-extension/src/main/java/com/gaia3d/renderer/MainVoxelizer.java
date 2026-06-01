@@ -462,8 +462,6 @@ public class MainVoxelizer implements IAppLogic {
                 fboHeightColor = maxScreenSize;
             }
 
-            //Fbo colorFbo = fboManager.getOrCreateFbo("colorRender", fboWidthColor, fboHeightColor);
-
             // now set camera position
             Camera camera = new Camera();
             camera.setPosition(bboxCenter);
@@ -758,6 +756,18 @@ public class MainVoxelizer implements IAppLogic {
             GaiaWelder weld = new GaiaWelder(weldOptions);
             weld.apply(gaiaSceneMaster);
             cleaner.apply(gaiaSceneMaster);
+
+//            // Make horizontal skirt.************************************************************************************
+//            GaiaHorizontalSkirtMaker horizontalSkirtMaker = new GaiaHorizontalSkirtMaker();
+//            double maxNodeBBoxSize = nodeBBox.getMaxSize();
+//            horizontalSkirtMaker.addHorizontalSkirtsToScene(gaiaSceneMaster, nodeBBox, 0.1f, maxNodeBBoxSize*0.005);
+//            // End making horizontal skirt.-------------------------------------------------------------------------------
+
+            // Make frontier expansion.************************************************************************************
+            GaiaFrontierExpander frontierExpander = new GaiaFrontierExpander();
+            double maxNodeBBoxSize = nodeBBox.getMaxSize();
+            frontierExpander.expandFrontiersToScene(gaiaSceneMaster, nodeBBox, 0.2, maxNodeBBoxSize * 0.003);
+            // End making frontier expansion.------------------------------------------------------------------------------
 
             GaiaExtractor extractor = new GaiaExtractor();
             List<GaiaFace> gaiaFacesMaster = extractor.extractAllFaces(gaiaSceneMaster);
@@ -1719,783 +1729,6 @@ public class MainVoxelizer implements IAppLogic {
         integralReMeshParameters.deleteFBOs(fboManager);
     }
 
-    private void atlasTextureForIntegralReMesh(IntegralReMeshParameters integralReMeshParameters,
-                                               HalfEdgeScene halfEdgeSceneMaster,
-                                               Map<Integer, Map<GaiaFace, HalfEdgeFace>> mapClassifyIdToGaiaFaceToHalfEdgeFace,
-                                               Map<Integer, Map<GaiaFace, CameraDirectionTypeInfo>> mapClassifyIdToGaiaFaceToCameraDirectionTypeInfo,
-                                               Map<Integer, Map<CameraDirectionType, GaiaBoundingBox>> mapClassificationCamDirTypeBBox,
-                                               Map<Integer, Map<CameraDirectionType, Matrix4d>> mapClassificationCamDirTypeModelViewMatrix,
-                                               Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapClassificationCamDirTypeFacesList,
-                                               String outputPathString, String nodeName) {
-        List<HalfEdgeSurface> surfaces = halfEdgeSceneMaster.extractSurfaces(null);
-
-        Map<Integer, List<HalfEdgeFace>> facesClassificationMap = new HashMap<>();
-        int surfacesCount = surfaces.size();
-        for (int i = 0; i < surfacesCount; i++) {
-            HalfEdgeSurface surface = surfaces.get(i);
-            int facesCount = surface.getFaces().size();
-            for (int j = 0; j < facesCount; j++) {
-                HalfEdgeFace face = surface.getFaces().get(j);
-                int classificationId = face.getClassifyId();
-                List<HalfEdgeFace> facesList = facesClassificationMap.computeIfAbsent(classificationId, k -> new ArrayList<>());
-                facesList.add(face);
-            }
-        }
-
-        int classificationId = -1; // in integralReMesh, there is only one classificationId = -1
-
-        int bufferedImageType = BufferedImage.TYPE_INT_ARGB;
-        List<TexturesAtlasData> texturesAtlasDataList = new ArrayList<>();
-        Map<String, Fbo> colorFboMap = integralReMeshParameters.getColorFboMap();
-
-        Vector4f backgroundColor = integralReMeshParameters.getBackgroundColor();
-
-        // ZNEG
-        Fbo fboZNeg = colorFboMap.get("ZNEG");
-        fboZNeg.bind();
-        BufferedImage imageZNeg = fboZNeg.getBufferedImage(bufferedImageType);
-        fboZNeg.unbind();
-        imageZNeg = engine.eliminateBackGroundColor(imageZNeg, backgroundColor);
-        if (imageZNeg != null) {
-            TexturesAtlasData texturesAtlasDataYPosZNeg = new TexturesAtlasData();
-            texturesAtlasDataYPosZNeg.setClassifyId(classificationId);
-            texturesAtlasDataYPosZNeg.setCameraDirectionType(CameraDirectionType.ZNEG);
-            texturesAtlasDataYPosZNeg.setTextureImage(imageZNeg);
-            texturesAtlasDataList.add(texturesAtlasDataYPosZNeg);
-        }
-
-        // YPOS_ZNEG
-        Fbo fboYPosZNeg = colorFboMap.get("YPOS_ZNEG");
-        fboYPosZNeg.bind();
-        BufferedImage imageYPosZNeg = fboYPosZNeg.getBufferedImage(bufferedImageType);
-        fboYPosZNeg.unbind();
-        imageYPosZNeg = engine.eliminateBackGroundColor(imageYPosZNeg, backgroundColor);
-        if (imageYPosZNeg != null) {
-            TexturesAtlasData texturesAtlasDataYPosZNeg = new TexturesAtlasData();
-            texturesAtlasDataYPosZNeg.setClassifyId(classificationId);
-            texturesAtlasDataYPosZNeg.setCameraDirectionType(CameraDirectionType.YPOS_ZNEG);
-            texturesAtlasDataYPosZNeg.setTextureImage(imageYPosZNeg);
-            texturesAtlasDataList.add(texturesAtlasDataYPosZNeg);
-        }
-
-        // YNEG_ZNEG
-        Fbo fboYNegZNeg = colorFboMap.get("YNEG_ZNEG");
-        fboYNegZNeg.bind();
-        BufferedImage imageYNegZNeg = fboYNegZNeg.getBufferedImage(bufferedImageType);
-        fboYNegZNeg.unbind();
-        imageYNegZNeg = engine.eliminateBackGroundColor(imageYNegZNeg, backgroundColor);
-        if (imageYNegZNeg != null) {
-            TexturesAtlasData texturesAtlasDataYNegZNeg = new TexturesAtlasData();
-            texturesAtlasDataYNegZNeg.setClassifyId(classificationId);
-            texturesAtlasDataYNegZNeg.setCameraDirectionType(CameraDirectionType.YNEG_ZNEG);
-            texturesAtlasDataYNegZNeg.setTextureImage(imageYNegZNeg);
-            texturesAtlasDataList.add(texturesAtlasDataYNegZNeg);
-        }
-
-        // XPOS_ZNEG
-        Fbo fboXPosZNeg = colorFboMap.get("XPOS_ZNEG");
-        fboXPosZNeg.bind();
-        BufferedImage imageXPosZNeg = fboXPosZNeg.getBufferedImage(bufferedImageType);
-        fboXPosZNeg.unbind();
-        imageXPosZNeg = engine.eliminateBackGroundColor(imageXPosZNeg, backgroundColor);
-        if (imageXPosZNeg != null) {
-            TexturesAtlasData texturesAtlasDataXPosZNeg = new TexturesAtlasData();
-            texturesAtlasDataXPosZNeg.setClassifyId(classificationId);
-            texturesAtlasDataXPosZNeg.setCameraDirectionType(CameraDirectionType.XPOS_ZNEG);
-            texturesAtlasDataXPosZNeg.setTextureImage(imageXPosZNeg);
-            texturesAtlasDataList.add(texturesAtlasDataXPosZNeg);
-        }
-
-        // XNEG_ZNEG
-        Fbo fboXNegZNeg = colorFboMap.get("XNEG_ZNEG");
-        fboXNegZNeg.bind();
-        BufferedImage imageXNegZNeg = fboXNegZNeg.getBufferedImage(bufferedImageType);
-        fboXNegZNeg.unbind();
-        imageXNegZNeg = engine.eliminateBackGroundColor(imageXNegZNeg, backgroundColor);
-        if (imageXNegZNeg != null) {
-            TexturesAtlasData texturesAtlasDataXNegZNeg = new TexturesAtlasData();
-            texturesAtlasDataXNegZNeg.setClassifyId(classificationId);
-            texturesAtlasDataXNegZNeg.setCameraDirectionType(CameraDirectionType.XNEG_ZNEG);
-            texturesAtlasDataXNegZNeg.setTextureImage(imageXNegZNeg);
-            texturesAtlasDataList.add(texturesAtlasDataXNegZNeg);
-        }
-
-        // There are no visible faces, so 1rst set the CAMERA_DIRECTION_ZNEG to all the halfEdgeFaces as default
-        List<HalfEdgeFace> facesList = facesClassificationMap.get(classificationId);
-        if (facesList == null) {
-            log.error("atlasTextureForIntegralReMesh: facesList is null for classificationId: " + classificationId);
-            return;
-        }
-        for (HalfEdgeFace halfEdgeFace : facesList) {
-            halfEdgeFace.setCameraDirectionType(CameraDirectionType.ZNEG);
-        }
-
-        // check visibility data manager****************************************************************************
-        FaceVisibilityDataManager faceVisibilityDataManager = new FaceVisibilityDataManager();
-
-        Map<String, Fbo> colorCodeFboMap = integralReMeshParameters.getColorCodeFboMap();
-        Fbo fboColorCodeZNeg = colorCodeFboMap.get("ZNEG");
-        updateFaceVisibilityData(CameraDirectionType.ZNEG, fboColorCodeZNeg, faceVisibilityDataManager);
-        Fbo fboColorCodeYPosZNeg = colorCodeFboMap.get("YPOS_ZNEG");
-        updateFaceVisibilityData(CameraDirectionType.YPOS_ZNEG, fboColorCodeYPosZNeg, faceVisibilityDataManager);
-        Fbo fboColorCodeYNegZNeg = colorCodeFboMap.get("YNEG_ZNEG");
-        updateFaceVisibilityData(CameraDirectionType.YNEG_ZNEG, fboColorCodeYNegZNeg, faceVisibilityDataManager);
-        Fbo fboColorCodeXPosZNeg = colorCodeFboMap.get("XPOS_ZNEG");
-        updateFaceVisibilityData(CameraDirectionType.XPOS_ZNEG, fboColorCodeXPosZNeg, faceVisibilityDataManager);
-        Fbo fboColorCodeXNegZNeg = colorCodeFboMap.get("XNEG_ZNEG");
-        updateFaceVisibilityData(CameraDirectionType.XNEG_ZNEG, fboColorCodeXNegZNeg, faceVisibilityDataManager);
-        // end of checking visibility data manager*****************************************************************
-
-        // now assign face to each cameraDirectionType
-        Map<GaiaFace, HalfEdgeFace> mapGaiaFaceToHalfEdgeFace = mapClassifyIdToGaiaFaceToHalfEdgeFace.computeIfAbsent(classificationId, k -> new HashMap<>());
-        Map<GaiaFace, CameraDirectionTypeInfo> mapGaiaFaceToCameraDirectionTypeInfo = mapClassifyIdToGaiaFaceToCameraDirectionTypeInfo.computeIfAbsent(classificationId, k -> new HashMap<>());
-
-        GaiaScene gaiaSceneFromFaces = HalfEdgeUtils.gaiaSceneFromHalfEdgeFaces(facesList, mapGaiaFaceToHalfEdgeFace);
-        GaiaExtractor extractor = new GaiaExtractor();
-        List<GaiaPrimitive> gaiaPrimitives = extractor.extractAllPrimitives(gaiaSceneFromFaces);
-        for (GaiaPrimitive gaiaPrimitive : gaiaPrimitives) {
-            List<GaiaSurface> gaiaSurfaces = gaiaPrimitive.getSurfaces();
-            for (GaiaSurface surface : gaiaSurfaces) {
-                List<GaiaFace> faces = surface.getFaces();
-                for (GaiaFace face : faces) {
-                    int faceId = face.getId();
-                    CameraDirectionType bestCamDirType = faceVisibilityDataManager.getBestCameraDirectionTypeOfFace(faceId);
-                    if (bestCamDirType == null || bestCamDirType == CameraDirectionType.UNKNOWN) {
-                        bestCamDirType = CameraDirectionType.ZNEG;
-                    }
-
-                    // put it into map
-                    CameraDirectionTypeInfo cameraDirectionTypeInfo = mapGaiaFaceToCameraDirectionTypeInfo.get(face);
-                    if (cameraDirectionTypeInfo == null) {
-                        cameraDirectionTypeInfo = new CameraDirectionTypeInfo();
-                        mapGaiaFaceToCameraDirectionTypeInfo.put(face, cameraDirectionTypeInfo);
-                    }
-
-                    cameraDirectionTypeInfo.setCameraDirectionType(bestCamDirType);
-                    cameraDirectionTypeInfo.setAngleDegree(120.0); // no used value
-                    mapGaiaFaceToCameraDirectionTypeInfo.put(face, cameraDirectionTypeInfo);
-                }
-            }
-        }
-
-        faceVisibilityDataManager.deleteObjects();
-        // end assign face to each cameraDirectionType.---
-
-        // now set cameraDirectionType to halfEdgeFaces
-        for (Map.Entry<GaiaFace, CameraDirectionTypeInfo> entry1 : mapGaiaFaceToCameraDirectionTypeInfo.entrySet()) {
-            GaiaFace gaiaFace = entry1.getKey();
-            CameraDirectionTypeInfo cameraDirectionTypeInfo = entry1.getValue();
-            HalfEdgeFace halfEdgeFace = mapGaiaFaceToHalfEdgeFace.get(gaiaFace);
-            halfEdgeFace.setCameraDirectionType(cameraDirectionTypeInfo.getCameraDirectionType());
-        }
-
-        //**************************************************************************************************************
-        halfEdgeSceneMaster.splitFacesByBestObliqueCameraDirectionToProject();
-
-        // now, for each classifyId - CameraDirectionType, calculate the texCoords
-        Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapFaceGroupByClassifyIdAndObliqueCamDirType = new HashMap<>();
-        List<HalfEdgeSurface> halfEdgeSurfaces = halfEdgeSceneMaster.extractSurfaces(null);
-        for (HalfEdgeSurface halfEdgeSurface : halfEdgeSurfaces) {
-            halfEdgeSurface.getMapClassifyIdToCameraDirectionTypeToFaces(mapFaceGroupByClassifyIdAndObliqueCamDirType);
-
-            // test create texCoords (if no exist) for all vertices
-            List<HalfEdgeVertex> vertexOfSurface = new ArrayList<>();
-            HalfEdgeUtils.getVerticesOfFaces(halfEdgeSurface.getFaces(), vertexOfSurface);
-            for (HalfEdgeVertex vertex : vertexOfSurface) {
-                if (vertex.getTexcoords() == null) {
-                    vertex.setTexcoords(new Vector2d(0.0, 0.0));
-                }
-            }
-        }
-
-        CameraDirectionType cameraDirectionType;
-
-        List<HalfEdgeVertex> verticesOfFaces = new ArrayList<>();
-        Map<HalfEdgeVertex, HalfEdgeVertex> visitedVerticesMap = new HashMap<>();
-        double texCoordError = 0.0025;
-        for (Map.Entry<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> entry : mapFaceGroupByClassifyIdAndObliqueCamDirType.entrySet()) {
-            int classifyId = entry.getKey();
-            Map<CameraDirectionType, List<HalfEdgeFace>> mapCameraDirectionTypeFacesList = entry.getValue();
-            for (Map.Entry<CameraDirectionType, List<HalfEdgeFace>> entry1 : mapCameraDirectionTypeFacesList.entrySet()) {
-                cameraDirectionType = entry1.getKey();
-                facesList = entry1.getValue();
-
-                mapClassificationCamDirTypeFacesList.put(classifyId, mapCameraDirectionTypeFacesList);
-
-                // calculate the texCoords of the vertices
-                GaiaBoundingBox bbox = mapClassificationCamDirTypeBBox.get(classifyId).get(cameraDirectionType);
-                Matrix4d modelViewMatrix = mapClassificationCamDirTypeModelViewMatrix.get(classifyId).get(cameraDirectionType);
-
-                if (modelViewMatrix == null) {
-                    log.info("makeBoxTexturesByObliqueCamera() : modelViewMatrix is null." + "camDirType = " + cameraDirectionType);
-                    continue;
-                }
-
-                for (HalfEdgeFace halfEdgeFace : facesList) {
-                    verticesOfFaces.clear();
-                    verticesOfFaces = halfEdgeFace.getVertices(verticesOfFaces);
-                    for (HalfEdgeVertex vertex : verticesOfFaces) {
-                        if (visitedVerticesMap.containsKey(vertex)) {
-                            continue;
-                        }
-                        visitedVerticesMap.put(vertex, vertex);
-
-                        Vector3d vertexPosition = vertex.getPosition();
-                        Vector4d vertexPosition4d = new Vector4d(vertexPosition.x, vertexPosition.y, vertexPosition.z, 1.0);
-                        modelViewMatrix.transform(vertexPosition4d);
-                        double x = vertexPosition4d.x;
-                        double y = vertexPosition4d.y;
-                        double z = vertexPosition4d.z;
-                        double w = vertexPosition4d.w;
-                        double texCoordX = (x - bbox.getMinX()) / bbox.getSizeX();
-                        double texCoordY = (y - bbox.getMinY()) / bbox.getSizeY();
-
-//                        if (texCoordX < 0.0 || texCoordX > 1.0 || texCoordY < 0.0 || texCoordY > 1.0) {
-//                            log.info("makeBoxTexturesByObliqueCamera() : texCoordX or texCoordY is out of range." + "camDirType = " + cameraDirectionType);
-//                        }
-
-                        // invert the texCoordY
-                        texCoordY = 1.0 - texCoordY;
-
-                        // clamp the texCoords
-                        Vector2d texCoord = new Vector2d(texCoordX, texCoordY);
-                        GaiaTextureUtils.clampTextureCoordinate(texCoord, texCoordError);
-                        vertex.setTexcoords(texCoord);
-                    }
-                }
-            }
-        }
-
-        // save atlas texture data**********************************************************************************
-        String netTempPathString = outputPathString + File.separator + "temp" + File.separator + "reMeshTemp";
-        Path netTempPath = Paths.get(netTempPathString);
-        // create dirs if not exists
-        File netTempFile = netTempPath.toFile();
-        if (!netTempFile.exists() && netTempFile.mkdirs()) {
-            log.debug("info : netTemp folder created.");
-        }
-
-        String netSetFolderPathString = netTempPathString + File.separator + nodeName;
-        Path netSetFolderPath = Paths.get(netSetFolderPathString);
-        // create dirs if not exists
-        File netSetFile = netSetFolderPath.toFile();
-        if (!netSetFile.exists() && netTempFile.mkdirs()) {
-            log.debug("info : netSet folder created.");
-        }
-        String netSetImagesFolderPathString = netSetFolderPathString + File.separator + "images";
-        Path netSetImagesFolderPath = Paths.get(netSetImagesFolderPathString);
-        // create dirs if not exists
-        File netSetImagesFolder = netSetImagesFolderPath.toFile();
-        if (!netSetImagesFolder.exists() && netSetImagesFolder.mkdirs()) {
-            log.debug("info : netSetImages folder created.");
-        }
-
-        TextureAtlasManager textureAtlasManager = new TextureAtlasManager();
-        textureAtlasManager.doAtlasTextureProcess(texturesAtlasDataList);
-        textureAtlasManager.recalculateTexCoordsAfterTextureAtlasingObliqueCamera(halfEdgeSceneMaster, texturesAtlasDataList, mapClassificationCamDirTypeFacesList);
-
-//        String originalPathStr = halfEdgeSceneMaster.getOriginalPath().toString();
-//        Path originalPath = Path.of(originalPathStr);
-//        halfEdgeSceneMaster.setOriginalPath(originalPath);
-//        //String originalPath = halfEdgeSceneMaster.getOriginalPath().toString();
-//
-//        // extract the originalProjectName from the originalPath
-//        String originalProjectName = originalPathStr.substring(originalPathStr.lastIndexOf(File.separator) + 1);
-//        String rawProjectName = originalProjectName.substring(0, originalProjectName.lastIndexOf("."));
-
-        String fileName = nodeName + "_Atlas";
-        String extension = ".png";
-        int bufferImageType = BufferedImage.TYPE_INT_ARGB;
-        GaiaTexture atlasTexture = textureAtlasManager.makeAtlasTexture(texturesAtlasDataList, bufferImageType);
-
-        if (atlasTexture == null) {
-            log.error("makeAtlasTexture() : atlasTexture is null.");
-            return;
-        }
-
-        BufferedImage atlasImage = atlasTexture.getBufferedImage();
-
-        // delete texturesAtlasDataList
-        for (TexturesAtlasData texturesAtlasData : texturesAtlasDataList) {
-            texturesAtlasData.deleteObjects();
-        }
-
-        atlasTexture.setPath(fileName + extension);
-        atlasTexture.setParentPath(netSetImagesFolderPath.toString());
-
-        // finally make material with texture for the halfEdgeScene
-        GaiaMaterial material = new GaiaMaterial();
-        material.setName("atlasTexturesMaterial");
-        Map<TextureType, List<GaiaTexture>> textures = new HashMap<>();
-        List<GaiaTexture> atlasTextures = new ArrayList<>();
-        atlasTextures.add(atlasTexture);
-        textures.put(TextureType.DIFFUSE, atlasTextures);
-        material.setTextures(textures);
-
-        int materialsCount = halfEdgeSceneMaster.getMaterials().size();
-        material.setId(materialsCount);
-        halfEdgeSceneMaster.getMaterials().add(material);
-
-        List<HalfEdgePrimitive> primitives = new ArrayList<>();
-        halfEdgeSceneMaster.extractPrimitives(primitives);
-        for (HalfEdgePrimitive primitive : primitives) {
-            primitive.setMaterialId(materialsCount);
-        }
-
-        // Scissoring the atlas texture****************************************************************
-        halfEdgeSceneMaster.scissorTextures();
-        material = halfEdgeSceneMaster.getMaterials().get(materialsCount);
-        textures = material.getTextures();
-        atlasTextures = textures.get(TextureType.DIFFUSE);
-        GaiaTexture atlasScissoredTexture = atlasTextures.get(0);
-        atlasScissoredTexture.setParentPath(netSetImagesFolderPath.toString());
-
-        // save the atlas image to disk
-        try {
-            String imagePath = atlasScissoredTexture.getFullPath();
-            File imageFile = new File(imagePath);
-            ImageIO.write(atlasScissoredTexture.getBufferedImage(), "png", imageFile);
-        } catch (IOException e) {
-            log.debug("Error writing image: {}", e);
-        }
-    }
-
-    private void atlasTextureForIntegralReMesh9Directions_ColorTEST(IntegralReMeshParameters integralReMeshParameters, HalfEdgeScene halfEdgeSceneMaster,
-                                                                    Map<Integer, Map<GaiaFace, HalfEdgeFace>> mapClassifyIdToGaiaFaceToHalfEdgeFace,
-                                                                    Map<Integer, Map<GaiaFace, CameraDirectionTypeInfo>> mapClassifyIdToGaiaFaceToCameraDirectionTypeInfo,
-                                                                    Map<Integer, Map<CameraDirectionType, GaiaBoundingBox>> mapClassificationCamDirTypeBBox,
-                                                                    Map<Integer, Map<CameraDirectionType, Matrix4d>> mapClassificationCamDirTypeModelViewMatrix,
-                                                                    Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapClassificationCamDirTypeFacesList,
-                                                                    String outputPathString, String nodeName) {
-        List<HalfEdgeSurface> surfaces = halfEdgeSceneMaster.extractSurfaces(null);
-
-        Map<Integer, List<HalfEdgeFace>> facesClassificationMap = new HashMap<>();
-        int surfacesCount = surfaces.size();
-        for (int i = 0; i < surfacesCount; i++) {
-            HalfEdgeSurface surface = surfaces.get(i);
-            int facesCount = surface.getFaces().size();
-            for (int j = 0; j < facesCount; j++) {
-                HalfEdgeFace face = surface.getFaces().get(j);
-                int classificationId = face.getClassifyId();
-                List<HalfEdgeFace> facesList = facesClassificationMap.computeIfAbsent(classificationId, k -> new ArrayList<>());
-                facesList.add(face);
-            }
-        }
-
-        int classificationId = -1; // in integralReMesh, there is only one classificationId = -1
-
-        int bufferedImageType = BufferedImage.TYPE_INT_ARGB;
-        List<TexturesAtlasData> texturesAtlasDataList = new ArrayList<>();
-        Map<String, Fbo> colorFboMap = integralReMeshParameters.getColorFboMap();
-
-        Vector4f backgroundColor = integralReMeshParameters.getBackgroundColor();
-
-        // ZNEG
-        Fbo fboZNeg = colorFboMap.get("ZNEG");
-        fboZNeg.bind();
-        BufferedImage imageZNeg = fboZNeg.getBufferedImage(bufferedImageType);
-        fboZNeg.unbind();
-        imageZNeg = engine.eliminateBackGroundColor(imageZNeg, backgroundColor);
-
-        // Test: colorize the imageZNeg dark-blue.
-        imageZNeg = ImageUtils.fillColor(imageZNeg, new Color(0, 0, 139)); // test.************
-        if (imageZNeg != null) {
-            TexturesAtlasData texturesAtlasDataYPosZNeg = new TexturesAtlasData();
-            texturesAtlasDataYPosZNeg.setClassifyId(classificationId);
-            texturesAtlasDataYPosZNeg.setCameraDirectionType(CameraDirectionType.ZNEG);
-            texturesAtlasDataYPosZNeg.setTextureImage(imageZNeg);
-            texturesAtlasDataList.add(texturesAtlasDataYPosZNeg);
-        }
-
-        // YPOS_ZNEG
-        Fbo fboYPosZNeg = colorFboMap.get("YPOS_ZNEG");
-        fboYPosZNeg.bind();
-        BufferedImage imageYPosZNeg = fboYPosZNeg.getBufferedImage(bufferedImageType);
-        fboYPosZNeg.unbind();
-        imageYPosZNeg = engine.eliminateBackGroundColor(imageYPosZNeg, backgroundColor);
-
-        // Test: colorize the imageYPosZNeg dark-green.
-        imageYPosZNeg = ImageUtils.fillColor(imageYPosZNeg, new Color(0, 100, 0)); // test.************
-        if (imageYPosZNeg != null) {
-            TexturesAtlasData texturesAtlasDataYPosZNeg = new TexturesAtlasData();
-            texturesAtlasDataYPosZNeg.setClassifyId(classificationId);
-            texturesAtlasDataYPosZNeg.setCameraDirectionType(CameraDirectionType.YPOS_ZNEG);
-            texturesAtlasDataYPosZNeg.setTextureImage(imageYPosZNeg);
-            texturesAtlasDataList.add(texturesAtlasDataYPosZNeg);
-        }
-
-        // YNEG_ZNEG
-        Fbo fboYNegZNeg = colorFboMap.get("YNEG_ZNEG");
-        fboYNegZNeg.bind();
-        BufferedImage imageYNegZNeg = fboYNegZNeg.getBufferedImage(bufferedImageType);
-        fboYNegZNeg.unbind();
-        imageYNegZNeg = engine.eliminateBackGroundColor(imageYNegZNeg, backgroundColor);
-
-        // Test: colorize the imageYNegZNeg dark-red.
-        imageYNegZNeg = ImageUtils.fillColor(imageYNegZNeg, new Color(139, 0, 0)); // test.************
-        if (imageYNegZNeg != null) {
-            TexturesAtlasData texturesAtlasDataYNegZNeg = new TexturesAtlasData();
-            texturesAtlasDataYNegZNeg.setClassifyId(classificationId);
-            texturesAtlasDataYNegZNeg.setCameraDirectionType(CameraDirectionType.YNEG_ZNEG);
-            texturesAtlasDataYNegZNeg.setTextureImage(imageYNegZNeg);
-            texturesAtlasDataList.add(texturesAtlasDataYNegZNeg);
-        }
-
-        // XPOS_ZNEG
-        Fbo fboXPosZNeg = colorFboMap.get("XPOS_ZNEG");
-        fboXPosZNeg.bind();
-        BufferedImage imageXPosZNeg = fboXPosZNeg.getBufferedImage(bufferedImageType);
-        fboXPosZNeg.unbind();
-        imageXPosZNeg = engine.eliminateBackGroundColor(imageXPosZNeg, backgroundColor);
-
-        // Test: colorize the imageXPosZNeg dark-yellow.
-        imageXPosZNeg = ImageUtils.fillColor(imageXPosZNeg, new Color(204, 204, 0)); // test.************
-        if (imageXPosZNeg != null) {
-            TexturesAtlasData texturesAtlasDataXPosZNeg = new TexturesAtlasData();
-            texturesAtlasDataXPosZNeg.setClassifyId(classificationId);
-            texturesAtlasDataXPosZNeg.setCameraDirectionType(CameraDirectionType.XPOS_ZNEG);
-            texturesAtlasDataXPosZNeg.setTextureImage(imageXPosZNeg);
-            texturesAtlasDataList.add(texturesAtlasDataXPosZNeg);
-        }
-
-        // XNEG_ZNEG
-        Fbo fboXNegZNeg = colorFboMap.get("XNEG_ZNEG");
-        fboXNegZNeg.bind();
-        BufferedImage imageXNegZNeg = fboXNegZNeg.getBufferedImage(bufferedImageType);
-        fboXNegZNeg.unbind();
-        imageXNegZNeg = engine.eliminateBackGroundColor(imageXNegZNeg, backgroundColor);
-
-        // Test: colorize the imageXNegZNeg dark-cyan.
-        imageXNegZNeg = ImageUtils.fillColor(imageXNegZNeg, new Color(0, 139, 139)); // test.************
-        if (imageXNegZNeg != null) {
-            TexturesAtlasData texturesAtlasDataXNegZNeg = new TexturesAtlasData();
-            texturesAtlasDataXNegZNeg.setClassifyId(classificationId);
-            texturesAtlasDataXNegZNeg.setCameraDirectionType(CameraDirectionType.XNEG_ZNEG);
-            texturesAtlasDataXNegZNeg.setTextureImage(imageXNegZNeg);
-            texturesAtlasDataList.add(texturesAtlasDataXNegZNeg);
-        }
-
-        // XPOS_YPOS_ZNEG
-        Fbo fboXPosYPosZNeg = colorFboMap.get("XPOS_YPOS_ZNEG");
-        fboXPosYPosZNeg.bind();
-        BufferedImage imageXPosYPosZNeg = fboXPosYPosZNeg.getBufferedImage(bufferedImageType);
-        fboXPosYPosZNeg.unbind();
-        imageXPosYPosZNeg = engine.eliminateBackGroundColor(imageXPosYPosZNeg, backgroundColor);
-
-        // Test: colorize the imageXPosYPosZNeg dark-magenta.
-        imageXPosYPosZNeg = ImageUtils.fillColor(imageXPosYPosZNeg, new Color(139, 0, 139)); // test.************
-        if (imageXPosYPosZNeg != null) {
-            TexturesAtlasData texturesAtlasDataXPosYPosZNeg = new TexturesAtlasData();
-            texturesAtlasDataXPosYPosZNeg.setClassifyId(classificationId);
-            texturesAtlasDataXPosYPosZNeg.setCameraDirectionType(CameraDirectionType.XPOS_YPOS_ZNEG);
-            texturesAtlasDataXPosYPosZNeg.setTextureImage(imageXPosYPosZNeg);
-            texturesAtlasDataList.add(texturesAtlasDataXPosYPosZNeg);
-        }
-
-        // XNEG_YPOS_ZNEG
-        Fbo fboXNegYPosZNeg = colorFboMap.get("XNEG_YPOS_ZNEG");
-        fboXNegYPosZNeg.bind();
-        BufferedImage imageXNegYPosZNeg = fboXNegYPosZNeg.getBufferedImage(bufferedImageType);
-        fboXNegYPosZNeg.unbind();
-        imageXNegYPosZNeg = engine.eliminateBackGroundColor(imageXNegYPosZNeg, backgroundColor);
-
-        // Test: colorize the imageXNegYPosZNeg dark-orange.
-        imageXNegYPosZNeg = ImageUtils.fillColor(imageXNegYPosZNeg, new Color(255, 140, 0)); // test.************
-        if (imageXNegYPosZNeg != null) {
-            TexturesAtlasData texturesAtlasDataXNegYPosZNeg = new TexturesAtlasData();
-            texturesAtlasDataXNegYPosZNeg.setClassifyId(classificationId);
-            texturesAtlasDataXNegYPosZNeg.setCameraDirectionType(CameraDirectionType.XNEG_YPOS_ZNEG);
-            texturesAtlasDataXNegYPosZNeg.setTextureImage(imageXNegYPosZNeg);
-            texturesAtlasDataList.add(texturesAtlasDataXNegYPosZNeg);
-        }
-
-        // XPOS_YNEG_ZNEG
-        Fbo fboXPosYNegZNeg = colorFboMap.get("XPOS_YNEG_ZNEG");
-        fboXPosYNegZNeg.bind();
-        BufferedImage imageXPosYNegZNeg = fboXPosYNegZNeg.getBufferedImage(bufferedImageType);
-        fboXPosYNegZNeg.unbind();
-        imageXPosYNegZNeg = engine.eliminateBackGroundColor(imageXPosYNegZNeg, backgroundColor);
-
-        // Test: colorize the imageXPosYNegZNeg dark-lime.
-        imageXPosYNegZNeg = ImageUtils.fillColor(imageXPosYNegZNeg, new Color(50, 205, 50)); // test.************
-        if (imageXPosYNegZNeg != null) {
-            TexturesAtlasData texturesAtlasDataXPosYNegZNeg = new TexturesAtlasData();
-            texturesAtlasDataXPosYNegZNeg.setClassifyId(classificationId);
-            texturesAtlasDataXPosYNegZNeg.setCameraDirectionType(CameraDirectionType.XPOS_YNEG_ZNEG);
-            texturesAtlasDataXPosYNegZNeg.setTextureImage(imageXPosYNegZNeg);
-            texturesAtlasDataList.add(texturesAtlasDataXPosYNegZNeg);
-        }
-
-        // XNEG_YNEG_ZNEG
-        Fbo fboXNegYNegZNeg = colorFboMap.get("XNEG_YNEG_ZNEG");
-        fboXNegYNegZNeg.bind();
-        BufferedImage imageXNegYNegZNeg = fboXNegYNegZNeg.getBufferedImage(bufferedImageType);
-        fboXNegYNegZNeg.unbind();
-        imageXNegYNegZNeg = engine.eliminateBackGroundColor(imageXNegYNegZNeg, backgroundColor);
-
-        // Test: colorize the imageXNegYNegZNeg dark-silver.
-        imageXNegYNegZNeg = ImageUtils.fillColor(imageXNegYNegZNeg, new Color(192, 192, 192)); // test.************
-        if (imageXNegYNegZNeg != null) {
-            TexturesAtlasData texturesAtlasDataXNegYNegZNeg = new TexturesAtlasData();
-            texturesAtlasDataXNegYNegZNeg.setClassifyId(classificationId);
-            texturesAtlasDataXNegYNegZNeg.setCameraDirectionType(CameraDirectionType.XNEG_YNEG_ZNEG);
-            texturesAtlasDataXNegYNegZNeg.setTextureImage(imageXNegYNegZNeg);
-            texturesAtlasDataList.add(texturesAtlasDataXNegYNegZNeg);
-        }
-
-        // There are no visible faces, so 1rst set the CAMERA_DIRECTION_ZNEG to all the halfEdgeFaces as default
-        List<HalfEdgeFace> facesList = facesClassificationMap.get(classificationId);
-        if (facesList == null) {
-            log.error("atlasTextureForIntegralReMesh: facesList is null for classificationId: " + classificationId);
-            return;
-        }
-        for (HalfEdgeFace halfEdgeFace : facesList) {
-            halfEdgeFace.setCameraDirectionType(CameraDirectionType.ZNEG);
-        }
-
-        // check visibility data manager****************************************************************************
-        FaceVisibilityDataManager faceVisibilityDataManager = new FaceVisibilityDataManager();
-
-        Map<String, Fbo> colorCodeFboMap = integralReMeshParameters.getColorCodeFboMap();
-        Fbo fboColorCodeZNeg = colorCodeFboMap.get("ZNEG");
-        updateFaceVisibilityData(CameraDirectionType.ZNEG, fboColorCodeZNeg, faceVisibilityDataManager);
-        Fbo fboColorCodeYPosZNeg = colorCodeFboMap.get("YPOS_ZNEG");
-        updateFaceVisibilityData(CameraDirectionType.YPOS_ZNEG, fboColorCodeYPosZNeg, faceVisibilityDataManager);
-        Fbo fboColorCodeYNegZNeg = colorCodeFboMap.get("YNEG_ZNEG");
-        updateFaceVisibilityData(CameraDirectionType.YNEG_ZNEG, fboColorCodeYNegZNeg, faceVisibilityDataManager);
-        Fbo fboColorCodeXPosZNeg = colorCodeFboMap.get("XPOS_ZNEG");
-        updateFaceVisibilityData(CameraDirectionType.XPOS_ZNEG, fboColorCodeXPosZNeg, faceVisibilityDataManager);
-        Fbo fboColorCodeXNegZNeg = colorCodeFboMap.get("XNEG_ZNEG");
-        updateFaceVisibilityData(CameraDirectionType.XNEG_ZNEG, fboColorCodeXNegZNeg, faceVisibilityDataManager);
-        Fbo fboColorCodeXPosYPosZNeg = colorCodeFboMap.get("XPOS_YPOS_ZNEG");
-        updateFaceVisibilityData(CameraDirectionType.XPOS_YPOS_ZNEG, fboColorCodeXPosYPosZNeg, faceVisibilityDataManager);
-        Fbo fboColorCodeXNegYPosZNeg = colorCodeFboMap.get("XNEG_YPOS_ZNEG");
-        updateFaceVisibilityData(CameraDirectionType.XNEG_YPOS_ZNEG, fboColorCodeXNegYPosZNeg, faceVisibilityDataManager);
-        Fbo fboColorCodeXPosYNegZNeg = colorCodeFboMap.get("XPOS_YNEG_ZNEG");
-        updateFaceVisibilityData(CameraDirectionType.XPOS_YNEG_ZNEG, fboColorCodeXPosYNegZNeg, faceVisibilityDataManager);
-        Fbo fboColorCodeXNegYNegZNeg = colorCodeFboMap.get("XNEG_YNEG_ZNEG");
-        updateFaceVisibilityData(CameraDirectionType.XNEG_YNEG_ZNEG, fboColorCodeXNegYNegZNeg, faceVisibilityDataManager);
-        // end of checking visibility data manager*****************************************************************
-
-        // now assign face to each cameraDirectionType
-        Map<GaiaFace, HalfEdgeFace> mapGaiaFaceToHalfEdgeFace = mapClassifyIdToGaiaFaceToHalfEdgeFace.computeIfAbsent(classificationId, k -> new HashMap<>());
-        Map<GaiaFace, CameraDirectionTypeInfo> mapGaiaFaceToCameraDirectionTypeInfo = mapClassifyIdToGaiaFaceToCameraDirectionTypeInfo.computeIfAbsent(classificationId, k -> new HashMap<>());
-
-        GaiaScene gaiaSceneFromFaces = HalfEdgeUtils.gaiaSceneFromHalfEdgeFaces(facesList, mapGaiaFaceToHalfEdgeFace);
-        GaiaExtractor extractor = new GaiaExtractor();
-        List<GaiaPrimitive> gaiaPrimitives = extractor.extractAllPrimitives(gaiaSceneFromFaces);
-        for (GaiaPrimitive gaiaPrimitive : gaiaPrimitives) {
-            List<GaiaSurface> gaiaSurfaces = gaiaPrimitive.getSurfaces();
-            for (GaiaSurface surface : gaiaSurfaces) {
-                List<GaiaFace> faces = surface.getFaces();
-                for (GaiaFace face : faces) {
-                    int faceId = face.getId();
-                    face.calculateFaceNormal(gaiaPrimitive.getVertices());
-                    Vector3d faceNormal = face.getFaceNormal();
-                    //CameraDirectionType bestCamDirTypeByNormal = CameraDirectionType.getBestObliqueCameraDirectionType(faceNormal);
-                    CameraDirectionType bestCamDirType = faceVisibilityDataManager.getBestCameraDirectionTypeOfFace(faceId, faceNormal);
-                    //CameraDirectionType bestCamDirType = faceVisibilityDataManager.getBestCameraDirectionTypeOfFace(faceId);
-                    //bestCamDirType = bestCamDirTypeByNormal; // override by normal direction
-                    if (bestCamDirType == null || bestCamDirType == CameraDirectionType.UNKNOWN) {
-                        bestCamDirType = CameraDirectionType.ZNEG;
-                    }
-
-                    // put it into map
-                    CameraDirectionTypeInfo cameraDirectionTypeInfo = mapGaiaFaceToCameraDirectionTypeInfo.get(face);
-                    if (cameraDirectionTypeInfo == null) {
-                        cameraDirectionTypeInfo = new CameraDirectionTypeInfo();
-                        mapGaiaFaceToCameraDirectionTypeInfo.put(face, cameraDirectionTypeInfo);
-                    }
-
-                    cameraDirectionTypeInfo.setCameraDirectionType(bestCamDirType);
-                    cameraDirectionTypeInfo.setAngleDegree(120.0); // no used value
-                    mapGaiaFaceToCameraDirectionTypeInfo.put(face, cameraDirectionTypeInfo);
-                }
-            }
-        }
-
-        faceVisibilityDataManager.deleteObjects();
-        // end assign face to each cameraDirectionType.---
-
-        // now set cameraDirectionType to halfEdgeFaces
-        for (Map.Entry<GaiaFace, CameraDirectionTypeInfo> entry1 : mapGaiaFaceToCameraDirectionTypeInfo.entrySet()) {
-            GaiaFace gaiaFace = entry1.getKey();
-            CameraDirectionTypeInfo cameraDirectionTypeInfo = entry1.getValue();
-            HalfEdgeFace halfEdgeFace = mapGaiaFaceToHalfEdgeFace.get(gaiaFace);
-            halfEdgeFace.setCameraDirectionType(cameraDirectionTypeInfo.getCameraDirectionType());
-        }
-
-        //**************************************************************************************************************
-        halfEdgeSceneMaster.splitFacesByBestObliqueCameraDirectionToProject();
-
-        // now, for each classifyId - CameraDirectionType, calculate the texCoords
-        Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapFaceGroupByClassifyIdAndObliqueCamDirType = new HashMap<>();
-        List<HalfEdgeSurface> halfEdgeSurfaces = halfEdgeSceneMaster.extractSurfaces(null);
-        for (HalfEdgeSurface halfEdgeSurface : halfEdgeSurfaces) {
-            halfEdgeSurface.getMapClassifyIdToCameraDirectionTypeToFaces(mapFaceGroupByClassifyIdAndObliqueCamDirType);
-
-            // test create texCoords (if no exist) for all vertices
-            List<HalfEdgeVertex> vertexOfSurface = new ArrayList<>();
-            HalfEdgeUtils.getVerticesOfFaces(halfEdgeSurface.getFaces(), vertexOfSurface);
-            for (HalfEdgeVertex vertex : vertexOfSurface) {
-                if (vertex.getTexcoords() == null) {
-                    vertex.setTexcoords(new Vector2d(0.0, 0.0));
-                }
-            }
-        }
-
-        CameraDirectionType cameraDirectionType;
-
-        List<HalfEdgeVertex> verticesOfFaces = new ArrayList<>();
-        Map<HalfEdgeVertex, HalfEdgeVertex> visitedVerticesMap = new HashMap<>();
-        double texCoordError = 0.0025;
-        for (Map.Entry<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> entry : mapFaceGroupByClassifyIdAndObliqueCamDirType.entrySet()) {
-            int classifyId = entry.getKey();
-            Map<CameraDirectionType, List<HalfEdgeFace>> mapCameraDirectionTypeFacesList = entry.getValue();
-            for (Map.Entry<CameraDirectionType, List<HalfEdgeFace>> entry1 : mapCameraDirectionTypeFacesList.entrySet()) {
-                cameraDirectionType = entry1.getKey();
-                facesList = entry1.getValue();
-
-                mapClassificationCamDirTypeFacesList.put(classifyId, mapCameraDirectionTypeFacesList);
-
-                // calculate the texCoords of the vertices
-                GaiaBoundingBox bbox = mapClassificationCamDirTypeBBox.get(classifyId).get(cameraDirectionType);
-                Matrix4d modelViewMatrix = mapClassificationCamDirTypeModelViewMatrix.get(classifyId).get(cameraDirectionType);
-
-                if (modelViewMatrix == null) {
-                    log.error("makeBoxTexturesByObliqueCamera() : modelViewMatrix is null." + "camDirType = " + cameraDirectionType);
-                    continue;
-                }
-
-                for (HalfEdgeFace halfEdgeFace : facesList) {
-                    verticesOfFaces.clear();
-                    verticesOfFaces = halfEdgeFace.getVertices(verticesOfFaces);
-                    for (HalfEdgeVertex vertex : verticesOfFaces) {
-                        if (visitedVerticesMap.containsKey(vertex)) {
-                            continue;
-                        }
-                        visitedVerticesMap.put(vertex, vertex);
-
-                        Vector3d vertexPosition = vertex.getPosition();
-                        Vector4d vertexPosition4d = new Vector4d(vertexPosition.x, vertexPosition.y, vertexPosition.z, 1.0);
-                        modelViewMatrix.transform(vertexPosition4d);
-                        double x = vertexPosition4d.x;
-                        double y = vertexPosition4d.y;
-                        double z = vertexPosition4d.z;
-                        double w = vertexPosition4d.w;
-                        double texCoordX = (x - bbox.getMinX()) / bbox.getSizeX();
-                        double texCoordY = (y - bbox.getMinY()) / bbox.getSizeY();
-
-//                        if (texCoordX < 0.0 || texCoordX > 1.0 || texCoordY < 0.0 || texCoordY > 1.0) {
-//                            log.error("makeBoxTexturesByObliqueCamera() : texCoordX or texCoordY is out of range." + "camDirType = " + cameraDirectionType);
-//                        }
-
-                        // invert the texCoordY
-                        texCoordY = 1.0 - texCoordY;
-
-                        // clamp the texCoords
-                        Vector2d texCoord = new Vector2d(texCoordX, texCoordY);
-                        GaiaTextureUtils.clampTextureCoordinate(texCoord, texCoordError);
-                        vertex.setTexcoords(texCoord);
-                    }
-                }
-            }
-        }
-
-        // save atlas texture data**********************************************************************************
-        String netTempPathString = outputPathString + File.separator + "temp" + File.separator + "reMeshTemp";
-        Path netTempPath = Paths.get(netTempPathString);
-        // create dirs if not exists
-        File netTempFile = netTempPath.toFile();
-        if (!netTempFile.exists() && netTempFile.mkdirs()) {
-            log.debug("info : netTemp folder created.");
-        }
-
-        String netSetFolderPathString = netTempPathString + File.separator + nodeName;
-        Path netSetFolderPath = Paths.get(netSetFolderPathString);
-        // create dirs if not exists
-        File netSetFile = netSetFolderPath.toFile();
-        if (!netSetFile.exists() && netTempFile.mkdirs()) {
-            log.debug("info : netSet folder created.");
-        }
-        String netSetImagesFolderPathString = netSetFolderPathString + File.separator + "images";
-        Path netSetImagesFolderPath = Paths.get(netSetImagesFolderPathString);
-        // create dirs if not exists
-        File netSetImagesFolder = netSetImagesFolderPath.toFile();
-        if (!netSetImagesFolder.exists() && netSetImagesFolder.mkdirs()) {
-            log.debug("info : netSetImages folder created.");
-        }
-
-        TextureAtlasManager textureAtlasManager = new TextureAtlasManager();
-        textureAtlasManager.doAtlasTextureProcess(texturesAtlasDataList);
-        textureAtlasManager.recalculateTexCoordsAfterTextureAtlasingObliqueCamera(halfEdgeSceneMaster, texturesAtlasDataList, mapClassificationCamDirTypeFacesList);
-
-//        String originalPathStr = halfEdgeSceneMaster.getOriginalPath().toString();
-//        Path originalPath = Path.of(originalPathStr);
-//        halfEdgeSceneMaster.setOriginalPath(originalPath);
-//        //String originalPath = halfEdgeSceneMaster.getOriginalPath().toString();
-//
-//        // extract the originalProjectName from the originalPath
-//        String originalProjectName = originalPathStr.substring(originalPathStr.lastIndexOf(File.separator) + 1);
-//        String rawProjectName = originalProjectName.substring(0, originalProjectName.lastIndexOf("."));
-
-        String fileName = nodeName + "_Atlas";
-        String extension = ".png";
-        int bufferImageType = BufferedImage.TYPE_INT_ARGB;
-        GaiaTexture atlasTexture = textureAtlasManager.makeAtlasTexture(texturesAtlasDataList, bufferImageType);
-
-        if (atlasTexture == null) {
-            log.error("makeAtlasTexture() : atlasTexture is null.");
-            return;
-        }
-
-        BufferedImage atlasImage = atlasTexture.getBufferedImage();
-
-        // delete texturesAtlasDataList
-        for (TexturesAtlasData texturesAtlasData : texturesAtlasDataList) {
-            texturesAtlasData.deleteObjects();
-        }
-
-        atlasTexture.setPath(fileName + extension);
-        atlasTexture.setParentPath(netSetImagesFolderPath.toString());
-
-        // finally make material with texture for the halfEdgeScene
-        GaiaMaterial material = new GaiaMaterial();
-        material.setName("atlasTexturesMaterial");
-        Map<TextureType, List<GaiaTexture>> textures = new HashMap<>();
-        List<GaiaTexture> atlasTextures = new ArrayList<>();
-        atlasTextures.add(atlasTexture);
-        textures.put(TextureType.DIFFUSE, atlasTextures);
-        material.setTextures(textures);
-
-        int materialsCount = halfEdgeSceneMaster.getMaterials().size();
-        material.setId(materialsCount);
-        halfEdgeSceneMaster.getMaterials().add(material);
-
-        List<HalfEdgePrimitive> primitives = new ArrayList<>();
-        halfEdgeSceneMaster.extractPrimitives(primitives);
-        for (HalfEdgePrimitive primitive : primitives) {
-            primitive.setMaterialId(materialsCount);
-        }
-
-        // Scissoring the atlas texture****************************************************************
-        halfEdgeSceneMaster.scissorTextures();
-        material = halfEdgeSceneMaster.getMaterials().get(materialsCount);
-        textures = material.getTextures();
-        atlasTextures = textures.get(TextureType.DIFFUSE);
-        GaiaTexture atlasScissoredTexture = atlasTextures.getFirst();
-        atlasScissoredTexture.setParentPath(netSetImagesFolderPath.toString());
-
-        // save the atlas image to disk
-        try {
-            String imagePath = atlasScissoredTexture.getFullPath();
-            File imageFile = new File(imagePath);
-            ImageIO.write(atlasScissoredTexture.getBufferedImage(), "png", imageFile);
-        } catch (IOException e) {
-            log.debug("Error writing image: {}", e);
-        }
-    }
-
     private void atlasTextureForIntegralReMesh9Directions(IntegralReMeshParameters integralReMeshParameters, HalfEdgeScene halfEdgeSceneMaster,
                                                           Map<Integer, Map<GaiaFace, HalfEdgeFace>> mapClassifyIdToGaiaFaceToHalfEdgeFace,
                                                           Map<Integer, Map<GaiaFace, CameraDirectionTypeInfo>> mapClassifyIdToGaiaFaceToCameraDirectionTypeInfo,
@@ -2521,7 +1754,7 @@ public class MainVoxelizer implements IAppLogic {
         int classificationId = -1; // in integralReMesh, there is only one classificationId = -1
 
         int bufferedImageType = BufferedImage.TYPE_INT_ARGB;
-        List<TexturesAtlasData> texturesAtlasDataList = new ArrayList<>();
+        List<com.gaia3d.basic.texture.atlas.TexturesAtlasData> texturesAtlasDataList = new ArrayList<>();
         Map<String, Fbo> colorFboMap = integralReMeshParameters.getColorFboMap(); // original.***
         //Map<String, Fbo> colorFboMap = integralReMeshParameters.getColorCodeFboMap(); // test.***
 
@@ -2534,7 +1767,7 @@ public class MainVoxelizer implements IAppLogic {
         fboZNeg.unbind();
         imageZNeg = engine.eliminateBackGroundColor(imageZNeg, backgroundColor);
         if (imageZNeg != null) {
-            TexturesAtlasData texturesAtlasDataYPosZNeg = new TexturesAtlasData();
+            com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataYPosZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             texturesAtlasDataYPosZNeg.setClassifyId(classificationId);
             texturesAtlasDataYPosZNeg.setCameraDirectionType(CameraDirectionType.ZNEG);
             texturesAtlasDataYPosZNeg.setTextureImage(imageZNeg);
@@ -2548,7 +1781,7 @@ public class MainVoxelizer implements IAppLogic {
         fboYPosZNeg.unbind();
         imageYPosZNeg = engine.eliminateBackGroundColor(imageYPosZNeg, backgroundColor);
         if (imageYPosZNeg != null) {
-            TexturesAtlasData texturesAtlasDataYPosZNeg = new TexturesAtlasData();
+            com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataYPosZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             texturesAtlasDataYPosZNeg.setClassifyId(classificationId);
             texturesAtlasDataYPosZNeg.setCameraDirectionType(CameraDirectionType.YPOS_ZNEG);
             texturesAtlasDataYPosZNeg.setTextureImage(imageYPosZNeg);
@@ -2562,7 +1795,7 @@ public class MainVoxelizer implements IAppLogic {
         fboYNegZNeg.unbind();
         imageYNegZNeg = engine.eliminateBackGroundColor(imageYNegZNeg, backgroundColor);
         if (imageYNegZNeg != null) {
-            TexturesAtlasData texturesAtlasDataYNegZNeg = new TexturesAtlasData();
+            com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataYNegZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             texturesAtlasDataYNegZNeg.setClassifyId(classificationId);
             texturesAtlasDataYNegZNeg.setCameraDirectionType(CameraDirectionType.YNEG_ZNEG);
             texturesAtlasDataYNegZNeg.setTextureImage(imageYNegZNeg);
@@ -2576,7 +1809,7 @@ public class MainVoxelizer implements IAppLogic {
         fboXPosZNeg.unbind();
         imageXPosZNeg = engine.eliminateBackGroundColor(imageXPosZNeg, backgroundColor);
         if (imageXPosZNeg != null) {
-            TexturesAtlasData texturesAtlasDataXPosZNeg = new TexturesAtlasData();
+            com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataXPosZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             texturesAtlasDataXPosZNeg.setClassifyId(classificationId);
             texturesAtlasDataXPosZNeg.setCameraDirectionType(CameraDirectionType.XPOS_ZNEG);
             texturesAtlasDataXPosZNeg.setTextureImage(imageXPosZNeg);
@@ -2590,7 +1823,7 @@ public class MainVoxelizer implements IAppLogic {
         fboXNegZNeg.unbind();
         imageXNegZNeg = engine.eliminateBackGroundColor(imageXNegZNeg, backgroundColor);
         if (imageXNegZNeg != null) {
-            TexturesAtlasData texturesAtlasDataXNegZNeg = new TexturesAtlasData();
+            com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataXNegZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             texturesAtlasDataXNegZNeg.setClassifyId(classificationId);
             texturesAtlasDataXNegZNeg.setCameraDirectionType(CameraDirectionType.XNEG_ZNEG);
             texturesAtlasDataXNegZNeg.setTextureImage(imageXNegZNeg);
@@ -2604,7 +1837,7 @@ public class MainVoxelizer implements IAppLogic {
         fboXPosYPosZNeg.unbind();
         imageXPosYPosZNeg = engine.eliminateBackGroundColor(imageXPosYPosZNeg, backgroundColor);
         if (imageXPosYPosZNeg != null) {
-            TexturesAtlasData texturesAtlasDataXPosYPosZNeg = new TexturesAtlasData();
+            com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataXPosYPosZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             texturesAtlasDataXPosYPosZNeg.setClassifyId(classificationId);
             texturesAtlasDataXPosYPosZNeg.setCameraDirectionType(CameraDirectionType.XPOS_YPOS_ZNEG);
             texturesAtlasDataXPosYPosZNeg.setTextureImage(imageXPosYPosZNeg);
@@ -2618,7 +1851,7 @@ public class MainVoxelizer implements IAppLogic {
         fboXNegYPosZNeg.unbind();
         imageXNegYPosZNeg = engine.eliminateBackGroundColor(imageXNegYPosZNeg, backgroundColor);
         if (imageXNegYPosZNeg != null) {
-            TexturesAtlasData texturesAtlasDataXNegYPosZNeg = new TexturesAtlasData();
+            com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataXNegYPosZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             texturesAtlasDataXNegYPosZNeg.setClassifyId(classificationId);
             texturesAtlasDataXNegYPosZNeg.setCameraDirectionType(CameraDirectionType.XNEG_YPOS_ZNEG);
             texturesAtlasDataXNegYPosZNeg.setTextureImage(imageXNegYPosZNeg);
@@ -2632,7 +1865,7 @@ public class MainVoxelizer implements IAppLogic {
         fboXPosYNegZNeg.unbind();
         imageXPosYNegZNeg = engine.eliminateBackGroundColor(imageXPosYNegZNeg, backgroundColor);
         if (imageXPosYNegZNeg != null) {
-            TexturesAtlasData texturesAtlasDataXPosYNegZNeg = new TexturesAtlasData();
+            com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataXPosYNegZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             texturesAtlasDataXPosYNegZNeg.setClassifyId(classificationId);
             texturesAtlasDataXPosYNegZNeg.setCameraDirectionType(CameraDirectionType.XPOS_YNEG_ZNEG);
             texturesAtlasDataXPosYNegZNeg.setTextureImage(imageXPosYNegZNeg);
@@ -2646,7 +1879,7 @@ public class MainVoxelizer implements IAppLogic {
         fboXNegYNegZNeg.unbind();
         imageXNegYNegZNeg = engine.eliminateBackGroundColor(imageXNegYNegZNeg, backgroundColor);
         if (imageXNegYNegZNeg != null) {
-            TexturesAtlasData texturesAtlasDataXNegYNegZNeg = new TexturesAtlasData();
+            com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataXNegYNegZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             texturesAtlasDataXNegYNegZNeg.setClassifyId(classificationId);
             texturesAtlasDataXNegYNegZNeg.setCameraDirectionType(CameraDirectionType.XNEG_YNEG_ZNEG);
             texturesAtlasDataXNegYNegZNeg.setTextureImage(imageXNegYNegZNeg);
@@ -2760,8 +1993,7 @@ public class MainVoxelizer implements IAppLogic {
 
         List<HalfEdgeVertex> verticesOfFaces = new ArrayList<>();
         Map<HalfEdgeVertex, HalfEdgeVertex> visitedVerticesMap = new HashMap<>();
-        //double texCoordError = 0.0025;
-        double texCoordError = 1e-4;
+        double texCoordError = 1e-4; // clamp error.
         for (Map.Entry<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> entry : mapFaceGroupByClassifyIdAndObliqueCamDirType.entrySet()) {
             int classifyId = entry.getKey();
             Map<CameraDirectionType, List<HalfEdgeFace>> mapCameraDirectionTypeFacesList = entry.getValue();
@@ -2839,7 +2071,7 @@ public class MainVoxelizer implements IAppLogic {
             log.debug("info : netSetImages folder created.");
         }
 
-        TextureAtlasManager textureAtlasManager = new TextureAtlasManager();
+        com.gaia3d.basic.texture.atlas.TextureAtlasManager textureAtlasManager = new com.gaia3d.basic.texture.atlas.TextureAtlasManager();
         textureAtlasManager.doAtlasTextureProcess(texturesAtlasDataList);
         textureAtlasManager.recalculateTexCoordsAfterTextureAtlasingObliqueCamera(halfEdgeSceneMaster, texturesAtlasDataList, mapClassificationCamDirTypeFacesList);
 
@@ -2865,7 +2097,7 @@ public class MainVoxelizer implements IAppLogic {
         BufferedImage atlasImage = atlasTexture.getBufferedImage();
 
         // delete texturesAtlasDataList
-        for (TexturesAtlasData texturesAtlasData : texturesAtlasDataList) {
+        for (com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasData : texturesAtlasDataList) {
             texturesAtlasData.deleteObjects();
         }
 

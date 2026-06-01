@@ -126,7 +126,12 @@ public class GltfWriter {
         GltfBinary binary = new GltfBinary();
         GlTF gltf = new GlTF();
         gltf.setAsset(genAsset());
-        gltf.addSamplers(genSampler());
+        List<GaiaMaterial> materials = gaiaScene.getMaterials();
+        if (materials == null || materials.isEmpty()) {
+            log.error("[Error] : gaiaScene has no materials");
+        }
+        GaiaMaterial gaiaMaterial0 = gaiaScene.getMaterials().getFirst();
+        gltf.addSamplers(genSampler(gaiaMaterial0));
 
         Node rootNode = initNode();
         initScene(gltf, rootNode);
@@ -749,11 +754,26 @@ public class GltfWriter {
     }
 
     protected Sampler genSampler() {
+        // deprecated.
         Sampler sampler = new Sampler();
         sampler.setMagFilter(GL20.GL_LINEAR);
         sampler.setMinFilter(GL20.GL_LINEAR_MIPMAP_LINEAR);
         sampler.setWrapS(GL20.GL_REPEAT);
         sampler.setWrapT(GL20.GL_REPEAT);
+        return sampler;
+    }
+
+    protected Sampler genSampler(GaiaMaterial gaiaMaterial) {
+        GaiaSamplers gaiaSamplers = gaiaMaterial.getSamplers();
+        if(gaiaSamplers == null){
+            // create with default values.
+            gaiaSamplers = new GaiaSamplers();
+        }
+        Sampler sampler = new Sampler();
+        sampler.setMagFilter(gaiaSamplers.getMagFilter());
+        sampler.setMinFilter(gaiaSamplers.getMinFilter());
+        sampler.setWrapS(gaiaSamplers.getWrapS());
+        sampler.setWrapT(gaiaSamplers.getWrapT());
         return sampler;
     }
 

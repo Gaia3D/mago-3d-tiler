@@ -380,7 +380,11 @@ public class ImageUtils {
         return newImage;
     }
 
-    public static BufferedImage changeBackgroundColor(BufferedImage image, Color oldColor, Color newColor) {
+    public static BufferedImage changeBackgroundColor(
+            BufferedImage image,
+            Color oldColor,
+            Color newColor
+    ) {
         if (image == null || oldColor == null || newColor == null) {
             return image;
         }
@@ -388,55 +392,28 @@ public class ImageUtils {
         int width = image.getWidth();
         int height = image.getHeight();
 
-        int oldRGB = oldColor.getRGB();
-        int newRGB = newColor.getRGB();
+        int oldRGB = oldColor.getRGB() & 0x00FFFFFF;
+        int newRGB = newColor.getRGB() & 0x00FFFFFF;
+
+        boolean hasAlpha = image.getColorModel().hasAlpha();
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 int argb = image.getRGB(x, y);
+                int rgb = argb & 0x00FFFFFF;
 
-                if (argb == oldRGB) {
-                    image.setRGB(x, y, newRGB);
+                if (rgb == oldRGB) {
+                    if (hasAlpha) {
+                        int alpha = argb & 0xFF000000;
+                        image.setRGB(x, y, alpha | newRGB);
+                    } else {
+                        image.setRGB(x, y, 0xFF000000 | newRGB);
+                    }
                 }
             }
         }
 
         return image;
-    }
-
-    public static BufferedImage changeBackgroundColor_original_2(BufferedImage image, Color oldColor, Color newColor) {
-        int width = image.getWidth();
-        int height = image.getHeight();
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
-                Color pixel = new Color(image.getRGB(i, j), true);
-                if (pixel.getRGB() == oldColor.getRGB()) {
-                    image.setRGB(i, j, newColor.getRGB());
-                } else {
-                    image.setRGB(i, j, image.getRGB(i, j));
-                }
-            }
-        }
-        image.flush();
-        return image;
-    }
-
-    public static BufferedImage changeBackgroundColor_original(BufferedImage image, Color oldColor, Color newColor) {
-        int width = image.getWidth();
-        int height = image.getHeight();
-        BufferedImage newImage = new BufferedImage(width, height, image.getType());
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
-                Color pixel = new Color(image.getRGB(i, j), true);
-                if (pixel.getRGB() == oldColor.getRGB()) {
-                    newImage.setRGB(i, j, newColor.getRGB());
-                } else {
-                    newImage.setRGB(i, j, image.getRGB(i, j));
-                }
-            }
-        }
-        newImage.flush();
-        return newImage;
     }
 
     public static void saveBufferedImage(BufferedImage image, String format, String path) {
