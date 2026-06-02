@@ -1701,6 +1701,9 @@ public class HalfEdgeSurface implements Serializable {
         List<List<HalfEdgeFace>> mergedWeldedFacesGroups = new ArrayList<>();
         mergeWeldedFacesGroupsByTexCoords(weldedFacesGroups_, mergedWeldedFacesGroups);
 
+//        mergedWeldedFacesGroups.clear(); // test.!!!!!!!!!!!!
+//        mergedWeldedFacesGroups.addAll(weldedFacesGroups_); // test.!!!!!!!!!!!!
+
         //*************************************************************************************************
         // Before do scissoring and atlasing, check:
         // If the sum of GaiaTextureScissorData-rectangle is aprox 1.0, then do not scissor.
@@ -1723,7 +1726,9 @@ public class HalfEdgeSurface implements Serializable {
                 texHeight,
                 existPngTextures,
                 srcImage,
-                textureAtlas);
+                textureAtlas,
+                false);
+
 
 
         // write the textureAtlas into a file
@@ -1794,7 +1799,7 @@ public class HalfEdgeSurface implements Serializable {
             totalTextureUsedArea += width * height;
         }
 
-        if(totalTextureUsedArea > 0.75) {
+        if(totalTextureUsedArea > 0.85) {
             return false;
         }
         return true;
@@ -1878,7 +1883,8 @@ public class HalfEdgeSurface implements Serializable {
                 texHeight,
                 existPngTextures,
                 srcImage,
-                textureAtlas);
+                textureAtlas,
+                false);
 
 
         // write the textureAtlas into a file
@@ -2260,7 +2266,8 @@ public class HalfEdgeSurface implements Serializable {
         this.dirty = true;
     }
 
-    public Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> getMapClassifyIdToCameraDirectionTypeToFaces(Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapFaceGroupByClassifyIdAndObliqueCamDirType) {
+    public Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> getMapClassifyIdToCameraDirectionTypeToFaces(Map<Integer, Map<CameraDirectionType,
+            List<HalfEdgeFace>>> mapFaceGroupByClassifyIdAndObliqueCamDirType) {
         if (mapFaceGroupByClassifyIdAndObliqueCamDirType == null) {
             mapFaceGroupByClassifyIdAndObliqueCamDirType = new HashMap<>();
         }
@@ -2280,61 +2287,6 @@ public class HalfEdgeSurface implements Serializable {
     }
 
     public void splitFacesByBestObliqueCameraDirectionToProject() {
-//        // test
-//        for (HalfEdgeFace face : faces) {
-//            int classifyId = face.getClassifyId();
-//            CameraDirectionType bestObliqueCameraDirectionType = face.getCameraDirectionType();
-//            Map<CameraDirectionType, Integer> mapCamDirToCount = new HashMap<>();
-//            List<HalfEdgeFace> adjacentFaces = face.getAdjacentFaces(null);
-//            for (HalfEdgeFace adjacentFace : adjacentFaces) {
-//                if (adjacentFace == null) {
-//                    continue;
-//                }
-//                int adjacentClassifyId = adjacentFace.getClassifyId();
-//                CameraDirectionType adjacentBestObliqueCameraDirectionType = adjacentFace.getCameraDirectionType();
-//                if (classifyId != adjacentClassifyId) {
-//                    continue;
-//                }
-////                if (bestObliqueCameraDirectionType == adjacentBestObliqueCameraDirectionType) {
-////                    continue;
-////                }
-//
-//                if (adjacentBestObliqueCameraDirectionType == CameraDirectionType.CAMERA_DIRECTION_ZNEG) {
-//                    int camDir_ZNEG_count = mapCamDirToCount.computeIfAbsent(CameraDirectionType.CAMERA_DIRECTION_ZNEG, k -> 0);
-//                    mapCamDirToCount.put(CameraDirectionType.CAMERA_DIRECTION_ZNEG, camDir_ZNEG_count + 1);
-//                }
-//                else if (adjacentBestObliqueCameraDirectionType == CameraDirectionType.CAMERA_DIRECTION_XPOS_ZNEG) {
-//                    int camDir_XPOS_ZNEG_count = mapCamDirToCount.computeIfAbsent(CameraDirectionType.CAMERA_DIRECTION_XPOS_ZNEG, k -> 0);
-//                    mapCamDirToCount.put(CameraDirectionType.CAMERA_DIRECTION_XPOS_ZNEG, camDir_XPOS_ZNEG_count + 1);
-//                }
-//                else if (adjacentBestObliqueCameraDirectionType == CameraDirectionType.CAMERA_DIRECTION_XNEG_ZNEG) {
-//                    int camDir_XNEG_ZNEG_count = mapCamDirToCount.computeIfAbsent(CameraDirectionType.CAMERA_DIRECTION_XNEG_ZNEG, k -> 0);
-//                    mapCamDirToCount.put(CameraDirectionType.CAMERA_DIRECTION_XNEG_ZNEG, camDir_XNEG_ZNEG_count + 1);
-//                }
-//                else if (adjacentBestObliqueCameraDirectionType == CameraDirectionType.CAMERA_DIRECTION_YPOS_ZNEG) {
-//                    int camDir_YPOS_ZNEG_count = mapCamDirToCount.computeIfAbsent(CameraDirectionType.CAMERA_DIRECTION_YPOS_ZNEG, k -> 0);
-//                    mapCamDirToCount.put(CameraDirectionType.CAMERA_DIRECTION_YPOS_ZNEG, camDir_YPOS_ZNEG_count + 1);
-//                }
-//                else if (adjacentBestObliqueCameraDirectionType == CameraDirectionType.CAMERA_DIRECTION_YNEG_ZNEG) {
-//                    int camDir_YNEG_ZNEG_count = mapCamDirToCount.computeIfAbsent(CameraDirectionType.CAMERA_DIRECTION_YNEG_ZNEG, k -> 0);
-//                    mapCamDirToCount.put(CameraDirectionType.CAMERA_DIRECTION_YNEG_ZNEG, camDir_YNEG_ZNEG_count + 1);
-//                }
-//            }
-//
-//            // find the best cameraDirectionType in the map
-//            CameraDirectionType bestCamDirType = CameraDirectionType.CAMERA_DIRECTION_ZNEG;
-//            int bestCount = 0;
-//            for (Map.Entry<CameraDirectionType, Integer> entry : mapCamDirToCount.entrySet()) {
-//                if (entry.getValue() > bestCount) {
-//                    bestCount = entry.getValue();
-//                    bestCamDirType = entry.getKey();
-//                }
-//            }
-//
-//            if (bestCount > 1 && bestCount == adjacentFaces.size()) {
-//                face.setCameraDirectionType(bestCamDirType);
-//            }
-//        }
         // make faceGroups by classifyId & bestObliqueCameraDirectionType
         Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapFaceGroupByClassifyIdAndObliqueCamDirType = this.getMapClassifyIdToCameraDirectionTypeToFaces(null);
 

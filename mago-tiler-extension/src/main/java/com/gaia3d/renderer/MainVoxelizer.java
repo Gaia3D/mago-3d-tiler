@@ -1927,33 +1927,18 @@ public class MainVoxelizer implements IAppLogic {
         GaiaScene gaiaSceneFromFaces = HalfEdgeUtils.gaiaSceneFromHalfEdgeFaces(facesList, mapGaiaFaceToHalfEdgeFace);
         GaiaExtractor extractor = new GaiaExtractor();
         List<GaiaPrimitive> gaiaPrimitives = extractor.extractAllPrimitives(gaiaSceneFromFaces);
+
+        // Solve CameraDirectionType for each face.***
+        Map<GaiaFace, CameraDirectionType> mapFaceIdToBestCameraDirectionType = faceVisibilityDataManager.solveCameraDirectionTypeToFaces(gaiaPrimitives);
+
+        // Assign the CameraDirectionType to faces.***
         for (GaiaPrimitive gaiaPrimitive : gaiaPrimitives) {
             List<GaiaSurface> gaiaSurfaces = gaiaPrimitive.getSurfaces();
             for (GaiaSurface surface : gaiaSurfaces) {
                 List<GaiaFace> faces = surface.getFaces();
                 for (GaiaFace face : faces) {
-                    int faceId = face.getId();
-                    face.calculateFaceNormal(gaiaPrimitive.getVertices());
-                    //Vector3d faceNormal = face.getFaceNormal();
-                    CameraDirectionType bestCamDirType = CameraDirectionType.ZNEG;
-                    //CameraDirectionType bestCamDirTypeByNormal = CameraDirectionType.getBestObliqueCameraDirectionType(faceNormal);
-
-                    bestCamDirType = faceVisibilityDataManager.getBestCameraDirectionTypeOfFace(faceId); // original.***
-                    //bestCamDirType = faceVisibilityDataManager.getBestCameraDirectionTypeOfFace(faceId, faceNormal); // testing.***
-                    //bestCamDirType = bestCamDirTypeByNormal; // override by normal direction
-                    if (bestCamDirType == null) {
-                        bestCamDirType = CameraDirectionType.ZNEG;
-                    }
-
-                    // put it into map
-                    CameraDirectionTypeInfo cameraDirectionTypeInfo = mapGaiaFaceToCameraDirectionTypeInfo.get(face);
-                    if (cameraDirectionTypeInfo == null) {
-                        cameraDirectionTypeInfo = new CameraDirectionTypeInfo();
-                        mapGaiaFaceToCameraDirectionTypeInfo.put(face, cameraDirectionTypeInfo);
-                    }
-
-                    cameraDirectionTypeInfo.setCameraDirectionType(bestCamDirType);
-                    cameraDirectionTypeInfo.setAngleDegree(120.0); // no used value
+                    CameraDirectionTypeInfo cameraDirectionTypeInfo = new CameraDirectionTypeInfo();
+                    cameraDirectionTypeInfo.setCameraDirectionType(mapFaceIdToBestCameraDirectionType.get(face));
                     mapGaiaFaceToCameraDirectionTypeInfo.put(face, cameraDirectionTypeInfo);
                 }
             }
@@ -2151,8 +2136,6 @@ public class MainVoxelizer implements IAppLogic {
 
         // unbind the fbo
         colorCodeFbo.unbind();
-        //fboManager.deleteFbo("colorCodeObliqueCamera");
-
         FaceVisibilityData faceVisibilityData = faceVisibilityDataManager.getFaceVisibilityData(cameraDirectionType);
 
         // determine visible triangles

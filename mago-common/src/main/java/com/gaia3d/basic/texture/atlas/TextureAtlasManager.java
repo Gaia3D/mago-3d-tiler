@@ -45,19 +45,19 @@ public class TextureAtlasManager {
         double maxSize = Math.max(pixelWidth, pixelHeight);
         double minSize = Math.min(pixelWidth, pixelHeight);
 
-        int expanded = (int) Math.ceil(maxSize * 0.035); // 3.5%
+        int expanded = (int) Math.ceil(maxSize * 0.02); // 3.5%
 
-        expanded = Math.max(expanded, 8);
-        expanded = Math.min(expanded, 32);
+        expanded = Math.max(expanded, 6);
+        expanded = Math.min(expanded, 12);
 
-        // Los rectángulos pequeños o estrechos sufren más con mipmaps.
-        if (maxSize <= 64) {
-            expanded = Math.max(expanded, 16);
-        }
-
-        if (minSize <= 32) {
-            expanded = Math.max(expanded, 16);
-        }
+//        // Los rectángulos pequeños o estrechos sufren más con mipmaps.
+//        if (maxSize <= 64) {
+//            expanded = Math.max(expanded, 16);
+//        }
+//
+//        if (minSize <= 32) {
+//            expanded = Math.max(expanded, 16);
+//        }
 
         return expanded;
     }
@@ -67,7 +67,8 @@ public class TextureAtlasManager {
                                                                      int texHeight,
                                                                      boolean existPngTextures,
                                                                      BufferedImage srcImage,
-                                                                     GaiaTexture resultTextureAtlas){
+                                                                     GaiaTexture resultTextureAtlas,
+                                                                     boolean paintUsedPixels){
         // now, for each faceGroup, create a scissorData
         // there are 2 types of scissorData :
         // 1- more width than height.
@@ -269,7 +270,7 @@ public class TextureAtlasManager {
             int verticesCount = vertexList.size();
             int currBoundaryWidth = currentBoundary.getWidthInt();
             int currBoundaryHeight = currentBoundary.getHeightInt();
-            double texCoordClampError = 1e-8;
+            double texCoordClampError = 1e-6; // Small epsilon to prevent clamping issues
 
             for (int k = 0; k < verticesCount; k++) {
                 HalfEdgeVertex vertex = vertexList.get(k);
@@ -284,28 +285,6 @@ public class TextureAtlasManager {
                     double x = texCoord.x;
                     double y = texCoord.y;
 
-//                    double xRel = (x - texCoordBoundary.getMinX()) / texCoordBoundary.getWidth();
-//                    double yRel = (y - texCoordBoundary.getMinY()) / texCoordBoundary.getHeight(); // original
-//
-//                    int expandedPixels = textureScissorData.getExpandedPixel();
-//
-//                    xRel = Math.max(0.0, Math.min(1.0, xRel));
-//                    yRel = Math.max(0.0, Math.min(1.0, yRel));
-//
-//                    // transform the texCoordRelToCurrentBoundary to atlasBoundary using batchedBoundary
-//                    double innerMinX = batchedBoundary.getMinX() + expandedPixels;
-//                    double innerMinY = batchedBoundary.getMinY() + expandedPixels;
-//
-//                    double innerW = noExpandedRect.getWidthInt();
-//                    double innerH = noExpandedRect.getHeightInt();
-//
-//                    double xAtlas = (innerMinX + 0.5 + xRel * Math.max(innerW - 1.0, 0.0)) / maxWidth;
-//                    double yAtlas = (innerMinY + 0.5 + yRel * Math.max(innerH - 1.0, 0.0)) / maxHeight;
-//
-//                    Vector2d texCoordFinal = new Vector2d(xAtlas, yAtlas);
-//                    GaiaTextureUtils.clampTextureCoordinate(texCoordFinal, texCoordClampError);
-//                    texCoord.set(texCoordFinal.x, texCoordFinal.y);
-//                    vertex.setTexcoords(texCoord);
                     int expandedPixels = textureScissorData.getExpandedPixel();
 
                     noExpandedRect = textureScissorData.getNoExpandedBoundary();
@@ -535,9 +514,19 @@ public class TextureAtlasManager {
             }
         }
 
-        dilateBackgroundColor(
-                resultTextureAtlas.getBufferedImage(),
-                new Color(255, 0, 255));
+        if (paintUsedPixels) {
+            paintUsedFacesByGroupColorOnAtlas(
+                    atlasImage,
+                    textureScissorDatas,
+                    maxWidth,
+                    maxHeight
+            );
+
+        }
+
+//        dilateBackgroundColor(
+//                resultTextureAtlas.getBufferedImage(),
+//                new Color(255, 0, 255));
 
         // check if textureAtlas width > 8192 and or height > 8192
         if (maxWidth > 8192 || maxHeight > 8192) {
@@ -553,9 +542,422 @@ public class TextureAtlasManager {
             resultTextureAtlas.setHeight(newHeight);
         }
 
-
-
         return textureScissorDatas;
+    }
+
+
+
+    private void paintUsedFacesRedOnAtlas(
+            BufferedImage atlasImage,
+            List<GaiaTextureScissorData> textureScissorDatas,
+            int atlasWidth,
+            int atlasHeight
+    ) {
+        if (atlasImage == null || textureScissorDatas == null || textureScissorDatas.isEmpty()) {
+            return;
+        }
+
+        Graphics2D g = atlasImage.createGraphics();
+        try {
+            g.setRenderingHint(
+                    RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON
+            );
+
+            List<HalfEdgeVertex> faceVertices = new ArrayList<>();
+
+            // 1. Pintar relleno rojo semitransparente
+            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.35f));
+            g.setColor(Color.RED);
+
+            for (GaiaTextureScissorData data : textureScissorDatas) {
+                // create random color.
+
+                if (data == null || data.getFaces() == null || data.getFaces().isEmpty()) {
+                    continue;
+                }
+
+                for (HalfEdgeFace face : data.getFaces()) {
+                    if (face == null) {
+                        continue;
+                    }
+
+                    faceVertices.clear();
+                    face.getVertices(faceVertices);
+
+                    if (faceVertices.size() < 3) {
+                        continue;
+                    }
+
+                    Polygon polygon = new Polygon();
+
+                    for (HalfEdgeVertex vertex : faceVertices) {
+                        if (vertex == null || vertex.getTexcoords() == null) {
+                            continue;
+                        }
+
+                        Vector2d uv = vertex.getTexcoords();
+
+                        int px = (int) Math.round(uv.x * atlasWidth);
+                        int py = (int) Math.round(uv.y * atlasHeight);
+
+                        polygon.addPoint(px, py);
+                    }
+
+                    if (polygon.npoints >= 3) {
+                        g.fillPolygon(polygon);
+                    }
+                }
+            }
+
+            // 2. Pintar bordes en rojo sólido para ver mejor las islas
+            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+            g.setColor(Color.RED);
+
+            for (GaiaTextureScissorData data : textureScissorDatas) {
+                if (data == null || data.getFaces() == null || data.getFaces().isEmpty()) {
+                    continue;
+                }
+
+                for (HalfEdgeFace face : data.getFaces()) {
+                    if (face == null) {
+                        continue;
+                    }
+
+                    faceVertices.clear();
+                    face.getVertices(faceVertices);
+
+                    if (faceVertices.size() < 3) {
+                        continue;
+                    }
+
+                    Polygon polygon = new Polygon();
+
+                    for (HalfEdgeVertex vertex : faceVertices) {
+                        if (vertex == null || vertex.getTexcoords() == null) {
+                            continue;
+                        }
+
+                        Vector2d uv = vertex.getTexcoords();
+
+                        int px = (int) Math.round(uv.x * atlasWidth);
+                        int py = (int) Math.round(uv.y * atlasHeight);
+
+                        polygon.addPoint(px, py);
+                    }
+
+                    if (polygon.npoints >= 3) {
+                        g.drawPolygon(polygon);
+                    }
+                }
+            }
+
+        } finally {
+            g.dispose();
+        }
+    }
+
+    private void paintUsedFacesByGroupColorOnAtlas(
+            BufferedImage atlasImage,
+            List<GaiaTextureScissorData> textureScissorDatas,
+            int atlasWidth,
+            int atlasHeight
+    ) {
+        if (atlasImage == null || textureScissorDatas == null || textureScissorDatas.isEmpty()) {
+            return;
+        }
+
+        Graphics2D g = atlasImage.createGraphics();
+        try {
+            g.setRenderingHint(
+                    RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON
+            );
+
+            List<HalfEdgeVertex> faceVertices = new ArrayList<>();
+
+            int totalGroups = textureScissorDatas.size();
+
+            for (int groupIdx = 0; groupIdx < totalGroups; groupIdx++) {
+                GaiaTextureScissorData data = textureScissorDatas.get(groupIdx);
+                if (data == null || data.getFaces() == null || data.getFaces().isEmpty()) {
+                    continue;
+                }
+
+                // Un color fijo y distinto por grupo.
+                Color fillColor = getDebugColorForGroup(groupIdx, totalGroups);
+                //fillColor = new Color(255,0,0); // solid
+                Color lineColor = fillColor.darker();
+                lineColor = new Color(0,0,0); // solid
+
+                // 1. Relleno semitransparente para todas las faces del grupo.
+                float alpha = 0.45f;
+                g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
+                g.setColor(fillColor);
+
+                for (HalfEdgeFace face : data.getFaces()) {
+                    if (face == null) {
+                        continue;
+                    }
+
+                    faceVertices.clear();
+                    face.getVertices(faceVertices);
+
+                    if (faceVertices.size() < 3) {
+                        continue;
+                    }
+
+                    Polygon polygon = new Polygon();
+
+                    for (HalfEdgeVertex vertex : faceVertices) {
+                        if (vertex == null || vertex.getTexcoords() == null) {
+                            continue;
+                        }
+
+                        Vector2d uv = vertex.getTexcoords();
+
+                        int px = (int) Math.round(uv.x * atlasWidth);
+                        int py = (int) Math.round(uv.y * atlasHeight);
+
+                        polygon.addPoint(px, py);
+                    }
+
+                    if (polygon.npoints >= 3) {
+                        g.fillPolygon(polygon);
+                    }
+                }
+
+                // 2. Bordes sólidos del mismo grupo.
+                g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+                g.setColor(lineColor);
+
+                for (HalfEdgeFace face : data.getFaces()) {
+                    if (face == null) {
+                        continue;
+                    }
+
+                    faceVertices.clear();
+                    face.getVertices(faceVertices);
+
+                    if (faceVertices.size() < 3) {
+                        continue;
+                    }
+
+                    Polygon polygon = new Polygon();
+
+                    for (HalfEdgeVertex vertex : faceVertices) {
+                        if (vertex == null || vertex.getTexcoords() == null) {
+                            continue;
+                        }
+
+                        Vector2d uv = vertex.getTexcoords();
+
+                        int px = (int) Math.round(uv.x * atlasWidth);
+                        int py = (int) Math.round(uv.y * atlasHeight);
+
+                        polygon.addPoint(px, py);
+                    }
+
+                    if (polygon.npoints >= 3) {
+                        g.drawPolygon(polygon);
+                    }
+                }
+            }
+
+        } finally {
+            g.dispose();
+        }
+    }
+
+    private void paintUsedFacesByCameraDirectionTypeOnAtlas(
+            BufferedImage atlasImage,
+            Map<GaiaFace, HalfEdgeFace> mapGaiaFaceToHalfEdgeFace,
+            Map<GaiaFace, CameraDirectionTypeInfo> mapGaiaFaceToCameraDirectionTypeInfo,
+            int atlasWidth,
+            int atlasHeight
+    ) {
+        if (atlasImage == null ||
+                mapGaiaFaceToHalfEdgeFace == null ||
+                mapGaiaFaceToCameraDirectionTypeInfo == null ||
+                mapGaiaFaceToCameraDirectionTypeInfo.isEmpty()) {
+            return;
+        }
+
+        Graphics2D g = atlasImage.createGraphics();
+        try {
+            g.setRenderingHint(
+                    RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON
+            );
+
+            List<HalfEdgeVertex> faceVertices = new ArrayList<>();
+
+            // 1. Relleno semitransparente por CameraDirectionType.
+            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.35f));
+
+            for (Map.Entry<GaiaFace, CameraDirectionTypeInfo> entry : mapGaiaFaceToCameraDirectionTypeInfo.entrySet()) {
+                GaiaFace gaiaFace = entry.getKey();
+                CameraDirectionTypeInfo info = entry.getValue();
+
+                if (gaiaFace == null || info == null) {
+                    continue;
+                }
+
+                HalfEdgeFace halfEdgeFace = mapGaiaFaceToHalfEdgeFace.get(gaiaFace);
+                if (halfEdgeFace == null) {
+                    continue;
+                }
+
+                CameraDirectionType cameraDirectionType = info.getCameraDirectionType();
+                if (cameraDirectionType == null) {
+                    cameraDirectionType = halfEdgeFace.getCameraDirectionType();
+                }
+                if (cameraDirectionType == null) {
+                    cameraDirectionType = CameraDirectionType.ZNEG;
+                }
+
+                Color color = getDebugColorForCameraDirectionType(cameraDirectionType);
+                g.setColor(color);
+
+                Polygon polygon = createAtlasUvPolygon(
+                        halfEdgeFace,
+                        faceVertices,
+                        atlasWidth,
+                        atlasHeight
+                );
+
+                if (polygon != null && polygon.npoints >= 3) {
+                    g.fillPolygon(polygon);
+                }
+            }
+
+            // 2. Bordes sólidos.
+            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+
+            for (Map.Entry<GaiaFace, CameraDirectionTypeInfo> entry : mapGaiaFaceToCameraDirectionTypeInfo.entrySet()) {
+                GaiaFace gaiaFace = entry.getKey();
+                CameraDirectionTypeInfo info = entry.getValue();
+
+                if (gaiaFace == null || info == null) {
+                    continue;
+                }
+
+                HalfEdgeFace halfEdgeFace = mapGaiaFaceToHalfEdgeFace.get(gaiaFace);
+                if (halfEdgeFace == null) {
+                    continue;
+                }
+
+                CameraDirectionType cameraDirectionType = info.getCameraDirectionType();
+                if (cameraDirectionType == null) {
+                    cameraDirectionType = halfEdgeFace.getCameraDirectionType();
+                }
+                if (cameraDirectionType == null) {
+                    cameraDirectionType = CameraDirectionType.ZNEG;
+                }
+
+                Color color = getDebugColorForCameraDirectionType(cameraDirectionType).darker();
+                g.setColor(color);
+
+                Polygon polygon = createAtlasUvPolygon(
+                        halfEdgeFace,
+                        faceVertices,
+                        atlasWidth,
+                        atlasHeight
+                );
+
+                if (polygon != null && polygon.npoints >= 3) {
+                    g.drawPolygon(polygon);
+                }
+            }
+
+        } finally {
+            g.dispose();
+        }
+    }
+
+    private Polygon createAtlasUvPolygon(
+            HalfEdgeFace face,
+            List<HalfEdgeVertex> reusableVertices,
+            int atlasWidth,
+            int atlasHeight
+    ) {
+        if (face == null || reusableVertices == null) {
+            return null;
+        }
+
+        reusableVertices.clear();
+        face.getVertices(reusableVertices);
+
+        if (reusableVertices.size() < 3) {
+            return null;
+        }
+
+        Polygon polygon = new Polygon();
+
+        for (HalfEdgeVertex vertex : reusableVertices) {
+            if (vertex == null || vertex.getTexcoords() == null) {
+                continue;
+            }
+
+            Vector2d uv = vertex.getTexcoords();
+
+            int px = (int) Math.round(uv.x * atlasWidth);
+            int py = (int) Math.round(uv.y * atlasHeight);
+
+            polygon.addPoint(px, py);
+        }
+
+        return polygon.npoints >= 3 ? polygon : null;
+    }
+
+    private Color getDebugColorForCameraDirectionType(CameraDirectionType cameraDirectionType) {
+        if (cameraDirectionType == null) {
+            return new Color(255, 255, 255);
+        }
+
+        switch (cameraDirectionType) {
+            case ZNEG:
+                return new Color(255, 0, 0);       // rojo
+
+            case XPOS_ZNEG:
+                return new Color(0, 255, 0);       // verde
+
+            case XNEG_ZNEG:
+                return new Color(0, 120, 255);     // azul
+
+            case YPOS_ZNEG:
+                return new Color(255, 180, 0);     // naranja
+
+            case YNEG_ZNEG:
+                return new Color(255, 0, 255);     // magenta
+
+            case XPOS_YPOS_ZNEG:
+                return new Color(0, 255, 255);     // cian
+
+            case XNEG_YPOS_ZNEG:
+                return new Color(180, 0, 255);     // violeta
+
+            case XPOS_YNEG_ZNEG:
+                return new Color(255, 255, 0);     // amarillo
+
+            case XNEG_YNEG_ZNEG:
+                return new Color(120, 255, 120);   // verde claro
+
+            default:
+                return new Color(255, 255, 255);   // blanco
+        }
+    }
+
+    private Color getDebugColorForGroup(int groupIdx, int totalGroups) {
+        if (totalGroups <= 0) {
+            totalGroups = 1;
+        }
+
+        float hue = (float) groupIdx / (float) totalGroups;
+        float saturation = 0.85f;
+        float brightness = 1.0f;
+
+        return Color.getHSBColor(hue, saturation, brightness);
     }
 
     public List<GaiaTextureScissorData> calculateTextureScissorDates_original(List<List<HalfEdgeFace>> mergedWeldedFacesGroups,
