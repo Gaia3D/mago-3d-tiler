@@ -1701,9 +1701,6 @@ public class HalfEdgeSurface implements Serializable {
         List<List<HalfEdgeFace>> mergedWeldedFacesGroups = new ArrayList<>();
         mergeWeldedFacesGroupsByTexCoords(weldedFacesGroups_, mergedWeldedFacesGroups);
 
-//        mergedWeldedFacesGroups.clear(); // test.!!!!!!!!!!!!
-//        mergedWeldedFacesGroups.addAll(weldedFacesGroups_); // test.!!!!!!!!!!!!
-
         //*************************************************************************************************
         // Before do scissoring and atlasing, check:
         // If the sum of GaiaTextureScissorData-rectangle is aprox 1.0, then do not scissor.

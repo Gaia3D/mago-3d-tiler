@@ -33,6 +33,101 @@ public class TextureAtlasManager {
         }
     }
 
+    public void doAtlasTextureProcessByScissorDatesFull(
+            List<GaiaTextureScissorDataFull> textureScissorDatesFull
+    ) {
+        int textureScissorDatasCount = textureScissorDatesFull.size();
+
+        log.info("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : textureScissorDatasCount = "
+                + textureScissorDatasCount);
+
+        List<GaiaTextureScissorDataFull> sortedScissors =
+                sortScissorDataAlternatingWidthHeight(textureScissorDatesFull);
+
+        GuillotinePacker guillotinePacker = new GuillotinePacker();
+
+        for (int i = 0; i < sortedScissors.size(); i++) {
+            GaiaTextureScissorDataFull textureScissorData = sortedScissors.get(i);
+
+            if (!guillotinePacker.insert(textureScissorData)) {
+                log.info("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : guillotinePacker.insert() failed.");
+            }
+        }
+    }
+
+    private List<GaiaTextureScissorDataFull> sortScissorDataAlternatingWidthHeight(
+            List<GaiaTextureScissorDataFull> input
+    ) {
+        if (input == null || input.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<GaiaTextureScissorDataFull> byWidth = new ArrayList<>(input);
+        List<GaiaTextureScissorDataFull> byHeight = new ArrayList<>(input);
+
+        byWidth.sort((a, b) -> Integer.compare(
+                getImageWidth(b),
+                getImageWidth(a)
+        ));
+
+        byHeight.sort((a, b) -> Integer.compare(
+                getImageHeight(b),
+                getImageHeight(a)
+        ));
+
+        List<GaiaTextureScissorDataFull> result = new ArrayList<>(input.size());
+        Set<GaiaTextureScissorDataFull> used = Collections.newSetFromMap(new IdentityHashMap<>());
+
+        int widthIdx = 0;
+        int heightIdx = 0;
+
+        while (result.size() < input.size()) {
+            // 1) Add next widest
+            while (widthIdx < byWidth.size() && used.contains(byWidth.get(widthIdx))) {
+                widthIdx++;
+            }
+
+            if (widthIdx < byWidth.size()) {
+                GaiaTextureScissorDataFull data = byWidth.get(widthIdx++);
+                result.add(data);
+                used.add(data);
+            }
+
+            if (result.size() >= input.size()) {
+                break;
+            }
+
+            // 2) Add next tallest
+            while (heightIdx < byHeight.size() && used.contains(byHeight.get(heightIdx))) {
+                heightIdx++;
+            }
+
+            if (heightIdx < byHeight.size()) {
+                GaiaTextureScissorDataFull data = byHeight.get(heightIdx++);
+                result.add(data);
+                used.add(data);
+            }
+        }
+
+        return result;
+    }
+
+    private int getImageWidth(GaiaTextureScissorDataFull data) {
+        if (data == null || data.getScissoredImage() == null) {
+            return 0;
+        }
+
+        return data.getScissoredImage().getWidth();
+    }
+
+    private int getImageHeight(GaiaTextureScissorDataFull data) {
+        if (data == null || data.getScissoredImage() == null) {
+            return 0;
+        }
+
+        return data.getScissoredImage().getHeight();
+    }
+
     private int getMaxWidthScissorDates(List<GaiaTextureScissorData> compareImages) {
         return compareImages.stream().mapToInt(textureScissorData -> (int) textureScissorData.getBatchedBoundary().getMaxX()).max().orElse(0);
     }
@@ -49,15 +144,6 @@ public class TextureAtlasManager {
 
         expanded = Math.max(expanded, 6);
         expanded = Math.min(expanded, 12);
-
-//        // Los rectángulos pequeños o estrechos sufren más con mipmaps.
-//        if (maxSize <= 64) {
-//            expanded = Math.max(expanded, 16);
-//        }
-//
-//        if (minSize <= 32) {
-//            expanded = Math.max(expanded, 16);
-//        }
 
         return expanded;
     }
@@ -524,9 +610,9 @@ public class TextureAtlasManager {
 
         }
 
-//        dilateBackgroundColor(
-//                resultTextureAtlas.getBufferedImage(),
-//                new Color(255, 0, 255));
+        dilateBackgroundColor(
+                resultTextureAtlas.getBufferedImage(),
+                new Color(255, 0, 255));
 
         // check if textureAtlas width > 8192 and or height > 8192
         if (maxWidth > 8192 || maxHeight > 8192) {
@@ -1816,6 +1902,22 @@ public class TextureAtlasManager {
         return result;
     }
 
+    public int getMaxWidthScissorDataFull(List<GaiaTextureScissorDataFull> compareImages) {
+        return compareImages.stream()
+                .filter(data -> data != null && data.getBatchedBoundary() != null)
+                .mapToInt(data -> (int) Math.ceil(data.getBatchedBoundary().getMaxX()))
+                .max()
+                .orElse(0);
+    }
+
+    public int getMaxHeightScissorDataFull(List<GaiaTextureScissorDataFull> compareImages) {
+        return compareImages.stream()
+                .filter(data -> data != null && data.getBatchedBoundary() != null)
+                .mapToInt(data -> (int) Math.ceil(data.getBatchedBoundary().getMaxY()))
+                .max()
+                .orElse(0);
+    }
+
     private void getGaiaVerticesOfFaceGroup(List<GaiaFace> faceGroup, List<GaiaVertex> vertices, List<GaiaVertex> resultVertices) {
         Map<GaiaVertex, GaiaVertex> groupVertexMap = new HashMap<>();
         int facesCount = faceGroup.size();
@@ -2060,6 +2162,72 @@ public class TextureAtlasManager {
 
         }
         g2d.dispose();
+
+        return textureAtlas;
+    }
+
+    public GaiaTexture makeAtlasTextureScissorDataFull(List<GaiaTextureScissorDataFull> scissoredDates, int imageType) {
+        // calculate the maxWidth and maxHeight
+        // TODO : is it wrong to calculate the maxWidth and maxHeight by using the batchedBoundary?***
+        int maxWidth = getMaxWidthScissorDataFull(scissoredDates);
+        int maxHeight = getMaxHeightScissorDataFull(scissoredDates);
+
+        if (maxWidth == 0 || maxHeight == 0) {
+            log.error("[ERROR] makeAtlasTexture() : maxWidth or maxHeight is 0.");
+            return null;
+        }
+
+        GaiaTexture textureAtlas = new GaiaTexture();
+        log.info("[Tile][Photogrammetry][makeAtlasTexture] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
+        textureAtlas.createImage(maxWidth, maxHeight, imageType);
+
+        // draw the images into textureAtlas
+        log.debug("HalfEdgeSurface.scissorTextures() : draw the images into textureAtlas.");
+        Graphics2D g2d = textureAtlas.getBufferedImage().createGraphics();
+
+        try {
+            g2d.setColor(new Color(255, 0, 255));
+            g2d.fillRect(0, 0, maxWidth, maxHeight);
+
+            int textureAtlasDatasCount = scissoredDates.size();
+
+            for (int i = 0; i < textureAtlasDatasCount; i++) {
+                GaiaTextureScissorDataFull scissorDataFull = scissoredDates.get(i);
+                if (scissorDataFull == null) {
+                    continue;
+                }
+
+                GaiaRectangle batchedBoundary = scissorDataFull.getBatchedBoundary();
+                if (batchedBoundary == null) {
+                    continue;
+                }
+
+                BufferedImage subImage = scissorDataFull.getScissoredImage();
+                if (subImage == null) {
+                    continue;
+                }
+
+                int x = (int) Math.floor(batchedBoundary.getMinX());
+                int y = (int) Math.floor(batchedBoundary.getMinY());
+
+                int w = subImage.getWidth();
+                int h = subImage.getHeight();
+
+                if (x < 0 || y < 0 || x + w > maxWidth || y + h > maxHeight) {
+                    log.error(
+                            "Scissor outside atlas. index={}, x={}, y={}, w={}, h={}, x+w={}, y+h={}, atlasW={}, atlasH={}",
+                            i, x, y, w, h, x + w, y + h, maxWidth, maxHeight
+                    );
+                    continue;
+                }
+
+                g2d.drawImage(subImage, x, y, null);
+            }
+        } finally {
+            g2d.dispose();
+        }
+
+        dilateBackgroundColor(textureAtlas.getBufferedImage(), new Color(255, 0, 255));
 
         return textureAtlas;
     }

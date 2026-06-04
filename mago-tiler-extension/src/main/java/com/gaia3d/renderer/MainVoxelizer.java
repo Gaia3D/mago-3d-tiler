@@ -14,6 +14,8 @@ import com.gaia3d.basic.marchingcube.MarchingCube;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.remesher.*;
 import com.gaia3d.basic.remesher.information.GaiaStatistics;
+import com.gaia3d.basic.texture.atlas.TextureAtlasManager;
+import com.gaia3d.basic.texture.atlas.TexturesAtlasData;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.renderer.engine.*;
 import com.gaia3d.renderer.engine.Window;
@@ -45,10 +47,8 @@ import java.lang.Math;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -809,85 +809,24 @@ public class MainVoxelizer implements IAppLogic {
         }
     }
 
-    public void integralDecimateByObliqueCamera_original(List<SceneInfo> sceneInfos,
-                                                List<HalfEdgeScene> resultHalfEdgeScenes,
-                                                DecimateParameters decimateParameters,
-                                                ReMeshParameters reMeshParams,
+    public void integralLeafScene(List<SceneInfo> sceneInfos,
+                                  List<GaiaScene> resultGaiaScenes,
                                                 GaiaBoundingBox nodeBBox,
                                                 Matrix4d nodeTMatrix,
                                                 int maxScreenSize,
                                                 String outputPathString,
                                                 String nodeName,
                                                 int lod) {
-        // Note: There are only one scene in the scene list
-        // Must init gl
         try {
-            engine.init();
-
-            int screenWidth = 1000; // no used var
-            int screenHeight = 600; // no used var
-
-            GaiaScenesContainer gaiaScenesContainer = new GaiaScenesContainer(screenWidth, screenHeight);
-
-            // calculate the projectionMatrix for the camera
-            Vector3d bboxCenter = nodeBBox.getCenter();
-            float xLength = (float) nodeBBox.getSizeX();
-            float yLength = (float) nodeBBox.getSizeY();
-            float zLength = (float) nodeBBox.getSizeZ();
-
-            Projection projection = new Projection(0, screenWidth, screenHeight);
-            projection.setProjectionOrthographic(-xLength / 2.0f, xLength / 2.0f, -yLength / 2.0f, yLength / 2.0f, -zLength * 0.5f, zLength * 0.5f);
-            gaiaScenesContainer.setProjection(projection);
-            engine.setGaiaScenesContainer(gaiaScenesContainer);
-
-            // Take FboManager from engine
-            FboManager fboManager = engine.getFboManager();
-
-            // create the fbo
-            int fboWidthColor = maxScreenSize;
-            int fboHeightColor = maxScreenSize;
-            if (xLength > yLength) {
-                fboWidthColor = maxScreenSize;
-                fboHeightColor = (int) (maxScreenSize * yLength / xLength);
-            } else {
-                fboWidthColor = (int) (maxScreenSize * xLength / yLength);
-                fboHeightColor = maxScreenSize;
-            }
-
-            //Fbo colorFbo = fboManager.getOrCreateFbo("colorRender", fboWidthColor, fboHeightColor);
-
-            // now set camera position
-            Camera camera = new Camera();
-            camera.setPosition(bboxCenter);
-            camera.setDirection(new Vector3d(0, 0, -1));
-            camera.setUp(new Vector3d(0, 1, 0));
-            gaiaScenesContainer.setCamera(camera);
-
             Matrix4d nodeMatrixInv = new Matrix4d(nodeTMatrix);
             nodeMatrixInv.invert();
 
-            GaiaScene gaiaSceneMaster = null;
             double weldError = 1e-6; // 1e-6 is a good value for remeshing
-
-            // IntegralReMeshParameters
-            Vector4f backgroundColor = new Vector4f(0.5f, 0.5f, 0.5f, 1.0f);
-            IntegralReMeshParameters integralReMeshParameters = new IntegralReMeshParameters();
-            integralReMeshParameters.setBackgroundColor(backgroundColor);
-            integralReMeshParameters.createFBOsObliqueCamera9Directions(this.engine.getFboManager(), fboWidthColor, fboHeightColor, GL30.GL_LINEAR, GL30.GL_LINEAR);
 
             // render the scenes
             int scenesCount = sceneInfos.size();
             List<RenderableGaiaScene> renderableGaiaScenes = new ArrayList<>();
-            int counter = 0;
-            int faceIdAvailable = 0;
 
-            Map<Integer, Map<GaiaFace, HalfEdgeFace>> mapClassifyIdToGaiaFaceToHalfEdgeFace = new HashMap<>();
-            Map<Integer, Map<GaiaFace, CameraDirectionTypeInfo>> mapClassifyIdToGaiaFaceToCameraDirectionTypeInfo = new HashMap<>();
-            Map<Integer, Map<CameraDirectionType, GaiaBoundingBox>> mapClassificationCamDirTypeBBox = new HashMap<>();
-            Map<Integer, Map<CameraDirectionType, Matrix4d>> mapClassificationCamDirTypeModelViewMatrix = new HashMap<>();
-            Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapClassificationCamDirTypeFacesList = new HashMap<>();
-
-            FaceVisibilityDataManager faceVisibilityDataManager = new FaceVisibilityDataManager();
             GaiaSceneCleaner cleaner = new GaiaSceneCleaner();
             GaiaWeldOptions weldOptions = GaiaWeldOptions.builder()
                     .error(weldError)
@@ -896,6 +835,8 @@ public class MainVoxelizer implements IAppLogic {
                     .checkColor(false)
                     .checkBatchId(false)
                     .build();
+
+            List<HalfEdgeScene> halfEdgeScenes = new ArrayList<>();
             for (int i = 0; i < scenesCount; i++) {
                 // load and render, one by one
                 SceneInfo sceneInfo = sceneInfos.get(i);
@@ -918,18 +859,11 @@ public class MainVoxelizer implements IAppLogic {
                 // load the set file
                 GaiaSet gaiaSet = null;
                 GaiaScene gaiaScene = null;
-                GaiaScene gaiaSceneCopy = null;
+
                 Path path = Paths.get(scenePath);
                 try {
                     gaiaSet = GaiaSet.readFile(path);
                     gaiaScene = new GaiaScene(gaiaSet);
-                    gaiaSceneCopy = new GaiaScene(gaiaSet);
-
-                    GaiaNode gaiaNode = gaiaSceneCopy.getNodes().getFirst();
-                    gaiaNode.setTransformMatrix(new Matrix4d(sceneTMatLC));
-                    gaiaNode.setPreMultipliedTransformMatrix(new Matrix4d(sceneTMatLC));
-                    RenderableGaiaScene renderableScene = InternDataConverter.getRenderableGaiaScene(gaiaSceneCopy);
-                    renderableGaiaScenes.add(renderableScene);
                 } catch (Exception e) {
                     log.error("[ERROR] reading the file: ", e);
                 }
@@ -939,14 +873,6 @@ public class MainVoxelizer implements IAppLogic {
                     throw new RuntimeException("[ERROR] integralReMeshByObliqueCamera : GaiaScene is null");
                 }
 
-                if (gaiaSceneCopy != null) {
-                    gaiaSceneCopy.clear();
-                    gaiaSceneCopy = null;
-                }
-
-                gaiaScenesContainer.setRenderableGaiaScenes(renderableGaiaScenes);
-
-                // decimate the scene.****************************************************************************************
                 GaiaTriangulator triangulator = new GaiaTriangulator();
                 triangulator.apply(gaiaScene);
 
@@ -956,236 +882,20 @@ public class MainVoxelizer implements IAppLogic {
 
                 GaiaBaker baker = new GaiaBaker();
                 baker.apply(gaiaScene);
-                gaiaScene.joinAllSurfaces();
 
-                List<GaiaMaterial> materials = gaiaScene.getMaterials();
-
-                // delete materials.
-                for (GaiaMaterial material : materials) {
-                    material.clear();
-                }
-                gaiaScene.getMaterials().clear();
-
-                GaiaStatistics stats = GaiaStatistics.calculateStatistics(gaiaScene);
-
-                // Pre-ReMesh.******************************************************************************************
-                GeometryOnlyReMesherByOctree preReMesher = new GeometryOnlyReMesherByOctree();
-                GaiaBoundingBox effectiveNodeBBox = nodeBBox.clone();
-
-                if (lod == 1) {
-                    double desiredLeafSize = 1.0;
-                    OctreeBBoxInfo octreeBoxInfo = preReMesher.calculateBoundingBoxForLeafDistInfo(nodeBBox, desiredLeafSize);
-                    int octreeMaxDepth = octreeBoxInfo.maxDepth;
-                    double rootOctreeSize = octreeBoxInfo.rootCubeSize;
-                    double nodeSize = nodeBBox.getMaxSize();
-                    double scaleFactor = rootOctreeSize / nodeSize;
-                    effectiveNodeBBox.expand(nodeSize * scaleFactor * 0.5);
-
-                    preReMesher.setReMeshAnyWay(false);
-                    preReMesher.setLimitDepth(octreeMaxDepth);
-                    preReMesher.setMinFacesCount(1);
-                    preReMesher.setLimitBoxSize(desiredLeafSize);
-                } else {
-                    double desiredLeafSize = 1.5;
-                    OctreeBBoxInfo octreeBoxInfo = preReMesher.calculateBoundingBoxForLeafDistInfo(nodeBBox, desiredLeafSize);
-                    int octreeMaxDepth = octreeBoxInfo.maxDepth;
-                    double rootOctreeSize = octreeBoxInfo.rootCubeSize;
-                    double nodeSize = nodeBBox.getMaxSize();
-                    double scaleFactor = rootOctreeSize / nodeSize;
-                    effectiveNodeBBox.expand(nodeSize * scaleFactor * 0.5);
-
-                    preReMesher.setReMeshAnyWay(true);
-                    preReMesher.setLimitDepth(octreeMaxDepth);
-                    preReMesher.setMinFacesCount(1);
-                    preReMesher.setLimitBoxSize(desiredLeafSize);
-                }
-
-                preReMesher.reMeshScene(gaiaScene, stats, effectiveNodeBBox);
-                GaiaWelder weld = new GaiaWelder(weldOptions);
-                weld.apply(gaiaScene);
-                cleaner.apply(gaiaScene);
-                // End pre-ReMesh.--------------------------------------------------------------------------------------
-
-                // dominantPlaneProjector.*****************
-//                double positionEpsilon = 1e-4;
-//                double maxNormalAngleDeg = 15.0;
-//                int minFacesPerCluster = 10;
-//                DominantPlaneProjector dpp = new DominantPlaneProjector();
-//                dpp.projectClustersOnScene_SimpleTest(
-//                        gaiaScene,
-//                        1e-6,  // positionEpsilon
-//                        35.0,  // maxNormalAngleDeg
-//                        15,    // minFacesPerCluster
-//                        true   // true = proyectar al plano, false = mover por normal
-//                );
-                // End domimantPlaneProjector------------------
-
-
-                double averageEdgeSize = stats.getAverageEdgeSize();
-                double smallHedgeSize = averageEdgeSize * 1.5;
-                smallHedgeSize = Math.min(smallHedgeSize, 1.5);
-                double minHedgeSize = averageEdgeSize;
-                minHedgeSize = Math.min(minHedgeSize, 0.5);
-                decimateParameters.setSmallHedgeSize(smallHedgeSize);
-                decimateParameters.setHedgeMinLength(minHedgeSize);
                 HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(gaiaScene);
-                HalfEdgeDecimator decimator = new HalfEdgeDecimator(decimateParameters);
-                decimator.apply(halfEdgeScene);
+                halfEdgeScenes.add(halfEdgeScene);
 
-                // now, try to reMesh vegetation.
-                log.debug("trianglesCount = " + stats.trianglesCount
-                        + ", areaTotal = " + stats.areaTotal
-                        + ", density = " + stats.trianglesDensity
-                        + ", normalVariance = " + stats.normalVariance
-                        + ", verticalRange = " + stats.verticalRange
-                        + ", areaFoldRatio = " + stats.areaFoldRatio
-                        + ", averageEdgeSize = " + stats.averageEdgeSize);
-                GeometryOnlyReMesherByOctree reMesherByOctree = new GeometryOnlyReMesherByOctree();
-                double nodeBoxSize = nodeBBox.getMaxSize();
-                double minBoxSize = nodeBoxSize / 18.0;
-                if (lod == 1) {
-                    reMesherByOctree.setLimitDepth(12);
-                    reMesherByOctree.setMinFacesCount(5);
-                    reMesherByOctree.setLimitBoxSize(minBoxSize);
-                } else {
-                    reMesherByOctree.setLimitDepth(12);
-                    reMesherByOctree.setMinFacesCount(5);
-                    reMesherByOctree.setLimitBoxSize(minBoxSize);
-                }
-
-                Vector3d scenePositionRelToCellGrid = sceneInfo.getScenePosLC(); // relative position of the scene respect the center of RootNode (Depth = 0).
-                gaiaScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
-                reMesherByOctree.reMeshScene(gaiaScene, stats, nodeBBox);
-
-                //******************************************************************************************************
-                halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(gaiaScene);
-
-                try {
-                    // render the scene
-                    log.debug("Rendering the scene : " + i + " / " + scenesCount + ". LOD : " + lod);
-
-                    // for each gaiaScene, set the available faceIds, to use for colorCoded rendering
-                    List<HalfEdgeSurface> halfEdgeSurfaces = halfEdgeScene.extractSurfaces(null);
-                    for (HalfEdgeSurface halfEdgeSurface : halfEdgeSurfaces) {
-                        List<HalfEdgeFace> halfEdgeFaces = halfEdgeSurface.getFaces();
-                        for (HalfEdgeFace halfEdgeFace : halfEdgeFaces) {
-                            halfEdgeFace.setId(faceIdAvailable);
-                            faceIdAvailable++;
-                        }
-                    }
-
-                    gaiaScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
-
-                    int bufferedImageType = BufferedImage.TYPE_INT_ARGB;
-                    int texturePixelsForMeter = 20; // decimateParameters.getTexturePixelsForMeter();
-                    engine.makeIntegralBoxTexturesByObliqueCamera9Directions(halfEdgeScene, texturePixelsForMeter, bufferedImageType, nodeBBox, integralReMeshParameters,
-                            mapClassifyIdToGaiaFaceToHalfEdgeFace, mapClassifyIdToGaiaFaceToCameraDirectionTypeInfo, mapClassificationCamDirTypeBBox,
-                            mapClassificationCamDirTypeModelViewMatrix, mapClassificationCamDirTypeFacesList, faceVisibilityDataManager);
-                    // end of making oblique camera textures
-
-                } catch (Exception e) {
-                    log.error("[ERROR] initializing the engine: ", e);
-                }
-
-                // delete renderableGaiaScenes
-                for (RenderableGaiaScene renderableScene : renderableGaiaScenes) {
-                    renderableScene.deleteGLBuffers();
-                }
-
-                // Calculate globalBoundaryAnchors.*********************************************************************
-
-                calculateGlobalBoundaryAnchors(gaiaScene, reMeshParams, scenePositionRelToCellGrid, i);
-                // End calculating globalBoundaryAnchors.---------------------------------------------------------------
-
-                if (gaiaSceneMaster == null) {
-                    gaiaSceneMaster = gaiaScene;
-                } else {
-                    GaiaExtractor extractor = new GaiaExtractor();
-                    List<GaiaPrimitive> primitives = extractor.extractAllPrimitives(gaiaScene);
-                    GaiaNode rootNodeMaster = gaiaSceneMaster.getNodes().get(0);
-                    GaiaNode nodeMaster = rootNodeMaster.getChildren().get(0);
-                    GaiaMesh meshMaster = nodeMaster.getMeshes().get(0);
-                    meshMaster.getPrimitives().addAll(primitives);
-                    gaiaScene = null;
-                }
-
-                if (gaiaSet != null) {
-                    gaiaSet.clear();
-                }
-
-                counter++;
-                if (counter > 20) {
-                    counter = 0;
-                }
+                gaiaSet.clear();
+                gaiaScene.clear();
             }
 
-            // Finish LOD2 -> LOD3 transition anchors.***************************************
-            if (lod == 2 && reMeshParams != null) {
-                TileBoundaryAnchors lodTransitionTileAnchors =
-                        reMeshParams.getTileBoundaryAnchors();
+            atlasTextureForIntegralLeafScenes(halfEdgeScenes, resultGaiaScenes, outputPathString, nodeName);
 
-                GlobalBoundaryAnchors globalBoundaryAnchors =
-                        reMeshParams.getGlobalBoundaryAnchors();
-
-                if (lodTransitionTileAnchors != null && globalBoundaryAnchors != null) {
-                    ReMesherVertexClusterV2.finishTileBoundaryAnchors(lodTransitionTileAnchors);
-
-                    globalBoundaryAnchors.addMissingFromTileAnchors(lodTransitionTileAnchors);
-
-                    log.debug("LOD2 -> LOD3 transition tile anchors cells = {}",
-                            lodTransitionTileAnchors.frontierAveragePositions.size());
-
-                    log.debug("LOD2 -> LOD3 globalBoundaryAnchors locked cells = {}",
-                            globalBoundaryAnchors.lockedAveragePositions.size());
-
-                    // Importante:
-                    // TileBoundaryAnchors es temporal. Los anchors útiles ya quedaron bloqueados en global.
-                    lodTransitionTileAnchors.clear();
-                }
+            // delete halfEdgeScenes.
+            for(HalfEdgeScene scene : halfEdgeScenes){
+                scene.deleteObjects();
             }
-            // End LOD2 -> LOD3 transition anchors.------------------------------------------
-
-            // Join all surfaces and weld vertices of the gaiaSceneMaster.
-            gaiaSceneMaster.joinAllSurfaces();
-            GaiaWelder weld = new GaiaWelder(weldOptions);
-            weld.apply(gaiaSceneMaster);
-            cleaner.apply(gaiaSceneMaster);
-
-            GaiaExtractor extractor = new GaiaExtractor();
-            List<GaiaFace> gaiaFacesMaster = extractor.extractAllFaces(gaiaSceneMaster);
-            if (gaiaFacesMaster.isEmpty()) {
-                log.info("[ERROR] gaiaFacesMaster is empty");
-                engine.deleteObjects();
-                for (RenderableGaiaScene renderableScene : renderableGaiaScenes) {
-                    renderableScene.deleteGLBuffers();
-                }
-
-                engine.deleteObjects();
-                engine.getGaiaScenesContainer().deleteObjects();
-                integralReMeshParameters.deleteFBOs(fboManager);
-                return;
-            }
-
-            HalfEdgeScene halfEdgeSceneMaster = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(gaiaSceneMaster);
-
-            // Here scissor the atlas textures.
-            atlasTextureForIntegralReMesh9Directions(integralReMeshParameters, halfEdgeSceneMaster, mapClassifyIdToGaiaFaceToHalfEdgeFace,
-                    mapClassifyIdToGaiaFaceToCameraDirectionTypeInfo, mapClassificationCamDirTypeBBox,
-                    mapClassificationCamDirTypeModelViewMatrix, mapClassificationCamDirTypeFacesList,
-                    outputPathString, nodeName);
-            // end of atlas texture*************************************************************************************
-
-            resultHalfEdgeScenes.add(halfEdgeSceneMaster);
-
-            // delete renderableGaiaScenes
-            engine.deleteObjects();
-            for (RenderableGaiaScene renderableScene : renderableGaiaScenes) {
-                renderableScene.deleteGLBuffers();
-            }
-
-            engine.deleteObjects();
-            engine.getGaiaScenesContainer().deleteObjects();
-            integralReMeshParameters.deleteFBOs(fboManager);
         } catch (Exception e) {
             log.error("[ERROR] initializing the engine: ", e);
         }
@@ -2123,6 +1833,162 @@ public class MainVoxelizer implements IAppLogic {
             ImageIO.write(atlasScissoredTexture.getBufferedImage(), "png", imageFile);
         } catch (IOException e) {
             log.debug("Error writing image: {}", e);
+        }
+    }
+
+    private void atlasTextureForIntegralLeafScenes(List<HalfEdgeScene> halfEdgeScenes,
+                                                          List<GaiaScene> resultGaiaScenes,
+                                                          String outputPathString, String nodeName) {
+        List<GaiaTextureScissorDataFull> scissorDataFullList = new ArrayList<>();
+        int classificationId = -1;
+        int scissorExpandPixels = 2;
+        int scenesCount = halfEdgeScenes.size();
+        List<HalfEdgePrimitive> primitives = new ArrayList<>();
+        for(int i=0; i<scenesCount; i++){
+            HalfEdgeScene scene = halfEdgeScenes.get(i);
+            primitives.clear();
+            primitives = scene.extractPrimitives(primitives);
+            int primitivesCount = primitives.size();
+            for(int j=0; j<primitivesCount; j++) {
+                HalfEdgePrimitive primitive = primitives.get(j);
+                int materialId = primitive.getMaterialIndex();
+                GaiaMaterial material = scene.getMaterials().get(materialId);
+                Map<TextureType, List<GaiaTexture>> textures = material.getTextures();
+                List<GaiaTexture> diffuseTextures = textures.get(TextureType.DIFFUSE);
+                if(diffuseTextures == null || diffuseTextures.isEmpty()){
+                    continue;
+                }
+                GaiaTexture diffuseTexture = diffuseTextures.getFirst();
+                BufferedImage bufferedImage = diffuseTexture.getBufferedImage();
+                if(bufferedImage == null){
+                    continue;
+                }
+                classificationId += 1; // a classificationId for primitive.
+
+                List<HalfEdgeSurface> surfaces = primitive.getSurfaces();
+                int surfacesCount = surfaces.size();
+                for(int k=0; k<surfacesCount; k++){
+                    HalfEdgeSurface surface = surfaces.get(k);
+                    List<List<HalfEdgeFace>> weldedFacesGroups = new ArrayList<>();
+                    WeldedFacesFinder.getWeldedFacesGroups(surface, weldedFacesGroups);
+
+                    int weldedFacesGroupsCount = weldedFacesGroups.size();
+                    for(int l=0; l<weldedFacesGroupsCount; l++) {
+                        List<HalfEdgeFace> weldedFacesGroup = weldedFacesGroups.get(l);
+                        GaiaTextureScissorDataFull scissorDataFull = new GaiaTextureScissorDataFull();
+                        scissorDataFull.setClassifyId(classificationId);
+                        scissorDataFull.setFaces(weldedFacesGroup);
+                        scissorDataFull.takeScissoredImageFromMotherImage(bufferedImage);
+                        scissorDataFull.expandScissorImage(scissorExpandPixels);
+
+                        if(scissorDataFull.getCurrentBoundary() == null){
+                            log.error("atlasTextureForIntegralLeafScenes: scissorDataFull.getCurrentBoundary() is null for classificationId: " + classificationId);
+                            continue;
+                        }
+
+                        scissorDataFullList.add(scissorDataFull);
+                    }
+                }
+            }
+        }
+
+        TextureAtlasManager textureAtlasManager = new TextureAtlasManager();
+        textureAtlasManager.doAtlasTextureProcessByScissorDatesFull(scissorDataFullList);
+        int bufferImageType = BufferedImage.TYPE_INT_ARGB;
+        GaiaTexture atlasTexture = textureAtlasManager.makeAtlasTextureScissorDataFull(scissorDataFullList, bufferImageType);
+
+        if (atlasTexture == null) {
+            log.info("makeAtlasTexture() : atlasTexture is null.");
+            return;
+        }
+
+        int atlasWidth = atlasTexture.getWidth();
+        int atlasHeight = atlasTexture.getHeight();
+        for (GaiaTextureScissorDataFull scissorDataFull : scissorDataFullList) {
+            scissorDataFull.recalculateTexCoordsForAtlas(atlasWidth, atlasHeight);
+        }
+
+        List<HalfEdgeFace> allFaces = new ArrayList<>();
+        for (GaiaTextureScissorDataFull scissorDataFull : scissorDataFullList) {
+            List<HalfEdgeFace> faces = scissorDataFull.getFaces();
+            allFaces.addAll(faces);
+        }
+
+        Map<GaiaFace, HalfEdgeFace> mapGaiaFaceToHalfEdgeFace = new HashMap<>();
+        GaiaScene resultGaiaScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeFaces(allFaces, mapGaiaFaceToHalfEdgeFace);
+
+
+        // make the material with the atlasTexture.
+        GaiaMaterial material = new GaiaMaterial();
+        material.setName("atlasTextureMaterial");
+        Map<TextureType, List<GaiaTexture>> textures = new HashMap<>();
+        List<GaiaTexture> atlasTextures = new ArrayList<>();
+        atlasTextures.add(atlasTexture);
+        textures.put(TextureType.DIFFUSE, atlasTextures);
+        material.setTextures(textures);
+        material.setId(0);
+
+        resultGaiaScene.getMaterials().clear();
+        resultGaiaScene.getMaterials().add(material);
+
+        GaiaExtractor extractor = new GaiaExtractor();
+        List<GaiaPrimitive> gaiaPrimitives = extractor.extractAllPrimitives(resultGaiaScene);
+        int primitivesCount = gaiaPrimitives.size();
+        for(int i=0; i<primitivesCount; i++){
+            GaiaPrimitive primitive = gaiaPrimitives.get(i);
+            primitive.setMaterialIndex(0);
+        }
+
+        // save atlas texture data**********************************************************************************
+        String netTempPathString = outputPathString + File.separator + "temp" + File.separator + "reMeshTemp";
+        Path netTempPath = Paths.get(netTempPathString);
+        // create dirs if not exists
+        File netTempFile = netTempPath.toFile();
+        if (!netTempFile.exists() && netTempFile.mkdirs()) {
+            log.debug("info : netTemp folder created.");
+        }
+
+        String netSetFolderPathString = netTempPathString + File.separator + nodeName;
+        Path netSetFolderPath = Paths.get(netSetFolderPathString);
+        // create dirs if not exists
+        File netSetFile = netSetFolderPath.toFile();
+        if (!netSetFile.exists() && netTempFile.mkdirs()) {
+            log.debug("info : netSet folder created.");
+        }
+        String netSetImagesFolderPathString = netSetFolderPathString + File.separator + "images";
+        Path netSetImagesFolderPath = Paths.get(netSetImagesFolderPathString);
+        // create dirs if not exists
+        File netSetImagesFolder = netSetImagesFolderPath.toFile();
+        if (!netSetImagesFolder.exists() && netSetImagesFolder.mkdirs()) {
+            log.debug("info : netSetImages folder created.");
+        }
+
+        String fileName = nodeName + "_Atlas";
+        String extension = ".png";
+
+
+        atlasTexture.setPath(fileName + extension);
+        atlasTexture.setParentPath(netSetImagesFolderPath.toString());
+
+        textures = material.getTextures();
+        atlasTextures = textures.get(TextureType.DIFFUSE);
+        GaiaTexture atlasScissoredTexture = atlasTextures.getFirst();
+        atlasScissoredTexture.setParentPath(netSetImagesFolderPath.toString());
+
+        // save the atlas image to disk
+        try {
+            String imagePath = atlasScissoredTexture.getFullPath();
+            File imageFile = new File(imagePath);
+            ImageIO.write(atlasScissoredTexture.getBufferedImage(), "png", imageFile);
+        } catch (IOException e) {
+            log.debug("Error writing image: {}", e);
+        }
+
+        resultGaiaScenes.add(resultGaiaScene);
+
+        // delete scissorDataFullList.
+        for(GaiaTextureScissorDataFull scissorDataFull : scissorDataFullList){
+            scissorDataFull.clear();
         }
     }
 

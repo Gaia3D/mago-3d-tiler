@@ -2,6 +2,7 @@ package com.gaia3d.basic.halfedge;
 
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.model.GaiaTextureScissorData;
+import com.gaia3d.basic.model.GaiaTextureScissorDataFull;
 
 import java.util.ArrayList;
 import java.util.List;

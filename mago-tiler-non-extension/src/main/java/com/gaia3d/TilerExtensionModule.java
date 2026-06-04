@@ -59,6 +59,17 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     }
 
     @Override
+    public void integralLeafScene(List<SceneInfo> sceneInfos,
+                                  List<GaiaScene> resultGaiaScenes,
+                                  GaiaBoundingBox nodeBBox,
+                                  Matrix4d nodeTMatrix,
+                                  int maxScreenSize,
+                                  String outputPathString,
+                                  String nodeName,
+                                  int lod) {
+    }
+
+    @Override
     public void makeBillBoard(List<GaiaScene> scenes, List<GaiaScene> resultScenes, int verticalPlanesCount, int horizontalPlanesCount) {
     }
 
