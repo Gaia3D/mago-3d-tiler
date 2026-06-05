@@ -1448,6 +1448,7 @@ public class MainVoxelizer implements IAppLogic {
                                                           String outputPathString, String nodeName) {
         List<HalfEdgeSurface> surfaces = halfEdgeSceneMaster.extractSurfaces(null);
 
+        TextureAtlasManager texAtlasManager = new TextureAtlasManager();
         Map<Integer, List<HalfEdgeFace>> facesClassificationMap = new HashMap<>();
         int surfacesCount = surfaces.size();
         for (int i = 0; i < surfacesCount; i++) {
@@ -1475,7 +1476,7 @@ public class MainVoxelizer implements IAppLogic {
         fboZNeg.bind();
         BufferedImage imageZNeg = fboZNeg.getBufferedImage(bufferedImageType);
         fboZNeg.unbind();
-        imageZNeg = engine.eliminateBackGroundColor(imageZNeg, backgroundColor);
+        texAtlasManager.dilateBackgroundColor(imageZNeg, new Color(255, 0, 255));
         if (imageZNeg != null) {
             com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataYPosZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             texturesAtlasDataYPosZNeg.setClassifyId(classificationId);
@@ -1489,7 +1490,7 @@ public class MainVoxelizer implements IAppLogic {
         fboYPosZNeg.bind();
         BufferedImage imageYPosZNeg = fboYPosZNeg.getBufferedImage(bufferedImageType);
         fboYPosZNeg.unbind();
-        imageYPosZNeg = engine.eliminateBackGroundColor(imageYPosZNeg, backgroundColor);
+        texAtlasManager.dilateBackgroundColor(imageYPosZNeg, new Color(255, 0, 255));
         if (imageYPosZNeg != null) {
             com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataYPosZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             texturesAtlasDataYPosZNeg.setClassifyId(classificationId);
@@ -1503,7 +1504,7 @@ public class MainVoxelizer implements IAppLogic {
         fboYNegZNeg.bind();
         BufferedImage imageYNegZNeg = fboYNegZNeg.getBufferedImage(bufferedImageType);
         fboYNegZNeg.unbind();
-        imageYNegZNeg = engine.eliminateBackGroundColor(imageYNegZNeg, backgroundColor);
+        texAtlasManager.dilateBackgroundColor(imageYNegZNeg, new Color(255, 0, 255));
         if (imageYNegZNeg != null) {
             com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataYNegZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             texturesAtlasDataYNegZNeg.setClassifyId(classificationId);
@@ -1517,7 +1518,7 @@ public class MainVoxelizer implements IAppLogic {
         fboXPosZNeg.bind();
         BufferedImage imageXPosZNeg = fboXPosZNeg.getBufferedImage(bufferedImageType);
         fboXPosZNeg.unbind();
-        imageXPosZNeg = engine.eliminateBackGroundColor(imageXPosZNeg, backgroundColor);
+        texAtlasManager.dilateBackgroundColor(imageXPosZNeg, new Color(255, 0, 255));
         if (imageXPosZNeg != null) {
             com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataXPosZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             texturesAtlasDataXPosZNeg.setClassifyId(classificationId);
@@ -1531,7 +1532,7 @@ public class MainVoxelizer implements IAppLogic {
         fboXNegZNeg.bind();
         BufferedImage imageXNegZNeg = fboXNegZNeg.getBufferedImage(bufferedImageType);
         fboXNegZNeg.unbind();
-        imageXNegZNeg = engine.eliminateBackGroundColor(imageXNegZNeg, backgroundColor);
+        texAtlasManager.dilateBackgroundColor(imageXNegZNeg, new Color(255, 0, 255));
         if (imageXNegZNeg != null) {
             com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataXNegZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             texturesAtlasDataXNegZNeg.setClassifyId(classificationId);
@@ -1545,7 +1546,7 @@ public class MainVoxelizer implements IAppLogic {
         fboXPosYPosZNeg.bind();
         BufferedImage imageXPosYPosZNeg = fboXPosYPosZNeg.getBufferedImage(bufferedImageType);
         fboXPosYPosZNeg.unbind();
-        imageXPosYPosZNeg = engine.eliminateBackGroundColor(imageXPosYPosZNeg, backgroundColor);
+        texAtlasManager.dilateBackgroundColor(imageXPosYPosZNeg, new Color(255, 0, 255));
         if (imageXPosYPosZNeg != null) {
             com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataXPosYPosZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             texturesAtlasDataXPosYPosZNeg.setClassifyId(classificationId);
@@ -1559,7 +1560,7 @@ public class MainVoxelizer implements IAppLogic {
         fboXNegYPosZNeg.bind();
         BufferedImage imageXNegYPosZNeg = fboXNegYPosZNeg.getBufferedImage(bufferedImageType);
         fboXNegYPosZNeg.unbind();
-        imageXNegYPosZNeg = engine.eliminateBackGroundColor(imageXNegYPosZNeg, backgroundColor);
+        texAtlasManager.dilateBackgroundColor(imageXNegYPosZNeg, new Color(255, 0, 255));
         if (imageXNegYPosZNeg != null) {
             com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataXNegYPosZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             texturesAtlasDataXNegYPosZNeg.setClassifyId(classificationId);
@@ -1573,7 +1574,7 @@ public class MainVoxelizer implements IAppLogic {
         fboXPosYNegZNeg.bind();
         BufferedImage imageXPosYNegZNeg = fboXPosYNegZNeg.getBufferedImage(bufferedImageType);
         fboXPosYNegZNeg.unbind();
-        imageXPosYNegZNeg = engine.eliminateBackGroundColor(imageXPosYNegZNeg, backgroundColor);
+        texAtlasManager.dilateBackgroundColor(imageXPosYNegZNeg, new Color(255, 0, 255));
         if (imageXPosYNegZNeg != null) {
             com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataXPosYNegZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             texturesAtlasDataXPosYNegZNeg.setClassifyId(classificationId);
@@ -1587,7 +1588,7 @@ public class MainVoxelizer implements IAppLogic {
         fboXNegYNegZNeg.bind();
         BufferedImage imageXNegYNegZNeg = fboXNegYNegZNeg.getBufferedImage(bufferedImageType);
         fboXNegYNegZNeg.unbind();
-        imageXNegYNegZNeg = engine.eliminateBackGroundColor(imageXNegYNegZNeg, backgroundColor);
+        texAtlasManager.dilateBackgroundColor(imageXNegYNegZNeg, new Color(255, 0, 255));
         if (imageXNegYNegZNeg != null) {
             com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataXNegYNegZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             texturesAtlasDataXNegYNegZNeg.setClassifyId(classificationId);
@@ -1844,8 +1845,13 @@ public class MainVoxelizer implements IAppLogic {
         int scissorExpandPixels = 2;
         int scenesCount = halfEdgeScenes.size();
         List<HalfEdgePrimitive> primitives = new ArrayList<>();
+        GaiaAttribute gaiaAttribute = null;
         for(int i=0; i<scenesCount; i++){
             HalfEdgeScene scene = halfEdgeScenes.get(i);
+            if(gaiaAttribute == null) {
+                // Take the 1rst gaiaAttribute.
+                gaiaAttribute = scene.getAttribute().getCopy();
+            }
             primitives.clear();
             primitives = scene.extractPrimitives(primitives);
             int primitivesCount = primitives.size();
@@ -1916,7 +1922,7 @@ public class MainVoxelizer implements IAppLogic {
 
         Map<GaiaFace, HalfEdgeFace> mapGaiaFaceToHalfEdgeFace = new HashMap<>();
         GaiaScene resultGaiaScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeFaces(allFaces, mapGaiaFaceToHalfEdgeFace);
-
+        resultGaiaScene.setAttribute(gaiaAttribute);
 
         // make the material with the atlasTexture.
         GaiaMaterial material = new GaiaMaterial();

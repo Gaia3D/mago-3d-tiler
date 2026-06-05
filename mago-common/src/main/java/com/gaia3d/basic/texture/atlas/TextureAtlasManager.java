@@ -2184,9 +2184,10 @@ public class TextureAtlasManager {
         // draw the images into textureAtlas
         log.debug("HalfEdgeSurface.scissorTextures() : draw the images into textureAtlas.");
         Graphics2D g2d = textureAtlas.getBufferedImage().createGraphics();
+        Color backGroundColor = new Color(255, 0, 255);
 
         try {
-            g2d.setColor(new Color(255, 0, 255));
+            g2d.setColor(backGroundColor);
             g2d.fillRect(0, 0, maxWidth, maxHeight);
 
             int textureAtlasDatasCount = scissoredDates.size();
@@ -2227,7 +2228,7 @@ public class TextureAtlasManager {
             g2d.dispose();
         }
 
-        dilateBackgroundColor(textureAtlas.getBufferedImage(), new Color(255, 0, 255));
+        dilateBackgroundColor(textureAtlas.getBufferedImage(), backGroundColor);
 
         return textureAtlas;
     }

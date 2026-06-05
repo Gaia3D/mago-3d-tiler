@@ -375,24 +375,24 @@ public class FaceVisibilityDataManager {
 
         }
 
-        // 3rd pass
-        absorbFacesByNeighborMajority(
-                allFaces,
-                mapFaceToNeighbors,
-                mapFaceToCamCandidates,
-                result,
-                0.20,
-                1
-        );
-
-        absorbSmallCameraComponents(
-                allFaces,
-                mapFaceToNeighbors,
-                mapFaceToCamCandidates,
-                result,
-                0.20,
-                16
-        );
+//        // 3rd pass
+//        absorbFacesByNeighborMajority(
+//                allFaces,
+//                mapFaceToNeighbors,
+//                mapFaceToCamCandidates,
+//                result,
+//                0.20,
+//                1
+//        );
+//
+//        absorbSmallCameraComponents(
+//                allFaces,
+//                mapFaceToNeighbors,
+//                mapFaceToCamCandidates,
+//                result,
+//                0.20,
+//                16
+//        );
 
         return result;
     }
