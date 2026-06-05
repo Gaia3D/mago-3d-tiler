@@ -893,7 +893,8 @@ public class Engine {
             Map<CameraDirectionType, GaiaBoundingBox> mapCameraDirectionTypeBBox = mapClassificationCamDirTypeBBox.computeIfAbsent(classificationId, k -> new HashMap<>());
             Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix = mapClassificationCamDirTypeModelViewMatrix.computeIfAbsent(classificationId, k -> new HashMap<>());
 
-            Vector4f backgroundColor = new Vector4f(0.5f, 0.5f, 0.5f, 0.0f); // grey color, alpha=0
+            //Vector4f backgroundColor = new Vector4f(0.5f, 0.5f, 0.5f, 0.0f); // grey color, alpha=0
+            Vector4f backgroundColor = new Vector4f(1.0f, 0.0f, 1.0f, 0.0f); // fuchia color, alpha=0
 
             // ZNeg texture
             cameraDirectionType = CameraDirectionType.ZNEG;

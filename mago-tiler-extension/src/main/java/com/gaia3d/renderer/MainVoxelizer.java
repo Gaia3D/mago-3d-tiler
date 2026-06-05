@@ -476,7 +476,7 @@ public class MainVoxelizer implements IAppLogic {
             double weldError = 1e-6; // 1e-6 is a good value for remeshing
 
             // IntegralReMeshParameters
-            Vector4f backgroundColor = new Vector4f(0.5f, 0.5f, 0.5f, 1.0f);
+            Vector4f backgroundColor = new Vector4f(1.0f, 0.0f, 1.0f, 1.0f);
             IntegralReMeshParameters integralReMeshParameters = new IntegralReMeshParameters();
             integralReMeshParameters.setBackgroundColor(backgroundColor);
             integralReMeshParameters.createFBOsObliqueCamera9Directions(this.engine.getFboManager(), fboWidthColor, fboHeightColor, GL30.GL_LINEAR, GL30.GL_LINEAR);
@@ -579,7 +579,7 @@ public class MainVoxelizer implements IAppLogic {
                 GaiaBoundingBox effectiveNodeBBox = nodeBBox.clone();
 
                 if (lod == 1) {
-                    double desiredLeafSize = 1.0;
+                    double desiredLeafSize = 0.6;
                     OctreeBBoxInfo octreeBoxInfo = preReMesher.calculateBoundingBoxForLeafDistInfo(nodeBBox, desiredLeafSize);
                     int octreeMaxDepth = octreeBoxInfo.maxDepth;
                     double rootOctreeSize = octreeBoxInfo.rootCubeSize;
@@ -592,7 +592,7 @@ public class MainVoxelizer implements IAppLogic {
                     preReMesher.setMinFacesCount(1);
                     preReMesher.setLimitBoxSize(desiredLeafSize);
                 } else {
-                    double desiredLeafSize = 1.5;
+                    double desiredLeafSize = 1.0;
                     OctreeBBoxInfo octreeBoxInfo = preReMesher.calculateBoundingBoxForLeafDistInfo(nodeBBox, desiredLeafSize);
                     int octreeMaxDepth = octreeBoxInfo.maxDepth;
                     double rootOctreeSize = octreeBoxInfo.rootCubeSize;
@@ -628,8 +628,8 @@ public class MainVoxelizer implements IAppLogic {
 
 
                 double averageEdgeSize = stats.getAverageEdgeSize();
-                double smallHedgeSize = averageEdgeSize * 1.5;
-                smallHedgeSize = Math.min(smallHedgeSize, 1.5);
+                double smallHedgeSize = averageEdgeSize * 1.2;
+                smallHedgeSize = Math.min(smallHedgeSize, 1.2);
                 double minHedgeSize = averageEdgeSize;
                 minHedgeSize = Math.min(minHedgeSize, 0.5);
                 decimateParameters.setSmallHedgeSize(smallHedgeSize);
@@ -648,7 +648,7 @@ public class MainVoxelizer implements IAppLogic {
                         + ", averageEdgeSize = " + stats.averageEdgeSize);
                 GeometryOnlyReMesherByOctree reMesherByOctree = new GeometryOnlyReMesherByOctree();
                 double nodeBoxSize = nodeBBox.getMaxSize();
-                double minBoxSize = nodeBoxSize / 18.0;
+                double minBoxSize = nodeBoxSize / 20.0;
                 if (lod == 1) {
                     reMesherByOctree.setLimitDepth(12);
                     reMesherByOctree.setMinFacesCount(5);
@@ -1470,13 +1470,18 @@ public class MainVoxelizer implements IAppLogic {
         //Map<String, Fbo> colorFboMap = integralReMeshParameters.getColorCodeFboMap(); // test.***
 
         Vector4f backgroundColor = integralReMeshParameters.getBackgroundColor();
+        Color backGroundColor = new Color(
+                (int) (backgroundColor.x * 255),
+                (int) (backgroundColor.y * 255),
+                (int) (backgroundColor.z * 255)
+        );
 
         // ZNEG
         Fbo fboZNeg = colorFboMap.get("ZNEG");
         fboZNeg.bind();
         BufferedImage imageZNeg = fboZNeg.getBufferedImage(bufferedImageType);
         fboZNeg.unbind();
-        texAtlasManager.dilateBackgroundColor(imageZNeg, new Color(255, 0, 255));
+        texAtlasManager.dilateBackgroundColor(imageZNeg, backGroundColor);
         if (imageZNeg != null) {
             com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataYPosZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             texturesAtlasDataYPosZNeg.setClassifyId(classificationId);
@@ -1490,7 +1495,7 @@ public class MainVoxelizer implements IAppLogic {
         fboYPosZNeg.bind();
         BufferedImage imageYPosZNeg = fboYPosZNeg.getBufferedImage(bufferedImageType);
         fboYPosZNeg.unbind();
-        texAtlasManager.dilateBackgroundColor(imageYPosZNeg, new Color(255, 0, 255));
+        texAtlasManager.dilateBackgroundColor(imageYPosZNeg, backGroundColor);
         if (imageYPosZNeg != null) {
             com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataYPosZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             texturesAtlasDataYPosZNeg.setClassifyId(classificationId);
@@ -1504,7 +1509,7 @@ public class MainVoxelizer implements IAppLogic {
         fboYNegZNeg.bind();
         BufferedImage imageYNegZNeg = fboYNegZNeg.getBufferedImage(bufferedImageType);
         fboYNegZNeg.unbind();
-        texAtlasManager.dilateBackgroundColor(imageYNegZNeg, new Color(255, 0, 255));
+        texAtlasManager.dilateBackgroundColor(imageYNegZNeg, backGroundColor);
         if (imageYNegZNeg != null) {
             com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataYNegZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             texturesAtlasDataYNegZNeg.setClassifyId(classificationId);
@@ -1518,7 +1523,7 @@ public class MainVoxelizer implements IAppLogic {
         fboXPosZNeg.bind();
         BufferedImage imageXPosZNeg = fboXPosZNeg.getBufferedImage(bufferedImageType);
         fboXPosZNeg.unbind();
-        texAtlasManager.dilateBackgroundColor(imageXPosZNeg, new Color(255, 0, 255));
+        texAtlasManager.dilateBackgroundColor(imageXPosZNeg, backGroundColor);
         if (imageXPosZNeg != null) {
             com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataXPosZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             texturesAtlasDataXPosZNeg.setClassifyId(classificationId);
@@ -1532,7 +1537,7 @@ public class MainVoxelizer implements IAppLogic {
         fboXNegZNeg.bind();
         BufferedImage imageXNegZNeg = fboXNegZNeg.getBufferedImage(bufferedImageType);
         fboXNegZNeg.unbind();
-        texAtlasManager.dilateBackgroundColor(imageXNegZNeg, new Color(255, 0, 255));
+        texAtlasManager.dilateBackgroundColor(imageXNegZNeg, backGroundColor);
         if (imageXNegZNeg != null) {
             com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataXNegZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             texturesAtlasDataXNegZNeg.setClassifyId(classificationId);
@@ -1546,7 +1551,7 @@ public class MainVoxelizer implements IAppLogic {
         fboXPosYPosZNeg.bind();
         BufferedImage imageXPosYPosZNeg = fboXPosYPosZNeg.getBufferedImage(bufferedImageType);
         fboXPosYPosZNeg.unbind();
-        texAtlasManager.dilateBackgroundColor(imageXPosYPosZNeg, new Color(255, 0, 255));
+        texAtlasManager.dilateBackgroundColor(imageXPosYPosZNeg, backGroundColor);
         if (imageXPosYPosZNeg != null) {
             com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataXPosYPosZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             texturesAtlasDataXPosYPosZNeg.setClassifyId(classificationId);
@@ -1560,7 +1565,7 @@ public class MainVoxelizer implements IAppLogic {
         fboXNegYPosZNeg.bind();
         BufferedImage imageXNegYPosZNeg = fboXNegYPosZNeg.getBufferedImage(bufferedImageType);
         fboXNegYPosZNeg.unbind();
-        texAtlasManager.dilateBackgroundColor(imageXNegYPosZNeg, new Color(255, 0, 255));
+        texAtlasManager.dilateBackgroundColor(imageXNegYPosZNeg, backGroundColor);
         if (imageXNegYPosZNeg != null) {
             com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataXNegYPosZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             texturesAtlasDataXNegYPosZNeg.setClassifyId(classificationId);
@@ -1574,7 +1579,7 @@ public class MainVoxelizer implements IAppLogic {
         fboXPosYNegZNeg.bind();
         BufferedImage imageXPosYNegZNeg = fboXPosYNegZNeg.getBufferedImage(bufferedImageType);
         fboXPosYNegZNeg.unbind();
-        texAtlasManager.dilateBackgroundColor(imageXPosYNegZNeg, new Color(255, 0, 255));
+        texAtlasManager.dilateBackgroundColor(imageXPosYNegZNeg, backGroundColor);
         if (imageXPosYNegZNeg != null) {
             com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataXPosYNegZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             texturesAtlasDataXPosYNegZNeg.setClassifyId(classificationId);
@@ -1588,7 +1593,7 @@ public class MainVoxelizer implements IAppLogic {
         fboXNegYNegZNeg.bind();
         BufferedImage imageXNegYNegZNeg = fboXNegYNegZNeg.getBufferedImage(bufferedImageType);
         fboXNegYNegZNeg.unbind();
-        texAtlasManager.dilateBackgroundColor(imageXNegYNegZNeg, new Color(255, 0, 255));
+        texAtlasManager.dilateBackgroundColor(imageXNegYNegZNeg, backGroundColor);
         if (imageXNegYNegZNeg != null) {
             com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasDataXNegYNegZNeg = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
             texturesAtlasDataXNegYNegZNeg.setClassifyId(classificationId);
