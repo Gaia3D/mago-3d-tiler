@@ -19,10 +19,7 @@ import com.gaia3d.basic.texture.atlas.TexturesAtlasData;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.renderer.engine.*;
 import com.gaia3d.renderer.engine.Window;
-import com.gaia3d.renderer.engine.dataStructure.FaceVisibilityData;
-import com.gaia3d.renderer.engine.dataStructure.FaceVisibilityDataManager;
-import com.gaia3d.renderer.engine.dataStructure.GaiaScenesContainer;
-import com.gaia3d.renderer.engine.dataStructure.IntegralReMeshParameters;
+import com.gaia3d.renderer.engine.dataStructure.*;
 import com.gaia3d.renderer.engine.fbo.Fbo;
 import com.gaia3d.renderer.engine.fbo.FboManager;
 import com.gaia3d.renderer.engine.graph.ShaderManager;
@@ -493,7 +490,6 @@ public class MainVoxelizer implements IAppLogic {
             Map<Integer, Map<CameraDirectionType, Matrix4d>> mapClassificationCamDirTypeModelViewMatrix = new HashMap<>();
             Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapClassificationCamDirTypeFacesList = new HashMap<>();
 
-            FaceVisibilityDataManager faceVisibilityDataManager = new FaceVisibilityDataManager();
             GaiaSceneCleaner cleaner = new GaiaSceneCleaner();
             GaiaWeldOptions weldOptions = GaiaWeldOptions.builder()
                     .error(weldError)
@@ -686,7 +682,7 @@ public class MainVoxelizer implements IAppLogic {
                     int texturePixelsForMeter = 20; // decimateParameters.getTexturePixelsForMeter();
                     engine.makeIntegralBoxTexturesByObliqueCamera9Directions(halfEdgeScene, texturePixelsForMeter, bufferedImageType, nodeBBox, integralReMeshParameters,
                             mapClassifyIdToGaiaFaceToHalfEdgeFace, mapClassifyIdToGaiaFaceToCameraDirectionTypeInfo, mapClassificationCamDirTypeBBox,
-                            mapClassificationCamDirTypeModelViewMatrix, mapClassificationCamDirTypeFacesList, faceVisibilityDataManager);
+                            mapClassificationCamDirTypeModelViewMatrix, mapClassificationCamDirTypeFacesList);
                     // end of making oblique camera textures
 
                 } catch (Exception e) {
@@ -1037,8 +1033,6 @@ public class MainVoxelizer implements IAppLogic {
         Map<Integer, Map<CameraDirectionType, Matrix4d>> mapClassificationCamDirTypeModelViewMatrix = new HashMap<>();
         Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapClassificationCamDirTypeFacesList = new HashMap<>();
 
-        FaceVisibilityDataManager faceVisibilityDataManager = new FaceVisibilityDataManager();
-
         Vector3i nodeMinCellIndex = new Vector3i(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
         Vector3i nodeMaxCellIndex = new Vector3i(Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE);
 
@@ -1322,7 +1316,7 @@ public class MainVoxelizer implements IAppLogic {
 //                        mapClassificationCamDirTypeModelViewMatrix, mapClassificationCamDirTypeFacesList, faceVisibilityDataManager);
                 engine.makeIntegralBoxTexturesByObliqueCamera9Directions(halfEdgeScene, reMeshParams.getTexturePixelsForMeter(), bufferedImageType, nodeBBox, integralReMeshParameters,
                         mapClassifyIdToGaiaFaceToHalfEdgeFace, mapClassifyIdToGaiaFaceToCameraDirectionTypeInfo, mapClassificationCamDirTypeBBox,
-                        mapClassificationCamDirTypeModelViewMatrix, mapClassificationCamDirTypeFacesList, faceVisibilityDataManager);
+                        mapClassificationCamDirTypeModelViewMatrix, mapClassificationCamDirTypeFacesList);
                 // end of making oblique camera textures
 
             } catch (Exception e) {
@@ -1613,34 +1607,53 @@ public class MainVoxelizer implements IAppLogic {
         }
 
         // check visibility data manager****************************************************************************
-        FaceVisibilityDataManager faceVisibilityDataManager = new FaceVisibilityDataManager();
+        FaceVisibilityDataManagerV3 faceVisibilityDataManager = new FaceVisibilityDataManagerV3();
 
         Map<String, Fbo> colorCodeFboMap = integralReMeshParameters.getColorCodeFboMap();
+//        Fbo fboColorCodeZNeg = colorCodeFboMap.get("ZNEG");
+//        updateFaceVisibilityData(CameraDirectionType.ZNEG, fboColorCodeZNeg, faceVisibilityDataManager);
+//        Fbo fboColorCodeYPosZNeg = colorCodeFboMap.get("YPOS_ZNEG");
+//        updateFaceVisibilityData(CameraDirectionType.YPOS_ZNEG, fboColorCodeYPosZNeg, faceVisibilityDataManager);
+//        Fbo fboColorCodeYNegZNeg = colorCodeFboMap.get("YNEG_ZNEG");
+//        updateFaceVisibilityData(CameraDirectionType.YNEG_ZNEG, fboColorCodeYNegZNeg, faceVisibilityDataManager);
+//        Fbo fboColorCodeXPosZNeg = colorCodeFboMap.get("XPOS_ZNEG");
+//        updateFaceVisibilityData(CameraDirectionType.XPOS_ZNEG, fboColorCodeXPosZNeg, faceVisibilityDataManager);
+//        Fbo fboColorCodeXNegZNeg = colorCodeFboMap.get("XNEG_ZNEG");
+//        updateFaceVisibilityData(CameraDirectionType.XNEG_ZNEG, fboColorCodeXNegZNeg, faceVisibilityDataManager);
+//        Fbo fboColorCodeXPosYPosZNeg = colorCodeFboMap.get("XPOS_YPOS_ZNEG");
+//        updateFaceVisibilityData(CameraDirectionType.XPOS_YPOS_ZNEG, fboColorCodeXPosYPosZNeg, faceVisibilityDataManager);
+//        Fbo fboColorCodeXNegYPosZNeg = colorCodeFboMap.get("XNEG_YPOS_ZNEG");
+//        updateFaceVisibilityData(CameraDirectionType.XNEG_YPOS_ZNEG, fboColorCodeXNegYPosZNeg, faceVisibilityDataManager);
+//        Fbo fboColorCodeXPosYNegZNeg = colorCodeFboMap.get("XPOS_YNEG_ZNEG");
+//        updateFaceVisibilityData(CameraDirectionType.XPOS_YNEG_ZNEG, fboColorCodeXPosYNegZNeg, faceVisibilityDataManager);
+//        Fbo fboColorCodeXNegYNegZNeg = colorCodeFboMap.get("XNEG_YNEG_ZNEG");
+//        updateFaceVisibilityData(CameraDirectionType.XNEG_YNEG_ZNEG, fboColorCodeXNegYNegZNeg, faceVisibilityDataManager);
+
+        Map<GaiaFace, HalfEdgeFace> mapGaiaFaceToHalfEdgeFace = mapClassifyIdToGaiaFaceToHalfEdgeFace.computeIfAbsent(classificationId, k -> new HashMap<>());
+        Map<GaiaFace, CameraDirectionTypeInfo> mapGaiaFaceToCameraDirectionTypeInfo = mapClassifyIdToGaiaFaceToCameraDirectionTypeInfo.computeIfAbsent(classificationId, k -> new HashMap<>());
+        GaiaScene gaiaSceneFromFaces = HalfEdgeUtils.gaiaSceneFromHalfEdgeFaces(facesList, mapGaiaFaceToHalfEdgeFace);
+
         Fbo fboColorCodeZNeg = colorCodeFboMap.get("ZNEG");
-        updateFaceVisibilityData(CameraDirectionType.ZNEG, fboColorCodeZNeg, faceVisibilityDataManager);
+        faceVisibilityDataManager.updateFaceInnerPointsVisibilityData(gaiaSceneFromFaces, CameraDirectionType.ZNEG, fboColorCodeZNeg, mapClassificationCamDirTypeModelViewMatrix, mapClassificationCamDirTypeBBox);
         Fbo fboColorCodeYPosZNeg = colorCodeFboMap.get("YPOS_ZNEG");
-        updateFaceVisibilityData(CameraDirectionType.YPOS_ZNEG, fboColorCodeYPosZNeg, faceVisibilityDataManager);
+        faceVisibilityDataManager.updateFaceInnerPointsVisibilityData(gaiaSceneFromFaces, CameraDirectionType.YPOS_ZNEG, fboColorCodeYPosZNeg, mapClassificationCamDirTypeModelViewMatrix, mapClassificationCamDirTypeBBox);
         Fbo fboColorCodeYNegZNeg = colorCodeFboMap.get("YNEG_ZNEG");
-        updateFaceVisibilityData(CameraDirectionType.YNEG_ZNEG, fboColorCodeYNegZNeg, faceVisibilityDataManager);
+        faceVisibilityDataManager.updateFaceInnerPointsVisibilityData(gaiaSceneFromFaces, CameraDirectionType.YNEG_ZNEG, fboColorCodeYNegZNeg, mapClassificationCamDirTypeModelViewMatrix, mapClassificationCamDirTypeBBox);
         Fbo fboColorCodeXPosZNeg = colorCodeFboMap.get("XPOS_ZNEG");
-        updateFaceVisibilityData(CameraDirectionType.XPOS_ZNEG, fboColorCodeXPosZNeg, faceVisibilityDataManager);
+        faceVisibilityDataManager.updateFaceInnerPointsVisibilityData(gaiaSceneFromFaces, CameraDirectionType.XPOS_ZNEG, fboColorCodeXPosZNeg, mapClassificationCamDirTypeModelViewMatrix, mapClassificationCamDirTypeBBox);
         Fbo fboColorCodeXNegZNeg = colorCodeFboMap.get("XNEG_ZNEG");
-        updateFaceVisibilityData(CameraDirectionType.XNEG_ZNEG, fboColorCodeXNegZNeg, faceVisibilityDataManager);
+        faceVisibilityDataManager.updateFaceInnerPointsVisibilityData(gaiaSceneFromFaces, CameraDirectionType.XNEG_ZNEG, fboColorCodeXNegZNeg, mapClassificationCamDirTypeModelViewMatrix, mapClassificationCamDirTypeBBox);
         Fbo fboColorCodeXPosYPosZNeg = colorCodeFboMap.get("XPOS_YPOS_ZNEG");
-        updateFaceVisibilityData(CameraDirectionType.XPOS_YPOS_ZNEG, fboColorCodeXPosYPosZNeg, faceVisibilityDataManager);
+        faceVisibilityDataManager.updateFaceInnerPointsVisibilityData(gaiaSceneFromFaces, CameraDirectionType.XPOS_YPOS_ZNEG, fboColorCodeXPosYPosZNeg, mapClassificationCamDirTypeModelViewMatrix, mapClassificationCamDirTypeBBox);
         Fbo fboColorCodeXNegYPosZNeg = colorCodeFboMap.get("XNEG_YPOS_ZNEG");
-        updateFaceVisibilityData(CameraDirectionType.XNEG_YPOS_ZNEG, fboColorCodeXNegYPosZNeg, faceVisibilityDataManager);
+        faceVisibilityDataManager.updateFaceInnerPointsVisibilityData(gaiaSceneFromFaces, CameraDirectionType.XNEG_YPOS_ZNEG, fboColorCodeXNegYPosZNeg, mapClassificationCamDirTypeModelViewMatrix, mapClassificationCamDirTypeBBox);
         Fbo fboColorCodeXPosYNegZNeg = colorCodeFboMap.get("XPOS_YNEG_ZNEG");
-        updateFaceVisibilityData(CameraDirectionType.XPOS_YNEG_ZNEG, fboColorCodeXPosYNegZNeg, faceVisibilityDataManager);
+        faceVisibilityDataManager.updateFaceInnerPointsVisibilityData(gaiaSceneFromFaces, CameraDirectionType.XPOS_YNEG_ZNEG, fboColorCodeXPosYNegZNeg, mapClassificationCamDirTypeModelViewMatrix, mapClassificationCamDirTypeBBox);
         Fbo fboColorCodeXNegYNegZNeg = colorCodeFboMap.get("XNEG_YNEG_ZNEG");
-        updateFaceVisibilityData(CameraDirectionType.XNEG_YNEG_ZNEG, fboColorCodeXNegYNegZNeg, faceVisibilityDataManager);
+        faceVisibilityDataManager.updateFaceInnerPointsVisibilityData(gaiaSceneFromFaces, CameraDirectionType.XNEG_YNEG_ZNEG, fboColorCodeXNegYNegZNeg, mapClassificationCamDirTypeModelViewMatrix, mapClassificationCamDirTypeBBox);
         // end of checking visibility data manager*****************************************************************
 
         // now assign face to each cameraDirectionType
-        Map<GaiaFace, HalfEdgeFace> mapGaiaFaceToHalfEdgeFace = mapClassifyIdToGaiaFaceToHalfEdgeFace.computeIfAbsent(classificationId, k -> new HashMap<>());
-        Map<GaiaFace, CameraDirectionTypeInfo> mapGaiaFaceToCameraDirectionTypeInfo = mapClassifyIdToGaiaFaceToCameraDirectionTypeInfo.computeIfAbsent(classificationId, k -> new HashMap<>());
-
-        GaiaScene gaiaSceneFromFaces = HalfEdgeUtils.gaiaSceneFromHalfEdgeFaces(facesList, mapGaiaFaceToHalfEdgeFace);
         GaiaExtractor extractor = new GaiaExtractor();
         List<GaiaPrimitive> gaiaPrimitives = extractor.extractAllPrimitives(gaiaSceneFromFaces);
 
@@ -1660,7 +1673,7 @@ public class MainVoxelizer implements IAppLogic {
             }
         }
 
-        faceVisibilityDataManager.deleteObjects();
+
         // end assign face to each cameraDirectionType.---
 
         // now set cameraDirectionType to halfEdgeFaces
@@ -1776,6 +1789,8 @@ public class MainVoxelizer implements IAppLogic {
         textureAtlasManager.doAtlasTextureProcess(texturesAtlasDataList);
         textureAtlasManager.recalculateTexCoordsAfterTextureAtlasingObliqueCamera(halfEdgeSceneMaster, texturesAtlasDataList, mapClassificationCamDirTypeFacesList);
 
+        faceVisibilityDataManager.deleteObjects();
+
 //        String originalPathStr = halfEdgeSceneMaster.getOriginalPath().toString();
 //        Path originalPath = Path.of(originalPathStr);
 //        halfEdgeSceneMaster.setOriginalPath(originalPath);
@@ -1795,7 +1810,7 @@ public class MainVoxelizer implements IAppLogic {
             return;
         }
 
-        BufferedImage atlasImage = atlasTexture.getBufferedImage();
+        //BufferedImage atlasImage = atlasTexture.getBufferedImage();
 
         // delete texturesAtlasDataList
         for (com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasData : texturesAtlasDataList) {
@@ -1831,6 +1846,10 @@ public class MainVoxelizer implements IAppLogic {
         atlasTextures = textures.get(TextureType.DIFFUSE);
         GaiaTexture atlasScissoredTexture = atlasTextures.getFirst();
         atlasScissoredTexture.setParentPath(netSetImagesFolderPath.toString());
+        if(atlasScissoredTexture.getBufferedImage() == null) {
+            log.info("atlasScissoredTexture.getBufferedImage() is null.");
+            return;
+        }
 
         // save the atlas image to disk
         try {
@@ -2001,31 +2020,5 @@ public class MainVoxelizer implements IAppLogic {
         for(GaiaTextureScissorDataFull scissorDataFull : scissorDataFullList){
             scissorDataFull.clear();
         }
-    }
-
-    private void updateFaceVisibilityData(CameraDirectionType cameraDirectionType, Fbo colorCodeFbo, FaceVisibilityDataManager faceVisibilityDataManager) {
-        colorCodeFbo.bind();
-
-        // read pixels from fbo
-        int fboWidth = colorCodeFbo.getFboWidth();
-        int fboHeight = colorCodeFbo.getFboHeight();
-        ByteBuffer pixels = colorCodeFbo.readPixels(GL_RGBA);
-
-        // unbind the fbo
-        colorCodeFbo.unbind();
-        FaceVisibilityData faceVisibilityData = faceVisibilityDataManager.getFaceVisibilityData(cameraDirectionType);
-
-        // determine visible triangles
-        int pixelsCount = fboWidth * fboHeight;
-        for (int i = 0; i < pixelsCount; i++) {
-            int colorCode = pixels.getInt(i * 4);
-            // background color is (1, 1, 1, 1). skip background color
-            if (colorCode != 0xFFFFFFFF) {
-                faceVisibilityData.incrementPixelFaceVisibility(colorCode);
-            }
-        }
-
-        // delete pixels
-        pixels.clear();
     }
 }
