@@ -14,6 +14,7 @@ import org.joml.Vector4d;
 import java.nio.ByteBuffer;
 import java.util.*;
 
+import static com.gaia3d.basic.halfedge.CameraDirectionType.ZNEG;
 import static org.lwjgl.opengl.GL11.GL_RGBA;
 
 public class FaceVisibilityDataManagerV3 {
@@ -382,6 +383,8 @@ public class FaceVisibilityDataManagerV3 {
         return faceToNeighbors;
     }
 
+
+
     private Map<GaiaFace, CameraDirectionType> buildCameraIslandsByPropagation(
             List<GaiaFace> allFaces,
             Map<GaiaFace, List<CameraDirectionCandidate>> mapFaceToCamCandidates,
@@ -401,7 +404,12 @@ public class FaceVisibilityDataManagerV3 {
 
             List<CameraDirectionCandidate> seedCandidates = mapFaceToCamCandidates.get(seedFace);
             if (seedCandidates == null || seedCandidates.isEmpty()) {
-                result.put(seedFace, CameraDirectionType.ZNEG);
+                Vector3d normal = mapFaceToNormal.get(seedFace);
+
+                CameraDirectionType fallbackCamera =
+                        CameraDirectionType.getBest9CameraDirectionTypeByNormal(normal);
+
+                result.put(seedFace, fallbackCamera);
                 visited.add(seedFace);
                 continue;
             }

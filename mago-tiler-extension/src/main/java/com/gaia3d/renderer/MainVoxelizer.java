@@ -644,7 +644,7 @@ public class MainVoxelizer implements IAppLogic {
                         + ", averageEdgeSize = " + stats.averageEdgeSize);
                 GeometryOnlyReMesherByOctree reMesherByOctree = new GeometryOnlyReMesherByOctree();
                 double nodeBoxSize = nodeBBox.getMaxSize();
-                double minBoxSize = nodeBoxSize / 20.0;
+                double minBoxSize = nodeBoxSize / 18.0;
                 if (lod == 1) {
                     reMesherByOctree.setLimitDepth(12);
                     reMesherByOctree.setMinFacesCount(5);
