@@ -179,6 +179,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         }
 
         // net surfaces with boxTextures
+        // start with L =3 .***
         ReMeshParameters reMeshParams = new ReMeshParameters();
         for (int d = 3; d <= projectMaxDepthIdx; d++) {
             lod = d;
@@ -310,31 +311,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         tileset.setGeometricError(rootGeometricError);
         tileset.setRoot(root);
         return tileset;
-    }
-
-    private void textureImagesGammaSaturationCorrection(List<TileInfo> tileInfos, double gamma, float saturation) {
-        for (TileInfo tileInfo : tileInfos) {
-            Path path = tileInfo.getTempPath();
-
-            // load the file
-            GaiaSet gaiaSet = null;
-            try {
-                gaiaSet = GaiaSet.readFile(path);
-            } catch (IOException e) {
-                log.error("[ERROR] ", e);
-                throw new RuntimeException(e);
-            }
-
-            if (gaiaSet == null) {
-                return;
-            }
-
-            GaiaScene scene = new GaiaScene(gaiaSet);
-            GaiaSceneUtils.materialImagesGammaSaturationCorrectionCorrection(scene, gamma, saturation);
-
-            gaiaSet.clear();
-            scene.clear();
-        }
     }
 
     private void cuttingAndScissorProcessST(List<TileInfo> tileInfos, int lod, Node rootNode, List<TileInfo> resultTileInfos, int maxDepth) {
@@ -605,6 +581,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 //
 //                // delete the contents of the gaiaSceneCut
 //                gaiaSceneCut.getNodes().forEach(GaiaNode::clear);
+//                // end delete the contents of the gaiaSceneCut.--------------------------------------------
 //
 //                TileInfo newTileInfo = TileInfo.builder().scene(gaiaSceneCut).outputPath(tempPathLod).build();
 //                newTileInfo.setTransformMatrix(new Matrix4d(transformMatrix));

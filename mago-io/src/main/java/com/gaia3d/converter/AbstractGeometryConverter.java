@@ -470,7 +470,7 @@ public abstract class AbstractGeometryConverter {
             float pipeRadius = (float) (pipeLineString.getDiameter() / 2000.0f); // convert to meters from millimeters.
 
             // 1rst create elbows.
-            float elbowRadius = pipeRadius * 1.5f;
+            float elbowRadius = pipeRadius * 1.5f; // test value
             List<PipeElbow> pipeElbows = new ArrayList<>();
 
             for (int i = 0; i < pointsCount; i++) {
@@ -491,7 +491,7 @@ public abstract class AbstractGeometryConverter {
             float pipeHeight = pipeRectangularSize[1];
 
             // 1rst create elbows.
-            float elbowRadius = Math.max(pipeWidth, pipeHeight) * 1.5f;
+            float elbowRadius = Math.max(pipeWidth, pipeHeight) * 1.5f; // test value
             List<PipeElbow> pipeElbows = new ArrayList<>();
 
             for (int i = 0; i < pointsCount; i++) {

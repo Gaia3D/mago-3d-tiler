@@ -133,9 +133,6 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         long instanceLimit = globalOptions.getMaxInstance();
         long instanceCount = tileInfos.size();
         boolean isRefineAdd = globalOptions.isRefineAdd();
-        if (instanceCount <= 0) {
-            return;
-        }
 
         GaiaBoundingBox gaiaBoundingBox = parentNode.getBoundingBox();
         if (gaiaBoundingBox == null) {
