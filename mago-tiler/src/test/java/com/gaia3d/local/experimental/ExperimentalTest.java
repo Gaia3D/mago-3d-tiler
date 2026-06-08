@@ -11,12 +11,21 @@ import java.io.File;
 public class ExperimentalTest {
 
     @Test
+    void problemIFC() {
+        String[] args = new String[]{
+                "-i", "G:\\(archive)\\original-data-collection\\Autodesk IFC\\세종과학기지-ifc",
+                "-o", MagoTestConfig.getOutputPath("problem_ifc").getAbsolutePath(),
+                "-c", "5186",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
     void problemGPD() {
         String[] args = new String[]{
                 "-i", "H:/개포동",
                 "-o", MagoTestConfig.getOutputPath("problem_gpd").getAbsolutePath(),
                 "-c", "5186",
-                "-mc", "1",
         };
         MagoTestConfig.execute(args);
     }

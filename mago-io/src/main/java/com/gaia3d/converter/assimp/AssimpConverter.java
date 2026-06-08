@@ -41,9 +41,8 @@ public class AssimpConverter implements Converter {
 
     public final int DEFAULT_FLAGS = Assimp.aiProcess_GenNormals |
             Assimp.aiProcess_Triangulate |
-            Assimp.aiProcess_JoinIdenticalVertices |
-            Assimp.aiProcess_CalcTangentSpace |
             Assimp.aiProcess_SortByPType;
+    private static final int OBJ_FLAGS = 0;
 
     public List<GaiaScene> load(String filePath) {
         return load(new File(filePath));
@@ -54,38 +53,49 @@ public class AssimpConverter implements Converter {
     }
 
     public List<GaiaScene> load(File file) throws RuntimeException {
-        if (!file.isFile() && !file.exists()) {
+        if (!file.exists() || !file.isFile()) {
             log.error("[ERROR] File does not exist: {}", file.getAbsolutePath());
             throw new RuntimeException("File does not exist: " + file.getAbsolutePath());
         }
 
         String path = file.getAbsolutePath().replace(file.getName(), "");
-        AIScene aiScene = Assimp.aiImportFile(file.getAbsolutePath(), DEFAULT_FLAGS);
+        AIScene aiScene = Assimp.aiImportFile(file.getAbsolutePath(), getImportFlags(file));
 
         if (aiScene == null) {
             log.error("[ERROR] Assimp failed to load file: {}", file.getAbsolutePath());
             return new ArrayList<>();
         }
 
-        // TODO : Handle multiple scenes in a single file
-        List<GaiaScene> gaiaScenes = new ArrayList<>();
-        if (options.isSplitByNode()) {
-            gaiaScenes = convertScenes(file, aiScene, path);
-        } else {
-            GaiaScene gaiaScene = convertScene(aiScene, path, file.getName());
-            gaiaScene.setOriginalPath(file.toPath());
+        try {
+            // TODO : Handle multiple scenes in a single file
+            List<GaiaScene> gaiaScenes = new ArrayList<>();
+            if (options.isSplitByNode()) {
+                gaiaScenes = convertScenes(file, aiScene, path);
+            } else {
+                GaiaScene gaiaScene = convertScene(aiScene, path, file.getName());
+                gaiaScene.setOriginalPath(file.toPath());
 
-            GaiaAttribute attribute = new GaiaAttribute();
-            attribute.setIdentifier(UUID.randomUUID());
-            attribute.setFileName(file.getName());
-            attribute.setNodeName(gaiaScene.getNodes().get(0).getName());
-            gaiaScene.setAttribute(attribute);
+                GaiaAttribute attribute = new GaiaAttribute();
+                attribute.setIdentifier(UUID.randomUUID());
+                attribute.setFileName(file.getName());
+                attribute.setNodeName(gaiaScene.getNodes().get(0).getName());
+                gaiaScene.setAttribute(attribute);
 
-            gaiaScenes.add(gaiaScene);
+                gaiaScenes.add(gaiaScene);
+            }
+            return gaiaScenes;
+        } finally {
+            Assimp.aiReleaseImport(aiScene);
         }
+    }
 
-        Assimp.aiReleaseImport(aiScene);
-        return gaiaScenes;
+    private int getImportFlags(File file) {
+        String extension = FilenameUtils.getExtension(file.getName());
+        FormatType formatType = FormatType.requireFromExtension(extension);
+        if (formatType == FormatType.OBJ) {
+            return OBJ_FLAGS;
+        }
+        return DEFAULT_FLAGS;
     }
 
     @Override
@@ -662,15 +672,13 @@ public class AssimpConverter implements Converter {
         AIFace.Buffer facesBuffer = aiMesh.mFaces();
         for (int i = 0; i < numFaces; i++) {
             AIFace aiFace = facesBuffer.get(i);
-            GaiaFace face = processFace(aiFace);
-            surface.getFaces().add(face);
+            surface.getFaces().addAll(processFaces(aiFace));
         }
 
         int mNumVertices = aiMesh.mNumVertices();
         AIVector3D.Buffer verticesBuffer = aiMesh.mVertices();
         AIVector3D.Buffer normalsBuffer = aiMesh.mNormals();
         AIVector3D.Buffer textureCoordiantesBuffer = aiMesh.mTextureCoords(0);
-        AIColor4D.Buffer colorsBuffer = aiMesh.mColors(0);
         for (int i = 0; i < mNumVertices; i++) {
             GaiaVertex vertex = new GaiaVertex();
             AIVector3D aiVertice = verticesBuffer.get(i);
@@ -680,7 +688,7 @@ public class AssimpConverter implements Converter {
                 vertex.setPosition(new Vector3d(aiVertice.x(), aiVertice.y(), aiVertice.z()));
             }
 
-            if (normalsBuffer != null) {
+            if (normalsBuffer != null && i < normalsBuffer.capacity()) {
                 AIVector3D aiNormal = normalsBuffer.get(i);
                 if (Float.isNaN(aiNormal.x()) || Float.isNaN(aiNormal.y()) || Float.isNaN(aiNormal.z())) {
                     vertex.setNormal(new Vector3d());
@@ -691,7 +699,7 @@ public class AssimpConverter implements Converter {
                 vertex.setNormal(new Vector3d());
             }
 
-            if (textureCoordiantesBuffer != null) {
+            if (textureCoordiantesBuffer != null && i < textureCoordiantesBuffer.capacity()) {
                 AIVector3D textureCoordinate = textureCoordiantesBuffer.get(i);
                 if (Float.isNaN(textureCoordinate.x()) || Float.isNaN(textureCoordinate.y())) {
                     vertex.setTexcoords(new Vector2d());
@@ -702,19 +710,7 @@ public class AssimpConverter implements Converter {
                 vertex.setTexcoords(new Vector2d());
             }
 
-            if (colorsBuffer != null) {
-                AIColor4D color = colorsBuffer.get(i);
-                if (Float.isNaN(color.r()) || Float.isNaN(color.g()) || Float.isNaN(color.b()) || Float.isNaN(color.a())) {
-                    vertex.setColor(new byte[]{0, 0, 0, 0});
-                } else {
-                    vertex.setColor(new byte[]{(byte) (color.r() * 255), (byte) (color.g() * 255), (byte) (color.b() * 255), (byte) (color.a() * 255)});
-                }
-            } else {
-                diffuseColor[0] = (byte) (diffuse.x * 255);
-                diffuseColor[1] = (byte) (diffuse.y * 255);
-                diffuseColor[2] = (byte) (diffuse.z * 255);
-                diffuseColor[3] = (byte) (diffuse.w * 255);
-            }
+            vertex.setColor(diffuseColor.clone());
             primitive.getVertices().add(vertex);
         }
 
@@ -726,15 +722,31 @@ public class AssimpConverter implements Converter {
         return new GaiaSurface();
     }
 
-    private GaiaFace processFace(AIFace aiFace) {
-        GaiaFace face = new GaiaFace();
+    private List<GaiaFace> processFaces(AIFace aiFace) {
         int numIndices = aiFace.mNumIndices();
+        List<GaiaFace> faces = new ArrayList<>();
+        if (numIndices < 3) {
+            return faces;
+        }
+
         int[] indicesArray = new int[numIndices];
         IntBuffer indicesBuffer = aiFace.mIndices();
         for (int i = 0; i < numIndices; i++) {
             indicesArray[i] = indicesBuffer.get(i);
         }
-        face.setIndices(indicesArray);
-        return face;
+
+        if (numIndices == 3) {
+            GaiaFace face = new GaiaFace();
+            face.setIndices(indicesArray);
+            faces.add(face);
+            return faces;
+        }
+
+        for (int i = 1; i < numIndices - 1; i++) {
+            GaiaFace face = new GaiaFace();
+            face.setIndices(new int[]{indicesArray[0], indicesArray[i], indicesArray[i + 1]});
+            faces.add(face);
+        }
+        return faces;
     }
 }
