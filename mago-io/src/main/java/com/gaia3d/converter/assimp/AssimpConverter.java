@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 public class AssimpConverter implements Converter {
 
     private final AssimpConverterOptions options;
+    private final GaiaSceneGeometryValidator sceneGeometryValidator = new GaiaSceneGeometryValidator();
 
     public final int DEFAULT_FLAGS = Assimp.aiProcess_GenNormals |
             Assimp.aiProcess_Triangulate |
@@ -60,6 +61,7 @@ public class AssimpConverter implements Converter {
         }
 
         String path = file.getAbsolutePath().replace(file.getName(), "");
+
         AIScene aiScene = Assimp.aiImportFile(file.getAbsolutePath(), DEFAULT_FLAGS);
 
         if (aiScene == null) {
@@ -82,10 +84,20 @@ public class AssimpConverter implements Converter {
             gaiaScene.setAttribute(attribute);
 
             gaiaScenes.add(gaiaScene);
+            //validateScenes(file, gaiaScenes);
         }
 
         Assimp.aiFreeScene(aiScene);
         return gaiaScenes;
+    }
+
+    private void validateScenes(File file, List<GaiaScene> gaiaScenes) {
+        GaiaSceneGeometryValidator.ValidationReport report = sceneGeometryValidator.validate(file, gaiaScenes);
+        if (report.hasIssues()) {
+            log.warn("[WARN] Converted scene geometry validation failed. {}", report.toDetailString());
+        } else if (log.isDebugEnabled()) {
+            log.debug("Converted scene geometry validation passed. {}", report.toSummaryString());
+        }
     }
 
     @Override
