@@ -84,7 +84,7 @@ public class AssimpConverter implements Converter {
             gaiaScenes.add(gaiaScene);
         }
 
-        Assimp.aiFreeScene(aiScene);
+        Assimp.aiReleaseImport(aiScene);
         return gaiaScenes;
     }
 
@@ -321,31 +321,34 @@ public class AssimpConverter implements Converter {
         }
 
         Vector4d diffVector4d;
-        AIColor4D diffColor = AIColor4D.create();
-        int diffResult = Assimp.aiGetMaterialColor(aiMaterial, Assimp.AI_MATKEY_COLOR_DIFFUSE, Assimp.aiTextureType_NONE, 0, diffColor);
-        if (diffResult == 0) {
-            double alpha = diffColor.a();
-            if (0.0f < opacity && opacity < 1.0f) {
-                alpha = opacity;
+        try (AIColor4D diffColor = AIColor4D.calloc()) {
+            int diffResult = Assimp.aiGetMaterialColor(aiMaterial, Assimp.AI_MATKEY_COLOR_DIFFUSE, Assimp.aiTextureType_NONE, 0, diffColor);
+            if (diffResult == 0) {
+                double alpha = diffColor.a();
+                if (0.0f < opacity && opacity < 1.0f) {
+                    alpha = opacity;
+                }
+                diffVector4d = new Vector4d(diffColor.r(), diffColor.g(), diffColor.b(), alpha);
+                material.setDiffuseColor(diffVector4d);
             }
-            diffVector4d = new Vector4d(diffColor.r(), diffColor.g(), diffColor.b(), alpha);
-            material.setDiffuseColor(diffVector4d);
         }
 
         Vector4d ambientVector4d;
-        AIColor4D ambientColor = AIColor4D.create();
-        int ambientResult = Assimp.aiGetMaterialColor(aiMaterial, Assimp.AI_MATKEY_COLOR_AMBIENT, Assimp.aiTextureType_NONE, 0, ambientColor);
-        if (ambientResult == 0) {
-            ambientVector4d = new Vector4d(ambientColor.r(), ambientColor.g(), ambientColor.b(), ambientColor.a());
-            material.setAmbientColor(ambientVector4d);
+        try (AIColor4D ambientColor = AIColor4D.calloc()) {
+            int ambientResult = Assimp.aiGetMaterialColor(aiMaterial, Assimp.AI_MATKEY_COLOR_AMBIENT, Assimp.aiTextureType_NONE, 0, ambientColor);
+            if (ambientResult == 0) {
+                ambientVector4d = new Vector4d(ambientColor.r(), ambientColor.g(), ambientColor.b(), ambientColor.a());
+                material.setAmbientColor(ambientVector4d);
+            }
         }
 
         Vector4d specVector4d;
-        AIColor4D specColor = AIColor4D.create();
-        int specResult = Assimp.aiGetMaterialColor(aiMaterial, Assimp.AI_MATKEY_COLOR_SPECULAR, Assimp.aiTextureType_NONE, 0, specColor);
-        if (specResult == 0) {
-            specVector4d = new Vector4d(specColor.r(), specColor.g(), specColor.b(), specColor.a());
-            material.setSpecularColor(specVector4d);
+        try (AIColor4D specColor = AIColor4D.calloc()) {
+            int specResult = Assimp.aiGetMaterialColor(aiMaterial, Assimp.AI_MATKEY_COLOR_SPECULAR, Assimp.aiTextureType_NONE, 0, specColor);
+            if (specResult == 0) {
+                specVector4d = new Vector4d(specColor.r(), specColor.g(), specColor.b(), specColor.a());
+                material.setSpecularColor(specVector4d);
+            }
         }
 
         if (shininess > 0.0f) {
@@ -370,25 +373,27 @@ public class AssimpConverter implements Converter {
                 material.setAlphaCutoff(alphaCutoff);
                 break;
         }
-        AIString diffPath = AIString.calloc();
-        Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_DIFFUSE, 0, diffPath, (IntBuffer) null, null, null, null, null, null);
-        String diffTexPath = diffPath.dataString();
-
-        AIString ambientPath = AIString.calloc();
-        Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_AMBIENT, 0, ambientPath, (IntBuffer) null, null, null, null, null, null);
-        String ambientTexPath = ambientPath.dataString();
-
-        AIString specularPath = AIString.calloc();
-        Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_SPECULAR, 0, specularPath, (IntBuffer) null, null, null, null, null, null);
-        String specularTexPath = specularPath.dataString();
-
-        AIString shininessPath = AIString.calloc();
-        Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_SHININESS, 0, shininessPath, (IntBuffer) null, null, null, null, null, null);
-        String shininessTexPath = shininessPath.dataString();
-
-        AIString normalPath = AIString.calloc();
-        Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_NORMALS, 0, normalPath, (IntBuffer) null, null, null, null, null, null);
-        String normalTexPath = normalPath.dataString();
+        String diffTexPath;
+        String ambientTexPath;
+        String specularTexPath;
+        String shininessTexPath;
+        String normalTexPath;
+        try (AIString diffPath = AIString.calloc();
+             AIString ambientPath = AIString.calloc();
+             AIString specularPath = AIString.calloc();
+             AIString shininessPath = AIString.calloc();
+             AIString normalPath = AIString.calloc()) {
+            Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_DIFFUSE, 0, diffPath, (IntBuffer) null, null, null, null, null, null);
+            Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_AMBIENT, 0, ambientPath, (IntBuffer) null, null, null, null, null, null);
+            Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_SPECULAR, 0, specularPath, (IntBuffer) null, null, null, null, null, null);
+            Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_SHININESS, 0, shininessPath, (IntBuffer) null, null, null, null, null, null);
+            Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_NORMALS, 0, normalPath, (IntBuffer) null, null, null, null, null, null);
+            diffTexPath = diffPath.dataString();
+            ambientTexPath = ambientPath.dataString();
+            specularTexPath = specularPath.dataString();
+            shininessTexPath = shininessPath.dataString();
+            normalTexPath = normalPath.dataString();
+        }
 
         File parentPath = new File(path);
         if (!diffTexPath.isEmpty()) {

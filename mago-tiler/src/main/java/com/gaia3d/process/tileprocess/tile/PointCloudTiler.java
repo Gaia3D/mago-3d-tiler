@@ -298,7 +298,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         boolean hasMatchedNodeAndPointCloud = currentNode != null;
         if (hasMatchedNodeAndPointCloud) {
             GaiaBoundingBox cubeBoundingBox = currentPointCloud.getGaiaBoundingBox();
-            GaiaBoundingBox fitBoundingBox = calcFitBoundingBox(cubeBoundingBox);
+            GaiaBoundingBox fitBoundingBox = calcFitBoundingBox(currentPointCloud, cubeBoundingBox);
             double dimensionRatio = calcDimensionRatio(fitBoundingBox, cubeBoundingBox);
             int chunkPointLimit = (int) (pointLimit * dimensionRatio);
             if (chunkPointLimit < 1) {
@@ -374,8 +374,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
     private GaiaPointCloud createNode(int index, Node parentNode, GaiaPointCloud parent, GaiaPointCloud pointCloud, int pointLimit, int depth) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         GaiaBoundingBox cubeBoundingBox = pointCloud.getGaiaBoundingBox();
-        //GaiaBoundingBox fitBoundingBox = calcFitBoundingBox(pointCloud);
-        GaiaBoundingBox fitBoundingBox = calcFitBoundingBox(cubeBoundingBox);
+        GaiaBoundingBox fitBoundingBox = calcFitBoundingBox(pointCloud, cubeBoundingBox);
         double dimensionRatio = calcDimensionRatio(fitBoundingBox, cubeBoundingBox);
         int chunkPointLimit = (int) (pointLimit * dimensionRatio);
         if (chunkPointLimit < 1) {
@@ -482,19 +481,60 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
             fitVolumeSize = new Vector3d(1, 1, 1);
         }
         Vector3d cubeVolumeSize = cubeBoundingBox.getSize();
-        return (fitVolumeSize.x * fitVolumeSize.y) / (cubeVolumeSize.x * cubeVolumeSize.y);
+        double cubeArea = cubeVolumeSize.x * cubeVolumeSize.y;
+        if (cubeArea == 0.0 || Double.isNaN(cubeArea) || Double.isInfinite(cubeArea)) {
+            log.warn("[Tile][PointCloud] Invalid cube bounding box area. fitBoundingBox={}, cubeBoundingBox={}", fitBoundingBox, cubeBoundingBox);
+            return 1.0;
+        }
+        double dimensionRatio = (fitVolumeSize.x * fitVolumeSize.y) / cubeArea;
+        if (dimensionRatio <= 0.0 || Double.isNaN(dimensionRatio) || Double.isInfinite(dimensionRatio)) {
+            log.warn("[Tile][PointCloud] Invalid dimension ratio. fitBoundingBox={}, cubeBoundingBox={}", fitBoundingBox, cubeBoundingBox);
+            return 1.0;
+        }
+        return dimensionRatio;
     }
 
-    /*private GaiaBoundingBox calcRealFitBoundingBox(GaiaPointCloud pointCloud) {
+    private GaiaBoundingBox calcRealFitBoundingBox(GaiaPointCloud pointCloud) {
+        if (pointCloud.getLasPoints() == null || pointCloud.getLasPoints().isEmpty()) {
+            return null;
+        }
         GaiaBoundingBox fitBoundingBox = new GaiaBoundingBox();
         pointCloud.getLasPoints().forEach(point -> {
             fitBoundingBox.addPoint(point.getPosition());
         });
         return fitBoundingBox;
-    }*/
+    }
 
-    private GaiaBoundingBox calcFitBoundingBox(GaiaBoundingBox cubeBoundingBox) {
-        return globalFitBoundingBox.createIntersection(cubeBoundingBox);
+    private GaiaBoundingBox calcFitBoundingBox(GaiaPointCloud pointCloud, GaiaBoundingBox cubeBoundingBox) {
+        GaiaBoundingBox realBoundingBox = calcRealFitBoundingBox(pointCloud);
+        GaiaBoundingBox fitBoundingBox = createIntersection(realBoundingBox);
+        if (fitBoundingBox != null) {
+            return fitBoundingBox;
+        }
+
+        fitBoundingBox = createIntersection(cubeBoundingBox);
+        if (fitBoundingBox != null) {
+            log.warn("[Tile][PointCloud] Falling back to cube bounding box intersection. nodeCode={}, realBoundingBox={}, cubeBoundingBox={}",
+                    pointCloud.getCode(), realBoundingBox, cubeBoundingBox);
+            return fitBoundingBox;
+        }
+
+        if (realBoundingBox != null && realBoundingBox.isInit()) {
+            log.warn("[Tile][PointCloud] No intersection with global bounding box. Using real point bounding box. nodeCode={}, globalBoundingBox={}, realBoundingBox={}, cubeBoundingBox={}",
+                    pointCloud.getCode(), globalFitBoundingBox, realBoundingBox, cubeBoundingBox);
+            return realBoundingBox;
+        }
+
+        log.warn("[Tile][PointCloud] No intersection with global bounding box and no point bounding box is available. Using cube bounding box. nodeCode={}, globalBoundingBox={}, cubeBoundingBox={}",
+                pointCloud.getCode(), globalFitBoundingBox, cubeBoundingBox);
+        return cubeBoundingBox;
+    }
+
+    private GaiaBoundingBox createIntersection(GaiaBoundingBox boundingBox) {
+        if (globalFitBoundingBox == null || boundingBox == null || !boundingBox.isInit()) {
+            return null;
+        }
+        return globalFitBoundingBox.createIntersection(boundingBox);
     }
 
     private static GaiaBoundingBox toCube(GaiaBoundingBox box) {

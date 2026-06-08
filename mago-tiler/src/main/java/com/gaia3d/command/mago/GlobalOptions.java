@@ -459,7 +459,7 @@ public class GlobalOptions {
         if (instance.isPhotogrammetry()) {
             instance.setUseQuantization(true);
             if (!extensionModule.isSupported()) {
-                log.error("[ERROR] *** Extension is not supported ***");
+                log.error("[ERROR] Extension is not supported");
                 throw new IllegalArgumentException("Extension is not supported.");
             }
         }

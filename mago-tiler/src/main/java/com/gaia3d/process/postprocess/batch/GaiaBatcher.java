@@ -430,12 +430,10 @@ public class GaiaBatcher {
 //                            "No material found with id=" + materialId +
 //                                    ". IDs available: [" + availableIds + "]");
 //                });
-        //***********************************************************************************
 //        GaiaMaterial resultMaterial = materials.stream()
 //                .filter((material) -> material.getId() == materialId)
 //                .findFirst().orElseThrow();
 //        return resultMaterial;
-        //***********************************************************************************
         Optional<GaiaMaterial> result = materials.stream()
                 .filter(m -> m.getId() == materialId)
                 .findFirst();

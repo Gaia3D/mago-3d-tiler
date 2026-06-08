@@ -290,8 +290,7 @@ public class GaiaTextureCoordinator {
             if (!textures.isEmpty()) {
                 GaiaTexture texture = textures.get(0);
                 BufferedImage source = texture.getBufferedImage();
-                graphics.drawImage(source, (int) splitRectangle.getMinX(), (int) splitRectangle.getMinY(), null); // original code
-                //graphics.drawImage(randomColoredImage, (int) splitRectangle.getMinX(), (int) splitRectangle.getMinY(), null); // test code
+                graphics.drawImage(source, (int) splitRectangle.getMinX(), (int) splitRectangle.getMinY(), null);
             }
         }
 
@@ -336,7 +335,6 @@ public class GaiaTextureCoordinator {
                 if (texcoordBuffer != null) {
                     float[] texcoords = texcoordBuffer.getFloats();
 
-                    // test check.***
                     for (int i = 0; i < texcoords.length; i += 2) {
                         float originX = texcoords[i];
                         float originY = texcoords[i + 1];

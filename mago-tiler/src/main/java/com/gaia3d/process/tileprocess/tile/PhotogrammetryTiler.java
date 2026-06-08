@@ -179,7 +179,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         }
 
         // net surfaces with boxTextures
-        // start with L =3 .***
         ReMeshParameters reMeshParams = new ReMeshParameters();
         for (int d = 3; d <= projectMaxDepthIdx; d++) {
             lod = d;
@@ -606,7 +605,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 //
 //                // delete the contents of the gaiaSceneCut
 //                gaiaSceneCut.getNodes().forEach(GaiaNode::clear);
-//                // end delete the contents of the gaiaSceneCut.--------------------------------------------
 //
 //                TileInfo newTileInfo = TileInfo.builder().scene(gaiaSceneCut).outputPath(tempPathLod).build();
 //                newTileInfo.setTransformMatrix(new Matrix4d(transformMatrix));

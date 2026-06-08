@@ -1,12 +1,10 @@
 📖 mago-3d-tiler Manual
 ===
-updated at 2025-12-15 by znkim
-
 # Overview
 
-mago 3DTiler is a command-line tool for converting various 3D data formats into `3D Tiles` format.   
-`3D Tiles` is a format developed by `Cesium, Inc.` and is currently registered as an `OGC standard`.  
-mago 3DTiler supports data conversion of `b3dm`, `i3dm`, and `pnts` types.   
+mago 3DTiler is a command-line tool for converting various 3D data formats into `3D Tiles` format.
+`3D Tiles` is a format developed by `Cesium, Inc.` and is currently registered as an `OGC standard`.
+mago 3DTiler supports data conversion of `b3dm`, `i3dm`, and `pnts` types.
 `b3dm` represents batched 3D models, `i3dm` represents GPU-instanced 3D models, and `pnts` represents point cloud data.
 
 # Getting Started
@@ -49,8 +47,8 @@ services:
 ```
 
 ### Execute mago 3DTiler with Java
-You can also run mago 3DTiler directly using the jar file.   
-Download the latest `mago-3d-tiler.jar` file from the releases page or build it from the source code.  
+You can also run mago 3DTiler directly using the jar file.
+Download the latest `mago-3d-tiler.jar` file from the releases page or build it from the source code.
 Currently, **JDK21** or higher is required.
 
 ```
