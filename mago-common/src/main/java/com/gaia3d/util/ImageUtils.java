@@ -461,6 +461,8 @@ public class ImageUtils {
                 h,
                 hasAlpha ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB
         );
+
+        // -------- LUT gamma --------
         double invGamma = 1.0 / gamma;
         int[] gammaLUT = new int[256];
         for (int i = 0; i < 256; i++) {
@@ -468,6 +470,8 @@ public class ImageUtils {
         }
 
         float[] hsb = new float[3];
+
+        // -------- Loop principal --------
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
 

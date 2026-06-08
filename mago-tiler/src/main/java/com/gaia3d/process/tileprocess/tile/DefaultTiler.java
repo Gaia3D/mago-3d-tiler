@@ -46,6 +46,7 @@ public abstract class DefaultTiler {
             TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
             Vector3d position = tileTransformInfo.getPosition();
             GaiaBoundingBox localBoundingBox = tileInfo.getBoundingBox();
+            // rotate
             localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(position);
             boundingBox.addBoundingBox(localBoundingBox);
         });
@@ -58,6 +59,8 @@ public abstract class DefaultTiler {
         tileInfos.forEach(tileInfo -> {
             TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
             Vector3d cartesian = tileTransformInfo.getPosition();
+            //Vector3d cartesian = GlobeUtils.cartesianToGeographicWgs84(cartographic);
+
             Matrix4d transformMatrix = new Matrix4d().identity();
             transformMatrix.setTranslation(cartesian);
             GaiaBoundingBox localBoundingBox = tileInfo.getBoundingBox();

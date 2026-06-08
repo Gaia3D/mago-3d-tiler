@@ -66,24 +66,6 @@ public class GaiaSceneUtils {
         return true;
     }
 
-    public static void materialImagesGammaSaturationCorrectionCorrection(GaiaScene scene, double gamma, float saturation) {
-        for (GaiaMaterial material : scene.getMaterials()) {
-            Map<TextureType, List<GaiaTexture>> textures = material.getTextures();
-
-            // modify only diffuse textures for now.
-            List<GaiaTexture> diffuseTextures = textures.get(TextureType.DIFFUSE);
-            if (diffuseTextures != null) {
-                for (GaiaTexture texture : diffuseTextures) {
-                    BufferedImage image = texture.getBufferedImage();
-                    BufferedImage imageCorrected = ImageUtils.correctGammaSaturation(image, gamma, saturation);
-                    texture.setBufferedImage(imageCorrected);
-                    String fullPath = texture.getFullPath();
-                    texture.saveImage(fullPath);
-                }
-            }
-        }
-    }
-
     public static Map<GaiaVertex, List<GaiaFaceExplicit>> getMapVertexToFaceExplicits(List<GaiaFaceExplicit> faces, Map<GaiaVertex, List<GaiaFaceExplicit>> resultMapVertexToFace) {
         if (resultMapVertexToFace == null)
             resultMapVertexToFace = new HashMap<>();

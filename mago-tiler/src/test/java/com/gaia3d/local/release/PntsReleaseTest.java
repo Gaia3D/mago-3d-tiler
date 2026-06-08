@@ -127,7 +127,6 @@ class PntsReleaseTest {
         MagoTestConfig.execute(args);
     }
 
-    @Disabled
     @Test
     void pointcloud05() {
         String path = "P05-west-honam-las";

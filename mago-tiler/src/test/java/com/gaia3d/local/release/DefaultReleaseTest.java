@@ -129,13 +129,13 @@ class DefaultReleaseTest {
         BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
 
         log.info("Executing command: {}", command);
-        log.info("Starting command execution");
+        log.info("***Starting command execution***");
         for (String str; (str = inputReader.readLine()) != null; ) {
             log.info(str);
         }
         for (String str; (str = errorReader.readLine()) != null; ) {
             log.error(str);
         }
-        log.info("Command executed successfully");
+        log.info("***Command executed successfully***");
     }
 }

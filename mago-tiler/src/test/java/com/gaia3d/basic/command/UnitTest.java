@@ -77,8 +77,8 @@ class UnitTest {
                 "-o", outputPath + path,
                 "-autoUpAxis",
                 "-crs", "5174",
-                "-minLod", "0",
-                "-maxLod", "0",
+                "-minLod", "0", // test
+                "-maxLod", "0", // test
                 "-debug"
         };
         Mago3DTilerMain.main(args);

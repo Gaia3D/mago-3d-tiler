@@ -575,7 +575,7 @@ public class MainVoxelizer implements IAppLogic {
                 GaiaBoundingBox effectiveNodeBBox = nodeBBox.clone();
 
                 if (lod == 1) {
-                    double desiredLeafSize = 0.6;
+                    double desiredLeafSize = 0.8;
                     OctreeBBoxInfo octreeBoxInfo = preReMesher.calculateBoundingBoxForLeafDistInfo(nodeBBox, desiredLeafSize);
                     int octreeMaxDepth = octreeBoxInfo.maxDepth;
                     double rootOctreeSize = octreeBoxInfo.rootCubeSize;
@@ -588,7 +588,7 @@ public class MainVoxelizer implements IAppLogic {
                     preReMesher.setMinFacesCount(1);
                     preReMesher.setLimitBoxSize(desiredLeafSize);
                 } else {
-                    double desiredLeafSize = 1.0;
+                    double desiredLeafSize = 1.2;
                     OctreeBBoxInfo octreeBoxInfo = preReMesher.calculateBoundingBoxForLeafDistInfo(nodeBBox, desiredLeafSize);
                     int octreeMaxDepth = octreeBoxInfo.maxDepth;
                     double rootOctreeSize = octreeBoxInfo.rootCubeSize;
@@ -625,7 +625,7 @@ public class MainVoxelizer implements IAppLogic {
 
                 double averageEdgeSize = stats.getAverageEdgeSize();
                 double smallHedgeSize = averageEdgeSize * 1.2;
-                smallHedgeSize = Math.min(smallHedgeSize, 1.2);
+                smallHedgeSize = Math.min(smallHedgeSize, 1.0);
                 double minHedgeSize = averageEdgeSize;
                 minHedgeSize = Math.min(minHedgeSize, 0.5);
                 decimateParameters.setSmallHedgeSize(smallHedgeSize);
@@ -821,7 +821,9 @@ public class MainVoxelizer implements IAppLogic {
 
             // render the scenes
             int scenesCount = sceneInfos.size();
-            List<RenderableGaiaScene> renderableGaiaScenes = new ArrayList<>();
+//            if(scenesCount == 1){
+//
+//            }
 
             GaiaSceneCleaner cleaner = new GaiaSceneCleaner();
             GaiaWeldOptions weldOptions = GaiaWeldOptions.builder()
@@ -849,8 +851,6 @@ public class MainVoxelizer implements IAppLogic {
                 sceneTMatLC.m30(scenePosLC.x);
                 sceneTMatLC.m31(scenePosLC.y);
                 sceneTMatLC.m32(scenePosLC.z);
-
-                renderableGaiaScenes.clear();
 
                 // load the set file
                 GaiaSet gaiaSet = null;
@@ -1400,13 +1400,6 @@ public class MainVoxelizer implements IAppLogic {
 
         HalfEdgeScene halfEdgeSceneMaster = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(gaiaSceneMaster);
 
-//        // Here scissor the atlas textures.
-//        atlasTextureForIntegralReMesh(integralReMeshParameters, halfEdgeSceneMaster, mapClassifyIdToGaiaFaceToHalfEdgeFace,
-//                mapClassifyIdToGaiaFaceToCameraDirectionTypeInfo, mapClassificationCamDirTypeBBox,
-//                mapClassificationCamDirTypeModelViewMatrix, mapClassificationCamDirTypeFacesList,
-//                outputPathString, nodeName);
-//        // end of atlas texture*************************************************************************************
-
         // Here scissor the atlas textures.
         atlasTextureForIntegralReMesh9Directions(integralReMeshParameters, halfEdgeSceneMaster, mapClassifyIdToGaiaFaceToHalfEdgeFace,
                 mapClassifyIdToGaiaFaceToCameraDirectionTypeInfo, mapClassificationCamDirTypeBBox,
@@ -1417,8 +1410,6 @@ public class MainVoxelizer implements IAppLogic {
         //if (makeHorizontalSkirt) {
         //halfEdgeSceneMaster.makeHorizontalSkirt();
         //}
-
-        int hola = 0;
 
         resultHalfEdgeScenes.add(halfEdgeSceneMaster);
 
@@ -1610,25 +1601,6 @@ public class MainVoxelizer implements IAppLogic {
         FaceVisibilityDataManagerV3 faceVisibilityDataManager = new FaceVisibilityDataManagerV3();
 
         Map<String, Fbo> colorCodeFboMap = integralReMeshParameters.getColorCodeFboMap();
-//        Fbo fboColorCodeZNeg = colorCodeFboMap.get("ZNEG");
-//        updateFaceVisibilityData(CameraDirectionType.ZNEG, fboColorCodeZNeg, faceVisibilityDataManager);
-//        Fbo fboColorCodeYPosZNeg = colorCodeFboMap.get("YPOS_ZNEG");
-//        updateFaceVisibilityData(CameraDirectionType.YPOS_ZNEG, fboColorCodeYPosZNeg, faceVisibilityDataManager);
-//        Fbo fboColorCodeYNegZNeg = colorCodeFboMap.get("YNEG_ZNEG");
-//        updateFaceVisibilityData(CameraDirectionType.YNEG_ZNEG, fboColorCodeYNegZNeg, faceVisibilityDataManager);
-//        Fbo fboColorCodeXPosZNeg = colorCodeFboMap.get("XPOS_ZNEG");
-//        updateFaceVisibilityData(CameraDirectionType.XPOS_ZNEG, fboColorCodeXPosZNeg, faceVisibilityDataManager);
-//        Fbo fboColorCodeXNegZNeg = colorCodeFboMap.get("XNEG_ZNEG");
-//        updateFaceVisibilityData(CameraDirectionType.XNEG_ZNEG, fboColorCodeXNegZNeg, faceVisibilityDataManager);
-//        Fbo fboColorCodeXPosYPosZNeg = colorCodeFboMap.get("XPOS_YPOS_ZNEG");
-//        updateFaceVisibilityData(CameraDirectionType.XPOS_YPOS_ZNEG, fboColorCodeXPosYPosZNeg, faceVisibilityDataManager);
-//        Fbo fboColorCodeXNegYPosZNeg = colorCodeFboMap.get("XNEG_YPOS_ZNEG");
-//        updateFaceVisibilityData(CameraDirectionType.XNEG_YPOS_ZNEG, fboColorCodeXNegYPosZNeg, faceVisibilityDataManager);
-//        Fbo fboColorCodeXPosYNegZNeg = colorCodeFboMap.get("XPOS_YNEG_ZNEG");
-//        updateFaceVisibilityData(CameraDirectionType.XPOS_YNEG_ZNEG, fboColorCodeXPosYNegZNeg, faceVisibilityDataManager);
-//        Fbo fboColorCodeXNegYNegZNeg = colorCodeFboMap.get("XNEG_YNEG_ZNEG");
-//        updateFaceVisibilityData(CameraDirectionType.XNEG_YNEG_ZNEG, fboColorCodeXNegYNegZNeg, faceVisibilityDataManager);
-
         Map<GaiaFace, HalfEdgeFace> mapGaiaFaceToHalfEdgeFace = mapClassifyIdToGaiaFaceToHalfEdgeFace.computeIfAbsent(classificationId, k -> new HashMap<>());
         Map<GaiaFace, CameraDirectionTypeInfo> mapGaiaFaceToCameraDirectionTypeInfo = mapClassifyIdToGaiaFaceToCameraDirectionTypeInfo.computeIfAbsent(classificationId, k -> new HashMap<>());
         GaiaScene gaiaSceneFromFaces = HalfEdgeUtils.gaiaSceneFromHalfEdgeFaces(facesList, mapGaiaFaceToHalfEdgeFace);
@@ -1864,6 +1836,11 @@ public class MainVoxelizer implements IAppLogic {
     private void atlasTextureForIntegralLeafScenes(List<HalfEdgeScene> halfEdgeScenes,
                                                           List<GaiaScene> resultGaiaScenes,
                                                           String outputPathString, String nodeName) {
+        if(halfEdgeScenes == null || halfEdgeScenes.isEmpty()){
+            log.info("atlasTextureForIntegralLeafScenes: halfEdgeScenes is null or empty.");
+            return;
+        }
+
         List<GaiaTextureScissorDataFull> scissorDataFullList = new ArrayList<>();
         int classificationId = -1;
         int scissorExpandPixels = 2;
@@ -1919,6 +1896,10 @@ public class MainVoxelizer implements IAppLogic {
                         scissorDataFullList.add(scissorDataFull);
                     }
                 }
+
+                // delete BufferedImage.
+                bufferedImage.flush();
+                bufferedImage = null;
             }
         }
 
