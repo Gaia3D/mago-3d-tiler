@@ -1,45 +1,38 @@
-package com.gaia3d.basic.halfedge;
+package com.gaia3d.basic.texture.atlas;
 
 import com.gaia3d.basic.geometry.GaiaRectangle;
-import com.gaia3d.basic.model.GaiaTextureScissorData;
-import com.gaia3d.basic.model.GaiaTextureScissorDataFull;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class GuillotinePacker {
-    private final int width;
-    private final int height;
+public class TextureAtlasPacker {
     private final List<GaiaRectangle> freeRectangles = new ArrayList<>();
-    private final List<GaiaTextureScissorData> placedRectangles = new ArrayList<>();
+    private final List<TexturesAtlasData> placedRectangles = new ArrayList<>();
     private final GaiaRectangle currentBoundary;
-    private double candidateArea = 0.0;
 
-    public GuillotinePacker() {
-        this.width = 0;
-        this.height = 0;
+    public TextureAtlasPacker() {
         currentBoundary = new GaiaRectangle(0, 0, 0, 0);
     }
 
-    public boolean insert(GaiaTextureScissorData texScissorData) {
+    public boolean insert(TexturesAtlasData texScissorData) {
         GaiaRectangle bestRect = null;
 
-        GaiaRectangle rectBoundary = texScissorData.getOriginBoundary();
+        GaiaRectangle rectBoundary = texScissorData.getOriginalBoundary();
         double rectWidth = rectBoundary.getWidthInt();
         double rectHeight = rectBoundary.getHeightInt();
 
         double currentBoundaryArea = currentBoundary.getArea();
-        double currentCandidateArea = Double.MAX_VALUE;
 
+        double currentCandidateArea = Double.MAX_VALUE;
         GaiaRectangle candidateFreeRect = null;
         if (freeRectangles.size() == 1) {
-            GaiaRectangle firstRect = texScissorData.getOriginBoundary();
+            GaiaRectangle firstRect = texScissorData.getOriginalBoundary();
             currentBoundary.addBoundingRectangle(firstRect);
             bestRect = freeRectangles.get(0);
         } else {
             for (int i = 0; i < freeRectangles.size(); i++) {
                 GaiaRectangle freeRect = freeRectangles.get(i);
-                if (rectWidth <= freeRect.getWidth() && rectHeight <= freeRect.getHeight()) {
+                if (rectWidth < freeRect.getWidth() && rectHeight < freeRect.getHeight()) {
                     if (bestRect == null) {
                         bestRect = freeRect;
                     }
@@ -54,11 +47,6 @@ public class GuillotinePacker {
                         bestRect = freeRect;
                         break;
                     } else {
-//                        if (areaFit < bestAreaFit) {
-//                            bestAreaFit = areaFit;
-//                            bestIndex = i;
-//                            bestRect = freeRect;
-//                        }
                         if (currTotalArea < currentCandidateArea) {
                             currentCandidateArea = currTotalArea;
                             bestRect = freeRect;
@@ -74,28 +62,25 @@ public class GuillotinePacker {
 
         if (bestRect == null) {
             // in this case, create a new free rect
-            GaiaRectangle newFreeRect = createNewFreeRectangle(texScissorData.getOriginBoundary());
+            GaiaRectangle newFreeRect = createNewFreeRectangle(texScissorData.getOriginalBoundary());
             freeRectangles.add(newFreeRect);
             bestRect = newFreeRect;
         }
-
 
         // set position to rect
         texScissorData.setBatchedBoundary(new GaiaRectangle(bestRect.getMinX(), bestRect.getMinY(), bestRect.getMinX() + rectWidth, bestRect.getMinY() + rectHeight));
         placedRectangles.add(texScissorData);
         currentBoundary.addBoundingRectangle(texScissorData.getBatchedBoundary());
-        candidateArea = currentBoundary.getArea();
 
         // split the free rect
         splitFreeRects(bestRect, texScissorData.getBatchedBoundary());
-
         return true;
     }
 
     private GaiaRectangle createNewFreeRectangle(GaiaRectangle rectangleToPut) {
         // 1rst, calculate the current boundary
         GaiaRectangle currBoundaryPlacedRect = new GaiaRectangle(0, 0, 0, 0);
-        for (GaiaTextureScissorData rect : placedRectangles) {
+        for (TexturesAtlasData rect : placedRectangles) {
             currBoundaryPlacedRect.addBoundingRectangle(rect.getBatchedBoundary());
         }
 
@@ -116,14 +101,14 @@ public class GuillotinePacker {
     private void splitFreeRects(GaiaRectangle freeRect, GaiaRectangle placedRect) {
         freeRectangles.remove(freeRect);
 
-        int rigthWidth = (int) (freeRect.getWidth() - placedRect.getWidth());
+        int rightWidth = (int) (freeRect.getWidth() - placedRect.getWidth());
         int bottomHeight = (int) (freeRect.getHeight() - placedRect.getHeight());
 
-        if (rigthWidth < bottomHeight) {
+        if (rightWidth < bottomHeight) {
             // split the free rect horizontally
             double x = freeRect.getMinX() + placedRect.getWidth();
             double y = freeRect.getMinY();
-            GaiaRectangle freeRect1 = new GaiaRectangle(x, y, x + rigthWidth, y + placedRect.getHeight());
+            GaiaRectangle freeRect1 = new GaiaRectangle(x, y, x + rightWidth, y + placedRect.getHeight());
             x = freeRect.getMinX();
             y = freeRect.getMinY() + placedRect.getHeight();
             GaiaRectangle freeRect2 = new GaiaRectangle(x, y, x + freeRect.getWidth(), y + bottomHeight);
@@ -136,7 +121,7 @@ public class GuillotinePacker {
             GaiaRectangle freeRect1 = new GaiaRectangle(x, y, x + placedRect.getWidth(), y + bottomHeight);
             x = freeRect.getMinX() + placedRect.getWidth();
             y = freeRect.getMinY();
-            GaiaRectangle freeRect2 = new GaiaRectangle(x, y, x + rigthWidth, y + freeRect.getHeight());
+            GaiaRectangle freeRect2 = new GaiaRectangle(x, y, x + rightWidth, y + freeRect.getHeight());
             freeRectangles.add(freeRect1);
             freeRectangles.add(freeRect2);
         }

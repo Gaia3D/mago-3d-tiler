@@ -2,6 +2,9 @@ package com.gaia3d.basic.halfedge;
 
 import org.joml.Vector3d;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public enum CameraDirectionType {
     UNKNOWN,
     XPOS,
@@ -110,6 +113,54 @@ public enum CameraDirectionType {
         return result;
     }
 
+    public static CameraDirectionType getBestDownwardObliqueCameraDirectionType(Vector3d normal) {
+        if (normal == null || normal.lengthSquared() < 1e-12) {
+            return ZNEG;
+        }
+
+        Vector3d invertedNormal = new Vector3d(normal).mul(-1.0);
+
+        CameraDirectionType result = ZNEG;
+        double maxDot = -Double.MAX_VALUE;
+
+        CameraDirectionType[] candidates = new CameraDirectionType[] {
+                XPOS_ZNEG,
+                XNEG_ZNEG,
+                YPOS_ZNEG,
+                YNEG_ZNEG,
+                XPOS_YPOS_ZNEG,
+                XPOS_YNEG_ZNEG,
+                XNEG_YPOS_ZNEG,
+                XNEG_YNEG_ZNEG
+        };
+
+        for (CameraDirectionType cameraDirectionType : candidates) {
+            Vector3d cameraDirection = getCameraDirection(cameraDirectionType);
+            double dot = invertedNormal.dot(cameraDirection);
+
+            if (dot > maxDot) {
+                maxDot = dot;
+                result = cameraDirectionType;
+            }
+        }
+
+        return result;
+    }
+
+    public static CameraDirectionType getBest9CameraDirectionTypeByNormal(Vector3d normal) {
+        if (normal == null || normal.lengthSquared() < 1e-12) {
+            return ZNEG;
+        }
+
+        Vector3d n = new Vector3d(normal).normalize();
+
+        if (n.z > 0.65) {
+            return ZNEG;
+        }
+
+        return getBestDownwardObliqueCameraDirectionType(n);
+    }
+
     public static String getName(CameraDirectionType type) {
         if (type == null) {
             return     UNKNOWN.name();
@@ -139,6 +190,24 @@ public enum CameraDirectionType {
                 result = cameraDirectionType;
             }
         }
+        return result;
+    }
+
+    public static List<CameraDirectionType> get9ObliqueCameraDirectionTypes(List<CameraDirectionType> result){
+        if(result == null){
+            result = new ArrayList<>();
+        }
+
+        result.add(ZNEG);
+        result.add(XPOS_ZNEG);
+        result.add(XNEG_ZNEG);
+        result.add(YPOS_ZNEG);
+        result.add(YNEG_ZNEG);
+        result.add(XPOS_YPOS_ZNEG);
+        result.add(XPOS_YNEG_ZNEG);
+        result.add(XNEG_YPOS_ZNEG);
+        result.add(XNEG_YNEG_ZNEG);
+
         return result;
     }
 

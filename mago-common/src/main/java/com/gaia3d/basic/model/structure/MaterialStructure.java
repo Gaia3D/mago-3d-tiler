@@ -1,5 +1,6 @@
 package com.gaia3d.basic.model.structure;
 
+import com.gaia3d.basic.model.GaiaSamplers;
 import com.gaia3d.basic.model.GaiaTexture;
 import com.gaia3d.basic.types.TextureType;
 import lombok.Getter;
@@ -14,4 +15,5 @@ import java.util.Map;
 @Setter
 public abstract class MaterialStructure implements Serializable {
     protected Map<TextureType, List<GaiaTexture>> textures = new HashMap<>();
+    protected GaiaSamplers samplers = new GaiaSamplers();
 }

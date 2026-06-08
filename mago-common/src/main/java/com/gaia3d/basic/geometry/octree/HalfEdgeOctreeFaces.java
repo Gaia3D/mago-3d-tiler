@@ -51,34 +51,43 @@ public class HalfEdgeOctreeFaces extends GaiaOctree<HalfEdgeFace> {
 
         List<GaiaOctree<HalfEdgeFace>> children = this.getChildren();
 
+        GaiaOctree<HalfEdgeFace> child0 = children.get(0);
+        GaiaOctree<HalfEdgeFace> child1 = children.get(1);
+        GaiaOctree<HalfEdgeFace> child2 = children.get(2);
+        GaiaOctree<HalfEdgeFace> child3 = children.get(3);
+        GaiaOctree<HalfEdgeFace> child4 = children.get(4);
+        GaiaOctree<HalfEdgeFace> child5 = children.get(5);
+        GaiaOctree<HalfEdgeFace> child6 = children.get(6);
+        GaiaOctree<HalfEdgeFace> child7 = children.get(7);
+
         for (HalfEdgeFace face : faces) {
             Vector3d center = face.getBarycenter(null);
             if (center.x < midX) {
                 if (center.y < midY) {
                     if (center.z < midZ) {
-                        children.get(0).addContent(face);
+                        child0.addContent(face);
                     } else {
-                        children.get(4).addContent(face);
+                        child4.addContent(face);
                     }
                 } else {
                     if (center.z < midZ) {
-                        children.get(3).addContent(face);
+                        child3.addContent(face);
                     } else {
-                        children.get(7).addContent(face);
+                        child7.addContent(face);
                     }
                 }
             } else {
                 if (center.y < midY) {
                     if (center.z < midZ) {
-                        children.get(1).addContent(face);
+                        child1.addContent(face);
                     } else {
-                        children.get(5).addContent(face);
+                        child5.addContent(face);
                     }
                 } else {
                     if (center.z < midZ) {
-                        children.get(2).addContent(face);
+                        child2.addContent(face);
                     } else {
-                        children.get(6).addContent(face);
+                        child6.addContent(face);
                     }
                 }
             }

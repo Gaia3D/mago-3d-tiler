@@ -1,9 +1,6 @@
 package com.gaia3d.converter.gltf.tiles;
 
-import com.gaia3d.basic.model.GaiaMesh;
-import com.gaia3d.basic.model.GaiaNode;
-import com.gaia3d.basic.model.GaiaPrimitive;
-import com.gaia3d.basic.model.GaiaScene;
+import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.AccessorType;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.converter.gltf.*;
@@ -88,7 +85,13 @@ public class BatchedModelGltfWriter extends GltfWriter {
         GltfBinary binary = new GltfBinary();
         GlTF gltf = new GlTF();
         gltf.setAsset(genAsset());
-        gltf.addSamplers(genSampler());
+
+        List<GaiaMaterial> materials = gaiaScene.getMaterials();
+        if (materials == null || materials.isEmpty()) {
+            log.error("[Error] : gaiaScene has no materials");
+        }
+        GaiaMaterial gaiaMaterial0 = gaiaScene.getMaterials().getFirst();
+        gltf.addSamplers(genSampler(gaiaMaterial0));
 
         Node rootNode = initNode();
         initScene(gltf, rootNode);

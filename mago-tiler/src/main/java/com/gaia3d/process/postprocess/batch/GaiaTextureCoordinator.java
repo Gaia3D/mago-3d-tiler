@@ -5,6 +5,7 @@ import com.gaia3d.basic.exchangable.GaiaBufferDataSet;
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.model.GaiaMaterial;
 import com.gaia3d.basic.model.GaiaTexture;
+import com.gaia3d.basic.texture.atlas.TextureAtlasManager;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalConstants;
@@ -434,6 +435,11 @@ public class GaiaTextureCoordinator {
 
             BufferedImage clamped = this.atlasImage;
             clamped = ImageUtils.changeBackgroundColor(clamped, CLAMP_COLOR, BACKGROUND_COLOR);
+            // New way to eliminate backGround color.**********************************************************
+            // activate code for test.***
+            // TextureAtlasManager textureAtlasManager = new TextureAtlasManager();
+            // textureAtlasManager.dilateBackgroundColor(clamped, CLAMP_COLOR);
+            // End new way to eliminate backGround color.------------------------------------------------------
             Graphics2D graphics2D = this.atlasImage.createGraphics();
             graphics2D.drawImage(clamped, 0, 0, null);
             graphics2D.dispose();

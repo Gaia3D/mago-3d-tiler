@@ -27,7 +27,12 @@ public class IntegralReMeshParameters {
         colorCodeFboMap.clear();
     }
 
-    public void createFBOsByCameraDirectionsType(FboManager fboManager, int fboWidth, int fboHeight, int minFilter, int magFilter, List<CameraDirectionType> cameraDirectionTypes) {
+    public void createFBOsByCameraDirectionsType(FboManager fboManager,
+                                                 int fboWidth,
+                                                 int fboHeight,
+                                                 int minFilter,
+                                                 int magFilter,
+                                                 List<CameraDirectionType> cameraDirectionTypes) {
         for (CameraDirectionType cameraDirectionType : cameraDirectionTypes) {
             Fbo colorFbo = fboManager.getOrCreateFbo(cameraDirectionType.name(), fboWidth, fboHeight, minFilter, magFilter);
             colorFboMap.put(cameraDirectionType.name(), colorFbo);

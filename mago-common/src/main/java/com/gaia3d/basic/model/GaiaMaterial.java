@@ -98,6 +98,7 @@ public class GaiaMaterial extends MaterialStructure implements Serializable {
         this.isRepeat = false;
         this.isBlend = false;
         this.isOpaque = false;
+        this.samplers = null;
     }
 
     public GaiaMaterial clone() {
@@ -113,6 +114,7 @@ public class GaiaMaterial extends MaterialStructure implements Serializable {
         newMaterial.setAlphaCutoff(this.alphaCutoff);
         newMaterial.setId(this.id);
         newMaterial.setName(this.name);
+        newMaterial.setSamplers(this.samplers.clone());
         for (Map.Entry<TextureType, List<GaiaTexture>> entry : this.textures.entrySet()) {
             TextureType textureType = entry.getKey();
             List<GaiaTexture> gaiaTextures = entry.getValue();
