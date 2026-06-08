@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@Tag("default")
+@Tag("manual")
 class AssimpCrashProbeTest {
     private static final Path SAMPLE = Path.of(
             "H:",
