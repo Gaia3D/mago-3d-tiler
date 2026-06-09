@@ -1,5 +1,7 @@
 package com.gaia3d.basic.texture.atlas.corrector;
 
+import org.joml.Vector2d;
+
 import java.awt.image.BufferedImage;
 
 public class TextureCorrectionManager {
@@ -17,12 +19,13 @@ public class TextureCorrectionManager {
     // Para acelerar. 1 = todos los píxeles, 2 = uno de cada 2, 4 = uno de cada 4...
     private int sampleStep = 4;
 
-    public void setSampleStep(int sampleStep) {
-        this.sampleStep = Math.max(1, sampleStep);
-    }
-
-    public void addStatistics(BufferedImage image) {
-        if (image == null) {
+    public void addStatisticsByUvTriangle(
+            BufferedImage image,
+            Vector2d uv0,
+            Vector2d uv1,
+            Vector2d uv2
+    ) {
+        if (image == null || uv0 == null || uv1 == null || uv2 == null) {
             return;
         }
 
@@ -33,38 +36,109 @@ public class TextureCorrectionManager {
             return;
         }
 
-        for (int y = 0; y < height; y += sampleStep) {
-            for (int x = 0; x < width; x += sampleStep) {
-                int argb = image.getRGB(x, y);
+        double areaUv = calculateUvTriangleArea(uv0, uv1, uv2);
 
-                int alpha = (argb >>> 24) & 0xff;
+        if (areaUv <= EPSILON) {
+            return;
+        }
 
-                // Si la textura tiene alpha, ignoramos píxeles transparentes.
-                // Para JPG normalmente alpha será 255.
-                if (alpha < 16) {
-                    continue;
+        /*
+         * Número de samples según área UV.
+         * Si el triángulo ocupa mucha textura, tomamos más muestras.
+         */
+        double pixelArea = areaUv * width * height;
+
+        int minSamples = pixelArea < 4.0 ? 1 : 4;
+
+        int samples = (int) Math.ceil(pixelArea / 16.0);
+        samples = clamp(samples, minSamples, 256);
+
+        int grid = (int) Math.ceil(Math.sqrt(samples));
+
+        for (int iy = 0; iy < grid; iy++) {
+            for (int ix = 0; ix < grid; ix++) {
+                /*
+                 * Coordenadas baricéntricas simples.
+                 * Generamos puntos dentro del triángulo.
+                 */
+                double a = (ix + 0.5) / grid;
+                double b = (iy + 0.5) / grid;
+
+                if (a + b > 1.0) {
+                    a = 1.0 - a;
+                    b = 1.0 - b;
                 }
 
-                int r = (argb >>> 16) & 0xff;
-                int g = (argb >>> 8) & 0xff;
-                int b = argb & 0xff;
+                double w0 = 1.0 - a - b;
+                double w1 = a;
+                double w2 = b;
 
-                // Ignorar background negro puro del atlas.
-                if (r == 0 && g == 0 && b == 0) {
-                    continue;
-                }
+                double u = uv0.x * w0 + uv1.x * w1 + uv2.x * w2;
+                double v = uv0.y * w0 + uv1.y * w1 + uv2.y * w2;
 
-                double rd = r / 255.0;
-                double gd = g / 255.0;
-                double bd = b / 255.0;
-
-
-                double luminance = calculateLuminance(rd, gd, bd);
-                double saturation = calculateSaturation(rd, gd, bd);
-
-                addPixelStatistics(luminance, saturation);
+                addStatisticsByUv(image, u, v);
             }
         }
+    }
+
+    private double calculateUvTriangleArea(Vector2d uv0, Vector2d uv1, Vector2d uv2) {
+        double x1 = uv1.x - uv0.x;
+        double y1 = uv1.y - uv0.y;
+
+        double x2 = uv2.x - uv0.x;
+        double y2 = uv2.y - uv0.y;
+
+        return Math.abs(x1 * y2 - y1 * x2) * 0.5;
+    }
+
+    private void addStatisticsByUv(BufferedImage image, double u, double v) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        /*
+         * Para atlas normalmente queremos clamp.
+         * Si tus UVs pueden usar repeat, habría que cambiar esto.
+         */
+        u = clamp(u, 0.0, 1.0);
+        v = clamp(v, 0.0, 1.0);
+
+        int x = (int) Math.floor(u * (width - 1));
+
+        /*
+         * Ojo con el eje Y.
+         * Si tus UVs ya están invertidas, usa directamente:
+         * int y = (int)Math.floor(v * (height - 1));
+         */
+        int y = (int) Math.floor((1.0 - v) * (height - 1));
+
+        x = clamp(x, 0, width - 1);
+        y = clamp(y, 0, height - 1);
+
+        int argb = image.getRGB(x, y);
+
+        int alpha = (argb >>> 24) & 0xff;
+
+        if (alpha < 16) {
+            return;
+        }
+
+        int r = (argb >>> 16) & 0xff;
+        int g = (argb >>> 8) & 0xff;
+        int b = argb & 0xff;
+
+        // Background negro puro.
+        if (r == 0 && g == 0 && b == 0) {
+            return;
+        }
+
+        double rd = r / 255.0;
+        double gd = g / 255.0;
+        double bd = b / 255.0;
+
+        double luminance = calculateLuminance(rd, gd, bd);
+        double saturation = calculateSaturation(rd, gd, bd);
+
+        addPixelStatistics(luminance, saturation);
     }
 
     private void addPixelStatistics(double luminance, double saturation) {
@@ -114,6 +188,52 @@ public class TextureCorrectionManager {
         double p05 = getLuminancePercentile(0.05);
         double p50 = getLuminancePercentile(0.50);
         double p95 = getLuminancePercentile(0.95);
+
+        /*
+         * BLACK POINT / DEHAZE SUAVE
+         *
+         * Si p05 está alto, las sombras están levantadas.
+         * Eso suele indicar neblina, velo gris o imagen lavada.
+         */
+        if (p05 > 0.10 && meanSat < 0.35) {
+            params.blackPoint = p05 * 0.85;
+        } else if (p05 > 0.07 && meanSat < 0.32) {
+            params.blackPoint = p05 * 0.75;
+        } else if (p05 > 0.05 && meanSat < 0.28) {
+            params.blackPoint = p05 * 0.60;
+        } else if (p05 > 0.04 && meanSat < 0.25) {
+            params.blackPoint = p05 * 0.45;
+        } else {
+            params.blackPoint = 0.0;
+        }
+
+        /*
+         * Si la imagen ya tiene mucho contraste, suavizamos el blackPoint.
+         * Pero no lo anulamos completamente, porque una imagen puede tener
+         * contraste y aun así tener velo gris.
+         */
+        if (stddevLum > 0.28) {
+            params.blackPoint *= 0.50;
+        } else if (stddevLum > 0.24) {
+            params.blackPoint *= 0.75;
+        }
+
+        params.blackPoint = clamp(params.blackPoint, 0.0, 0.10);
+        params.whitePoint = 1.0;
+
+        /*
+         * Haze detector:
+         * tonos oscuros levantados + poca saturación + medios tonos claros.
+         */
+        boolean hazyImage =
+                p05 > 0.05 &&
+                        meanSat < 0.30 &&
+                        p50 > 0.30;
+
+        if (hazyImage) {
+            params.contrast = Math.max(params.contrast, 1.08);
+            params.saturation = Math.max(params.saturation, 1.07);
+        }
 
         /*
          * EXPOSURE
@@ -185,24 +305,24 @@ public class TextureCorrectionManager {
          * En vez de usar reglas fijas por tile, intentamos llevar el contraste
          * hacia un valor objetivo moderado.
          */
-        double desiredStdDevLum = 0.19;
+        double desiredStdDevLum = 0.205;
 
         params.contrast = desiredStdDevLum / Math.max(stddevLum, EPSILON);
-        params.contrast = clamp(params.contrast, 1.00, 1.10);
+        params.contrast = clamp(params.contrast, 1.00, 1.12);
 
         /*
          * Si hay muchas sombras profundas, no conviene endurecer mucho,
          * porque podríamos convertir vegetación y calles oscuras en manchas negras.
          */
         if (p05 < 0.04) {
-            params.contrast = Math.min(params.contrast, 1.06);
+            params.contrast = Math.min(params.contrast, 1.08);
         }
 
         /*
          * Si las altas luces ya son fuertes, moderamos el contraste.
          */
         if (p95 > 0.75) {
-            params.contrast = Math.min(params.contrast, 1.04);
+            params.contrast = Math.min(params.contrast, 1.05);
         }
 
 
@@ -214,11 +334,11 @@ public class TextureCorrectionManager {
          * tejados azules, vegetación o carreteras.
          */
         if (meanSat < 0.18) {
-            params.saturation = 1.08;
+            params.saturation = 1.10;
         } else if (meanSat < 0.25) {
-            params.saturation = 1.05;
+            params.saturation = 1.07;
         } else if (meanSat < 0.35) {
-            params.saturation = 1.02;
+            params.saturation = 1.03;
         } else {
             params.saturation = 1.00;
         }
@@ -275,29 +395,27 @@ public class TextureCorrectionManager {
                 double gd = g / 255.0;
                 double bd = b / 255.0;
 
-                // 1. Gamma. Gamma < 1.0 aclara medios tonos.
+                // 0. Dehaze suave.
+                if (params.blackPoint > 0.0) {
+                    rd = applyLevels(rd, params.blackPoint, params.whitePoint);
+                    gd = applyLevels(gd, params.blackPoint, params.whitePoint);
+                    bd = applyLevels(bd, params.blackPoint, params.whitePoint);
+                }
+
+                // 1. Gamma.
                 rd = Math.pow(rd, params.gamma);
                 gd = Math.pow(gd, params.gamma);
                 bd = Math.pow(bd, params.gamma);
 
-                // 2. Exposure protegido para no quemar fachadas blancas.
+                // 2. Exposure protegido.
                 double lumBeforeExposure = calculateLuminance(rd, gd, bd);
-
-                /*
-                 * protectionFactor:
-                 * - Cerca de 1.0 en sombras y medios tonos.
-                 * - Cerca de 0.0 en altas luces.
-                 *
-                 * Esto hace que la exposure afecte mucho a vegetación/calles/sombras,
-                 * pero muy poco a edificios ya claros.
-                 */
                 double protectionFactor = 1.0 - smoothstep(0.50, 0.82, lumBeforeExposure);
 
                 rd = applyProtectedExposure(rd, params.exposure, protectionFactor);
                 gd = applyProtectedExposure(gd, params.exposure, protectionFactor);
                 bd = applyProtectedExposure(bd, params.exposure, protectionFactor);
 
-                // 3. Contrast alrededor de 0.5.
+                // 3. Contrast.
                 rd = (rd - 0.5) * params.contrast + 0.5;
                 gd = (gd - 0.5) * params.contrast + 0.5;
                 bd = (bd - 0.5) * params.contrast + 0.5;
@@ -326,6 +444,11 @@ public class TextureCorrectionManager {
         }
 
         return result;
+    }
+
+    private double applyLevels(double value, double blackPoint, double whitePoint) {
+        double denominator = Math.max(whitePoint - blackPoint, EPSILON);
+        return clamp((value - blackPoint) / denominator, 0.0, 1.0);
     }
 
     public double getMeanLuminance() {
