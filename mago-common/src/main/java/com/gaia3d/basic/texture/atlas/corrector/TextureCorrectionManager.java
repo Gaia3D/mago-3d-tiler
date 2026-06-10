@@ -343,6 +343,32 @@ public class TextureCorrectionManager {
             params.saturation = 1.00;
         }
 
+        double correctionNeed = estimateCorrectionNeed(
+                meanLum,
+                stddevLum,
+                meanSat,
+                p05,
+                p50,
+                p95
+        );
+
+        params.correctionStrength = correctionNeed;
+
+        if (correctionNeed < 0.10) {
+            params.enabled = false;
+
+            params.gamma = 1.0;
+            params.exposure = 1.0;
+            params.contrast = 1.0;
+            params.saturation = 1.0;
+            params.blackPoint = 0.0;
+            params.whitePoint = 1.0;
+
+            return params;
+        }
+
+        blendParamsToNeutral(params, correctionNeed);
+
         return params;
     }
 
@@ -356,13 +382,171 @@ public class TextureCorrectionManager {
         return value * effectiveExposure;
     }
 
-    public BufferedImage correctImage(BufferedImage source, TextureCorrectionParameters params) {
+    private double[] applyIdyllicLook(
+            double r,
+            double g,
+            double b,
+            IdyllicLookParameters params
+    ) {
+        if (params == null || !params.idyllicLookEnabled || params.idyllicStrength <= 0.0) {
+            return new double[]{r, g, b};
+        }
+
+        double s = clamp(params.idyllicStrength, 0.0, 1.0);
+
+        double lum = calculateLuminance(r, g, b);
+
+        /*
+         * 1. Dehaze estético suave.
+         * Empuja negros/grises hacia algo más limpio.
+         */
+        double dehaze = params.dehazeBoost * s;
+        if (dehaze > 0.0) {
+            r = applyLevels(r, dehaze, 1.0);
+            g = applyLevels(g, dehaze, 1.0);
+            b = applyLevels(b, dehaze, 1.0);
+        }
+
+        /*
+         * 2. Midtone lift.
+         * Hace la imagen más luminosa en medios tonos sin quemar tanto highlights.
+         */
+        lum = calculateLuminance(r, g, b);
+        double midFactor = smoothstep(0.15, 0.55, lum) * (1.0 - smoothstep(0.65, 0.95, lum));
+        double lift = params.midtoneLift * s * midFactor;
+
+        r += (1.0 - r) * lift;
+        g += (1.0 - g) * lift;
+        b += (1.0 - b) * lift;
+
+        /*
+         * 3. Calidez global.
+         */
+        double warm = params.warmBoost * s;
+
+        r *= 1.0 + warm;
+        g *= 1.0 + warm * 0.15;
+        b *= 1.0 - warm * 0.20;
+
+        /*
+         * 4. Highlight softness.
+         * Si las zonas claras están demasiado duras, las suaviza un poco.
+         */
+        lum = calculateLuminance(r, g, b);
+        double hi = smoothstep(0.65, 0.95, lum);
+        double soft = params.highlightSoftness * s * hi;
+
+        r = r * (1.0 - soft) + lum * soft;
+        g = g * (1.0 - soft) + lum * soft;
+        b = b * (1.0 - soft) + lum * soft;
+
+        /*
+         * 5. Shadow softness.
+         * Hace sombras algo más amables.
+         */
+        lum = calculateLuminance(r, g, b);
+        double shadow = 1.0 - smoothstep(0.12, 0.42, lum);
+        double shadowLift = params.shadowSoftness * s * shadow;
+
+        r += (0.18 - r) * shadowLift;
+        g += (0.18 - g) * shadowLift;
+        b += (0.20 - b) * shadowLift;
+
+        /*
+         * 6. Contraste estético.
+         */
+        double contrast = 1.0 + params.contrastBoost * s;
+
+        r = (r - 0.5) * contrast + 0.5;
+        g = (g - 0.5) * contrast + 0.5;
+        b = (b - 0.5) * contrast + 0.5;
+
+        /*
+         * 7. Saturación estética general.
+         */
+        lum = calculateLuminance(r, g, b);
+        double saturation = 1.0 + params.saturationBoost * s;
+
+        r = lum + (r - lum) * saturation;
+        g = lum + (g - lum) * saturation;
+        b = lum + (b - lum) * saturation;
+
+        /*
+         * 8. Green boost suave.
+         * Detecta tonos donde G domina un poco.
+         */
+        double max = Math.max(r, Math.max(g, b));
+        double min = Math.min(r, Math.min(g, b));
+        double colorfulness = max - min;
+
+        double lumNow = calculateLuminance(r, g, b);
+
+        /*
+         * Detectar verdes:
+         * - G domina sobre R y B
+         * - hay suficiente color
+         * - funciona mejor en medios tonos que en highlights extremos
+         */
+        double greenDominance = g - Math.max(r, b);
+        double greenBase = clamp(greenDominance * 4.5, 0.0, 1.0);
+        double greenColor = clamp(colorfulness * 3.2, 0.0, 1.0);
+        double greenLum = 1.0 - Math.abs(lumNow - 0.45) / 0.45;
+        greenLum = clamp(greenLum, 0.0, 1.0);
+
+        double greenFactor = greenBase * greenColor * greenLum;
+
+        double greenBoost = params.greenBoost * s * greenFactor;
+
+        /*
+         * Más verde, un poco más de luminosidad y menos gris.
+         */
+        g *= 1.0 + greenBoost;
+        r *= 1.0 - greenBoost * 0.10;
+        b *= 1.0 - greenBoost * 0.06;
+
+        /*
+         * Levantar un poco la vegetación para que parezca más frondosa.
+         */
+        double foliageLift = greenBoost * 0.18;
+        r += (1.0 - r) * foliageLift * 0.20;
+        g += (1.0 - g) * foliageLift;
+        b += (1.0 - b) * foliageLift * 0.12;
+
+        /*
+         * 9. Blue/cyan boost suave.
+         * Para tejados/cielos/tonos fríos, sin exagerar.
+         */
+        double blueDominance = b - r;
+        double blueFactor = clamp(blueDominance * 3.0, 0.0, 1.0) * clamp(colorfulness * 2.5, 0.0, 1.0);
+
+        double blueBoost = params.skyBlueBoost * s * blueFactor;
+
+        b *= 1.0 + blueBoost;
+        g *= 1.0 + blueBoost * 0.20;
+
+        r = clamp(r, 0.0, 1.0);
+        g = clamp(g, 0.0, 1.0);
+        b = clamp(b, 0.0, 1.0);
+
+        return new double[]{r, g, b};
+    }
+
+    public BufferedImage correctImage(
+            BufferedImage source,
+            TextureCorrectionParameters params,
+            SunnyLookParameters sunnyParams,
+            IdyllicLookParameters idyllicParams
+    ) {
         if (source == null) {
             return null;
         }
 
         if (params == null) {
             params = new TextureCorrectionParameters();
+        }
+
+        if (sunnyParams == null) {
+            sunnyParams = SunnyLookParameters.disabled();
         }
 
         int width = source.getWidth();
@@ -376,6 +560,14 @@ public class TextureCorrectionManager {
                 hasAlpha ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB
         );
 
+        boolean useSunnyLook =
+                sunnyParams.sunnyLookEnabled &&
+                        sunnyParams.sunnyStrength > 0.0;
+
+        double sunnyStrength = useSunnyLook
+                ? clamp(sunnyParams.sunnyStrength, 0.0, 1.0)
+                : 0.0;
+
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 int argb = source.getRGB(x, y);
@@ -385,7 +577,10 @@ public class TextureCorrectionManager {
                 int g = (argb >>> 8) & 0xff;
                 int b = argb & 0xff;
 
-                // Mantener background negro puro intacto.
+                /*
+                 * Mantener background negro puro intacto.
+                 * Muy importante para atlas con zonas vacías.
+                 */
                 if (r == 0 && g == 0 && b == 0) {
                     result.setRGB(x, y, argb);
                     continue;
@@ -395,19 +590,39 @@ public class TextureCorrectionManager {
                 double gd = g / 255.0;
                 double bd = b / 255.0;
 
-                // 0. Dehaze suave.
-                if (params.blackPoint > 0.0) {
-                    rd = applyLevels(rd, params.blackPoint, params.whitePoint);
-                    gd = applyLevels(gd, params.blackPoint, params.whitePoint);
-                    bd = applyLevels(bd, params.blackPoint, params.whitePoint);
+                /*
+                 * 0. Dehaze / black point.
+                 *
+                 * Si SunnyLook está activo, añadimos un poco de dehaze extra.
+                 */
+                double effectiveBlackPoint = params.blackPoint;
+
+                if (useSunnyLook) {
+                    effectiveBlackPoint += sunnyParams.sunnyDehazeBoost * sunnyStrength;
                 }
 
-                // 1. Gamma.
+                effectiveBlackPoint = clamp(effectiveBlackPoint, 0.0, 0.10);
+
+                if (effectiveBlackPoint > 0.0) {
+                    rd = applyLevels(rd, effectiveBlackPoint, params.whitePoint);
+                    gd = applyLevels(gd, effectiveBlackPoint, params.whitePoint);
+                    bd = applyLevels(bd, effectiveBlackPoint, params.whitePoint);
+                }
+
+                /*
+                 * 1. Gamma.
+                 *
+                 * Gamma < 1.0 levanta medios tonos.
+                 */
                 rd = Math.pow(rd, params.gamma);
                 gd = Math.pow(gd, params.gamma);
                 bd = Math.pow(bd, params.gamma);
 
-                // 2. Exposure protegido.
+                /*
+                 * 2. Exposure protegido.
+                 *
+                 * Afecta más a sombras/medios tonos y menos a altas luces.
+                 */
                 double lumBeforeExposure = calculateLuminance(rd, gd, bd);
                 double protectionFactor = 1.0 - smoothstep(0.50, 0.82, lumBeforeExposure);
 
@@ -415,17 +630,99 @@ public class TextureCorrectionManager {
                 gd = applyProtectedExposure(gd, params.exposure, protectionFactor);
                 bd = applyProtectedExposure(bd, params.exposure, protectionFactor);
 
-                // 3. Contrast.
+                /*
+                 * 3. Contraste base.
+                 */
                 rd = (rd - 0.5) * params.contrast + 0.5;
                 gd = (gd - 0.5) * params.contrast + 0.5;
                 bd = (bd - 0.5) * params.contrast + 0.5;
 
-                // 4. Saturation.
+                /*
+                 * 4. Saturación base.
+                 */
                 double lum = calculateLuminance(rd, gd, bd);
 
                 rd = lum + (rd - lum) * params.saturation;
                 gd = lum + (gd - lum) * params.saturation;
                 bd = lum + (bd - lum) * params.saturation;
+
+                /*
+                 * 5. Sunny Look opcional.
+                 *
+                 * Es una capa estética final:
+                 * - más calidez
+                 * - highlights algo más cálidos
+                 * - sombras apenas más frías
+                 * - contraste extra suave
+                 * - saturación extra suave
+                 */
+                if (useSunnyLook) {
+                    /*
+                     * 5.1 Calidez general.
+                     */
+                    double warm = sunnyParams.warmStrength * sunnyStrength;
+
+                    rd *= 1.0 + warm;
+                    gd *= 1.0 + warm * 0.35;
+                    bd *= 1.0 - warm * 0.70;
+
+                    /*
+                     * 5.2 Highlights más cálidos.
+                     */
+                    double lumSunny = calculateLuminance(rd, gd, bd);
+                    double highlightFactor = smoothstep(0.45, 0.90, lumSunny);
+
+                    double highlightWarm =
+                            sunnyParams.highlightWarmth *
+                                    sunnyStrength *
+                                    highlightFactor;
+
+                    rd *= 1.0 + highlightWarm;
+                    gd *= 1.0 + highlightWarm * 0.35;
+                    bd *= 1.0 - highlightWarm * 0.65;
+
+                    /*
+                     * 5.3 Sombras un poquito más frías.
+                     */
+                    lumSunny = calculateLuminance(rd, gd, bd);
+                    double shadowFactor = 1.0 - smoothstep(0.18, 0.50, lumSunny);
+
+                    double shadowCool =
+                            sunnyParams.shadowCoolness *
+                                    sunnyStrength *
+                                    shadowFactor;
+
+                    rd *= 1.0 - shadowCool * 0.35;
+                    gd *= 1.0;
+                    bd *= 1.0 + shadowCool;
+
+                    /*
+                     * 5.4 Contraste extra suave.
+                     */
+                    double sunnyContrast =
+                            1.0 + sunnyParams.sunnyContrastBoost * sunnyStrength;
+
+                    rd = (rd - 0.5) * sunnyContrast + 0.5;
+                    gd = (gd - 0.5) * sunnyContrast + 0.5;
+                    bd = (bd - 0.5) * sunnyContrast + 0.5;
+
+                    /*
+                     * 5.5 Saturación extra suave.
+                     */
+                    lumSunny = calculateLuminance(rd, gd, bd);
+
+                    double sunnySaturation =
+                            1.0 + sunnyParams.sunnySaturationBoost * sunnyStrength;
+
+                    rd = lumSunny + (rd - lumSunny) * sunnySaturation;
+                    gd = lumSunny + (gd - lumSunny) * sunnySaturation;
+                    bd = lumSunny + (bd - lumSunny) * sunnySaturation;
+                }
+
+                double[] rgb = applyIdyllicLook(rd, gd, bd, idyllicParams);
+                rd = rgb[0];
+                gd = rgb[1];
+                bd = rgb[2];
 
                 int rr = clampToByte(rd);
                 int gg = clampToByte(gd);
@@ -526,5 +823,88 @@ public class TextureCorrectionManager {
 
     private double clamp(double value, double min, double max) {
         return Math.max(min, Math.min(max, value));
+    }
+
+    private double estimateCorrectionNeed(
+            double meanLum,
+            double stddevLum,
+            double meanSat,
+            double p05,
+            double p50,
+            double p95
+    ) {
+        double need = 0.0;
+
+        /*
+         * Imagen oscura.
+         */
+        if (meanLum < 0.26) {
+            need += 0.35;
+        } else if (meanLum < 0.32) {
+            need += 0.20;
+        }
+
+        /*
+         * Imagen demasiado clara / altas luces fuertes.
+         */
+        if (meanLum > 0.50) {
+            need += 0.25;
+        } else if (p95 > 0.88) {
+            need += 0.20;
+        }
+
+        /*
+         * Medios tonos demasiado bajos.
+         */
+        if (p50 < 0.22) {
+            need += 0.25;
+        } else if (p50 < 0.28) {
+            need += 0.12;
+        }
+
+        /*
+         * Neblina: sombras levantadas + poca saturación.
+         */
+        if (p05 > 0.06 && meanSat < 0.30) {
+            need += 0.35;
+        } else if (p05 > 0.04 && meanSat < 0.25) {
+            need += 0.20;
+        }
+
+        /*
+         * Imagen plana.
+         */
+        if (stddevLum < 0.14) {
+            need += 0.25;
+        } else if (stddevLum < 0.18) {
+            need += 0.12;
+        }
+
+        /*
+         * Imagen desaturada.
+         */
+        if (meanSat < 0.18) {
+            need += 0.20;
+        } else if (meanSat < 0.24) {
+            need += 0.10;
+        }
+
+        return clamp(need, 0.0, 1.0);
+    }
+
+    private void blendParamsToNeutral(TextureCorrectionParameters params, double strength) {
+        strength = clamp(strength, 0.0, 1.0);
+
+        params.gamma = lerp(1.0, params.gamma, strength);
+        params.exposure = lerp(1.0, params.exposure, strength);
+        params.contrast = lerp(1.0, params.contrast, strength);
+        params.saturation = lerp(1.0, params.saturation, strength);
+        params.blackPoint = lerp(0.0, params.blackPoint, strength);
+
+        params.whitePoint = 1.0;
+    }
+
+    private double lerp(double a, double b, double t) {
+        return a + (b - a) * t;
     }
 }
