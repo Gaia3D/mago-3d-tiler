@@ -372,6 +372,143 @@ public class TextureCorrectionManager {
         return params;
     }
 
+    public IdyllicLookParameters estimateIdyllicLookParams() {
+        IdyllicLookParameters params = new IdyllicLookParameters();
+
+        if (sampledPixels == 0) {
+            return IdyllicLookParameters.disabled();
+        }
+
+        double meanLum = getMeanLuminance();
+        double stddevLum = getStdDevLuminance();
+        double meanSat = getMeanSaturation();
+
+        double p05 = getLuminancePercentile(0.05);
+        double p50 = getLuminancePercentile(0.50);
+        double p95 = getLuminancePercentile(0.95);
+
+        params.idyllicLookEnabled = true;
+
+        /*
+         * Fuerza general del look.
+         * Más fuerte si la imagen está apagada, gris o poco saturada.
+         */
+        double strength = 0.45;
+
+        if (meanSat < 0.22) {
+            strength += 0.20;
+        } else if (meanSat < 0.32) {
+            strength += 0.12;
+        }
+
+        if (stddevLum < 0.16) {
+            strength += 0.15;
+        } else if (stddevLum < 0.22) {
+            strength += 0.08;
+        }
+
+        if (p05 > 0.05 && meanSat < 0.32) {
+            strength += 0.12; // velo gris / neblina
+        }
+
+        if (p95 > 0.82) {
+            strength -= 0.10; // cuidado con escenas ya claras
+        }
+
+        params.idyllicStrength = clamp(strength, 0.35, 0.82);
+
+        /*
+         * Calidez.
+         * Si ya hay amarillo o escena clara, mantener muy bajo.
+         */
+        params.warmBoost = 0.002;
+
+        /*
+         * Saturación.
+         * Más saturación si la textura original está apagada.
+         */
+        if (meanSat < 0.18) {
+            params.saturationBoost = 0.150;
+        } else if (meanSat < 0.28) {
+            params.saturationBoost = 0.125;
+        } else if (meanSat < 0.38) {
+            params.saturationBoost = 0.095;
+        } else {
+            params.saturationBoost = 0.060;
+        }
+
+        /*
+         * Contraste estético.
+         * Si la imagen está plana, subir más.
+         */
+        if (stddevLum < 0.15) {
+            params.contrastBoost = 0.120;
+        } else if (stddevLum < 0.22) {
+            params.contrastBoost = 0.090;
+        } else {
+            params.contrastBoost = 0.055;
+        }
+
+        /*
+         * Dehaze.
+         * Más fuerte si las sombras están levantadas.
+         */
+        if (p05 > 0.08 && meanSat < 0.32) {
+            params.dehazeBoost = 0.055;
+        } else if (p05 > 0.05 && meanSat < 0.30) {
+            params.dehazeBoost = 0.040;
+        } else {
+            params.dehazeBoost = 0.025;
+        }
+
+        /*
+         * Luz en medios tonos.
+         */
+        if (p50 < 0.22) {
+            params.midtoneLift = 0.085;
+        } else if (p50 < 0.36) {
+            params.midtoneLift = 0.070;
+        } else {
+            params.midtoneLift = 0.045;
+        }
+
+        /*
+         * Proteger blancos.
+         */
+        if (p95 > 0.82) {
+            params.highlightSoftness = 0.055;
+        } else {
+            params.highlightSoftness = 0.040;
+        }
+
+        /*
+         * Vegetación.
+         * Como ahora te gusta el look verde, lo dejamos vivo pero no radioactivo.
+         */
+        params.greenBoost = 0.105;
+        params.greenLift = 0.28;
+
+        /*
+         * Cielo / azules.
+         */
+        if (meanSat < 0.25) {
+            params.skyBlueBoost = 0.055;
+        } else {
+            params.skyBlueBoost = 0.040;
+        }
+
+        /*
+         * Sombras suaves.
+         */
+        if (p05 < 0.025) {
+            params.shadowSoftness = 0.055;
+        } else {
+            params.shadowSoftness = 0.040;
+        }
+
+        return params;
+    }
+
     private double smoothstep(double edge0, double edge1, double x) {
         double t = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
         return t * t * (3.0 - 2.0 * t);
@@ -394,13 +531,12 @@ public class TextureCorrectionManager {
 
         double s = clamp(params.idyllicStrength, 0.0, 1.0);
 
-        double lum = calculateLuminance(r, g, b);
-
         /*
          * 1. Dehaze estético suave.
-         * Empuja negros/grises hacia algo más limpio.
+         * Limpia el velo gris.
          */
         double dehaze = params.dehazeBoost * s;
+
         if (dehaze > 0.0) {
             r = applyLevels(r, dehaze, 1.0);
             g = applyLevels(g, dehaze, 1.0);
@@ -409,10 +545,14 @@ public class TextureCorrectionManager {
 
         /*
          * 2. Midtone lift.
-         * Hace la imagen más luminosa en medios tonos sin quemar tanto highlights.
+         * Levanta medios tonos sin quemar demasiado highlights.
          */
-        lum = calculateLuminance(r, g, b);
-        double midFactor = smoothstep(0.15, 0.55, lum) * (1.0 - smoothstep(0.65, 0.95, lum));
+        double lum = calculateLuminance(r, g, b);
+
+        double midFactor =
+                smoothstep(0.15, 0.55, lum) *
+                        (1.0 - smoothstep(0.65, 0.95, lum));
+
         double lift = params.midtoneLift * s * midFactor;
 
         r += (1.0 - r) * lift;
@@ -421,18 +561,20 @@ public class TextureCorrectionManager {
 
         /*
          * 3. Calidez global.
+         * En clean/vivid/idyllic fresco conviene que warmBoost sea bajo.
          */
         double warm = params.warmBoost * s;
 
         r *= 1.0 + warm;
         g *= 1.0 + warm * 0.15;
-        b *= 1.0 - warm * 0.20;
+        b *= 1.0 - warm * 0.30;
 
         /*
          * 4. Highlight softness.
-         * Si las zonas claras están demasiado duras, las suaviza un poco.
+         * Suaviza blancos y zonas muy claras.
          */
         lum = calculateLuminance(r, g, b);
+
         double hi = smoothstep(0.65, 0.95, lum);
         double soft = params.highlightSoftness * s * hi;
 
@@ -442,9 +584,10 @@ public class TextureCorrectionManager {
 
         /*
          * 5. Shadow softness.
-         * Hace sombras algo más amables.
+         * Hace sombras más amables, menos duras.
          */
         lum = calculateLuminance(r, g, b);
+
         double shadow = 1.0 - smoothstep(0.12, 0.42, lum);
         double shadowLift = params.shadowSoftness * s * shadow;
 
@@ -465,6 +608,7 @@ public class TextureCorrectionManager {
          * 7. Saturación estética general.
          */
         lum = calculateLuminance(r, g, b);
+
         double saturation = 1.0 + params.saturationBoost * s;
 
         r = lum + (r - lum) * saturation;
@@ -472,8 +616,12 @@ public class TextureCorrectionManager {
         b = lum + (b - lum) * saturation;
 
         /*
-         * 8. Green boost suave.
-         * Detecta tonos donde G domina un poco.
+         * 8. Green / vegetation boost + green lift.
+         *
+         * Detector más permisivo:
+         * - no exige verde puro
+         * - acepta vegetación oscura, grisácea o marrón-verde
+         * - aplica más lift en verdes oscuros/medios
          */
         double max = Math.max(r, Math.max(g, b));
         double min = Math.min(r, Math.min(g, b));
@@ -481,43 +629,69 @@ public class TextureCorrectionManager {
 
         double lumNow = calculateLuminance(r, g, b);
 
-        /*
-         * Detectar verdes:
-         * - G domina sobre R y B
-         * - hay suficiente color
-         * - funciona mejor en medios tonos que en highlights extremos
-         */
+        // Verde fuerte: G domina claramente.
         double greenDominance = g - Math.max(r, b);
-        double greenBase = clamp(greenDominance * 4.5, 0.0, 1.0);
-        double greenColor = clamp(colorfulness * 3.2, 0.0, 1.0);
-        double greenLum = 1.0 - Math.abs(lumNow - 0.45) / 0.45;
-        greenLum = clamp(greenLum, 0.0, 1.0);
 
-        double greenFactor = greenBase * greenColor * greenLum;
+        // Verde relativo: G es comparable a R/B.
+        // Ayuda en vegetación oscura o grisácea.
+        double greenRelative =
+                (g + 0.04) - Math.max(r * 0.92, b * 0.95);
 
+        double greenBaseA = clamp(greenDominance * 5.0, 0.0, 1.0);
+        double greenBaseB = clamp(greenRelative * 4.0, 0.0, 1.0);
+
+        double greenBase = Math.max(greenBaseA, greenBaseB);
+
+        // No exigir demasiado color, porque la vegetación con neblina puede ser gris.
+        double greenColor = clamp(colorfulness * 4.0 + 0.15, 0.0, 1.0);
+
+        // Favorece verdes oscuros y medios, no highlights extremos.
+        double darkGreenFactor = 1.0 - smoothstep(0.42, 0.78, lumNow);
+        double midGreenFactor = smoothstep(0.08, 0.35, lumNow);
+
+        double greenLumFactor = clamp(
+                0.35 + darkGreenFactor * 0.45 + midGreenFactor * 0.35,
+                0.0,
+                1.0
+        );
+
+        double greenFactor = greenBase * greenColor * greenLumFactor;
+
+        /*
+         * Más verde.
+         */
         double greenBoost = params.greenBoost * s * greenFactor;
 
-        /*
-         * Más verde, un poco más de luminosidad y menos gris.
-         */
         g *= 1.0 + greenBoost;
-        r *= 1.0 - greenBoost * 0.10;
-        b *= 1.0 - greenBoost * 0.06;
+        r *= 1.0 - greenBoost * 0.08;
+        b *= 1.0 - greenBoost * 0.05;
 
         /*
-         * Levantar un poco la vegetación para que parezca más frondosa.
+         * Más luminosidad en vegetación.
+         * En vez de empujar hacia blanco puro, empuja hacia un verde más claro.
          */
-        double foliageLift = greenBoost * 0.18;
-        r += (1.0 - r) * foliageLift * 0.20;
-        g += (1.0 - g) * foliageLift;
-        b += (1.0 - b) * foliageLift * 0.12;
+        double greenLift = params.greenLift * s * greenFactor;
+
+        double targetGreenR = 0.32;
+        double targetGreenG = 0.62;
+        double targetGreenB = 0.26;
+
+        r += (targetGreenR - r) * greenLift * 0.35;
+        g += (targetGreenG - g) * greenLift;
+        b += (targetGreenB - b) * greenLift * 0.30;
 
         /*
          * 9. Blue/cyan boost suave.
-         * Para tejados/cielos/tonos fríos, sin exagerar.
          */
+        max = Math.max(r, Math.max(g, b));
+        min = Math.min(r, Math.min(g, b));
+        colorfulness = max - min;
+
         double blueDominance = b - r;
-        double blueFactor = clamp(blueDominance * 3.0, 0.0, 1.0) * clamp(colorfulness * 2.5, 0.0, 1.0);
+
+        double blueFactor =
+                clamp(blueDominance * 3.0, 0.0, 1.0) *
+                        clamp(colorfulness * 2.5, 0.0, 1.0);
 
         double blueBoost = params.skyBlueBoost * s * blueFactor;
 
@@ -560,8 +734,14 @@ public class TextureCorrectionManager {
                 hasAlpha ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB
         );
 
+        boolean useIdyllicLook =
+                idyllicParams != null &&
+                        idyllicParams.idyllicLookEnabled &&
+                        idyllicParams.idyllicStrength > 0.0;
+
         boolean useSunnyLook =
-                sunnyParams.sunnyLookEnabled &&
+                !useIdyllicLook &&
+                        sunnyParams.sunnyLookEnabled &&
                         sunnyParams.sunnyStrength > 0.0;
 
         double sunnyStrength = useSunnyLook
@@ -719,10 +899,12 @@ public class TextureCorrectionManager {
                     bd = lumSunny + (bd - lumSunny) * sunnySaturation;
                 }
 
-                double[] rgb = applyIdyllicLook(rd, gd, bd, idyllicParams);
-                rd = rgb[0];
-                gd = rgb[1];
-                bd = rgb[2];
+                if (idyllicParams != null && idyllicParams.idyllicLookEnabled) {
+                    double[] idyllicRgb = applyIdyllicLook(rd, gd, bd, idyllicParams);
+                    rd = idyllicRgb[0];
+                    gd = idyllicRgb[1];
+                    bd = idyllicRgb[2];
+                }
 
                 int rr = clampToByte(rd);
                 int gg = clampToByte(gd);
