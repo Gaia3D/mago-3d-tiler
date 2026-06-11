@@ -274,17 +274,11 @@ public class GlobalOptions {
                 } catch (IOException e) {
                     throw new IllegalStateException("Failed to extract EGM96 geoid model from classpath", e);
                 }
-                /*try {
-                    File egm96File = new File(classLoader.getResource("./geoid/egm96_15.tif").getFile());
-                    instance.setGeoidPath(egm96File.getAbsolutePath());
-                } catch (NullPointerException e) {
-                    log.error("[ERROR] EGM96 geoid model file not found in classpath resources.");
-                    throw new IllegalArgumentException("EGM96 geoid model file not found in classpath resources.");
-                }*/
+                OptionsCorrector.checkExistInputPath(new File(instance.getGeoidPath()));
             } else {
                 instance.setGeoidPath(geoidPath);
+                OptionsCorrector.checkExistInputPath(new File(instance.getGeoidPath()));
             }
-            OptionsCorrector.checkExistInputPath(new File(instance.getGeoidPath()));
         } else {
             instance.setGeoidPath(null);
         }
