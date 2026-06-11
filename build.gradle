@@ -97,13 +97,6 @@ project(':mago-tiler-extension') {
     }
 }
 
-// Extension module build configuration
-project(':mago-tiler-non-extension') {
-    dependencies {
-        implementation project(':mago-common')
-    }
-}
-
 tasks.register('release') {
     dependsOn(':mago-tiler:test')
     dependsOn(':mago-tiler:javadoc')
