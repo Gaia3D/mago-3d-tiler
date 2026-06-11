@@ -80,6 +80,7 @@ public class ImprovedBillboardCloudCreator extends AbstractBillboardCloudCreator
                 log.info("  Merge billboard planes to reduce draw calls");
                 BillboardPlanePostMerger merger = new BillboardPlanePostMerger(options.getMergeConfig());
                 List<BillboardPlane> mergedPlanes = merger.merge(billboardPlanes);
+                mergedPlanes = enforcePlaneBudget(mergedPlanes);
                 log.info("  Reduced to {} merged billboard planes after post-merging", mergedPlanes.size());
 
                 log.info("  Building billboard primitives for merged planes");
@@ -88,24 +89,81 @@ public class ImprovedBillboardCloudCreator extends AbstractBillboardCloudCreator
                 log.info("  Built {} new billboard primitives for node: {}", newPrimitives.size(), node.getName());
                 //billboardMesh.getPrimitives().addAll(newPrimitives);
 
-                for (GaiaPrimitive newPrimitive : newPrimitives) {
-                    GaiaNode billboardNode = new GaiaNode();
-                    billboardNode.setName(node.getName() + "_billboard" + primitiveIndex++);
-                    rootNode.getChildren().add(billboardNode);
+                GaiaNode billboardNode = new GaiaNode();
+                billboardNode.setName(node.getName() + "_billboard" + primitiveIndex++);
+                rootNode.getChildren().add(billboardNode);
 
-                    GaiaMesh billboardMesh = new GaiaMesh();
-                    billboardNode.getMeshes().add(billboardMesh);
-                    billboardMesh.getPrimitives().add(newPrimitive);
-                }
+                GaiaMesh billboardMesh = new GaiaMesh();
+                billboardNode.getMeshes().add(billboardMesh);
+                billboardMesh.getPrimitives().addAll(newPrimitives);
             }
         }
 
         if (!resultScene.getMaterials().isEmpty()) {
             atlasTextures(resultScene);
-            mergePrimitives(resultScene);
+            batchPrimitives(resultScene);
         }
 
         return resultScene;
+    }
+
+    private List<BillboardPlane> enforcePlaneBudget(List<BillboardPlane> planes) {
+        int targetCount = options.getMaxBillboardPlaneCount();
+        if (targetCount <= 0 || planes.size() <= targetCount) {
+            return planes;
+        }
+
+        int maxPasses = Math.max(0, options.getPlaneBudgetMergePasses());
+        List<BillboardPlane> current = planes;
+        for (int pass = 1; pass <= maxPasses && current.size() > targetCount; pass++) {
+            MergeConfig relaxedConfig = createBudgetMergeConfig(options.getMergeConfig(), pass, maxPasses);
+            List<BillboardPlane> merged = new BillboardPlanePostMerger(relaxedConfig).merge(current);
+
+            log.info("  Plane budget merge pass {}/{}: {} -> {} planes (target={})",
+                    pass, maxPasses, current.size(), merged.size(), targetCount);
+
+            if (merged.size() < current.size()) {
+                current = merged;
+            }
+        }
+
+        if (current.size() > targetCount) {
+            log.warn("  Plane budget target was not reached. current={}, target={}", current.size(), targetCount);
+        }
+        return current;
+    }
+
+    private MergeConfig createBudgetMergeConfig(MergeConfig base, int pass, int maxPasses) {
+        MergeConfig config = base.copy();
+        double t = maxPasses <= 0 ? 1.0 : (double) pass / (double) maxPasses;
+
+        config.minNormalDot = lerp(base.minNormalDot, Math.cos(Math.toRadians(70.0)), t);
+        config.maxPlaneDistance = base.maxPlaneDistance * lerp(1.0, 4.0, t);
+        config.maxThickness = base.maxThickness * lerp(1.0, 6.0, t);
+        config.maxCenterDistance = base.maxCenterDistance * lerp(1.0, 5.0, t);
+        config.maxRectGap = base.maxRectGap * lerp(1.0, 6.0, t);
+        config.minEfficiency = Math.max(0.01, base.minEfficiency * lerp(1.0, 0.15, t));
+        config.gridCellSize = Math.max(config.maxCenterDistance, base.gridCellSize);
+        config.prepare();
+        return config;
+    }
+
+    private double lerp(double a, double b, double t) {
+        return a + (b - a) * Math.max(0.0, Math.min(1.0, t));
+    }
+
+    private void batchPrimitives(GaiaScene resultScene) {
+        int primitiveCount = extractor.extractAllPrimitives(resultScene).size();
+        if (primitiveCount <= 1) {
+            return;
+        }
+
+        log.info("Batching {} billboard primitives into a single mesh", primitiveCount);
+        resultScene.joinAllSurfaces();
+        for (GaiaPrimitive primitive : extractor.extractAllPrimitives(resultScene)) {
+            primitive.setMaterialIndex(0);
+        }
+        resultScene.updateBoundingBox();
     }
 
     private List<GaiaPrimitive> buildBillboardPrimitives(GaiaScene scene, List<BillboardPlane> billboardPlanes, List<GaiaVertex> sourceVertices, GaiaMaterial originalMaterial) {
@@ -566,6 +624,13 @@ public class ImprovedBillboardCloudCreator extends AbstractBillboardCloudCreator
             return Collections.singletonList(plane);
         }
 
+        double leftArea = calculateFaceAreaSum(leftOrBottom, vertices);
+        double rightArea = calculateFaceAreaSum(rightOrTop, vertices);
+        double totalArea = leftArea + rightArea;
+        if (totalArea < EPSILON || Math.min(leftArea, rightArea) / totalArea < options.getSplitBalanceEpsilon()) {
+            return Collections.singletonList(plane);
+        }
+
         BillboardPlane planeA = rebuildPlaneFromFaces(leftOrBottom, vertices);
         BillboardPlane planeB = rebuildPlaneFromFaces(rightOrTop, vertices);
 
@@ -579,6 +644,20 @@ public class ImprovedBillboardCloudCreator extends AbstractBillboardCloudCreator
             result.addAll(splitPlaneIfNeeded(planeB, vertices, depth + 1));
         }
         return result;
+    }
+
+    private double calculateFaceAreaSum(List<GaiaFace> faces, List<GaiaVertex> vertices) {
+        double areaSum = 0.0;
+        for (GaiaFace face : faces) {
+            List<GaiaVertex> faceVertices = getVerticesFromFace(face, vertices);
+            if (faceVertices.size() < 3) {
+                continue;
+            }
+
+            GaiaTriangle triangle = new GaiaTriangle(faceVertices.get(0).getPosition(), faceVertices.get(1).getPosition(), faceVertices.get(2).getPosition());
+            areaSum += triangle.area();
+        }
+        return areaSum;
     }
 
     private BillboardPlane rebuildPlaneFromFaces(List<GaiaFace> faces, List<GaiaVertex> vertices) {
@@ -654,6 +733,18 @@ public class ImprovedBillboardCloudCreator extends AbstractBillboardCloudCreator
 
         if (width <= EPSILON || height <= EPSILON) {
             return null;
+        }
+
+        double overlapRatio = Math.max(0.0, options.getQuadOverlapRatio());
+        if (overlapRatio > 0.0) {
+            double expandU = width * overlapRatio;
+            double expandV = height * overlapRatio;
+            minU -= expandU;
+            maxU += expandU;
+            minV -= expandV;
+            maxV += expandV;
+            width = maxU - minU;
+            height = maxV - minV;
         }
 
         Vector3d p0 = new Vector3d(origin).add(new Vector3d(tangent).mul(minU)).add(new Vector3d(bitangent).mul(minV));

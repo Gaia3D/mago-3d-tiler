@@ -20,6 +20,19 @@ public class MergeConfig {
      */
     public double gridCellSize = maxCenterDistance;
 
+    public MergeConfig copy() {
+        MergeConfig copy = new MergeConfig();
+        copy.minNormalDot = minNormalDot;
+        copy.maxPlaneDistance = maxPlaneDistance;
+        copy.minEfficiency = minEfficiency;
+        copy.maxThickness = maxThickness;
+        copy.maxCenterDistance = maxCenterDistance;
+        copy.maxCenterDistanceSquared = maxCenterDistanceSquared;
+        copy.maxRectGap = maxRectGap;
+        copy.gridCellSize = gridCellSize;
+        return copy;
+    }
+
     public void prepare() {
         maxCenterDistanceSquared = maxCenterDistance * maxCenterDistance;
         if (gridCellSize <= 1e-12) {

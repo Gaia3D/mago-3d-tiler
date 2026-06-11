@@ -44,27 +44,29 @@ class BillboardCloudCreatorTest {
     @Test
     void createBillboardCloudSingle() {
         //String inputPath = "D:\\data\\mago-3d-tiler\\build-sample\\sample-tree\\original.glb";
-        String inputPath = "D:\\data\\mago-3d-tiler\\build-sample\\sample-tree\\dt-model.glb";
+        String inputPath = "D:\\data\\mago-3d-tiler\\build-sample\\sample-tree\\sample.glb";
         String outputPath = "H:\\workspace\\billboardclouds-output";
         List<BillboardCloudOptions> lods =  new ArrayList<>();
 
         MergeConfig mergeConfigA = new MergeConfig();
-        mergeConfigA.setMinNormalDot(Math.cos(Math.toRadians(45)));
+        mergeConfigA.setMinNormalDot(Math.cos(Math.toRadians(50)));
         mergeConfigA.setMaxCenterDistance(0.5);
-        mergeConfigA.setMinEfficiency(0.1);
+        mergeConfigA.setMinEfficiency(0.2);
         mergeConfigA.setMaxThickness(0.05);
         mergeConfigA.setMaxRectGap(0.05);
         mergeConfigA.prepare();
 
         BillboardCloudOptions billboardCloudOptions0 = BillboardCloudOptions.builder()
-                .normalDotThreshold(Math.cos(Math.toRadians(35)))
+                .normalDotThreshold(Math.cos(Math.toRadians(50)))
                 .planeDistanceEpsilon(0.5)
                 .maxPlaneExtent(0.5)
                 .setRadius(0.5)
                 .maxSplitDepth(1)
                 .minClusterFaceCount(1)
                 .minTriangleArea(1e-6)
-                .maximumTextureSize(32)
+                .maxBillboardPlaneCount(64)
+                .quadOverlapRatio(0.03)
+                .maximumTextureSize(128)
                 .blendTexture(true)
                 .mergeConfig(mergeConfigA)
                 .build();
@@ -78,7 +80,7 @@ class BillboardCloudCreatorTest {
         //String inputPath = "D:\\data\\mago-3d-tiler\\build-sample\\sample-tree\\original.glb";
         //String inputPath = "D:\\data\\mago-3d-tiler\\build-sample\\sample-tree\\hwal-sample.glb";
         //String inputPath = "D:\\data\\mago-3d-tiler\\build-sample\\sample-tree\\coconut_palm.glb";
-        String inputPath = "D:\\data\\mago-3d-tiler\\build-sample\\sample-tree\\dt-model.glb";
+        String inputPath = "D:\\data\\mago-3d-tiler\\build-sample\\sample-tree\\coconut_palm-cloud-lod0-original.glb";
         String outputPath = "H:\\workspace\\billboardclouds-output";
         List<BillboardCloudOptions> lods =  new ArrayList<>();
 
@@ -93,7 +95,7 @@ class BillboardCloudCreatorTest {
         MergeConfig mergeConfigB = new MergeConfig();
         mergeConfigB.setMinNormalDot(Math.cos(Math.toRadians(50)));
         mergeConfigB.setMaxCenterDistance(0.5);
-        mergeConfigB.setMinEfficiency(0.1);
+        mergeConfigB.setMinEfficiency(0.2);
         mergeConfigB.setMaxThickness(0.05);
         mergeConfigB.setMaxRectGap(0.05);
         mergeConfigB.prepare();
@@ -101,7 +103,7 @@ class BillboardCloudCreatorTest {
         MergeConfig mergeConfigC = new MergeConfig();
         mergeConfigC.setMinNormalDot(Math.cos(Math.toRadians(50)));
         mergeConfigC.setMaxCenterDistance(0.5);
-        mergeConfigC.setMinEfficiency(0.05);
+        mergeConfigC.setMinEfficiency(0.2);
         mergeConfigC.setMaxThickness(0.05);
         mergeConfigC.setMaxRectGap(0.05);
         mergeConfigC.prepare();
@@ -109,7 +111,7 @@ class BillboardCloudCreatorTest {
         MergeConfig mergeConfigD = new MergeConfig();
         mergeConfigD.setMinNormalDot(Math.cos(Math.toRadians(50)));
         mergeConfigD.setMaxCenterDistance(0.5);
-        mergeConfigD.setMinEfficiency(0.025);
+        mergeConfigD.setMinEfficiency(0.2);
         mergeConfigD.setMaxThickness(0.05);
         mergeConfigD.setMaxRectGap(0.05);
         mergeConfigD.prepare();
@@ -122,7 +124,9 @@ class BillboardCloudCreatorTest {
                 .maxSplitDepth(1)
                 .minClusterFaceCount(1)
                 .minTriangleArea(1e-6)
-                .maximumTextureSize(32)
+                .maxBillboardPlaneCount(256)
+                .quadOverlapRatio(0.03)
+                .maximumTextureSize(64)
                 .blendTexture(true)
                 .mergeConfig(mergeConfigA)
                 .build();
@@ -136,7 +140,9 @@ class BillboardCloudCreatorTest {
                 .maxSplitDepth(1)
                 .minClusterFaceCount(1)
                 .minTriangleArea(1e-6)
-                .maximumTextureSize(32)
+                .maxBillboardPlaneCount(128)
+                .quadOverlapRatio(0.03)
+                .maximumTextureSize(64)
                 .blendTexture(true)
                 .mergeConfig(mergeConfigA)
                 .build();
@@ -150,7 +156,9 @@ class BillboardCloudCreatorTest {
                 .maxSplitDepth(1)
                 .minClusterFaceCount(1)
                 .minTriangleArea(1e-6)
-                .maximumTextureSize(32)
+                .maxBillboardPlaneCount(96)
+                .quadOverlapRatio(0.04)
+                .maximumTextureSize(64)
                 .blendTexture(true)
                 .mergeConfig(mergeConfigC)
                 .build();
@@ -164,7 +172,9 @@ class BillboardCloudCreatorTest {
                 .maxSplitDepth(1)
                 .minClusterFaceCount(1)
                 .minTriangleArea(1e-6)
-                .maximumTextureSize(32)
+                .maxBillboardPlaneCount(64)
+                .quadOverlapRatio(0.05)
+                .maximumTextureSize(64)
                 .blendTexture(true)
                 .mergeConfig(mergeConfigD)
                 .build();

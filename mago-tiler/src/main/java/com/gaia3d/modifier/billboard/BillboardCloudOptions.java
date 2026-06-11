@@ -26,6 +26,12 @@ public class BillboardCloudOptions {
     @Builder.Default
     private final double splitBalanceEpsilon = 0.05; // 분할 균형 허용 오차 (0.05면 5% 이상 불균형한 경우 분할)
     @Builder.Default
+    private final int maxBillboardPlaneCount = 0;
+    @Builder.Default
+    private final int planeBudgetMergePasses = 6;
+    @Builder.Default
+    private final double quadOverlapRatio = 0.0;
+    @Builder.Default
     private final MergeConfig mergeConfig = new MergeConfig();
 
     @Builder.Default

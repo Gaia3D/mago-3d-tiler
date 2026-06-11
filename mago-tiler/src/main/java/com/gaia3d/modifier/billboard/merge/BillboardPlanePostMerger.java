@@ -201,12 +201,6 @@ public class BillboardPlanePostMerger {
         return value < i ? i - 1 : i;
     }
 
-    private boolean isRectCloseEnough(MergeNode a, MergeNode b, double maxGap) {
-        double gapU = intervalGap(a.minU, a.maxU, b.minU, b.maxU);
-        double gapV = intervalGap(a.minV, a.maxV, b.minV, b.maxV);
-        return gapU <= maxGap && gapV <= maxGap;
-    }
-
     private double intervalGap(double minA, double maxA, double minB, double maxB) {
         if (maxA < minB) {return minB - maxA;}
         if (maxB < minA) {return minA - maxB;}
@@ -214,10 +208,6 @@ public class BillboardPlanePostMerger {
     }
 
     private MergeEvaluation evaluateMerge(MergeNode a, MergeNode b, MergeConfig config) {
-        if (!isRectCloseEnough(a, b, config.maxRectGap)) {
-            return MergeEvaluation.fail();
-        }
-
         double centerDistanceSquared = a.center.distanceSquared(b.center);
         if (centerDistanceSquared > config.maxCenterDistanceSquared) {
             return MergeEvaluation.fail();
@@ -237,6 +227,10 @@ public class BillboardPlanePostMerger {
         }
 
         MergeProjection projection = computeMergedProjection(a, b);
+
+        if (!isRectCloseEnough(projection, a, b, config.maxRectGap)) {
+            return MergeEvaluation.fail();
+        }
 
         double mergedRectArea = projection.getRectArea();
         if (mergedRectArea <= 1e-12) {
@@ -305,6 +299,30 @@ public class BillboardPlanePostMerger {
         updateProjectionBounds(projection, b);
 
         return projection;
+    }
+
+    private boolean isRectCloseEnough(MergeProjection projection, MergeNode a, MergeNode b, double maxGap) {
+        ProjectionBounds boundsA = projectBounds(projection, a);
+        ProjectionBounds boundsB = projectBounds(projection, b);
+
+        double gapU = intervalGap(boundsA.minU, boundsA.maxU, boundsB.minU, boundsB.maxU);
+        double gapV = intervalGap(boundsA.minV, boundsA.maxV, boundsB.minV, boundsB.maxV);
+        return gapU <= maxGap && gapV <= maxGap;
+    }
+
+    private ProjectionBounds projectBounds(MergeProjection projection, MergeNode node) {
+        ProjectionBounds bounds = new ProjectionBounds();
+        for (Vector3d point : node.getSamplePoints()) {
+            Vector3d diff = new Vector3d(point).sub(projection.center);
+            double u = diff.dot(projection.tangent);
+            double v = diff.dot(projection.bitangent);
+
+            if (u < bounds.minU) {bounds.minU = u;}
+            if (u > bounds.maxU) {bounds.maxU = u;}
+            if (v < bounds.minV) {bounds.minV = v;}
+            if (v > bounds.maxV) {bounds.maxV = v;}
+        }
+        return bounds;
     }
 
     private void updateProjectionBounds(MergeProjection projection, MergeNode node) {
@@ -385,4 +403,10 @@ public class BillboardPlanePostMerger {
         return Math.max(0.0, Math.min(1.0, value));
     }
 
+    private static class ProjectionBounds {
+        double minU = Double.POSITIVE_INFINITY;
+        double minV = Double.POSITIVE_INFINITY;
+        double maxU = Double.NEGATIVE_INFINITY;
+        double maxV = Double.NEGATIVE_INFINITY;
+    }
 }
