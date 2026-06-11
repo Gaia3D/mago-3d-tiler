@@ -15,18 +15,18 @@ import org.joml.Vector4d;
 @Slf4j
 @Getter
 @Setter
-@Deprecated
-public class GaiaFaceData {
+public class GaiaFaceContent implements GeometryContent {
     // This class is used by GaiaOctree to store the face data.
     private GaiaFace face = null; // main data
     private GaiaScene sceneParent = null;
     private GaiaPrimitive primitiveParent = null;
     private GaiaBoundingBox boundingBox = null;
     private Vector3d centerPoint = null;
-    //private Vector4d primaryColor = null;
+    private Vector4d primaryColor = null;
     private GaiaPlane plane = null;
     private GaiaTriangle triangle = null;
 
+    @Override
     public GaiaBoundingBox getBoundingBox() {
         if (boundingBox == null) {
             if (primitiveParent != null) {
@@ -38,6 +38,7 @@ public class GaiaFaceData {
         return boundingBox;
     }
 
+    @Override
     public Vector3d getCenterPoint() {
         if (centerPoint == null) {
             if (boundingBox == null) {
@@ -46,6 +47,18 @@ public class GaiaFaceData {
             centerPoint = boundingBox.getCenter();
         }
         return centerPoint;
+    }
+
+    //@Override
+    public GaiaTriangle getTriangle() {
+        if (triangle == null) {
+            int[] indices = face.getIndices();
+            Vector3d point1 = primitiveParent.getVertices().get(indices[0]).getPosition();
+            Vector3d point2 = primitiveParent.getVertices().get(indices[1]).getPosition();
+            Vector3d point3 = primitiveParent.getVertices().get(indices[2]).getPosition();
+            triangle = new GaiaTriangle(point1, point2, point3);
+        }
+        return triangle;
     }
 
     public GaiaPlane getPlane() {
@@ -59,16 +72,5 @@ public class GaiaFaceData {
             plane = new GaiaPlane(position, normal);
         }
         return plane;
-    }
-
-    public GaiaTriangle getTriangle() {
-        if (triangle == null) {
-            int[] indices = face.getIndices();
-            Vector3d point1 = primitiveParent.getVertices().get(indices[0]).getPosition();
-            Vector3d point2 = primitiveParent.getVertices().get(indices[1]).getPosition();
-            Vector3d point3 = primitiveParent.getVertices().get(indices[2]).getPosition();
-            triangle = new GaiaTriangle(point1, point2, point3);
-        }
-        return triangle;
     }
 }

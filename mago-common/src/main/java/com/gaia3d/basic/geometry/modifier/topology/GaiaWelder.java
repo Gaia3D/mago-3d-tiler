@@ -5,6 +5,7 @@ import com.gaia3d.basic.geometry.modifier.Modifier;
 import com.gaia3d.basic.geometry.octree.GaiaOctree;
 import com.gaia3d.basic.geometry.octree.GaiaOctreeVertices;
 import com.gaia3d.basic.halfedge.UnionFind;
+import com.gaia3d.basic.geometry.octree.GeometryContent;
 import com.gaia3d.basic.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class GaiaWelder extends Modifier {
@@ -44,17 +46,19 @@ public class GaiaWelder extends Modifier {
         GaiaBoundingBox cubeBoundingBox = boundingBox.createCubeFromMinPosition();
 
         GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null, cubeBoundingBox);
-        octreeVertices.addContents(primitive.getVertices());
+        List<GeometryContent> gaiaContents = primitive.getVertices().stream().map(v -> (GeometryContent) v).collect(Collectors.toList());
+        octreeVertices.addContents(gaiaContents);
         octreeVertices.setLimitDepth(10);
         octreeVertices.setLimitBoxSize(0.2);
         octreeVertices.makeTreeByMinVertexCount(50);
 
-        List<GaiaOctree<GaiaVertex>> octrees = octreeVertices.extractOctreesWithContents();
+        List<GaiaOctree<GeometryContent>> octrees = octreeVertices.extractOctreesWithContents();
+
         if(octrees == null || octrees.isEmpty()) {
             log.debug("Welding : no octree cells with vertices. skipping welding.");
             return;
         }
-        GaiaOctree<GaiaVertex> octreeSample = octrees.get(0);
+        GaiaOctree<GeometryContent> octreeSample = octrees.getFirst();
         log.debug("Welding : octree depth : " + octreeSample.getDepth());
 
         // 🔥 1. Union-Find
@@ -70,10 +74,12 @@ public class GaiaWelder extends Modifier {
         int octreesCount = octrees.size();
         log.debug("Welding : octrees count: " + octreesCount);
         int currOct=0;
-        for (GaiaOctree<GaiaVertex> octree : octrees) {
+        for (GaiaOctree<GeometryContent> octree : octrees) {
             currOct++;
 
-            List<GaiaVertex> vertices = octree.getContents();
+            List<GaiaVertex> vertices = octree.getContents().stream()
+                    .map(c -> (GaiaVertex) c)
+                    .toList();
             int n = vertices.size();
 
             if(currOct % 2000 == 0 || currOct == octreesCount) {

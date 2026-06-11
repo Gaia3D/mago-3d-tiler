@@ -6,6 +6,7 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.geometry.octree.GaiaOctree;
 import com.gaia3d.basic.geometry.octree.GaiaOctreeVertices;
+import com.gaia3d.basic.geometry.octree.GeometryContent;
 import com.gaia3d.basic.model.structure.PrimitiveStructure;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.GLConstants;
@@ -22,6 +23,7 @@ import org.joml.Vector3d;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * A class that represents a primitive of a Gaia object.
@@ -392,7 +394,14 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
                 for (int i = 0; i < indices.length; i++) {
                     indices[i] += verticesCount;
                 }
-                this.surfaces.get(0).getFaces().add(newFace);
+
+                if (this.getSurfaces().isEmpty()) {
+                    GaiaSurface newSurface = new GaiaSurface();
+                    newSurface.getFaces().add(newFace);
+                    this.surfaces.add(newSurface);
+                } else {
+                    this.surfaces.getFirst().getFaces().add(newFace);
+                }
             }
         }
     }
@@ -453,18 +462,23 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         if (boundingBox == null) {
             return;
         }
+
+
         GaiaBoundingBox cubeBoundingBox = boundingBox.createCubeFromMinPosition();
         GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null, cubeBoundingBox);
-        octreeVertices.addContents(this.vertices);
+        List<GeometryContent> gaiaContents = this.vertices.stream().map(v -> (GeometryContent) v).collect(Collectors.toList());
+        octreeVertices.addContents(gaiaContents);
         octreeVertices.setLimitDepth(10);
         octreeVertices.setLimitBoxSize(1.0);
         octreeVertices.makeTreeByMinVertexCount(50);
 
-        List<GaiaOctree<GaiaVertex>> octreesWithContents = octreeVertices.extractOctreesWithContents();
+        List<GaiaOctree<GeometryContent>> octreesWithContents = octreeVertices.extractOctreesWithContents();
         Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster = new HashMap<>();
 
-        for (GaiaOctree<GaiaVertex> octree : octreesWithContents) {
-            List<GaiaVertex> vertices = octree.getContents();
+        for (GaiaOctree<GeometryContent> octree : octreesWithContents) {
+            List<GaiaVertex> vertices = octree.getContents().stream()
+                    .map(c -> (GaiaVertex) c)
+                    .collect(Collectors.toList());
             getWeldableVertexMap(mapVertexToVertexMaster, vertices, error, checkTexCoord, checkNormal, checkColor, checkBatchId);
         }
 

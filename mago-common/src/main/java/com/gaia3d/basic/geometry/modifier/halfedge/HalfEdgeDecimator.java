@@ -28,8 +28,21 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
         this.decimateParameters = decimateParameters;
     }
 
-    @Override
-    protected void applySurface(Matrix4d productTransformMatrix, List<HalfEdgeVertex> vertices, HalfEdgeSurface surface) {
+    public void applyPrimitive(Matrix4d productTransformMatrix, HalfEdgePrimitive primitive) {
+        List<HalfEdgeVertex> vertices = primitive.getVertices();
+        for (HalfEdgeVertex vertex : vertices) {
+            applyVertex(productTransformMatrix, vertex);
+        }
+
+        List<HalfEdgeSurface> surfaces = primitive.getSurfaces();
+        for (HalfEdgeSurface surface : surfaces) {
+            // Note: In HalfEdgeScene, the vertices are managed by surfaces, no by primitives
+            List<HalfEdgeVertex> surfaceVertices = surface.getVertices();
+            applySurface(productTransformMatrix, surfaceVertices, surface);
+        }
+    }
+
+    public void applySurface(Matrix4d productTransformMatrix, List<HalfEdgeVertex> vertices, HalfEdgeSurface surface) {
         int trianglesCount = surface.getTrianglesCount();
         log.debug("trianglesCount: {}", trianglesCount);
 

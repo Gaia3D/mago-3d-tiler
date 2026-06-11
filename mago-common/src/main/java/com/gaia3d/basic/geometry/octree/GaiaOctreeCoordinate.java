@@ -75,11 +75,11 @@ public class GaiaOctreeCoordinate {
     }
 
     public int getIndexAtDepth() {
-        int index = 0;
+        int index = -1;
         int maxIndex = getMaxIndexAtDepth();
         if (x < 0 || x >= maxIndex || y < 0 || y >= maxIndex || z < 0 || z >= maxIndex) {
             log.error("Invalid octree coordinate. depth: {}, x: {}, y: {}, z: {}", depth, x, y, z);
-            return -1;
+            return index;
         }
 
         int xValue = x;
@@ -87,7 +87,21 @@ public class GaiaOctreeCoordinate {
         int zValue = z * maxIndex * maxIndex;
         index = xValue + yValue + zValue;
         return index;
-        //return x + (y * (int) Math.pow(2, depth)) + (z * (int) Math.pow(2, depth) * (int) Math.pow(2, depth));
+    }
+
+    public int getIndexAtReverseDepth() {
+        int index = -1;
+        int maxIndex = getMaxIndexAtDepth();
+        if (x < 0 || x >= maxIndex || y < 0 || y >= maxIndex || z < 0 || z >= maxIndex) {
+            log.error("Invalid octree coordinate. depth: {}, x: {}, y: {}, z: {}", depth, x, y, z);
+            return index;
+        }
+
+        int xValue = z;
+        int yValue = y * maxIndex;
+        int zValue = x * maxIndex * maxIndex;
+        index = xValue + yValue + zValue;
+        return index;
     }
 
     public int getMaxIndexAtDepth() {

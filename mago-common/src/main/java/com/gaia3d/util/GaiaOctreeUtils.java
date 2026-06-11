@@ -1,6 +1,8 @@
 package com.gaia3d.util;
 
+import com.gaia3d.basic.geometry.octree.GaiaFaceContent;
 import com.gaia3d.basic.geometry.octree.GaiaFaceData;
+import com.gaia3d.basic.geometry.octree.GeometryContent;
 import com.gaia3d.basic.model.*;
 import org.joml.Vector3d;
 
@@ -8,9 +10,7 @@ import java.util.List;
 
 public class GaiaOctreeUtils {
 
-    public static void getFaceDataListOfNode(GaiaScene sceneParent,
-                                             GaiaNode node,
-                                             List<GaiaFaceData> resultFaceDataList) {
+    public static void getFaceDataListOfNode(GaiaScene sceneParent, GaiaNode node, List<GeometryContent> resultFaceDataList) {
         // 1rst, check meshes.
         if (node.getMeshes() != null) {
             for (int i = 0, length = node.getMeshes().size(); i < length; i++) {
@@ -35,7 +35,7 @@ public class GaiaOctreeUtils {
                                             int index1 = indices[n * 3 + 1];
                                             int index2 = indices[n * 3 + 2];
 
-                                            GaiaFaceData faceData = new GaiaFaceData();
+                                            GaiaFaceContent faceData = new GaiaFaceContent();
                                             GaiaFace face0 = new GaiaFace();
                                             face0.setIndices(new int[]{index0, index1, index2});
 
@@ -74,7 +74,7 @@ public class GaiaOctreeUtils {
         }
     }
 
-    public static void getFaceDataListOfScene(GaiaScene gaiaScene, List<GaiaFaceData> resultFaceDataList) {
+    public static void getFaceDataListOfScene(GaiaScene gaiaScene, List<GeometryContent> resultFaceDataList) {
         for (GaiaNode node : gaiaScene.getNodes()) {
             getFaceDataListOfNode(gaiaScene, node, resultFaceDataList);
         }

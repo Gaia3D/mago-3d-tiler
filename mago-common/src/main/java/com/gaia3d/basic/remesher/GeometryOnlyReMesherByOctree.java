@@ -4,10 +4,7 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.modifier.topology.GaiaSceneCleaner;
 import com.gaia3d.basic.geometry.modifier.topology.GaiaWeldOptions;
 import com.gaia3d.basic.geometry.modifier.topology.GaiaWelder;
-import com.gaia3d.basic.geometry.octree.GaiaFaceData;
-import com.gaia3d.basic.geometry.octree.GaiaOctree;
-import com.gaia3d.basic.geometry.octree.GaiaOctreeFaces;
-import com.gaia3d.basic.geometry.octree.OctreeBBoxInfo;
+import com.gaia3d.basic.geometry.octree.*;
 import com.gaia3d.basic.halfedge.HalfEdgeUtils;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.remesher.information.GaiaStatistics;
@@ -160,7 +157,7 @@ public class GeometryOnlyReMesherByOctree {
 
     public OctreeShapeInfo classifyOctreeShape(
             GaiaOctreeFaces octFaces,
-            List<GaiaFaceData> faceDataList,
+            List<GeometryContent> faceDataList,
             List<GaiaVertex> vertices
     ) {
         OctreeShapeInfo info = new OctreeShapeInfo();
@@ -183,8 +180,9 @@ public class GeometryOnlyReMesherByOctree {
 
         Set<Integer> usedIndices = new HashSet<>();
 
-        for (GaiaFaceData faceData : faceDataList) {
-            GaiaFace face = faceData.getFace();
+        for (GeometryContent faceData : faceDataList) {
+            GaiaFaceContent faceContent = (GaiaFaceContent) faceData;
+            GaiaFace face = faceContent.getFace();
             int[] indices = face.getIndices();
 
             if (indices == null || indices.length < 3) {
@@ -388,7 +386,7 @@ public class GeometryOnlyReMesherByOctree {
         boolean[] frontierVertices = finder.findBoundaryVertices(vertices, faces, 1e-6, weldedIndices);
 
         GaiaOctreeFaces octreeFaces = new GaiaOctreeFaces(null, cubeBoundingBox);
-        List<GaiaFaceData> faceDataList = new ArrayList<>();
+        List<GeometryContent> faceDataList = new ArrayList<>();
         GaiaOctreeUtils.getFaceDataListOfScene(parentScene, faceDataList);
         octreeFaces.addContents(faceDataList);
         octreeFaces.setLimitDepth(limitDepth);
@@ -397,22 +395,21 @@ public class GeometryOnlyReMesherByOctree {
         octreeFaces.setContentsCanBeInMultipleChildren(true);
         octreeFaces.makeTree();
 
-
-        List<GaiaOctree<GaiaFaceData>> octreesWithContent = octreeFaces.extractOctreesWithContents();
+        List<GaiaOctree<GeometryContent>> octreesWithContent = octreeFaces.extractOctreesWithContents();
 
         Set<GaiaVertex> verticesToReMesh = new HashSet<>();
 
         List<GaiaVertex> verticesToTestShape = new ArrayList<>();
         Set<Integer> shapeVertexIndices = new HashSet<>();
 
-        for (GaiaOctree<GaiaFaceData> octree : octreesWithContent) {
+        for (GaiaOctree<GeometryContent> octree : octreesWithContent) {
             GaiaOctreeFaces octFaces = (GaiaOctreeFaces) octree;
 
             verticesToReMesh.clear();
             verticesToTestShape.clear();
             shapeVertexIndices.clear();
 
-            List<GaiaFaceData> facesDates = octree.getContents();
+            List<GeometryContent> facesDates = octree.getContents();
             int facesCount = facesDates.size();
 
             if (facesCount <= 3) {
@@ -422,7 +419,7 @@ public class GeometryOnlyReMesherByOctree {
             List<GaiaFace> facesOfOctree = new ArrayList<>();
 
             for (int i = 0; i < facesCount; i++) {
-                GaiaFaceData faceData = facesDates.get(i);
+                GaiaFaceContent faceData = (GaiaFaceContent) facesDates.get(i);
                 facesOfOctree.add(faceData.getFace());
             }
 
@@ -433,7 +430,7 @@ public class GeometryOnlyReMesherByOctree {
 //            }
 
             for (int i = 0; i < facesCount; i++) {
-                GaiaFaceData faceData = facesDates.get(i);
+                GaiaFaceContent faceData = (GaiaFaceContent) facesDates.get(i);
                 int[] indices = faceData.getFace().getIndices();
 
                 for (int j = 0; j < indices.length; j++) {
@@ -579,7 +576,7 @@ public class GeometryOnlyReMesherByOctree {
         boolean[] frontierVertices = finder.findBoundaryVertices(vertices, faces, 1e-6, weldedIndices);
 
         GaiaOctreeFaces octreeFaces = new GaiaOctreeFaces(null, cubeBoundingBox);
-        List<GaiaFaceData> faceDataList = new ArrayList<>();
+        List<GeometryContent> faceDataList = new ArrayList<>();
         GaiaOctreeUtils.getFaceDataListOfScene(parentScene, faceDataList);
         octreeFaces.addContents(faceDataList);
         octreeFaces.setLimitDepth(limitDepth);
@@ -589,21 +586,21 @@ public class GeometryOnlyReMesherByOctree {
         octreeFaces.makeTree();
 
 
-        List<GaiaOctree<GaiaFaceData>> octreesWithContent = octreeFaces.extractOctreesWithContents();
+        List<GaiaOctree<GeometryContent>> octreesWithContent = octreeFaces.extractOctreesWithContents();
 
         Set<GaiaVertex> verticesToReMesh = new HashSet<>();
 
         List<GaiaVertex> verticesToTestShape = new ArrayList<>();
         Set<Integer> shapeVertexIndices = new HashSet<>();
 
-        for (GaiaOctree<GaiaFaceData> octree : octreesWithContent) {
+        for (GaiaOctree<GeometryContent> octree : octreesWithContent) {
             GaiaOctreeFaces octFaces = (GaiaOctreeFaces) octree;
 
             verticesToReMesh.clear();
             verticesToTestShape.clear();
             shapeVertexIndices.clear();
 
-            List<GaiaFaceData> facesDates = octree.getContents();
+            List<GeometryContent> facesDates = octree.getContents();
             int facesCount = facesDates.size();
 
             if (facesCount <= 7) {
@@ -613,8 +610,10 @@ public class GeometryOnlyReMesherByOctree {
             List<GaiaFace> facesOfOctree = new ArrayList<>();
 
             for (int i = 0; i < facesCount; i++) {
-                GaiaFaceData faceData = facesDates.get(i);
-                facesOfOctree.add(faceData.getFace());
+                GeometryContent faceData = facesDates.get(i);
+                GaiaFaceContent faceContent = (GaiaFaceContent) faceData;
+                GaiaFace face = faceContent.getFace();
+                facesOfOctree.add(face);
             }
 
             GaiaStatistics stats = GaiaStatistics.calculateStatistics(facesOfOctree, vertices);
@@ -624,8 +623,10 @@ public class GeometryOnlyReMesherByOctree {
 //            }
 
             for (int i = 0; i < facesCount; i++) {
-                GaiaFaceData faceData = facesDates.get(i);
-                int[] indices = faceData.getFace().getIndices();
+                GeometryContent faceData = facesDates.get(i);
+                GaiaFaceContent faceContent = (GaiaFaceContent) faceData;
+                GaiaFace face = faceContent.getFace();
+                int[] indices = face.getIndices();
 
                 for (int j = 0; j < indices.length; j++) {
                     int vertexIndex = indices[j];
@@ -681,7 +682,7 @@ public class GeometryOnlyReMesherByOctree {
     }
 
     private boolean isBuildingCornerCandidate(
-            List<GaiaFaceData> faceDataList,
+            List<GeometryContent> faceDataList,
             List<GaiaVertex> vertices
     ) {
         if (faceDataList == null || faceDataList.isEmpty() || vertices == null) {
@@ -701,12 +702,13 @@ public class GeometryOnlyReMesherByOctree {
 
         double sameNormalDot = Math.cos(Math.toRadians(15.0));
 
-        for (GaiaFaceData faceData : faceDataList) {
-            if (faceData == null || faceData.getFace() == null) {
+        for (GeometryContent faceData : faceDataList) {
+            GaiaFaceContent faceContent = (GaiaFaceContent) faceData;
+            GaiaFace face = faceContent.getFace();
+            if (faceData == null || face == null) {
                 continue;
             }
 
-            GaiaFace face = faceData.getFace();
             int[] indices = face.getIndices();
 
             if (indices == null || indices.length < 3) {

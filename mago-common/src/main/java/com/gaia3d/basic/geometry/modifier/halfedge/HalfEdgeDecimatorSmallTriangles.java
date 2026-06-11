@@ -26,7 +26,7 @@ public class HalfEdgeDecimatorSmallTriangles extends HalfEdgeModifier {
     }
 
     @Override
-    protected void applySurface(Matrix4d productTransformMatrix, List<HalfEdgeVertex> vertices, HalfEdgeSurface surface) {
+    public void applySurface(Matrix4d productTransformMatrix, List<HalfEdgeVertex> vertices, HalfEdgeSurface surface) {
         int trianglesCount = surface.getTrianglesCount();
         log.debug("trianglesCount: {}", trianglesCount);
 
