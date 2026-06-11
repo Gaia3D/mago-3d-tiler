@@ -11,6 +11,8 @@ import org.joml.Vector2d;
 import org.joml.Vector3d;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A class that represents a vertex of a Gaia object.
@@ -27,7 +29,6 @@ public class GaiaVertex extends VertexStructure implements Serializable, Geometr
     private byte[] color;
     private float batchId;
 
-    // TODO: PointCloud Required
     private short[] quantizedPosition;
     private char intensity;
     private short classification;
@@ -60,34 +61,35 @@ public class GaiaVertex extends VertexStructure implements Serializable, Geometr
         return vertex;
     }
 
-    public boolean isWeldable(GaiaVertex vertex2, double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
+    @Deprecated
+    public boolean isWeldable(GaiaVertex compare, double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
         // 1rst, check position.
-        double distance = position.distance(vertex2.position);
+        double distance = position.distance(compare.position);
         if (distance > error) {
             return false;
         }
 
         // 2nd, check texCoord.
-        if (checkTexCoord && texcoords != null && vertex2.texcoords != null) {
+        if (checkTexCoord && texcoords != null && compare.texcoords != null) {
             double texError = 1e-8;
-            double texCoordDist = texcoords.distance(vertex2.texcoords);
+            double texCoordDist = texcoords.distance(compare.texcoords);
             if (texCoordDist > texError) {
                 return false;
             }
         }
 
         // 3rd, check normal.
-        if (checkNormal && normal != null && vertex2.normal != null) {
-            double dot = normal.dot(vertex2.normal);
+        if (checkNormal && normal != null && compare.normal != null) {
+            double dot = normal.dot(compare.normal);
             if ((1.0 - dot) > error) {
                 return false;
             }
         }
 
         // 4th, check color.
-        if (checkColor && color != null && vertex2.color != null) {
+        if (checkColor && color != null && compare.color != null) {
             for (int i = 0; i < color.length; i++) {
-                if (Math.abs(color[i] - vertex2.color[i]) > error) {
+                if (Math.abs(color[i] - compare.color[i]) > error) {
                     return false;
                 }
             }
@@ -95,7 +97,7 @@ public class GaiaVertex extends VertexStructure implements Serializable, Geometr
 
         // 5th, check batchId.
         if (checkBatchId) {
-            return batchId == vertex2.batchId;
+            return batchId == compare.batchId;
         }
         return true;
     }

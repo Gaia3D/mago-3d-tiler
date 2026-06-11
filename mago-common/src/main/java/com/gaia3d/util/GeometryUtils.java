@@ -39,10 +39,6 @@ public class GeometryUtils {
         return boundingRectangle;
     }
 
-    public static double cosineBetweenUnitaryVectors(double ax, double ay, double az, double bx, double by, double bz) {
-        return ax * bx + ay * by + az * bz;
-    }
-
     public static GaiaRectangle getTexCoordsBoundingRectangleOfFaces(List<GaiaFace> faces, List<GaiaVertex> vertices, GaiaRectangle boundingRectangle) {
         if (boundingRectangle == null) {
             boundingRectangle = new GaiaRectangle();
@@ -120,6 +116,38 @@ public class GeometryUtils {
 
         GaiaVertex vertex3 = new GaiaVertex();
         vertex3.setPosition(new Vector3d(p3));
+        vertex3.setNormal(new Vector3d(normal));
+
+        primitive.getVertices().add(vertex0);
+        primitive.getVertices().add(vertex1);
+        primitive.getVertices().add(vertex2);
+        primitive.getVertices().add(vertex3);
+
+        GaiaSurface surface = new GaiaSurface();
+        // Face0 (0, 1, 2)
+        GaiaFace face0 = new GaiaFace();
+        face0.setIndices(new int[]{0, 1, 2});
+        surface.getFaces().add(face0);
+        // Face1 (0, 2, 3)
+        GaiaFace face1 = new GaiaFace();
+        face1.setIndices(new int[]{0, 2, 3});
+        surface.getFaces().add(face1);
+        primitive.getSurfaces().add(surface);
+        return primitive;
+    }
+
+    public static GaiaPrimitive getQuadPrimitiveFrom4Vertices(GaiaVertex v0, GaiaVertex v1, GaiaVertex v2, GaiaVertex v3, Vector3d normal) {
+        GaiaPrimitive primitive = new GaiaPrimitive();
+        GaiaVertex vertex0 = v0.clone();
+        vertex0.setNormal(new Vector3d(normal));
+
+        GaiaVertex vertex1 = v1.clone();
+        vertex1.setNormal(new Vector3d(normal));
+
+        GaiaVertex vertex2 = v2.clone();
+        vertex2.setNormal(new Vector3d(normal));
+
+        GaiaVertex vertex3 = v3.clone();
         vertex3.setNormal(new Vector3d(normal));
 
         primitive.getVertices().add(vertex0);

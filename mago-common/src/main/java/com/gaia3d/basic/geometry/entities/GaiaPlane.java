@@ -47,6 +47,10 @@ public class GaiaPlane {
         return a * point.x + b * point.y + c * point.z + d;
     }
 
+    public double distanceToPoint(double x, double y, double z) {
+        return a * x + b * y + c * z + d;
+    }
+
     public Vector3d getNormal() {
         return new Vector3d(a, b, c);
     }

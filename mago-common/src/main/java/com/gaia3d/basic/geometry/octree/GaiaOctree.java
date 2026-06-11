@@ -55,6 +55,19 @@ public class GaiaOctree<E> {
         this.contents.clear();
     }
 
+    public void clearTree() {
+        contents.clear();
+        if (children != null) {
+            for (GaiaOctree<E> child : children) {
+                child.clearTree();
+            }
+            children.clear();
+            children = null;
+        }
+        parent = null;
+        coordinate = null;
+    }
+
     public int getContentsLength() {
         return this.contents.size();
     }

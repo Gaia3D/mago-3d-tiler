@@ -10,5 +10,4 @@ public interface GeometryContent {
 
     Vector3d getCenterPoint();
 
-    //GaiaTriangle getTriangle();
 }

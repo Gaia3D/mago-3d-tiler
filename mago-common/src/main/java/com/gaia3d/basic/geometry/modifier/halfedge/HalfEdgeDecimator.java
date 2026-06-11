@@ -14,7 +14,6 @@ import java.util.*;
 import static java.lang.Double.isNaN;
 
 @Slf4j
-
 public class HalfEdgeDecimator extends HalfEdgeModifier {
     private final DecimateParameters decimateParameters;
 
@@ -52,7 +51,7 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
             applySurfaceDirect(productTransformMatrix, vertices, surface);
         }
     }
-
+    
     protected void applySurfaceDirect(Matrix4d productTransformMatrix, List<HalfEdgeVertex> vertices, HalfEdgeSurface surface) {
         // 1rst, find possible halfEdges to remove
         // Reasons to remove a halfEdge:
