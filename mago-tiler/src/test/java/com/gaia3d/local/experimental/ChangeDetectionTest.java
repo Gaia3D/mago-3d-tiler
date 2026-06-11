@@ -19,13 +19,47 @@ public class ChangeDetectionTest {
                 "-i", path,
                 "-o", MagoTestConfig.getOutputPath(name).getAbsolutePath() + "-pos_test",
                 //"-crs", "5186",
+                "-lon", Double.toString(127.00853617d - 0.0018446d -0.00001167d),
+                "-lat", Double.toString(36.91106941d - 0.00113682d -0.00000126d),
+                "-zOffset", "119.757",
+                "-rotateXAxis", "90",
+                "-pg",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Disabled
+    @Test
+    void convertChangeDetection251209posTest() {
+        String name = "dunpo-change-detection-251209";
+        String path = "D:\\data\\mago-3d-tiler\\temp-sample\\아산시 변화탐지\\2.둔포면(폐기물_변화탐지)\\251209\\3d_mesh";
+        String[] args = new String[]{
+                "-i", path,
+                "-o", MagoTestConfig.getOutputPath(name).getAbsolutePath() + "-pos_test",
+                //"-crs", "5186",
                 "-lon", Double.toString(127.00853617d - 0.0018446d),
                 "-lat", Double.toString(36.91106941d - 0.00113682d),
-                "-zOffset", "119.757",
-                //"-rotateXAxis", "90",
-                //"-pg",
-                "-minLod", "0",
-                "-maxLod", "0",
+                "-zOffset", Double.toString(119.757d),
+                "-rotateXAxis", "90",
+                "-pg",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Disabled
+    @Test
+    void convertChangeDetection260209posTest() {
+        String name = "dunpo-change-detection-260209";
+        String path = "D:\\data\\mago-3d-tiler\\temp-sample\\아산시 변화탐지\\2.둔포면(폐기물_변화탐지)\\260209\\3d_mesh";
+        String[] args = new String[]{
+                "-i", path,
+                "-o", MagoTestConfig.getOutputPath(name).getAbsolutePath() + "-pos_test",
+                //"-crs", "5186",
+                "-lon", Double.toString(127.00853617d - 0.0018446d),
+                "-lat", Double.toString(36.91106941d - 0.00113682d),
+                "-zOffset", Double.toString(119.757d),
+                "-rotateXAxis", "90",
+                "-pg",
         };
         MagoTestConfig.execute(args);
     }
