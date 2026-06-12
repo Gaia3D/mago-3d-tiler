@@ -36,7 +36,7 @@ class BillboardCloudCreatorTest {
         //String inputPath = "D:\\data\\mago-3d-tiler\\build-sample\\sample-tree\\broad.glb";
         //String inputPath = "D:\\data\\mago-3d-tiler\\build-sample\\sample-tree\\bamboo.glb";
         //String inputPath = "D:\\data\\mago-3d-tiler\\build-sample\\sample-tree\\needle.glb";
-        String inputPath = "D:\\data\\mago-3d-tiler\\build-sample\\sample-tree\\mixed.glb";
+        String inputPath = "D:\\data\\mago-3d-tiler\\build-sample\\sample-tree\\GB.glb";
         String outputPath = "H:\\workspace\\billboardclouds-output";
         rescaleScene(inputPath, outputPath);
     }
@@ -44,7 +44,7 @@ class BillboardCloudCreatorTest {
     @Test
     void createBillboardCloudSingle() {
         //String inputPath = "D:\\data\\mago-3d-tiler\\build-sample\\sample-tree\\original.glb";
-        String inputPath = "D:\\data\\mago-3d-tiler\\build-sample\\sample-tree\\sample.glb";
+        String inputPath = "D:\\data\\mago-3d-tiler\\build-sample\\sample-tree\\sphere.glb";
         String outputPath = "H:\\workspace\\billboardclouds-output";
         List<BillboardCloudOptions> lods =  new ArrayList<>();
 
@@ -79,39 +79,42 @@ class BillboardCloudCreatorTest {
     void createBillboardCloud() {
         //String inputPath = "D:\\data\\mago-3d-tiler\\build-sample\\sample-tree\\original.glb";
         //String inputPath = "D:\\data\\mago-3d-tiler\\build-sample\\sample-tree\\hwal-sample.glb";
-        //String inputPath = "D:\\data\\mago-3d-tiler\\build-sample\\sample-tree\\coconut_palm.glb";
-        String inputPath = "D:\\data\\mago-3d-tiler\\build-sample\\sample-tree\\coconut_palm-cloud-lod0-original.glb";
+        //String inputPath = "D:\\data\\mago-3d-tiler\\build-sample\\sam ple-tree\\coconut_palm.glb";
+        //String inputPath = "D:\\data\\mago-3d-tiler\\build-sample\\sample-tree\\coconut_palm-cloud-lod0-original.glb";
+        //String inputPath = "D:\\data\\mago-3d-tiler\\build-sample\\sample-tree\\original-broad.glb";
+        String inputPath = "D:\\data\\mago-3d-tiler\\build-sample\\sample-tree\\original-broad.glb";
+
         String outputPath = "H:\\workspace\\billboardclouds-output";
         List<BillboardCloudOptions> lods =  new ArrayList<>();
 
         MergeConfig mergeConfigA = new MergeConfig();
-        mergeConfigA.setMinNormalDot(Math.cos(Math.toRadians(50)));
+        mergeConfigA.setMinNormalDot(Math.cos(Math.toRadians(40)));
         mergeConfigA.setMaxCenterDistance(0.5);
-        mergeConfigA.setMinEfficiency(0.2);
+        mergeConfigA.setMinEfficiency(0.1);
         mergeConfigA.setMaxThickness(0.05);
         mergeConfigA.setMaxRectGap(0.05);
         mergeConfigA.prepare();
 
         MergeConfig mergeConfigB = new MergeConfig();
-        mergeConfigB.setMinNormalDot(Math.cos(Math.toRadians(50)));
+        mergeConfigB.setMinNormalDot(Math.cos(Math.toRadians(40)));
         mergeConfigB.setMaxCenterDistance(0.5);
-        mergeConfigB.setMinEfficiency(0.2);
+        mergeConfigB.setMinEfficiency(0.1);
         mergeConfigB.setMaxThickness(0.05);
         mergeConfigB.setMaxRectGap(0.05);
         mergeConfigB.prepare();
 
         MergeConfig mergeConfigC = new MergeConfig();
-        mergeConfigC.setMinNormalDot(Math.cos(Math.toRadians(50)));
+        mergeConfigC.setMinNormalDot(Math.cos(Math.toRadians(40)));
         mergeConfigC.setMaxCenterDistance(0.5);
-        mergeConfigC.setMinEfficiency(0.2);
+        mergeConfigC.setMinEfficiency(0.1);
         mergeConfigC.setMaxThickness(0.05);
         mergeConfigC.setMaxRectGap(0.05);
         mergeConfigC.prepare();
 
         MergeConfig mergeConfigD = new MergeConfig();
-        mergeConfigD.setMinNormalDot(Math.cos(Math.toRadians(50)));
+        mergeConfigD.setMinNormalDot(Math.cos(Math.toRadians(40)));
         mergeConfigD.setMaxCenterDistance(0.5);
-        mergeConfigD.setMinEfficiency(0.2);
+        mergeConfigD.setMinEfficiency(0.1);
         mergeConfigD.setMaxThickness(0.05);
         mergeConfigD.setMaxRectGap(0.05);
         mergeConfigD.prepare();
