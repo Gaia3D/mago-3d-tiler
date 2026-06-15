@@ -1,6 +1,7 @@
 package com.gaia3d.local;
 
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Tag;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,6 +9,7 @@ import java.io.InputStreamReader;
 import java.util.List;
 
 @Slf4j
+@Tag("manual")
 public class DockerRun {
     public static void run(List<String> argList) throws IOException {
         String[] args = argList.toArray(new String[0]);

@@ -3,10 +3,12 @@ package com.gaia3d.local;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.command.mago.Mago3DTilerMain;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Tag;
 
 import java.io.File;
 
 @Slf4j
+@Tag("manual")
 public class MagoTestConfig {
     public static final String OUTPUT_PATH = "H:/workspace/mago-server/output";
     public static final String SSD_INPUT_PATH = "H:/workspace/mago-3d-tiler";
