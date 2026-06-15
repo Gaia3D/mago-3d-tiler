@@ -10,6 +10,7 @@ import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.converter.kml.JacksonKmlReader;
 import com.gaia3d.converter.loader.FileLoader;
 import com.gaia3d.converter.loader.InstancedFileLoader;
+import com.gaia3d.converter.loader.InstancedTempGenerator;
 import com.gaia3d.converter.Parametric3DOptions;
 import com.gaia3d.converter.geojson.GeoJsonInstanceConverter;
 import com.gaia3d.converter.geopackage.GeoPackageInstanceConverter;
@@ -47,7 +48,8 @@ public class InstancedProcessFlow implements ProcessFlow {
         FormatType inputFormat = globalOptions.getInputFormat();
         Converter converter = getConverter(inputFormat);
         AttributeReader kmlReader = getAttributeReader(inputFormat);
-        FileLoader fileLoader = new InstancedFileLoader(converter, kmlReader);
+        InstancedTempGenerator tempGenerator = new InstancedTempGenerator(kmlReader);
+        FileLoader fileLoader = new InstancedFileLoader(converter, kmlReader, tempGenerator);
 
         List<GridCoverage2D> geoTiffs = new ArrayList<>();
         if (globalOptions.getTerrainPath() != null) {

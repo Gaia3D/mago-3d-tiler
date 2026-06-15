@@ -17,6 +17,11 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -31,6 +36,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class TilingPipeline implements Pipeline {
+    private static final DateTimeFormatter TEMP_BACKUP_FORMAT = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     private final List<PreProcess> preProcesses;
     private final TilingProcess tilingProcess;
     private final List<PostProcess> postProcesses;
@@ -180,10 +186,41 @@ public class TilingPipeline implements Pipeline {
     private void createTemp(FileLoader fileLoader) {
         /* create temp directory */
         File tempFile = new File(globalOptions.getTempPath());
+        backupExistingTempDirectory(tempFile);
         if (!tempFile.exists() && tempFile.mkdirs()) {
             log.info("[Pre] Created temp directory in {}", tempFile.getAbsolutePath());
         }
         fileList = fileLoader.loadTemp(tempFile, fileList);
+    }
+
+    private void backupExistingTempDirectory(File tempFile) {
+        if (!tempFile.exists() || !tempFile.isDirectory()) {
+            return;
+        }
+
+        File[] children = tempFile.listFiles();
+        if (children == null || children.length == 0) {
+            return;
+        }
+
+        String backupName = tempFile.getName() + "_backup_" + LocalDateTime.now().format(TEMP_BACKUP_FORMAT);
+        Path backupPath = tempFile.toPath().resolveSibling(backupName);
+        int duplicateIndex = 1;
+        while (Files.exists(backupPath)) {
+            backupPath = tempFile.toPath().resolveSibling(backupName + "_" + duplicateIndex++);
+        }
+
+        try {
+            Files.move(tempFile.toPath(), backupPath, StandardCopyOption.ATOMIC_MOVE);
+            log.warn("[Pre] Existing temp directory was moved to {}", backupPath);
+        } catch (IOException atomicMoveException) {
+            try {
+                Files.move(tempFile.toPath(), backupPath);
+                log.warn("[Pre] Existing temp directory was moved to {}", backupPath);
+            } catch (IOException moveException) {
+                throw new RuntimeException("Failed to move existing temp directory: " + tempFile.getAbsolutePath(), moveException);
+            }
+        }
     }
 
     private void deleteTemp() {
