@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Set;
 
 @Slf4j
+@Deprecated
 public class BillboardCloudCreatorVersion1 {
     // 초기 테스트용 threshold
     private static final double NORMAL_DOT_THRESHOLD = Math.cos(Math.toRadians(45)); // 법선 유사도 기준

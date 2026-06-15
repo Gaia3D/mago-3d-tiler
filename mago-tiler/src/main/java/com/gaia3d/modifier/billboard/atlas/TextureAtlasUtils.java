@@ -16,7 +16,7 @@ public final class TextureAtlasUtils {
 
     /**
      * Merge Primitives if same materials are used, to reduce draw calls. This is optional but can improve performance.
-     * @param primitives List<GaiaPrimitive>
+     * @param primitives {@code List<GaiaPrimitive>}
      */
     public static GaiaPrimitive createMergedPrimitives(List<GaiaPrimitive> primitives) {
         if (primitives.isEmpty()) {
@@ -77,7 +77,7 @@ public final class TextureAtlasUtils {
      * This is useful when you want to merge primitives that use the same material.
      * @param scene GaiaScene
      * @param material GaiaMaterial
-     * @return List<GaiaPrimitive>
+     * @return {@code List<GaiaPrimitive>}
      */
     public static List<GaiaPrimitive> findPrimitivesUsingMaterial(GaiaScene scene, GaiaMaterial material) {
         GaiaExtractor extractor = new GaiaExtractor();

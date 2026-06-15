@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.*;
 
 @Slf4j
+@Deprecated
 public class BillboardCloudCreator extends AbstractBillboardCloudCreator {
 
     public BillboardCloudCreator() {
