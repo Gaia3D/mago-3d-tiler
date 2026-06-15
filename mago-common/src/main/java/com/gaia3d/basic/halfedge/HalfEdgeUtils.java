@@ -241,9 +241,22 @@ public class HalfEdgeUtils {
         return gaiaFace;
     }
 
-    private static HalfEdgeSurface getHalfEdgeSurfaceRegularNetWithSkirt(int numCols, int numRows, float[][] depthValues,
-                                                                         GaiaBoundingBox bbox) {
+    private static HalfEdgeSurface getHalfEdgeSurfaceRegularNetWithSkirt(
+            int numCols,
+            int numRows,
+            float[][] depthValues,
+            GaiaBoundingBox bbox) {
+
+        if (numCols < 2 || numRows < 2) {
+            return null;
+        }
+
+        if (depthValues == null || bbox == null) {
+            return null;
+        }
+
         HalfEdgeSurface halfEdgeSurface = new HalfEdgeSurface();
+
         double minX = bbox.getMinX();
         double minY = bbox.getMinY();
         double maxX = bbox.getMaxX();
@@ -251,149 +264,230 @@ public class HalfEdgeUtils {
         double minZ = bbox.getMinZ();
         double maxZ = bbox.getMaxZ();
 
-        double skirtZ = minZ - 5.0;
+        /*
+         * El skirt baja esta distancia desde la altura local
+         * del vértice original.
+         *
+         * Antes todos los vértices bajaban hasta minZ - 5.0,
+         * creando paredes enormes en tiles con mucho rango vertical.
+         */
+        double skirtDepth = 5.0;
 
         double xStep = (maxX - minX) / (numCols - 1);
         double yStep = (maxY - minY) / (numRows - 1);
 
-        // calculate real columnsCount and real rowsCount when exist skirt.
+        // Una fila y una columna extra en cada lado.
         int withSkirtCols = numCols + 2;
         int withSkirtRows = numRows + 2;
 
-        // create vertices adding a skirt when needed
-        int realC;
-        int realR;
-        boolean isSkirt = false;
-        double x, y, z;
+        /*
+         * Create vertices.
+         *
+         * La corona exterior duplica las posiciones XY de los
+         * vértices del borde, pero desplazando su Z hacia abajo.
+         */
         for (int r = 0; r < withSkirtRows; r++) {
             for (int c = 0; c < withSkirtCols; c++) {
-                isSkirt = false;
 
-                // check if skirt
-                if (c == 0 || c == withSkirtCols - 1 || r == 0 || r == withSkirtRows - 1) {
-                    isSkirt = true;
-                }
+                boolean isSkirt =
+                        c == 0 ||
+                                c == withSkirtCols - 1 ||
+                                r == 0 ||
+                                r == withSkirtRows - 1;
 
-                realC = c - 1;
-                realR = r - 1;
-                if (realC < 0) realC = 0;
-                if (realR < 0) realR = 0;
+                /*
+                 * Convertimos el índice de la malla ampliada
+                 * al índice correspondiente de la malla original.
+                 */
+                int realC = c - 1;
+                int realR = r - 1;
 
-                if (c == withSkirtCols - 1) {
-                    realC = numCols - 1;
-                }
+                realC = Math.max(0, Math.min(numCols - 1, realC));
+                realR = Math.max(0, Math.min(numRows - 1, realR));
 
-                if (r == withSkirtRows - 1) {
-                    realR = numRows - 1;
-                }
+                double x = minX + realC * xStep;
+                double y = minY + realR * yStep;
 
-                x = minX + realC * xStep;
-                y = minY + realR * yStep;
-                int rInv = numRows - 1 - realR; // here uses the original row index "numRows - 1 - r" to get the depth value
+                /*
+                 * Conservamos la inversión de filas de tu implementación.
+                 */
+                int rInv = numRows - 1 - realR;
+
                 double depthValue = depthValues[realC][rInv];
-                double depthValueInv = 1.0 - depthValue;
-                z = minZ + (maxZ - minZ) * depthValueInv;
 
-                // calculate texCoords
+                boolean isNoData =
+                        !Double.isFinite(depthValue) ||
+                                depthValue >= 1.0;
+
+                /*
+                 * Evita generar posiciones NaN o fuera del bbox.
+                 * Aunque el vértice sea noData, le damos una posición válida
+                 * antes de marcarlo como eliminado.
+                 */
+                double safeDepthValue;
+
+                if (isNoData) {
+                    safeDepthValue = 1.0;
+                } else {
+                    safeDepthValue = Math.max(0.0, Math.min(1.0, depthValue));
+                }
+
+                double depthValueInv = 1.0 - safeDepthValue;
+
+                double z = minZ + (maxZ - minZ) * depthValueInv;
+
+                // Texture coordinates based on the original regular net.
                 double s = (double) realC / (double) (numCols - 1);
                 double t = (double) realR / (double) (numRows - 1);
 
                 HalfEdgeVertex halfEdgeVertex = new HalfEdgeVertex();
 
                 if (isSkirt) {
-                    halfEdgeVertex.setPosition(new Vector3d(x, y, skirtZ));
+                    /*
+                     * Corrección principal:
+                     * el skirt baja desde la altura local del borde.
+                     */
+                    halfEdgeVertex.setPosition(
+                            new Vector3d(x, y, z - skirtDepth)
+                    );
                 } else {
-                    // the real net vertex
-                    halfEdgeVertex.setPosition(new Vector3d(x, y, z));
+                    halfEdgeVertex.setPosition(
+                            new Vector3d(x, y, z)
+                    );
                 }
 
-                halfEdgeVertex.setTexcoords(new Vector2d(s, 1.0 - t));
-                if (depthValue >= 1.0) {
-                    // this is noData
+                halfEdgeVertex.setTexcoords(
+                        new Vector2d(s, 1.0 - t)
+                );
+
+                if (isNoData) {
                     halfEdgeVertex.setStatus(ObjectStatus.DELETED);
                 }
+
                 halfEdgeSurface.getVertices().add(halfEdgeVertex);
             }
         }
 
-        // check if some vertices are created
         if (halfEdgeSurface.getVertices().isEmpty()) {
             return null;
         }
 
-        // create halfEdges & halfEdgeFaces
+        /*
+         * Create faces and half-edges.
+         */
         for (int r = 0; r < withSkirtRows - 1; r++) {
             for (int c = 0; c < withSkirtCols - 1; c++) {
-                HalfEdgeFace faceA = new HalfEdgeFace();
-                HalfEdgeFace faceB = new HalfEdgeFace();
-                int cNext = c + 1;
-                int rNext = r + 1;
+
                 int index1 = r * withSkirtCols + c;
                 int index2 = r * withSkirtCols + c + 1;
                 int index3 = (r + 1) * withSkirtCols + c + 1;
                 int index4 = (r + 1) * withSkirtCols + c;
 
-                if (c == 0 || c == withSkirtCols - 1 || r == 0 || r == withSkirtRows - 1 ||
-                        cNext == withSkirtCols - 1 || rNext == withSkirtRows - 1) {
-                    // this is skirt face
-                    faceA.setFaceType(FaceType.SKIRT);
-                    faceB.setFaceType(FaceType.SKIRT);
-                } else {
-                    faceA.setFaceType(FaceType.NORMAL);
-                    faceB.setFaceType(FaceType.NORMAL);
-                }
+                /*
+                 * Una celda pertenece al skirt si está en cualquiera
+                 * de las cuatro bandas exteriores.
+                 */
+                boolean isSkirtCell =
+                        c == 0 ||
+                                c == withSkirtCols - 2 ||
+                                r == 0 ||
+                                r == withSkirtRows - 2;
 
-                HalfEdgeVertex vertex1 = halfEdgeSurface.getVertices().get(index1);
-                HalfEdgeVertex vertex2 = halfEdgeSurface.getVertices().get(index2);
-                HalfEdgeVertex vertex3 = halfEdgeSurface.getVertices().get(index3);
-                HalfEdgeVertex vertex4 = halfEdgeSurface.getVertices().get(index4);
+                FaceType faceType = isSkirtCell
+                        ? FaceType.SKIRT
+                        : FaceType.NORMAL;
 
-                if (vertex1.getStatus() != ObjectStatus.DELETED && vertex2.getStatus() != ObjectStatus.DELETED && vertex3.getStatus() != ObjectStatus.DELETED) {
-                    // face A
+                HalfEdgeVertex vertex1 =
+                        halfEdgeSurface.getVertices().get(index1);
+
+                HalfEdgeVertex vertex2 =
+                        halfEdgeSurface.getVertices().get(index2);
+
+                HalfEdgeVertex vertex3 =
+                        halfEdgeSurface.getVertices().get(index3);
+
+                HalfEdgeVertex vertex4 =
+                        halfEdgeSurface.getVertices().get(index4);
+
+                /*
+                 * Triangle A:
+                 *
+                 * vertex1 -> vertex2 -> vertex3
+                 */
+                if (vertex1.getStatus() != ObjectStatus.DELETED &&
+                        vertex2.getStatus() != ObjectStatus.DELETED &&
+                        vertex3.getStatus() != ObjectStatus.DELETED) {
+
+                    HalfEdgeFace faceA = new HalfEdgeFace();
+                    faceA.setFaceType(faceType);
+
                     HalfEdge halfEdgeA1 = new HalfEdge();
                     HalfEdge halfEdgeA2 = new HalfEdge();
                     HalfEdge halfEdgeA3 = new HalfEdge();
+
                     halfEdgeA1.setStartVertex(vertex1);
                     halfEdgeA2.setStartVertex(vertex2);
                     halfEdgeA3.setStartVertex(vertex3);
+
                     halfEdgeA1.setNext(halfEdgeA2);
                     halfEdgeA2.setNext(halfEdgeA3);
                     halfEdgeA3.setNext(halfEdgeA1);
+
                     halfEdgeA1.setFace(faceA);
                     halfEdgeA2.setFace(faceA);
                     halfEdgeA3.setFace(faceA);
+
                     vertex1.setOutingHalfEdge(halfEdgeA1);
                     vertex2.setOutingHalfEdge(halfEdgeA2);
                     vertex3.setOutingHalfEdge(halfEdgeA3);
+
                     faceA.setHalfEdge(halfEdgeA1);
+
                     halfEdgeSurface.getHalfEdges().add(halfEdgeA1);
                     halfEdgeSurface.getHalfEdges().add(halfEdgeA2);
                     halfEdgeSurface.getHalfEdges().add(halfEdgeA3);
+
                     halfEdgeSurface.getFaces().add(faceA);
                 }
 
-                if (vertex1.getStatus() != ObjectStatus.DELETED && vertex3.getStatus() != ObjectStatus.DELETED && vertex4.getStatus() != ObjectStatus.DELETED) {
+                /*
+                 * Triangle B:
+                 *
+                 * vertex1 -> vertex3 -> vertex4
+                 */
+                if (vertex1.getStatus() != ObjectStatus.DELETED &&
+                        vertex3.getStatus() != ObjectStatus.DELETED &&
+                        vertex4.getStatus() != ObjectStatus.DELETED) {
 
-                    // face B
+                    HalfEdgeFace faceB = new HalfEdgeFace();
+                    faceB.setFaceType(faceType);
+
                     HalfEdge halfEdgeB1 = new HalfEdge();
                     HalfEdge halfEdgeB2 = new HalfEdge();
                     HalfEdge halfEdgeB3 = new HalfEdge();
+
                     halfEdgeB1.setStartVertex(vertex1);
                     halfEdgeB2.setStartVertex(vertex3);
                     halfEdgeB3.setStartVertex(vertex4);
+
                     halfEdgeB1.setNext(halfEdgeB2);
                     halfEdgeB2.setNext(halfEdgeB3);
                     halfEdgeB3.setNext(halfEdgeB1);
+
                     halfEdgeB1.setFace(faceB);
                     halfEdgeB2.setFace(faceB);
                     halfEdgeB3.setFace(faceB);
+
                     vertex1.setOutingHalfEdge(halfEdgeB1);
                     vertex3.setOutingHalfEdge(halfEdgeB2);
                     vertex4.setOutingHalfEdge(halfEdgeB3);
+
                     faceB.setHalfEdge(halfEdgeB1);
+
                     halfEdgeSurface.getHalfEdges().add(halfEdgeB1);
                     halfEdgeSurface.getHalfEdges().add(halfEdgeB2);
                     halfEdgeSurface.getHalfEdges().add(halfEdgeB3);
+
                     halfEdgeSurface.getFaces().add(faceB);
                 }
             }
@@ -402,8 +496,10 @@ public class HalfEdgeUtils {
         halfEdgeSurface.setTwins();
         halfEdgeSurface.removeDeletedObjects();
 
-        // check if exist geometry
-        if (halfEdgeSurface.getVertices().isEmpty() || halfEdgeSurface.getHalfEdges().isEmpty() || halfEdgeSurface.getFaces().isEmpty()) {
+        if (halfEdgeSurface.getVertices().isEmpty() ||
+                halfEdgeSurface.getHalfEdges().isEmpty() ||
+                halfEdgeSurface.getFaces().isEmpty()) {
+
             return null;
         }
 

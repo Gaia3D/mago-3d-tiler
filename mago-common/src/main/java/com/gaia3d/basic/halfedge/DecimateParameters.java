@@ -60,7 +60,7 @@ public class DecimateParameters {
         // smallHedgeSize = 0.02 (scivile)
         // smallHedgeSize = 1.0 (sangam)
         if (lod == 0) {
-            setBasicValues(4.0,
+            setBasicValues(5.0,
                     0.01,
                     0.0,
                     40.0,

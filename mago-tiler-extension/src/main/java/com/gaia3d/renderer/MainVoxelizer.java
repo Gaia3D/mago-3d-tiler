@@ -634,6 +634,8 @@ public class MainVoxelizer implements IAppLogic {
                 HalfEdgeDecimator decimator = new HalfEdgeDecimator(decimateParameters);
                 decimator.apply(halfEdgeScene);
 
+
+
                 // now, try to reMesh vegetation.
                 log.debug("trianglesCount = " + stats.trianglesCount
                         + ", areaTotal = " + stats.areaTotal
@@ -644,7 +646,7 @@ public class MainVoxelizer implements IAppLogic {
                         + ", averageEdgeSize = " + stats.averageEdgeSize);
                 GeometryOnlyReMesherByOctree reMesherByOctree = new GeometryOnlyReMesherByOctree();
                 double nodeBoxSize = nodeBBox.getMaxSize();
-                double minBoxSize = nodeBoxSize / 18.0;
+                double minBoxSize = nodeBoxSize / 17.0;
                 if (lod == 1) {
                     reMesherByOctree.setLimitDepth(12);
                     reMesherByOctree.setMinFacesCount(5);
@@ -1222,7 +1224,7 @@ public class MainVoxelizer implements IAppLogic {
             // Here decimate the scene.*******************************************************************************************************
             DecimateParameters decimateParameters = new DecimateParameters();
             //decimateParameters.setBasicValues(14.0, 0.01, 0.9, 40.0, 1000000, 5, 1.0);
-            decimateParameters.setBasicValues(8.0, 0.001, 0.9, 40.0, 1000000, 5, 0.1);
+            decimateParameters.setBasicValues(12.0, 0.001, 0.9, 40.0, 1000000, 5, 0.1);
             HalfEdgeScene halfEdgeSceneToDecimate = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(gaiaScene);
             HalfEdgeDecimator decimator = new HalfEdgeDecimator(decimateParameters);
             decimator.apply(halfEdgeSceneToDecimate);
@@ -1289,7 +1291,7 @@ public class MainVoxelizer implements IAppLogic {
 
             // Test 2nd decimating.*****************************************************************************************
             DecimateParameters decimateParameters2ndTest = new DecimateParameters();
-            decimateParameters.setBasicValues(8.0, 0.001, 0.0, 40.0, 1000000, 2, 0.1);
+            decimateParameters.setBasicValues(12.0, 0.001, 0.0, 40.0, 1000000, 2, 0.1);
             HalfEdgeScene halfEdgeSceneToDecimate2ndTest = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(gaiaScene);
             HalfEdgeDecimator decimator2ndTest = new HalfEdgeDecimator(decimateParameters2ndTest);
             decimator2ndTest.apply(halfEdgeSceneToDecimate2ndTest);
@@ -1355,27 +1357,32 @@ public class MainVoxelizer implements IAppLogic {
         weld.apply(gaiaSceneMaster);
         cleaner.apply(gaiaSceneMaster);
 
-        // GaiaSkirtMaker.**********************************************************************************************
-        double nodeBoxSizeX = nodeBBox.getSizeX();
-        double nodeBoxSizeY = nodeBBox.getSizeY();
-        double nodeBoxSizeZ = nodeBBox.getSizeZ();
-        GaiaBoundingBox nodeBBoxCentered = new GaiaBoundingBox(-nodeBoxSizeX / 2.0, -nodeBoxSizeY / 2.0, -nodeBoxSizeZ / 2.0,
-                nodeBoxSizeX / 2.0, nodeBoxSizeY / 2.0, nodeBoxSizeZ / 2.0
-        );
-        GaiaSkirtMaker skirtMaker = new GaiaSkirtMaker();
-        double limitBoxSize = nodeBBox.getMaxSize() / 16.0;
-        double tolerance = nodeBoxSizeX * 0.08;
-        double skirtDepth = nodeBoxSizeX * 0.08;
-        double maxSegmentLength = nodeBoxSizeX * 0.5;
-
-        skirtMaker.addSkirtsToScene(
-                gaiaSceneMaster,
-                nodeBBoxCentered,
-                tolerance,
-                skirtDepth,
-                maxSegmentLength
-        );
-        // end making skirt.--------------------------------------------------------------------------------------------
+//        // GaiaSkirtMaker.**********************************************************************************************
+//        double nodeBoxSizeX = nodeBBox.getSizeX();
+//        double nodeBoxSizeY = nodeBBox.getSizeY();
+//        double nodeBoxSizeZ = nodeBBox.getSizeZ();
+//        GaiaBoundingBox nodeBBoxCentered = new GaiaBoundingBox(-nodeBoxSizeX / 2.0, -nodeBoxSizeY / 2.0, -nodeBoxSizeZ / 2.0,
+//                nodeBoxSizeX / 2.0, nodeBoxSizeY / 2.0, nodeBoxSizeZ / 2.0
+//        );
+//        GaiaSkirtMaker skirtMaker = new GaiaSkirtMaker();
+//        double limitBoxSize = nodeBBox.getMaxSize() / 16.0;
+//        double tolerance = nodeBoxSizeX * 0.08;
+//        double skirtDepth = nodeBoxSizeX * 0.08;
+//        double maxSegmentLength = nodeBoxSizeX * 0.5;
+//
+//        skirtMaker.addSkirtsToScene(
+//                gaiaSceneMaster,
+//                nodeBBoxCentered,
+//                tolerance,
+//                skirtDepth,
+//                maxSegmentLength
+//        );
+//        // end making skirt.--------------------------------------------------------------------------------------------
+        // Make frontier expansion.************************************************************************************
+        GaiaFrontierExpander frontierExpander = new GaiaFrontierExpander();
+        double maxNodeBBoxSize = nodeBBox.getMaxSize();
+        frontierExpander.expandFrontiersToScene(gaiaSceneMaster, nodeBBox, 0.2, maxNodeBBoxSize * 0.005);
+        // End making frontier expansion.------------------------------------------------------------------------------
 
         gaiaSceneMaster.joinAllSurfaces();
         weld.apply(gaiaSceneMaster);

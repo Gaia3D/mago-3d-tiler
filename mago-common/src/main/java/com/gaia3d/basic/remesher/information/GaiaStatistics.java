@@ -14,6 +14,15 @@ import org.joml.Vector3d;
 @Setter
 public class GaiaStatistics {
     private static final double EPSILON = 1e-9;
+    private static final double EDGE_1MM   = 0.001;
+    private static final double EDGE_1CM   = 0.01;
+    private static final double EDGE_5CM   = 0.05;
+    private static final double EDGE_10CM  = 0.10;
+    private static final double EDGE_25CM  = 0.25;
+    private static final double EDGE_50CM  = 0.50;
+    private static final double EDGE_100CM = 1.00;
+    private static final double EDGE_150CM = 1.50;
+    private static final double EDGE_200CM = 2.00;
 
     public double areaTotal = 0.0;
     public int trianglesCount = 0;
@@ -48,6 +57,133 @@ public class GaiaStatistics {
 
     public double minEdgeSize = Double.POSITIVE_INFINITY;
     public double maxEdgeSize = 0.0;
+
+    public double trianglesDensityByXY = 0.0;
+    public double trianglesDensityByMaxProjection = 0.0;
+    public double trianglesDensityBySurfaceArea = 0.0;
+    public double trianglesDensityByMaxProjectedArea = 0.0;
+
+    public double areaFoldRatioByXY = 0.0;
+    public double areaFoldRatioByMaxProjection = 0.0;
+
+    public int edgesBelow1mm = 0;
+    public int edgesBelow1cm = 0;
+    public int edgesBelow5cm = 0;
+    public int edgesBelow10cm = 0;
+    public int edgesBelow25cm = 0;
+    public int edgesBelow50cm = 0;
+    public int edgesBelow100cm = 0;
+    public int edgesBelow150cm = 0;
+    public int edgesBelow200cm = 0;
+
+    public double edgesBelow1mmRatio = 0.0;
+    public double edgesBelow1cmRatio = 0.0;
+    public double edgesBelow5cmRatio = 0.0;
+    public double edgesBelow10cmRatio = 0.0;
+    public double edgesBelow25cmRatio = 0.0;
+    public double edgesBelow50cmRatio = 0.0;
+    public double edgesBelow100cmRatio = 0.0;
+    public double edgesBelow150cmRatio = 0.0;
+    public double edgesBelow200cmRatio = 0.0;
+
+
+
+    public void logGaiaStatisticsCompact(String title) {
+        if (!hasValidBoundingBox()) {
+            log.info(
+                    "{} | triangles={}, area={}, density={}, normalVariance={}, verticalRange={}, areaFoldRatio={}, " +
+                            "avgEdge={}, minEdge={}, maxEdge={}, bboxSize=INVALID",
+                    title,
+                    trianglesCount,
+                    areaTotal,
+                    trianglesDensity,
+                    normalVariance,
+                    verticalRange,
+                    areaFoldRatio,
+                    averageEdgeSize,
+                    minEdgeSize,
+                    maxEdgeSize
+            );
+            return;
+        }
+
+        double sizeX = maxX - minX;
+        double sizeY = maxY - minY;
+        double sizeZ = maxZ - minZ;
+
+        log.info(
+                "{} | triangles={}, area={}, density={}, normalVariance={}, verticalRange={}, areaFoldRatio={}, " +
+                        "avgEdge={}, minEdge={}, maxEdge={}, bboxSize=({}, {}, {})",
+                title,
+                trianglesCount,
+                areaTotal,
+                trianglesDensity,
+                normalVariance,
+                verticalRange,
+                areaFoldRatio,
+                averageEdgeSize,
+                minEdgeSize,
+                maxEdgeSize,
+                sizeX,
+                sizeY,
+                sizeZ
+        );
+    }
+
+    public void logGaiaStatistics(String title) {
+
+        log.info("========== GaiaStatistics : {} ==========", title);
+
+        log.info("Triangles:");
+        log.info("  trianglesCount   = {}", trianglesCount);
+        log.info("  areaTotal        = {}", areaTotal);
+        log.info("  trianglesDensity = {}", trianglesDensity);
+
+        log.info("Normals / shape:");
+        log.info("  normalVariance   = {}", normalVariance);
+        log.info("  verticalRange    = {}", verticalRange);
+        log.info("  areaFoldRatio    = {}", areaFoldRatio);
+
+        log.info("BoundingBox:");
+        log.info("  minX = {}, minY = {}, minZ = {}", minX, minY, minZ);
+        log.info("  maxX = {}, maxY = {}, maxZ = {}", maxX, maxY, maxZ);
+        log.info("  sizeX = {}", maxX - minX);
+        log.info("  sizeY = {}", maxY - minY);
+        log.info("  sizeZ = {}", maxZ - minZ);
+
+        log.info("Edges:");
+        log.info("  edgeSizeTotal   = {}", edgeSizeTotal);
+        log.info("  edgeSizeCount   = {}", edgeSizeCount);
+        log.info("  averageEdgeSize = {}", averageEdgeSize);
+        log.info("  minEdgeSize     = {}", minEdgeSize);
+        log.info("  maxEdgeSize     = {}", maxEdgeSize);
+
+        log.info("Small edges:");
+        log.info("  edgesBelow1mm   = {} ({} %)", edgesBelow1mm, edgesBelow1mmRatio * 100.0);
+        log.info("  edgesBelow1cm   = {} ({} %)", edgesBelow1cm, edgesBelow1cmRatio * 100.0);
+        log.info("  edgesBelow5cm   = {} ({} %)", edgesBelow5cm, edgesBelow5cmRatio * 100.0);
+        log.info("  edgesBelow10cm  = {} ({} %)", edgesBelow10cm, edgesBelow10cmRatio * 100.0);
+        log.info("  edgesBelow25cm  = {} ({} %)", edgesBelow25cm, edgesBelow25cmRatio * 100.0);
+        log.info("  edgesBelow50cm  = {} ({} %)", edgesBelow50cm, edgesBelow50cmRatio * 100.0);
+        log.info("  edgesBelow100cm = {} ({} %)", edgesBelow100cm, edgesBelow100cmRatio * 100.0);
+        log.info("  edgesBelow150cm = {} ({} %)", edgesBelow150cm, edgesBelow150cmRatio * 100.0);
+        log.info("  edgesBelow200cm = {} ({} %)", edgesBelow200cm, edgesBelow200cmRatio * 100.0);
+
+        log.info("Interpretation:");
+        log.info("  normalVariance: 0.00=planar, 0.05=ordered, 0.15=rough, 0.25+=chaotic, 0.40+=very chaotic");
+        log.info("  areaFoldRatio : 1.0=smooth/simple, >1.0=folded/complex surface");
+        log.info("  trianglesDensity: high value means many small triangles per area");
+
+        log.info("==========================================");
+    }
+
+    private boolean hasValidBoundingBox() {
+        return Double.isFinite(minX) && Double.isFinite(minY) && Double.isFinite(minZ)
+                && Double.isFinite(maxX) && Double.isFinite(maxY) && Double.isFinite(maxZ)
+                && maxX >= minX
+                && maxY >= minY
+                && maxZ >= minZ;
+    }
 
     private static double calculateDistance(Vector3d a, Vector3d b) {
         double dx = b.x - a.x;
@@ -113,10 +249,18 @@ public class GaiaStatistics {
         this.edgeSizeTotal += other.edgeSizeTotal;
         this.edgeSizeCount += other.edgeSizeCount;
 
-        if (other.edgeSizeCount > 0) {
-            this.minEdgeSize = Math.min(this.minEdgeSize, other.minEdgeSize);
-            this.maxEdgeSize = Math.max(this.maxEdgeSize, other.maxEdgeSize);
-        }
+        this.edgesBelow1mm += other.edgesBelow1mm;
+        this.edgesBelow1cm += other.edgesBelow1cm;
+        this.edgesBelow5cm += other.edgesBelow5cm;
+        this.edgesBelow10cm += other.edgesBelow10cm;
+        this.edgesBelow25cm += other.edgesBelow25cm;
+        this.edgesBelow50cm += other.edgesBelow50cm;
+        this.edgesBelow100cm += other.edgesBelow100cm;
+        this.edgesBelow150cm += other.edgesBelow150cm;
+        this.edgesBelow200cm += other.edgesBelow200cm;
+
+        this.minEdgeSize = Math.min(this.minEdgeSize, other.minEdgeSize);
+        this.maxEdgeSize = Math.max(this.maxEdgeSize, other.maxEdgeSize);
 
         this.minX = Math.min(this.minX, other.minX);
         this.minY = Math.min(this.minY, other.minY);
@@ -126,16 +270,18 @@ public class GaiaStatistics {
         this.maxY = Math.max(this.maxY, other.maxY);
         this.maxZ = Math.max(this.maxZ, other.maxZ);
 
-        this.normalVarianceWeightedSum += other.normalVariance * other.areaTotal;
+        this.normalVarianceWeightedSum += other.normalVarianceWeightedSum;
     }
 
     public void finishAccumulatedStatistics() {
-        if (this.areaTotal <= EPSILON || this.trianglesCount == 0) {
-            return;
-        }
+        finishEdgeStatistics();
 
-        if (this.edgeSizeCount > 0) {
-            this.averageEdgeSize = this.edgeSizeTotal / this.edgeSizeCount;
+        if (this.areaTotal <= EPSILON || this.trianglesCount == 0) {
+            this.trianglesDensity = 0.0;
+            this.areaFoldRatio = 0.0;
+            this.normalVariance = 0.0;
+            this.verticalRange = 0.0;
+            return;
         }
 
         double sizeX = this.maxX - this.minX;
@@ -158,7 +304,65 @@ public class GaiaStatistics {
         this.trianglesDensity = this.trianglesCount / maxProjectedArea;
         this.areaFoldRatio = this.areaTotal / maxProjectedArea;
 
-        this.normalVariance = this.normalVarianceWeightedSum / this.areaTotal;
+        if (this.areaTotal > EPSILON) {
+            this.normalVariance = this.normalVarianceWeightedSum / this.areaTotal;
+        } else {
+            this.normalVariance = 0.0;
+        }
+    }
+
+    private static void accumulateEdgeStatistics(GaiaStatistics stats, double edgeLength) {
+        if (stats == null || edgeLength <= EPSILON || !Double.isFinite(edgeLength)) {
+            return;
+        }
+
+        stats.edgeSizeTotal += edgeLength;
+        stats.edgeSizeCount++;
+
+        stats.minEdgeSize = Math.min(stats.minEdgeSize, edgeLength);
+        stats.maxEdgeSize = Math.max(stats.maxEdgeSize, edgeLength);
+
+        if (edgeLength < EDGE_1MM) {
+            stats.edgesBelow1mm++;
+        }
+        if (edgeLength < EDGE_1CM) {
+            stats.edgesBelow1cm++;
+        }
+        if (edgeLength < EDGE_5CM) {
+            stats.edgesBelow5cm++;
+        }
+        if (edgeLength < EDGE_10CM) {
+            stats.edgesBelow10cm++;
+        }
+        if (edgeLength < EDGE_25CM) {
+            stats.edgesBelow25cm++;
+        }
+        if (edgeLength < EDGE_50CM) {
+            stats.edgesBelow50cm++;
+        }
+        if (edgeLength < EDGE_100CM) {
+            stats.edgesBelow100cm++;
+        }
+        if (edgeLength < EDGE_150CM) {
+            stats.edgesBelow150cm++;
+        }
+        if (edgeLength < EDGE_200CM) {
+            stats.edgesBelow200cm++;
+        }
+    }
+
+    private void resetDerivedStatistics() {
+        this.verticalRange = 0.0;
+        this.trianglesDensity = 0.0;
+        this.areaFoldRatio = 0.0;
+        this.normalVariance = 0.0;
+
+        this.trianglesDensityByXY = 0.0;
+        this.trianglesDensityByMaxProjection = 0.0;
+        this.trianglesDensityBySurfaceArea = 0.0;
+
+        this.areaFoldRatioByXY = 0.0;
+        this.areaFoldRatioByMaxProjection = 0.0;
     }
 
     public static GaiaStatistics calculateStatistics(GaiaPrimitive primitive) {
@@ -246,16 +450,9 @@ public class GaiaStatistics {
             double edge12 = calculateDistance(p1, p2);
             double edge20 = calculateDistance(p2, p0);
 
-            stats.edgeSizeTotal += edge01 + edge12 + edge20;
-            stats.edgeSizeCount += 3;
-
-            stats.minEdgeSize = Math.min(stats.minEdgeSize, edge01);
-            stats.minEdgeSize = Math.min(stats.minEdgeSize, edge12);
-            stats.minEdgeSize = Math.min(stats.minEdgeSize, edge20);
-
-            stats.maxEdgeSize = Math.max(stats.maxEdgeSize, edge01);
-            stats.maxEdgeSize = Math.max(stats.maxEdgeSize, edge12);
-            stats.maxEdgeSize = Math.max(stats.maxEdgeSize, edge20);
+            accumulateEdgeStatistics(stats, edge01);
+            accumulateEdgeStatistics(stats, edge12);
+            accumulateEdgeStatistics(stats, edge20);
             ////////////////////////////
 
             weightedNormalSum.x += normal.x * area;
@@ -263,11 +460,14 @@ public class GaiaStatistics {
             weightedNormalSum.z += normal.z * area;
         }
 
+        // ------------------------------------------------------------
+        // Finish first-pass derived statistics.
+        // ------------------------------------------------------------
+        stats.finishEdgeStatistics();
+
         if (stats.trianglesCount == 0 || stats.areaTotal <= EPSILON) {
             return stats;
         }
-
-        stats.trianglesDensity = stats.trianglesCount / stats.areaTotal;
 
         double sizeX = stats.maxX - stats.minX;
         double sizeY = stats.maxY - stats.minY;
@@ -279,18 +479,23 @@ public class GaiaStatistics {
         double projectedAreaXZ = sizeX * sizeZ;
         double projectedAreaYZ = sizeY * sizeZ;
 
-        double maxProjectedArea = Math.max(projectedAreaXY, Math.max(projectedAreaXZ, projectedAreaYZ));
-        stats.areaFoldRatio = stats.areaTotal / (maxProjectedArea + EPSILON);
+        double maxProjectedArea = Math.max(
+                projectedAreaXY,
+                Math.max(projectedAreaXZ, projectedAreaYZ)
+        );
+
+        maxProjectedArea = Math.max(maxProjectedArea, EPSILON);
+
+        // IMPORTANT:
+        // Use the same criterion as finishAccumulatedStatistics().
+        stats.trianglesDensity = stats.trianglesCount / maxProjectedArea;
+        stats.areaFoldRatio = stats.areaTotal / maxProjectedArea;
 
         Vector3d averageNormal = new Vector3d(weightedNormalSum);
         if (averageNormal.lengthSquared() > EPSILON) {
             averageNormal.normalize();
         } else {
             averageNormal.set(0.0, 0.0, 1.0);
-        }
-
-        if (stats.edgeSizeCount > 0) {
-            stats.averageEdgeSize = stats.edgeSizeTotal / stats.edgeSizeCount;
         }
 
         // ------------------------------------------------------------
@@ -326,9 +531,9 @@ public class GaiaStatistics {
             }
 
             double area = calculateTriangleArea(p0, p1, p2);
-//            if (area <= EPSILON) {
-//                continue;
-//            }
+            if (area <= EPSILON) {
+                continue;
+            }
 
             Vector3d normal = calculateFaceNormal(p0, p1, p2);
 
@@ -341,9 +546,46 @@ public class GaiaStatistics {
             varianceWeightSum += area;
         }
 
-        stats.normalVariance = varianceSum / (varianceWeightSum + EPSILON);
+        if (varianceWeightSum > EPSILON) {
+            stats.normalVariance = varianceSum / varianceWeightSum;
+            stats.normalVarianceWeightedSum = varianceSum;
+        } else {
+            stats.normalVariance = 0.0;
+            stats.normalVarianceWeightedSum = 0.0;
+        }
 
         return stats;
+    }
+
+    private void finishEdgeStatistics() {
+        if (this.edgeSizeCount <= 0) {
+            this.averageEdgeSize = 0.0;
+            this.minEdgeSize = 0.0;
+            this.maxEdgeSize = 0.0;
+
+            this.edgesBelow1mmRatio = 0.0;
+            this.edgesBelow1cmRatio = 0.0;
+            this.edgesBelow5cmRatio = 0.0;
+            this.edgesBelow10cmRatio = 0.0;
+            this.edgesBelow25cmRatio = 0.0;
+            this.edgesBelow50cmRatio = 0.0;
+            this.edgesBelow100cmRatio = 0.0;
+            this.edgesBelow150cmRatio = 0.0;
+            this.edgesBelow200cmRatio = 0.0;
+            return;
+        }
+
+        this.averageEdgeSize = this.edgeSizeTotal / this.edgeSizeCount;
+
+        this.edgesBelow1mmRatio = (double) this.edgesBelow1mm / this.edgeSizeCount;
+        this.edgesBelow1cmRatio = (double) this.edgesBelow1cm / this.edgeSizeCount;
+        this.edgesBelow5cmRatio = (double) this.edgesBelow5cm / this.edgeSizeCount;
+        this.edgesBelow10cmRatio = (double) this.edgesBelow10cm / this.edgeSizeCount;
+        this.edgesBelow25cmRatio = (double) this.edgesBelow25cm / this.edgeSizeCount;
+        this.edgesBelow50cmRatio = (double) this.edgesBelow50cm / this.edgeSizeCount;
+        this.edgesBelow100cmRatio = (double) this.edgesBelow100cm / this.edgeSizeCount;
+        this.edgesBelow150cmRatio = (double) this.edgesBelow150cm / this.edgeSizeCount;
+        this.edgesBelow200cmRatio = (double) this.edgesBelow200cm / this.edgeSizeCount;
     }
 
     private static boolean isValidIndex(int index, int verticesCount) {

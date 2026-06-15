@@ -554,91 +554,6 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
         return hedgesCollapsedCount + frontierHedgesCollapsedCount;
     }
 
-    public boolean collapseHalfEdge(HalfEdge halfEdge,
-                                    HalfEdgeSurface surface,
-                                    int iteration,
-                                    MapVertexAllOutingEdgesIndices mapVertexAllOutingEdgesIndices,
-                                    Map<HalfEdgeVertex, List<HalfEdgeVertex>> mapVertexToSamePosVertices,
-                                    double maxDiffAngDeg,
-                                    double frontierMaxDiffAngDeg,
-                                    double hedgeMinLength,
-                                    double maxAspectRatio,
-                                    double smallHedgeSize) {
-        // When collapse a halfEdge, we delete the face, the twin's face, the twin & the startVertex
-        // When deleting a face, must delete all halfEdges of the face
-        // must find all halfEdges that startVertex is the deletingVertex, and set as startVertex the endVertex of the deletingHalfEdge
-
-        HalfEdgeVertex startVertex = halfEdge.getStartVertex();
-        HalfEdgeVertex endVertex = halfEdge.getEndVertex();
-
-        if (halfEdge.getLength() > hedgeMinLength) {
-            if (!HalfEdgeDecimaterUtils.decideIfCollapseCheckingFaces(halfEdge, surface, mapVertexAllOutingEdgesIndices, mapVertexToSamePosVertices, maxDiffAngDeg, maxAspectRatio, smallHedgeSize)) {
-                return false;
-            }
-        }
-        // end check if collapse
-
-        int endVertexClassifyId = endVertex.getClassifyId();
-
-        boolean isCollapsed = false;
-
-//        List<HalfEdge> outingEdgesOfEndVertex = vertexAllOutingEdgesMap.get(endVertex);
-//        List<HalfEdgeVertex> listVertexSamePosition = mapVertexToSamePosVertices.get(startVertex);
-//
-//        if (listVertexSamePosition == null) {
-//            log.error("[ERROR] HalfEdgeSurface.collapseHalfEdge() : listVertexSamePosition == null.");
-//            return false;
-//        }
-//
-//        List<HalfEdge> outingEdgesOfVertex = null;
-//
-//        int samePositionVerticesCount = listVertexSamePosition.size();
-//        for (int i = 0; i < samePositionVerticesCount; i++) {
-//            HalfEdgeVertex vertex = listVertexSamePosition.get(i);
-//            outingEdgesOfVertex = vertexAllOutingEdgesMap.get(vertex);
-//            if (outingEdgesOfVertex == null) {
-//                log.error("[ERROR] HalfEdgeSurface.collapseHalfEdge() : outingEdgesOfVertex == null.");
-//                continue;
-//            }
-//
-//            int outingEdgesOfVertexCount = outingEdgesOfVertex.size();
-//            // do not use the iterator because the list is modified.
-//            for (int gg = 0; gg < outingEdgesOfVertexCount; gg++) {
-//                HalfEdge outingEdge = outingEdgesOfVertex.get(gg);
-//                if (outingEdge == null) {
-//                    log.error("[ERROR] HalfEdgeSurface.collapseHalfEdge() : outingEdge == null.");
-//                    continue;
-//                }
-//                HalfEdgeVertex startVertex2 = outingEdge.getStartVertex();
-//                int startVertex2ClassifyId = startVertex2.getClassifyId();
-//                if (startVertex2ClassifyId == endVertexClassifyId) {
-//                    outingEdge.setStartVertex(endVertex);
-//                    outingEdge.setClassifyId(1);
-//                    outingEdgesOfEndVertex.add(outingEdge);
-//                    isCollapsed = true;
-//                } else {
-//                    // must find another endVertex that has the same classifyId
-//                    List<HalfEdgeVertex> listVertexEndPos = mapVertexToSamePosVertices.get(endVertex);
-//                    int listVertexEndPosCount = listVertexEndPos.size();
-//                    for (int k = 0; k < listVertexEndPosCount; k++) {
-//                        HalfEdgeVertex endVertex2 = listVertexEndPos.get(k);
-//                        int endVertex2ClassifyId = endVertex2.getClassifyId();
-//                        if (endVertex2ClassifyId == startVertex2ClassifyId) {
-//                            outingEdge.setStartVertex(endVertex2);
-//                            outingEdge.setClassifyId(1);
-//                            List<HalfEdge> outingEdgesOfEndVertex2 = vertexAllOutingEdgesMap.get(endVertex2);
-//                            outingEdgesOfEndVertex2.add(outingEdge);
-//                            isCollapsed = true;
-//                            break;
-//                        }
-//                    }
-//                }
-//            }
-//        }
-
-        return isCollapsed;
-    }
-
     public boolean collapseHalfEdge_original(HalfEdge halfEdge,
                                     int iteration,
                                     Map<HalfEdgeVertex, List<HalfEdge>> vertexAllOutingEdgesMap,
@@ -666,31 +581,14 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
 
         if (halfEdge.getLength() > hedgeMinLength) {
             //if(!isNoisySurface) {
-                if (!HalfEdgeDecimaterUtils.decideIfCollapseCheckingFaces_original(halfEdge, vertexAllOutingEdgesMap, mapVertexToSamePosVertices, maxDiffAngDeg, maxAspectRatio, smallHedgeSize)) {
-                    return false;
-                }
+//                if (!HalfEdgeDecimaterUtils.decideIfCollapseCheckingFaces_original(halfEdge, vertexAllOutingEdgesMap, mapVertexToSamePosVertices, maxDiffAngDeg, maxAspectRatio, smallHedgeSize)) {
+//                    return false;
+//                }
+            if (!HalfEdgeDecimaterUtils.decideIfCollapseCheckingFacesAdvanced(halfEdge, vertexAllOutingEdgesMap, mapVertexToSamePosVertices, maxDiffAngDeg, maxAspectRatio, smallHedgeSize)) {
+                return false;
+            }
             //}
 
-            double minAreaEpsilon = 0.0;
-//            if (!HalfEdgeDecimaterUtils.decideIfCollapseRobust(halfEdge,
-//                    vertexAllOutingEdgesMap,
-//                    mapVertexToSamePosVertices,
-//                    maxDiffAngDeg,
-//                    maxAspectRatio,
-//                    smallHedgeSize,
-//                    minAreaEpsilon)) {
-//                return false;
-//            }
-
-//            if(!HalfEdgeDecimaterUtils.decideIfCollapseBalanced_v3(halfEdge,
-//                    vertexAllOutingEdgesMap,
-//                    mapVertexToSamePosVertices,
-//                    maxDiffAngDeg,
-//                    maxAspectRatio,
-//                    smallHedgeSize,
-//                    minAreaEpsilon)){
-//                return false;
-//            }
         }
         // end check if collapse
 
@@ -841,7 +739,10 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
         }
 
         if (halfEdge.getLength() > hedgeMinLength) {
-            if (!HalfEdgeDecimaterUtils.decideIfCollapseCheckingFaces_original(halfEdge, vertexAllOutingEdgesMap, mapVertexToSamePosVertices, maxDiffAngDeg, maxAspectRatio, smallHedgeSize)) {
+//            if (!HalfEdgeDecimaterUtils.decideIfCollapseCheckingFaces_original(halfEdge, vertexAllOutingEdgesMap, mapVertexToSamePosVertices, maxDiffAngDeg, maxAspectRatio, smallHedgeSize)) {
+//                return false;
+//            }
+            if (!HalfEdgeDecimaterUtils.decideIfCollapseCheckingFacesAdvanced(halfEdge, vertexAllOutingEdgesMap, mapVertexToSamePosVertices, maxDiffAngDeg, maxAspectRatio, smallHedgeSize)) {
                 return false;
             }
         }
