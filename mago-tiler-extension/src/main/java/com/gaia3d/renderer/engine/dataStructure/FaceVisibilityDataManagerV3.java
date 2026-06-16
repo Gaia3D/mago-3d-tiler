@@ -46,7 +46,7 @@ public class FaceVisibilityDataManagerV3 {
 
 
 
-    public void updateFaceInnerPointsVisibilityData(
+    public void updateFaceInnerPointsVisibilityData_original(
             GaiaScene scene,
             CameraDirectionType cameraDirectionType,
             Fbo colorCodeFbo,
@@ -177,6 +177,411 @@ public class FaceVisibilityDataManagerV3 {
 
         updateFaceVisibilityData(cameraDirectionType, pixels, fboWidth, fboHeight);
         pixels.clear();
+    }
+
+    public void updateFaceInnerPointsVisibilityData(
+            GaiaScene scene,
+            CameraDirectionType cameraDirectionType,
+            Fbo colorCodeFbo,
+            Map<Integer, Map<CameraDirectionType, Matrix4d>>
+                    mapClassificationCamDirTypeModelViewMatrix,
+            Map<Integer, Map<CameraDirectionType, GaiaBoundingBox>>
+                    mapClassificationCamDirTypeBBox
+    ) {
+        if (scene == null
+                || cameraDirectionType == null
+                || colorCodeFbo == null
+                || mapClassificationCamDirTypeModelViewMatrix == null
+                || mapClassificationCamDirTypeBBox == null) {
+            return;
+        }
+
+        final int classifiedId = -1;
+
+        Map<CameraDirectionType, Matrix4d> modelViewMatrixByCamera =
+                mapClassificationCamDirTypeModelViewMatrix.get(classifiedId);
+
+        if (modelViewMatrixByCamera == null) {
+            return;
+        }
+
+        Matrix4d modelViewMatrix =
+                modelViewMatrixByCamera.get(cameraDirectionType);
+
+        if (modelViewMatrix == null) {
+            return;
+        }
+
+        Map<CameraDirectionType, GaiaBoundingBox> bboxByCamera =
+                mapClassificationCamDirTypeBBox.get(classifiedId);
+
+        if (bboxByCamera == null) {
+            return;
+        }
+
+        GaiaBoundingBox transformedTargetBbox =
+                bboxByCamera.get(cameraDirectionType);
+
+        if (transformedTargetBbox == null) {
+            return;
+        }
+
+        double bboxSizeX =
+                transformedTargetBbox.getMaxX()
+                        - transformedTargetBbox.getMinX();
+
+        double bboxSizeY =
+                transformedTargetBbox.getMaxY()
+                        - transformedTargetBbox.getMinY();
+
+        if (bboxSizeX <= 1e-12 || bboxSizeY <= 1e-12) {
+            return;
+        }
+
+        int fboWidth = colorCodeFbo.getFboWidth();
+        int fboHeight = colorCodeFbo.getFboHeight();
+
+        if (fboWidth <= 0 || fboHeight <= 0) {
+            return;
+        }
+
+        ByteBuffer pixels;
+
+        colorCodeFbo.bind();
+
+        try {
+            pixels = colorCodeFbo.readPixels(GL_RGBA);
+        } finally {
+            colorCodeFbo.unbind();
+        }
+
+        if (pixels == null) {
+            return;
+        }
+
+        GaiaExtractor extractor = new GaiaExtractor();
+        List<GaiaPrimitive> primitives =
+                extractor.extractAllPrimitives(scene);
+
+        if (primitives == null || primitives.isEmpty()) {
+            pixels.clear();
+            return;
+        }
+
+        final int minVisibleInnerPoints = 3;
+        final int searchRadius = 2;
+
+        /*
+         * Un único objeto temporal para toda la ejecución.
+         * No se crea un Vector4d por cada punto.
+         */
+        Vector4d transformedScratch = new Vector4d();
+
+        for (GaiaPrimitive primitive : primitives) {
+            if (primitive == null) {
+                continue;
+            }
+
+            List<GaiaVertex> vertices = primitive.getVertices();
+
+            if (vertices == null || vertices.isEmpty()) {
+                continue;
+            }
+
+            List<GaiaSurface> surfaces = primitive.getSurfaces();
+
+            if (surfaces == null || surfaces.isEmpty()) {
+                continue;
+            }
+
+            for (GaiaSurface surface : surfaces) {
+                if (surface == null) {
+                    continue;
+                }
+
+                List<GaiaFace> faces = surface.getFaces();
+
+                if (faces == null || faces.isEmpty()) {
+                    continue;
+                }
+
+                for (GaiaFace face : faces) {
+                    if (face == null) {
+                        continue;
+                    }
+
+                    int[] indices = face.getIndices();
+
+                    if (indices == null || indices.length < 3) {
+                        continue;
+                    }
+
+                    int visiblePointsCount =
+                            countVisibleInnerPoints(
+                                    face,
+                                    vertices,
+                                    modelViewMatrix,
+                                    transformedTargetBbox,
+                                    bboxSizeX,
+                                    bboxSizeY,
+                                    pixels,
+                                    fboWidth,
+                                    fboHeight,
+                                    face.getId(),
+                                    searchRadius,
+                                    minVisibleInnerPoints,
+                                    transformedScratch
+                            );
+
+                    if (visiblePointsCount >= minVisibleInnerPoints) {
+                        addInnerPointValidCamera(
+                                face,
+                                cameraDirectionType
+                        );
+                    }
+                }
+            }
+        }
+
+        updateFaceVisibilityData(
+                cameraDirectionType,
+                pixels,
+                fboWidth,
+                fboHeight
+        );
+
+        pixels.clear();
+    }
+
+    private int countVisibleInnerPoints(
+            GaiaFace face,
+            List<GaiaVertex> vertices,
+            Matrix4d modelViewMatrix,
+            GaiaBoundingBox bbox,
+            double bboxSizeX,
+            double bboxSizeY,
+            ByteBuffer pixels,
+            int fboWidth,
+            int fboHeight,
+            int expectedColorCode,
+            int searchRadius,
+            int requiredVisiblePoints,
+            Vector4d transformedScratch
+    ) {
+        int[] indices = face.getIndices();
+
+        if (indices == null || indices.length < 3) {
+            return 0;
+        }
+
+        int index0 = indices[0];
+        int index1 = indices[1];
+        int index2 = indices[2];
+
+        if (index0 < 0 || index0 >= vertices.size()
+                || index1 < 0 || index1 >= vertices.size()
+                || index2 < 0 || index2 >= vertices.size()) {
+            return 0;
+        }
+
+        GaiaVertex vertex0 = vertices.get(index0);
+        GaiaVertex vertex1 = vertices.get(index1);
+        GaiaVertex vertex2 = vertices.get(index2);
+
+        if (vertex0 == null || vertex1 == null || vertex2 == null) {
+            return 0;
+        }
+
+        Vector3d p0 = vertex0.getPosition();
+        Vector3d p1 = vertex1.getPosition();
+        Vector3d p2 = vertex2.getPosition();
+
+        if (p0 == null || p1 == null || p2 == null) {
+            return 0;
+        }
+
+        double centroidX = (p0.x + p1.x + p2.x) / 3.0;
+        double centroidY = (p0.y + p1.y + p2.y) / 3.0;
+        double centroidZ = (p0.z + p1.z + p2.z) / 3.0;
+
+        int visibleCount = 0;
+
+        /*
+         * Punto 1: centroide.
+         */
+        if (isInnerPointVisible(
+                centroidX,
+                centroidY,
+                centroidZ,
+                modelViewMatrix,
+                bbox,
+                bboxSizeX,
+                bboxSizeY,
+                pixels,
+                fboWidth,
+                fboHeight,
+                expectedColorCode,
+                searchRadius,
+                transformedScratch
+        )) {
+            visibleCount++;
+
+            if (visibleCount >= requiredVisiblePoints) {
+                return visibleCount;
+            }
+        }
+
+        final double moveRatio = 0.20;
+
+        /*
+         * Punto 2: desde p0 hacia el centroide.
+         */
+        double pointX =
+                p0.x + (centroidX - p0.x) * moveRatio;
+        double pointY =
+                p0.y + (centroidY - p0.y) * moveRatio;
+        double pointZ =
+                p0.z + (centroidZ - p0.z) * moveRatio;
+
+        if (isInnerPointVisible(
+                pointX,
+                pointY,
+                pointZ,
+                modelViewMatrix,
+                bbox,
+                bboxSizeX,
+                bboxSizeY,
+                pixels,
+                fboWidth,
+                fboHeight,
+                expectedColorCode,
+                searchRadius,
+                transformedScratch
+        )) {
+            visibleCount++;
+
+            if (visibleCount >= requiredVisiblePoints) {
+                return visibleCount;
+            }
+        }
+
+        /*
+         * Punto 3: desde p1 hacia el centroide.
+         */
+        pointX = p1.x + (centroidX - p1.x) * moveRatio;
+        pointY = p1.y + (centroidY - p1.y) * moveRatio;
+        pointZ = p1.z + (centroidZ - p1.z) * moveRatio;
+
+        if (isInnerPointVisible(
+                pointX,
+                pointY,
+                pointZ,
+                modelViewMatrix,
+                bbox,
+                bboxSizeX,
+                bboxSizeY,
+                pixels,
+                fboWidth,
+                fboHeight,
+                expectedColorCode,
+                searchRadius,
+                transformedScratch
+        )) {
+            visibleCount++;
+
+            if (visibleCount >= requiredVisiblePoints) {
+                return visibleCount;
+            }
+        }
+
+        /*
+         * Punto 4: desde p2 hacia el centroide.
+         */
+        pointX = p2.x + (centroidX - p2.x) * moveRatio;
+        pointY = p2.y + (centroidY - p2.y) * moveRatio;
+        pointZ = p2.z + (centroidZ - p2.z) * moveRatio;
+
+        if (isInnerPointVisible(
+                pointX,
+                pointY,
+                pointZ,
+                modelViewMatrix,
+                bbox,
+                bboxSizeX,
+                bboxSizeY,
+                pixels,
+                fboWidth,
+                fboHeight,
+                expectedColorCode,
+                searchRadius,
+                transformedScratch
+        )) {
+            visibleCount++;
+        }
+
+        return visibleCount;
+    }
+
+    private boolean isInnerPointVisible(
+            double pointX,
+            double pointY,
+            double pointZ,
+            Matrix4d modelViewMatrix,
+            GaiaBoundingBox bbox,
+            double bboxSizeX,
+            double bboxSizeY,
+            ByteBuffer pixels,
+            int width,
+            int height,
+            int expectedColorCode,
+            int searchRadius,
+            Vector4d transformedScratch
+    ) {
+        transformedScratch
+                .set(pointX, pointY, pointZ, 1.0)
+                .mul(modelViewMatrix);
+
+        double u =
+                (transformedScratch.x - bbox.getMinX())
+                        / bboxSizeX;
+
+        double v =
+                (transformedScratch.y - bbox.getMinY())
+                        / bboxSizeY;
+
+        /*
+         * Evita Math.round(), ligeramente más costoso.
+         * Como u y v deberían encontrarse entre 0 y 1,
+         * sumar 0.5 equivale al redondeo esperado.
+         */
+        int pixelX =
+                (int) (u * (width - 1) + 0.5);
+
+        int pixelY =
+                (int) (v * (height - 1) + 0.5);
+
+        if (pixelX < 0 || pixelX >= width
+                || pixelY < 0 || pixelY >= height) {
+            return false;
+        }
+
+        /*
+         * No invertimos Y aquí.
+         *
+         * En el código anterior se invertía dentro de
+         * transformedPointToPixel() y después se volvía
+         * a invertir antes de hasExpectedColorNearPixel().
+         * Las dos inversiones se anulaban.
+         */
+        return hasExpectedColorNearPixel(
+                pixels,
+                width,
+                height,
+                pixelX,
+                pixelY,
+                expectedColorCode,
+                searchRadius
+        );
     }
 
     private void updateFaceVisibilityData(
@@ -427,15 +832,15 @@ public class FaceVisibilityDataManagerV3 {
                     continue;
                 }
 
-                Set<GaiaFace> previewVisited = new HashSet<>(visited);
+                Set<GaiaFace> candidateVisited = new HashSet<>();
 
                 List<GaiaFace> island = growCameraIsland(
                         seedFace,
                         candidateCamera,
                         mapFaceToCamCandidates,
                         mapFaceToNeighbors,
-                        mapFaceToNormal,
-                        previewVisited,
+                        visited,
+                        candidateVisited,
                         minCandidateRatio,
                         normalDotThreshold
                 );
@@ -640,46 +1045,49 @@ public class FaceVisibilityDataManagerV3 {
             Map<GaiaFace, List<GaiaFace>> neighborsMap,
             Map<GaiaFace, CameraDirectionType> cameraByFace
     ) {
-        Set<GaiaFace> componentSet = new HashSet<>(component);
-        Map<CameraDirectionType, Integer> countByCamera = new HashMap<>();
-
-        CameraDirectionType ownCamera = null;
-        if (!component.isEmpty()) {
-            ownCamera = cameraByFace.get(component.get(0));
+        if (component == null || component.isEmpty()) {
+            return null;
         }
+
+        CameraDirectionType ownCamera = cameraByFace.get(component.get(0));
+        CameraDirectionType[] cameraTypes = CameraDirectionType.values();
+        int[] countByCamera = new int[cameraTypes.length];
 
         for (GaiaFace face : component) {
             List<GaiaFace> neighbors = neighborsMap.get(face);
+
             if (neighbors == null) {
                 continue;
             }
 
             for (GaiaFace neighbor : neighbors) {
-                if (neighbor == null || componentSet.contains(neighbor)) {
+                if (neighbor == null) {
                     continue;
                 }
 
-                CameraDirectionType neighborCam = cameraByFace.get(neighbor);
+                CameraDirectionType neighborCamera = cameraByFace.get(neighbor);
 
-                if (neighborCam == null || neighborCam == ownCamera) {
+                if (neighborCamera == null || neighborCamera == ownCamera) {
                     continue;
                 }
 
-                countByCamera.merge(neighborCam, 1, Integer::sum);
+                countByCamera[neighborCamera.ordinal()]++;
             }
         }
 
-        CameraDirectionType best = null;
+        CameraDirectionType bestCamera = null;
         int bestCount = 0;
 
-        for (Map.Entry<CameraDirectionType, Integer> entry : countByCamera.entrySet()) {
-            if (entry.getValue() > bestCount) {
-                bestCount = entry.getValue();
-                best = entry.getKey();
+        for (CameraDirectionType cameraType : cameraTypes) {
+            int count = countByCamera[cameraType.ordinal()];
+
+            if (count > bestCount) {
+                bestCount = count;
+                bestCamera = cameraType;
             }
         }
 
-        return best;
+        return bestCamera;
     }
 
     private void absorbFacesByNeighborMajority(
@@ -690,70 +1098,87 @@ public class FaceVisibilityDataManagerV3 {
             double minCandidateRatio,
             int iterations
     ) {
+        CameraDirectionType[] cameraTypes = CameraDirectionType.values();
+        int[] countByCamera = new int[cameraTypes.length];
+
         for (int iter = 0; iter < iterations; iter++) {
-            Map<GaiaFace, CameraDirectionType> changes = new HashMap<>();
+            List<GaiaFace> changedFaces = new ArrayList<>();
+            List<CameraDirectionType> changedCameras = new ArrayList<>();
 
             for (GaiaFace face : faces) {
-                CameraDirectionType currentCam = cameraByFace.get(face);
+                if (face == null) {
+                    continue;
+                }
 
+                CameraDirectionType currentCamera = cameraByFace.get(face);
                 List<GaiaFace> neighbors = neighborsMap.get(face);
+
                 if (neighbors == null || neighbors.isEmpty()) {
                     continue;
                 }
 
-                Map<CameraDirectionType, Integer> countByCam = new HashMap<>();
+                Arrays.fill(countByCamera, 0);
 
                 for (GaiaFace neighbor : neighbors) {
-                    CameraDirectionType neighborCam = cameraByFace.get(neighbor);
-                    if (neighborCam == null) {
-                        continue;
-                    }
+                    CameraDirectionType neighborCamera = cameraByFace.get(neighbor);
 
-                    countByCam.merge(neighborCam, 1, Integer::sum);
+                    if (neighborCamera != null) {
+                        countByCamera[neighborCamera.ordinal()]++;
+                    }
                 }
 
-                CameraDirectionType dominantCam = null;
+                CameraDirectionType dominantCamera = null;
                 int dominantCount = 0;
 
-                for (Map.Entry<CameraDirectionType, Integer> entry : countByCam.entrySet()) {
-                    if (entry.getValue() > dominantCount) {
-                        dominantCount = entry.getValue();
-                        dominantCam = entry.getKey();
+                for (CameraDirectionType cameraType : cameraTypes) {
+                    int count = countByCamera[cameraType.ordinal()];
+
+                    if (count > dominantCount) {
+                        dominantCount = count;
+                        dominantCamera = cameraType;
                     }
                 }
 
-                if (dominantCam == null || dominantCam == currentCam) {
+                if (dominantCamera == null || dominantCamera == currentCamera) {
                     continue;
                 }
 
-                // Para triángulos rodeados, exigir mayoría fuerte.
                 int neighborCount = neighbors.size();
 
                 boolean stronglySurrounded = dominantCount >= 3;
-                boolean mostlySurrounded = neighborCount > 0 && dominantCount >= Math.ceil(neighborCount * 0.66);
+                boolean mostlySurrounded =
+                        dominantCount * 100 >= neighborCount * 66;
 
                 if (!stronglySurrounded && !mostlySurrounded) {
                     continue;
                 }
 
-                double ratio = getCameraCandidateRatio(face, dominantCam, candidatesMap);
+                double ratio = getCameraCandidateRatio(
+                        face,
+                        dominantCamera,
+                        candidatesMap
+                );
 
-// Si está muy rodeado, permitir ratio bajo.
-                double requiredRatio = stronglySurrounded ? 0.25 : minCandidateRatio;
+                double requiredRatio =
+                        stronglySurrounded ? 0.25 : minCandidateRatio;
 
                 if (ratio < requiredRatio) {
                     continue;
                 }
 
-                changes.put(face, dominantCam);
+                changedFaces.add(face);
+                changedCameras.add(dominantCamera);
             }
 
-            if (changes.isEmpty()) {
+            if (changedFaces.isEmpty()) {
                 break;
             }
 
-            for (Map.Entry<GaiaFace, CameraDirectionType> entry : changes.entrySet()) {
-                cameraByFace.put(entry.getKey(), entry.getValue());
+            for (int i = 0; i < changedFaces.size(); i++) {
+                cameraByFace.put(
+                        changedFaces.get(i),
+                        changedCameras.get(i)
+                );
             }
         }
     }
@@ -823,17 +1248,19 @@ public class FaceVisibilityDataManagerV3 {
             CameraDirectionType islandCameraDirectionType,
             Map<GaiaFace, List<CameraDirectionCandidate>> mapFaceToCamCandidates,
             Map<GaiaFace, List<GaiaFace>> mapFaceToNeighbors,
-            Map<GaiaFace, Vector3d> mapFaceToNormal,
-            Set<GaiaFace> visited,
+            Set<GaiaFace> globallyVisited,
+            Set<GaiaFace> candidateVisited,
             double minCandidateRatio,
             double normalDotThreshold
     ) {
         List<GaiaFace> island = new ArrayList<>();
         ArrayDeque<GaiaFace> queue = new ArrayDeque<>();
 
-        Vector3d seedNormal = mapFaceToNormal.get(seedFace);
+        if (seedFace == null || globallyVisited.contains(seedFace)) {
+            return island;
+        }
 
-        visited.add(seedFace);
+        candidateVisited.add(seedFace);
         queue.add(seedFace);
 
         while (!queue.isEmpty()) {
@@ -841,12 +1268,20 @@ public class FaceVisibilityDataManagerV3 {
             island.add(currentFace);
 
             List<GaiaFace> neighbors = mapFaceToNeighbors.get(currentFace);
+
             if (neighbors == null || neighbors.isEmpty()) {
                 continue;
             }
 
+            Vector3d currentNormal = currentFace.getFaceNormal();
+
             for (GaiaFace neighbor : neighbors) {
-                if (neighbor == null || visited.contains(neighbor)) {
+                if (neighbor == null) {
+                    continue;
+                }
+
+                if (globallyVisited.contains(neighbor)
+                        || candidateVisited.contains(neighbor)) {
                     continue;
                 }
 
@@ -859,8 +1294,7 @@ public class FaceVisibilityDataManagerV3 {
                     continue;
                 }
 
-                Vector3d currentNormal = mapFaceToNormal.get(currentFace);
-                Vector3d neighborNormal = mapFaceToNormal.get(neighbor);
+                Vector3d neighborNormal = neighbor.getFaceNormal();
 
                 if (currentNormal != null && neighborNormal != null) {
                     double dot = currentNormal.dot(neighborNormal);
@@ -870,12 +1304,161 @@ public class FaceVisibilityDataManagerV3 {
                     }
                 }
 
-                visited.add(neighbor);
+                candidateVisited.add(neighbor);
                 queue.add(neighbor);
             }
         }
 
         return island;
+    }
+
+    private int countVisibleInnerPoints(
+            GaiaFace face,
+            List<GaiaVertex> vertices,
+            Matrix4d modelViewMatrix,
+            GaiaBoundingBox transformedTargetBbox,
+            ByteBuffer pixels,
+            int fboWidth,
+            int fboHeight,
+            int expectedColorCode,
+            int searchRadius,
+            Vector4d transformedScratch
+    ) {
+        int[] indices = face.getIndices();
+
+        if (indices == null || indices.length < 3) {
+            return 0;
+        }
+
+        Vector3d p0 = vertices.get(indices[0]).getPosition();
+        Vector3d p1 = vertices.get(indices[1]).getPosition();
+        Vector3d p2 = vertices.get(indices[2]).getPosition();
+
+        double centroidX = (p0.x + p1.x + p2.x) / 3.0;
+        double centroidY = (p0.y + p1.y + p2.y) / 3.0;
+        double centroidZ = (p0.z + p1.z + p2.z) / 3.0;
+
+        int visibleCount = 0;
+
+        if (isPointVisible(
+                centroidX,
+                centroidY,
+                centroidZ,
+                modelViewMatrix,
+                transformedTargetBbox,
+                pixels,
+                fboWidth,
+                fboHeight,
+                expectedColorCode,
+                searchRadius,
+                transformedScratch
+        )) {
+            visibleCount++;
+        }
+
+        final double moveRatio = 0.20;
+
+        double pointX = p0.x + (centroidX - p0.x) * moveRatio;
+        double pointY = p0.y + (centroidY - p0.y) * moveRatio;
+        double pointZ = p0.z + (centroidZ - p0.z) * moveRatio;
+
+        if (isPointVisible(
+                pointX, pointY, pointZ,
+                modelViewMatrix,
+                transformedTargetBbox,
+                pixels,
+                fboWidth,
+                fboHeight,
+                expectedColorCode,
+                searchRadius,
+                transformedScratch
+        )) {
+            visibleCount++;
+        }
+
+        pointX = p1.x + (centroidX - p1.x) * moveRatio;
+        pointY = p1.y + (centroidY - p1.y) * moveRatio;
+        pointZ = p1.z + (centroidZ - p1.z) * moveRatio;
+
+        if (isPointVisible(
+                pointX, pointY, pointZ,
+                modelViewMatrix,
+                transformedTargetBbox,
+                pixels,
+                fboWidth,
+                fboHeight,
+                expectedColorCode,
+                searchRadius,
+                transformedScratch
+        )) {
+            visibleCount++;
+        }
+
+        pointX = p2.x + (centroidX - p2.x) * moveRatio;
+        pointY = p2.y + (centroidY - p2.y) * moveRatio;
+        pointZ = p2.z + (centroidZ - p2.z) * moveRatio;
+
+        if (isPointVisible(
+                pointX, pointY, pointZ,
+                modelViewMatrix,
+                transformedTargetBbox,
+                pixels,
+                fboWidth,
+                fboHeight,
+                expectedColorCode,
+                searchRadius,
+                transformedScratch
+        )) {
+            visibleCount++;
+        }
+
+        return visibleCount;
+    }
+
+    private boolean isPointVisible(
+            double pointX,
+            double pointY,
+            double pointZ,
+            Matrix4d modelViewMatrix,
+            GaiaBoundingBox bbox,
+            ByteBuffer pixels,
+            int width,
+            int height,
+            int expectedColorCode,
+            int searchRadius,
+            Vector4d transformedScratch
+    ) {
+        transformedScratch
+                .set(pointX, pointY, pointZ, 1.0)
+                .mul(modelViewMatrix);
+
+        double sizeX = bbox.getMaxX() - bbox.getMinX();
+        double sizeY = bbox.getMaxY() - bbox.getMinY();
+
+        if (sizeX <= 1e-12 || sizeY <= 1e-12) {
+            return false;
+        }
+
+        double u = (transformedScratch.x - bbox.getMinX()) / sizeX;
+        double v = (transformedScratch.y - bbox.getMinY()) / sizeY;
+
+        int pixelX = (int) Math.round(u * (width - 1));
+        int pixelY = (int) Math.round(v * (height - 1));
+
+        if (pixelX < 0 || pixelY < 0
+                || pixelX >= width || pixelY >= height) {
+            return false;
+        }
+
+        return hasExpectedColorNearPixel(
+                pixels,
+                width,
+                height,
+                pixelX,
+                pixelY,
+                expectedColorCode,
+                searchRadius
+        );
     }
 
     private List<Vector3d> getFaceInnerVisibilityPoints(

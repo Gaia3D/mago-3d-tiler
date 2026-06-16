@@ -3,9 +3,10 @@ package com.gaia3d.util;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
+import javax.imageio.*;
+import javax.imageio.stream.FileImageOutputStream;
 import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
@@ -16,6 +17,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
+import java.util.Locale;
 
 /**
  * Utility class for image operations.
@@ -416,13 +418,208 @@ public class ImageUtils {
         return image;
     }
 
-    public static void saveBufferedImage(BufferedImage image, String format, String path) {
-        try {
-            File file = new File(path);
-            ImageIO.write(image, format, new File(path));
-        } catch (IOException e) {
-            log.error("[ERROR] :", e);
+//    public static void saveBufferedImage(BufferedImage image, String format, String path) {
+//        try {
+//            File file = new File(path);
+//            ImageIO.write(image, format, new File(path));
+//        } catch (IOException e) {
+//            log.error("[ERROR] :", e);
+//        }
+//    }
+
+    /**
+     * @param savePath       Ruta de destino.
+     * @param fastPng        true para priorizar velocidad sobre tamaño del PNG.
+     * @param jpegQuality    Calidad JPEG entre 0.0 y 1.0.
+     * @return true cuando la imagen se escribió correctamente.
+     */
+    public static boolean saveBufferedImage(
+            BufferedImage bufferedImage,
+            String savePath,
+            boolean fastPng,
+            float jpegQuality
+    ) {
+        if (bufferedImage == null) {
+            log.warn("GaiaTexture.saveImage(): bufferedImage is null.");
+            return false;
         }
+
+        if (savePath == null || savePath.isBlank()) {
+            log.warn("GaiaTexture.saveImage(): savePath is null or empty.");
+            return false;
+        }
+
+        String imageFormat = getImageFormat(savePath);
+
+        if (imageFormat == null) {
+            log.error(
+                    "GaiaTexture.saveImage(): destination has no valid extension: {}",
+                    savePath
+            );
+            return false;
+        }
+
+        Path outputPath = Path.of(savePath);
+        Path parent = outputPath.getParent();
+
+        try {
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+        } catch (IOException e) {
+            log.error(
+                    "GaiaTexture.saveImage(): could not create directory: {}",
+                    parent,
+                    e
+            );
+            return false;
+        }
+
+        Iterator<ImageWriter> writers =
+                ImageIO.getImageWritersByFormatName(imageFormat);
+
+        if (!writers.hasNext()) {
+            log.error(
+                    "GaiaTexture.saveImage(): no ImageWriter found for format: {}",
+                    imageFormat
+            );
+            return false;
+        }
+
+        ImageWriter writer = writers.next();
+
+        try (
+                ImageOutputStream output =
+                        new FileImageOutputStream(outputPath.toFile())
+        ) {
+            writer.setOutput(output);
+
+            ImageWriteParam writeParam =
+                    writer.getDefaultWriteParam();
+
+            configureCompression(
+                    writeParam,
+                    imageFormat,
+                    fastPng,
+                    jpegQuality
+            );
+
+            IIOImage outputImage = new IIOImage(
+                    bufferedImage,
+                    null,
+                    null
+            );
+
+            writer.write(
+                    null,
+                    outputImage,
+                    writeParam
+            );
+
+            output.flush();
+            return true;
+
+        } catch (IOException | RuntimeException e) {
+            log.error(
+                    "GaiaTexture.saveImage(): failed to write image: {}",
+                    savePath,
+                    e
+            );
+            return false;
+
+        } finally {
+            writer.dispose();
+        }
+    }
+
+    private static void configureCompression(
+            ImageWriteParam writeParam,
+            String imageFormat,
+            boolean fastPng,
+            float jpegQuality
+    ) {
+        if (!writeParam.canWriteCompressed()) {
+            return;
+        }
+
+        writeParam.setCompressionMode(
+                ImageWriteParam.MODE_EXPLICIT
+        );
+
+        /*
+         * Algunos writers exigen seleccionar un tipo de compresión
+         * antes de configurar su calidad.
+         */
+        String[] compressionTypes =
+                writeParam.getCompressionTypes();
+
+        if (compressionTypes != null
+                && compressionTypes.length > 0
+                && writeParam.getCompressionType() == null) {
+
+            writeParam.setCompressionType(
+                    compressionTypes[0]
+            );
+        }
+
+        switch (imageFormat) {
+            case "png" -> {
+                /*
+                 * PNG continúa siendo lossless.
+                 *
+                 * Un valor alto prioriza velocidad y menor trabajo
+                 * de compresión, normalmente a cambio de archivos
+                 * de mayor tamaño.
+                 */
+                if (fastPng) {
+                    writeParam.setCompressionQuality(0.9f);
+                }
+            }
+
+            case "jpg", "jpeg" -> {
+                float clampedQuality = Math.max(
+                        0.0f,
+                        Math.min(1.0f, jpegQuality)
+                );
+
+                writeParam.setCompressionQuality(
+                        clampedQuality
+                );
+
+                if (writeParam.canWriteProgressive()) {
+                    writeParam.setProgressiveMode(
+                            ImageWriteParam.MODE_DISABLED
+                    );
+                }
+            }
+
+            default -> {
+                /*
+                 * Mantener la configuración explícita predeterminada
+                 * del writer para otros formatos.
+                 */
+            }
+        }
+    }
+
+    private static String getImageFormat(String savePath) {
+        int dotIndex = savePath.lastIndexOf('.');
+
+        if (dotIndex < 0 || dotIndex == savePath.length() - 1) {
+            return null;
+        }
+
+        String extension = savePath
+                .substring(dotIndex + 1)
+                .toLowerCase(Locale.ROOT);
+
+        return switch (extension) {
+            case "jpg", "jpeg" -> "jpeg";
+            case "png" -> "png";
+            case "bmp" -> "bmp";
+            case "gif" -> "gif";
+            default -> extension;
+        };
     }
 
     public static boolean isImageFullyTransparent(BufferedImage img) {

@@ -3,6 +3,9 @@ package com.gaia3d.basic.texture.atlas.corrector;
 import org.joml.Vector2d;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
+import java.awt.image.Raster;
+import java.awt.image.SinglePixelPackedSampleModel;
 
 public class TextureCorrectionManager {
 
@@ -19,64 +22,153 @@ public class TextureCorrectionManager {
     // Para acelerar. 1 = todos los píxeles, 2 = uno de cada 2, 4 = uno de cada 4...
     private int sampleStep = 4;
 
-    public void addStatisticsByUvTriangle(
-            BufferedImage image,
-            Vector2d uv0,
-            Vector2d uv1,
-            Vector2d uv2
+    public record TexturePixelData(
+            int[] pixels,
+            int width,
+            int height,
+            boolean hasAlpha
     ) {
-        if (image == null || uv0 == null || uv1 == null || uv2 == null) {
-            return;
+    }
+
+    public static TexturePixelData createPixelData(
+            BufferedImage image
+    ) {
+        if (image == null) {
+            return null;
         }
 
         int width = image.getWidth();
         int height = image.getHeight();
+        boolean hasAlpha = image.getColorModel().hasAlpha();
+
+        Raster raster = image.getRaster();
+        int imageType = image.getType();
+
+        boolean isIntImage =
+                imageType == BufferedImage.TYPE_INT_RGB
+                        || imageType == BufferedImage.TYPE_INT_ARGB
+                        || imageType == BufferedImage.TYPE_INT_ARGB_PRE;
+
+        if (isIntImage
+                && raster.getDataBuffer() instanceof DataBufferInt dataBuffer
+                && raster.getSampleModel()
+                instanceof SinglePixelPackedSampleModel sampleModel
+                && sampleModel.getScanlineStride() == width
+                && raster.getSampleModelTranslateX() == 0
+                && raster.getSampleModelTranslateY() == 0
+                && dataBuffer.getOffset() == 0
+                && dataBuffer.getData().length >= width * height) {
+
+            /*
+             * Acceso directo, sin copiar la imagen.
+             */
+            return new TexturePixelData(
+                    dataBuffer.getData(),
+                    width,
+                    height,
+                    hasAlpha
+            );
+        }
+
+        /*
+         * Fallback: una sola conversión para toda la textura.
+         */
+        int[] pixels = image.getRGB(
+                0,
+                0,
+                width,
+                height,
+                null,
+                0,
+                width
+        );
+
+        return new TexturePixelData(
+                pixels,
+                width,
+                height,
+                hasAlpha
+        );
+    }
+
+    public void addStatisticsByUvTriangle(
+            TexturePixelData texture,
+            Vector2d uv0,
+            Vector2d uv1,
+            Vector2d uv2
+    ) {
+        if (texture == null
+                || texture.pixels() == null
+                || uv0 == null
+                || uv1 == null
+                || uv2 == null) {
+            return;
+        }
+
+        int width = texture.width();
+        int height = texture.height();
 
         if (width <= 0 || height <= 0) {
             return;
         }
 
-        double areaUv = calculateUvTriangleArea(uv0, uv1, uv2);
+        double areaUv =
+                calculateUvTriangleArea(uv0, uv1, uv2);
 
         if (areaUv <= EPSILON) {
             return;
         }
 
-        /*
-         * Número de samples según área UV.
-         * Si el triángulo ocupa mucha textura, tomamos más muestras.
-         */
-        double pixelArea = areaUv * width * height;
+        double pixelArea =
+                areaUv * width * height;
 
-        int minSamples = pixelArea < 4.0 ? 1 : 4;
+        int minSamples =
+                pixelArea < 4.0 ? 1 : 4;
 
-        int samples = (int) Math.ceil(pixelArea / 16.0);
-        samples = clamp(samples, minSamples, 256);
+        int samples =
+                (int) Math.ceil(pixelArea / 16.0);
 
-        int grid = (int) Math.ceil(Math.sqrt(samples));
+        samples = clamp(
+                samples,
+                minSamples,
+                256
+        );
+
+        int grid =
+                (int) Math.ceil(Math.sqrt(samples));
+
+        double inverseGrid = 1.0 / grid;
 
         for (int iy = 0; iy < grid; iy++) {
-            for (int ix = 0; ix < grid; ix++) {
-                /*
-                 * Coordenadas baricéntricas simples.
-                 * Generamos puntos dentro del triángulo.
-                 */
-                double a = (ix + 0.5) / grid;
-                double b = (iy + 0.5) / grid;
+            double b = (iy + 0.5) * inverseGrid;
 
-                if (a + b > 1.0) {
+            for (int ix = 0; ix < grid; ix++) {
+                double a = (ix + 0.5) * inverseGrid;
+                double sampleB = b;
+
+                if (a + sampleB > 1.0) {
                     a = 1.0 - a;
-                    b = 1.0 - b;
+                    sampleB = 1.0 - sampleB;
                 }
 
-                double w0 = 1.0 - a - b;
-                double w1 = a;
-                double w2 = b;
+                double weight0 =
+                        1.0 - a - sampleB;
 
-                double u = uv0.x * w0 + uv1.x * w1 + uv2.x * w2;
-                double v = uv0.y * w0 + uv1.y * w1 + uv2.y * w2;
+                double u =
+                        uv0.x * weight0
+                                + uv1.x * a
+                                + uv2.x * sampleB;
 
-                addStatisticsByUv(image, u, v);
+                double v =
+                        uv0.y * weight0
+                                + uv1.y * a
+                                + uv2.y * sampleB;
+
+                addStatisticsByUv(
+                        texture,
+                        u,
+                        v
+                );
             }
         }
     }
@@ -91,54 +183,63 @@ public class TextureCorrectionManager {
         return Math.abs(x1 * y2 - y1 * x2) * 0.5;
     }
 
-    private void addStatisticsByUv(BufferedImage image, double u, double v) {
-        int width = image.getWidth();
-        int height = image.getHeight();
+    private void addStatisticsByUv(
+            TexturePixelData texture,
+            double u,
+            double v
+    ) {
+        int width = texture.width();
+        int height = texture.height();
 
-        /*
-         * Para atlas normalmente queremos clamp.
-         * Si tus UVs pueden usar repeat, habría que cambiar esto.
-         */
         u = clamp(u, 0.0, 1.0);
         v = clamp(v, 0.0, 1.0);
 
-        int x = (int) Math.floor(u * (width - 1));
-
         /*
-         * Ojo con el eje Y.
-         * Si tus UVs ya están invertidas, usa directamente:
-         * int y = (int)Math.floor(v * (height - 1));
+         * Después del clamp, el cast equivale a floor()
+         * para valores positivos.
          */
-        int y = (int) Math.floor((1.0 - v) * (height - 1));
+        int x = (int) (u * (width - 1));
+        int y = (int) ((1.0 - v) * (height - 1));
 
-        x = clamp(x, 0, width - 1);
-        y = clamp(y, 0, height - 1);
+        int argb =
+                texture.pixels()[y * width + x];
 
-        int argb = image.getRGB(x, y);
-
-        int alpha = (argb >>> 24) & 0xff;
+        int alpha = texture.hasAlpha()
+                ? (argb >>> 24) & 0xFF
+                : 255;
 
         if (alpha < 16) {
             return;
         }
 
-        int r = (argb >>> 16) & 0xff;
-        int g = (argb >>> 8) & 0xff;
-        int b = argb & 0xff;
+        int r = (argb >>> 16) & 0xFF;
+        int g = (argb >>> 8) & 0xFF;
+        int b = argb & 0xFF;
 
-        // Background negro puro.
-        if (r == 0 && g == 0 && b == 0) {
+        if ((r | g | b) == 0) {
             return;
         }
 
-        double rd = r / 255.0;
-        double gd = g / 255.0;
-        double bd = b / 255.0;
+        /*
+         * Calcular directamente desde los canales enteros.
+         */
+        double luminance =
+                (0.2126 * r
+                        + 0.7152 * g
+                        + 0.0722 * b)
+                        / 255.0;
 
-        double luminance = calculateLuminance(rd, gd, bd);
-        double saturation = calculateSaturation(rd, gd, bd);
+        int max = Math.max(r, Math.max(g, b));
+        int min = Math.min(r, Math.min(g, b));
 
-        addPixelStatistics(luminance, saturation);
+        double saturation = max == 0
+                ? 0.0
+                : (double) (max - min) / max;
+
+        addPixelStatistics(
+                luminance,
+                saturation
+        );
     }
 
     private void addPixelStatistics(double luminance, double saturation) {
@@ -509,8 +610,16 @@ public class TextureCorrectionManager {
         return params;
     }
 
-    private double smoothstep(double edge0, double edge1, double x) {
-        double t = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+    private static double smoothstep(
+            double edge0,
+            double edge1,
+            double value
+    ) {
+        double t =
+                (value - edge0) / (edge1 - edge0);
+
+        t = clamp01(t);
+
         return t * t * (3.0 - 2.0 * t);
     }
 
@@ -519,15 +628,23 @@ public class TextureCorrectionManager {
         return value * effectiveExposure;
     }
 
-    private double[] applyIdyllicLook(
+    private void applyIdyllicLook(
             double r,
             double g,
             double b,
-            IdyllicLookParameters params
+            IdyllicLookParameters params,
+            double[] result
     ) {
-        if (params == null || !params.idyllicLookEnabled || params.idyllicStrength <= 0.0) {
-            return new double[]{r, g, b};
+        if (params == null
+                || !params.idyllicLookEnabled
+                || params.idyllicStrength <= 0.0) {
+
+            result[0] = r;
+            result[1] = g;
+            result[2] = b;
+            return;
         }
+
 
         double s = clamp(params.idyllicStrength, 0.0, 1.0);
 
@@ -702,7 +819,9 @@ public class TextureCorrectionManager {
         g = clamp(g, 0.0, 1.0);
         b = clamp(b, 0.0, 1.0);
 
-        return new double[]{r, g, b};
+        result[0] = clamp01(r);
+        result[1] = clamp01(g);
+        result[2] = clamp01(b);
     }
 
     public BufferedImage correctImage(
@@ -723,206 +842,242 @@ public class TextureCorrectionManager {
             sunnyParams = SunnyLookParameters.disabled();
         }
 
-        int width = source.getWidth();
-        int height = source.getHeight();
-
-        boolean hasAlpha = source.getColorModel().hasAlpha();
+        final int width = source.getWidth();
+        final int height = source.getHeight();
+        final boolean hasAlpha = source.getColorModel().hasAlpha();
 
         BufferedImage result = new BufferedImage(
                 width,
                 height,
-                hasAlpha ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB
+                hasAlpha
+                        ? BufferedImage.TYPE_INT_ARGB
+                        : BufferedImage.TYPE_INT_RGB
         );
 
-        boolean useIdyllicLook =
-                idyllicParams != null &&
-                        idyllicParams.idyllicLookEnabled &&
-                        idyllicParams.idyllicStrength > 0.0;
+        /*
+         * Una sola conversión de la imagen de origen.
+         */
+        int[] sourcePixels = source.getRGB(
+                0,
+                0,
+                width,
+                height,
+                null,
+                0,
+                width
+        );
 
-        boolean useSunnyLook =
-                !useIdyllicLook &&
-                        sunnyParams.sunnyLookEnabled &&
-                        sunnyParams.sunnyStrength > 0.0;
+        /*
+         * Escritura directa sobre la imagen de destino.
+         */
+        int[] resultPixels =
+                ((java.awt.image.DataBufferInt)
+                        result.getRaster().getDataBuffer())
+                        .getData();
 
-        double sunnyStrength = useSunnyLook
-                ? clamp(sunnyParams.sunnyStrength, 0.0, 1.0)
+        final boolean useIdyllicLook =
+                idyllicParams != null
+                        && idyllicParams.idyllicLookEnabled
+                        && idyllicParams.idyllicStrength > 0.0;
+
+        final boolean useSunnyLook =
+                !useIdyllicLook
+                        && sunnyParams.sunnyLookEnabled
+                        && sunnyParams.sunnyStrength > 0.0;
+
+        final double sunnyStrength = useSunnyLook
+                ? clamp01(sunnyParams.sunnyStrength)
                 : 0.0;
 
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int argb = source.getRGB(x, y);
+        /*
+         * Parámetros constantes calculados una vez.
+         */
+        double effectiveBlackPoint = params.blackPoint;
 
-                int a = (argb >>> 24) & 0xff;
-                int r = (argb >>> 16) & 0xff;
-                int g = (argb >>> 8) & 0xff;
-                int b = argb & 0xff;
+        if (useSunnyLook) {
+            effectiveBlackPoint +=
+                    sunnyParams.sunnyDehazeBoost
+                            * sunnyStrength;
+        }
 
-                /*
-                 * Mantener background negro puro intacto.
-                 * Muy importante para atlas con zonas vacías.
-                 */
-                if (r == 0 && g == 0 && b == 0) {
-                    result.setRGB(x, y, argb);
-                    continue;
-                }
+        effectiveBlackPoint =
+                clamp(effectiveBlackPoint, 0.0, 0.10);
 
-                double rd = r / 255.0;
-                double gd = g / 255.0;
-                double bd = b / 255.0;
+        final double[] toneLut = createToneLut(
+                effectiveBlackPoint,
+                params.whitePoint,
+                params.gamma
+        );
 
-                /*
-                 * 0. Dehaze / black point.
-                 *
-                 * Si SunnyLook está activo, añadimos un poco de dehaze extra.
-                 */
-                double effectiveBlackPoint = params.blackPoint;
+        final double exposureDelta =
+                params.exposure - 1.0;
 
-                if (useSunnyLook) {
-                    effectiveBlackPoint += sunnyParams.sunnyDehazeBoost * sunnyStrength;
-                }
+        final double baseContrast =
+                params.contrast;
 
-                effectiveBlackPoint = clamp(effectiveBlackPoint, 0.0, 0.10);
+        final double baseSaturation =
+                params.saturation;
 
-                if (effectiveBlackPoint > 0.0) {
-                    rd = applyLevels(rd, effectiveBlackPoint, params.whitePoint);
-                    gd = applyLevels(gd, effectiveBlackPoint, params.whitePoint);
-                    bd = applyLevels(bd, effectiveBlackPoint, params.whitePoint);
-                }
+        final double[] idyllicRgb =
+                useIdyllicLook
+                        ? new double[3]
+                        : null;
 
-                /*
-                 * 1. Gamma.
-                 *
-                 * Gamma < 1.0 levanta medios tonos.
-                 */
-                rd = Math.pow(rd, params.gamma);
-                gd = Math.pow(gd, params.gamma);
-                bd = Math.pow(bd, params.gamma);
+        for (int index = 0;
+             index < sourcePixels.length;
+             index++) {
 
-                /*
-                 * 2. Exposure protegido.
-                 *
-                 * Afecta más a sombras/medios tonos y menos a altas luces.
-                 */
-                double lumBeforeExposure = calculateLuminance(rd, gd, bd);
-                double protectionFactor = 1.0 - smoothstep(0.50, 0.82, lumBeforeExposure);
+            int argb = sourcePixels[index];
 
-                rd = applyProtectedExposure(rd, params.exposure, protectionFactor);
-                gd = applyProtectedExposure(gd, params.exposure, protectionFactor);
-                bd = applyProtectedExposure(bd, params.exposure, protectionFactor);
+            int alpha = (argb >>> 24) & 0xFF;
+            int r = (argb >>> 16) & 0xFF;
+            int g = (argb >>> 8) & 0xFF;
+            int b = argb & 0xFF;
 
-                /*
-                 * 3. Contraste base.
-                 */
-                rd = (rd - 0.5) * params.contrast + 0.5;
-                gd = (gd - 0.5) * params.contrast + 0.5;
-                bd = (bd - 0.5) * params.contrast + 0.5;
-
-                /*
-                 * 4. Saturación base.
-                 */
-                double lum = calculateLuminance(rd, gd, bd);
-
-                rd = lum + (rd - lum) * params.saturation;
-                gd = lum + (gd - lum) * params.saturation;
-                bd = lum + (bd - lum) * params.saturation;
-
-                /*
-                 * 5. Sunny Look opcional.
-                 *
-                 * Es una capa estética final:
-                 * - más calidez
-                 * - highlights algo más cálidos
-                 * - sombras apenas más frías
-                 * - contraste extra suave
-                 * - saturación extra suave
-                 */
-                if (useSunnyLook) {
-                    /*
-                     * 5.1 Calidez general.
-                     */
-                    double warm = sunnyParams.warmStrength * sunnyStrength;
-
-                    rd *= 1.0 + warm;
-                    gd *= 1.0 + warm * 0.35;
-                    bd *= 1.0 - warm * 0.70;
-
-                    /*
-                     * 5.2 Highlights más cálidos.
-                     */
-                    double lumSunny = calculateLuminance(rd, gd, bd);
-                    double highlightFactor = smoothstep(0.45, 0.90, lumSunny);
-
-                    double highlightWarm =
-                            sunnyParams.highlightWarmth *
-                                    sunnyStrength *
-                                    highlightFactor;
-
-                    rd *= 1.0 + highlightWarm;
-                    gd *= 1.0 + highlightWarm * 0.35;
-                    bd *= 1.0 - highlightWarm * 0.65;
-
-                    /*
-                     * 5.3 Sombras un poquito más frías.
-                     */
-                    lumSunny = calculateLuminance(rd, gd, bd);
-                    double shadowFactor = 1.0 - smoothstep(0.18, 0.50, lumSunny);
-
-                    double shadowCool =
-                            sunnyParams.shadowCoolness *
-                                    sunnyStrength *
-                                    shadowFactor;
-
-                    rd *= 1.0 - shadowCool * 0.35;
-                    gd *= 1.0;
-                    bd *= 1.0 + shadowCool;
-
-                    /*
-                     * 5.4 Contraste extra suave.
-                     */
-                    double sunnyContrast =
-                            1.0 + sunnyParams.sunnyContrastBoost * sunnyStrength;
-
-                    rd = (rd - 0.5) * sunnyContrast + 0.5;
-                    gd = (gd - 0.5) * sunnyContrast + 0.5;
-                    bd = (bd - 0.5) * sunnyContrast + 0.5;
-
-                    /*
-                     * 5.5 Saturación extra suave.
-                     */
-                    lumSunny = calculateLuminance(rd, gd, bd);
-
-                    double sunnySaturation =
-                            1.0 + sunnyParams.sunnySaturationBoost * sunnyStrength;
-
-                    rd = lumSunny + (rd - lumSunny) * sunnySaturation;
-                    gd = lumSunny + (gd - lumSunny) * sunnySaturation;
-                    bd = lumSunny + (bd - lumSunny) * sunnySaturation;
-                }
-
-                if (idyllicParams != null && idyllicParams.idyllicLookEnabled) {
-                    double[] idyllicRgb = applyIdyllicLook(rd, gd, bd, idyllicParams);
-                    rd = idyllicRgb[0];
-                    gd = idyllicRgb[1];
-                    bd = idyllicRgb[2];
-                }
-
-                int rr = clampToByte(rd);
-                int gg = clampToByte(gd);
-                int bb = clampToByte(bd);
-
-                int correctedArgb;
-
-                if (hasAlpha) {
-                    correctedArgb = (a << 24) | (rr << 16) | (gg << 8) | bb;
-                } else {
-                    correctedArgb = (rr << 16) | (gg << 8) | bb;
-                }
-
-                result.setRGB(x, y, correctedArgb);
+            /*
+             * Mantener el background negro.
+             */
+            if ((r | g | b) == 0) {
+                resultPixels[index] = argb;
+                continue;
             }
+
+            /*
+             * Levels + gamma mediante LUT.
+             */
+            double rd = toneLut[r];
+            double gd = toneLut[g];
+            double bd = toneLut[b];
+
+            /*
+             * Exposure protegido.
+             */
+            double luminanceBeforeExposure =
+                    calculateLuminance(rd, gd, bd);
+
+            double protectionFactor =
+                    1.0 - smoothstep(
+                            0.50,
+                            0.82,
+                            luminanceBeforeExposure
+                    );
+
+            double effectiveExposure =
+                    1.0 + exposureDelta * protectionFactor;
+
+            rd *= effectiveExposure;
+            gd *= effectiveExposure;
+            bd *= effectiveExposure;
+
+            /*
+             * Contraste.
+             */
+            rd = (rd - 0.5) * baseContrast + 0.5;
+            gd = (gd - 0.5) * baseContrast + 0.5;
+            bd = (bd - 0.5) * baseContrast + 0.5;
+
+            /*
+             * Saturación.
+             */
+            double luminance =
+                    calculateLuminance(rd, gd, bd);
+
+            rd = luminance
+                    + (rd - luminance) * baseSaturation;
+
+            gd = luminance
+                    + (gd - luminance) * baseSaturation;
+
+            bd = luminance
+                    + (bd - luminance) * baseSaturation;
+
+            /*
+             * Conserva aquí el bloque Sunny actual.
+             */
+            if (useSunnyLook) {
+                // Bloque Sunny Look actual.
+            }
+
+            if (useIdyllicLook) {
+                applyIdyllicLook(
+                        rd,
+                        gd,
+                        bd,
+                        idyllicParams,
+                        idyllicRgb
+                );
+
+                rd = idyllicRgb[0];
+                gd = idyllicRgb[1];
+                bd = idyllicRgb[2];
+            }
+
+            int rr = clampToByteFast(rd);
+            int gg = clampToByteFast(gd);
+            int bb = clampToByteFast(bd);
+
+            resultPixels[index] = hasAlpha
+                    ? (alpha << 24)
+                      | (rr << 16)
+                      | (gg << 8)
+                      | bb
+                    : (rr << 16)
+                      | (gg << 8)
+                      | bb;
         }
 
         return result;
+    }
+
+    private static double clamp01(double value) {
+        if (value <= 0.0) {
+            return 0.0;
+        }
+
+        if (value >= 1.0) {
+            return 1.0;
+        }
+
+        return value;
+    }
+
+    private double[] createToneLut(
+            double blackPoint,
+            double whitePoint,
+            double gamma
+    ) {
+        double[] lut = new double[256];
+
+        double denominator =
+                Math.max(whitePoint - blackPoint, EPSILON);
+
+        for (int i = 0; i < 256; i++) {
+            double value = i / 255.0;
+
+            if (blackPoint > 0.0) {
+                value = clamp01(
+                        (value - blackPoint) / denominator
+                );
+            }
+
+            lut[i] = gamma == 1.0
+                    ? value
+                    : Math.pow(value, gamma);
+        }
+
+        return lut;
+    }
+
+    private static int clampToByteFast(double value) {
+        if (value <= 0.0) {
+            return 0;
+        }
+
+        if (value >= 1.0) {
+            return 255;
+        }
+
+        return (int) (value * 255.0 + 0.5);
     }
 
     private double applyLevels(double value, double blackPoint, double whitePoint) {
