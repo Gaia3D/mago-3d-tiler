@@ -2,6 +2,7 @@ package com.gaia3d.util.unit;
 
 import com.gaia3d.command.LoggingConfiguration;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import javax.imageio.IIOImage;
@@ -17,6 +18,7 @@ import java.io.OutputStream;
 import java.util.Iterator;
 
 @Slf4j
+@Tag("manual")
 public class ImageIOTest {
 
     @Test

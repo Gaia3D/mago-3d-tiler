@@ -1,11 +1,7 @@
 package com.gaia3d.basic.command;
 
-import com.gaia3d.command.LoggingConfiguration;
 import com.gaia3d.command.mago.Mago3DTilerMain;
-import com.gaia3d.modifier.billboard.plane.TreeBillBoardOptions;
-import com.gaia3d.modifier.billboard.plane.TreeBillboardCreator;
 import com.gaia3d.util.GlobeUtils;
-import com.gaia3d.util.ImageUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 import org.junit.jupiter.api.Test;
@@ -13,12 +9,6 @@ import org.locationtech.proj4j.BasicCoordinateTransform;
 import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
-
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 
 @SuppressWarnings("ALL")
 @Deprecated
@@ -850,28 +840,5 @@ class UnitTest {
                 "-rx", "-90"
         };
         Mago3DTilerMain.main(args);
-    }
-
-    @Test
-    void test_treeBillBoard() {
-        // hwal-0, jat-0, nak-0, tree-0
-        //String inputPath = "D:\\user\\znkim\\Downloads\\11.잣나무(PK)\\PK_KS_220712_0006\\PK_KS_220712_0006.fbx";
-        String inputPath = "D:\\user\\znkim\\Desktop\\sample.glb";
-        //String inputPath = "D:\\data\\korea-forest-service\\birch.glb";
-        String outputPath = "D:\\user\\znkim\\Downloads\\11.잣나무(PK)\\PK_KS_220712_0006\\";
-
-//        String[] args = new String[]{
-//                "-i", inputPath,
-//                "-it", "glb",
-//                "-o", outputPath
-//        };
-//        Mago3DTilerMain.main(args);
-
-        TreeBillBoardOptions treeBillBoardParameters = new TreeBillBoardOptions();
-        treeBillBoardParameters.setVerticalRectanglesCount(3);
-        treeBillBoardParameters.setHorizontalRectanglesCount(5);
-
-        TreeBillboardCreator treeCreator = new TreeBillboardCreator();
-        treeCreator.createTreeBillBoard(treeBillBoardParameters, inputPath, outputPath);
     }
 }

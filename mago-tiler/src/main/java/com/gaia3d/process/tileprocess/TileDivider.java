@@ -21,7 +21,7 @@ import java.util.List;
 @Slf4j
 public class TileDivider {
 
-    private GlobalOptions globalOptions = GlobalOptions.getInstance();
+    private static GlobalOptions globalOptions = GlobalOptions.getInstance();
     private final ObjectMapper mapper = new ObjectMapper();
     private long subtreeIdCounter = 0;
 

@@ -9,7 +9,7 @@ import java.io.File;
 
 @Tag("default")
 @Slf4j
-class DefaultBuildTest {
+class DefaultTest {
 
     @Test
     void noArgs() {

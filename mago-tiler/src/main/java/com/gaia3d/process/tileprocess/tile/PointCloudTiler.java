@@ -212,8 +212,6 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
                     expandNode(index, firstChildNode, rootTile, chunk, rootPointLimit, 0);
                 }
 
-                //log.info("[Tile][{}/{}][{}/{}][Chunk {}/{}]", index, maximumIndex, index, maximumIndex, (i + 1), chunkCount);
-                //printDebugAllNodeCount(rootTile, "", 0);
                 List<GaiaPointCloud> childrenPointClouds = rootTile.getAllLeaves();
                 minimizeAllPointCloud(index, maximumIndex, childrenPointClouds);
                 chunk.clearPoints();
@@ -376,6 +374,9 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         GaiaBoundingBox cubeBoundingBox = pointCloud.getGaiaBoundingBox();
         //GaiaBoundingBox fitBoundingBox = calcFitBoundingBox(pointCloud);
         GaiaBoundingBox fitBoundingBox = calcFitBoundingBox(cubeBoundingBox);
+        if (fitBoundingBox == null) {
+            return pointCloud;
+        }
         double dimensionRatio = calcDimensionRatio(fitBoundingBox, cubeBoundingBox);
         int chunkPointLimit = (int) (pointLimit * dimensionRatio);
         if (chunkPointLimit < 1) {

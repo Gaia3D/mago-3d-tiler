@@ -29,13 +29,14 @@ import java.util.List;
 public class InstancedFileLoader implements FileLoader {
     private final Converter converter;
     private final AttributeReader attributeReader;
+    private final InstancedTempGenerator tempGenerator;
 
     /* For instanced model */
     private File instanceFile = null;
     private GaiaScene instanceScene = null;
 
     public List<File> loadTemp(File tempPath, List<File> files) {
-        return files;
+        return tempGenerator.generate(tempPath, files);
     }
 
     public List<GaiaScene> loadScene(File input) {
@@ -93,6 +94,21 @@ public class InstancedFileLoader implements FileLoader {
         FormatType formatType = globalOptions.getInputFormat();
         List<TileInfo> tileInfos = new ArrayList<>();
 
+        if (InstancedTempFileHelper.isTempFile(file)) {
+            ensureInstanceScene(file, formatType);
+            List<TileTransformInfo> tileTransformInfos = InstancedTempFileHelper.read(file);
+            for (TileTransformInfo tileTransformInfo : tileTransformInfos) {
+                TileInfo tileInfo = TileInfo.builder()
+                        .scene(instanceScene)
+                        .tileTransformInfo(tileTransformInfo)
+                        .isI3dm(true)
+                        .outputPath(outputPath)
+                        .build();
+                tileInfos.add(tileInfo);
+            }
+            return tileInfos;
+        }
+
         if (FormatType.KML == formatType) {
             List<TileTransformInfo> tileTransformInfos = attributeReader.readAll(file);
             if (tileTransformInfos != null) {
@@ -116,13 +132,7 @@ public class InstancedFileLoader implements FileLoader {
                 }
             }
         } else {
-            File meshData = new File(globalOptions.getInstancePath());
-            List<GaiaScene> scenes = loadScene(meshData);
-            for (GaiaScene scene : scenes) {
-                if (instanceScene == null) {
-                    instanceScene = scene;
-                }
-            }
+            ensureInstanceScene(file, formatType);
             // geojson, shape type
             List<TileTransformInfo> tileTransformInfos = attributeReader.readAll(file);
             if (tileTransformInfos != null) {
@@ -138,5 +148,26 @@ public class InstancedFileLoader implements FileLoader {
             }
         }
         return tileInfos;
+    }
+
+    private void ensureInstanceScene(File file, FormatType formatType) {
+        if (instanceScene != null) {
+            return;
+        }
+
+        if (FormatType.KML == formatType) {
+            return;
+        }
+
+        File meshData = new File(GlobalOptions.getInstance().getInstancePath());
+        List<GaiaScene> scenes = loadScene(meshData);
+        for (GaiaScene scene : scenes) {
+            if (instanceScene == null) {
+                instanceScene = scene;
+            }
+        }
+        if (instanceScene == null) {
+            throw new RuntimeException("Failed to load instanced scene: " + file.getAbsolutePath());
+        }
     }
 }

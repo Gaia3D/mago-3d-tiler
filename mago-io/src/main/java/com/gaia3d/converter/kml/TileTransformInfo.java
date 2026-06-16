@@ -2,6 +2,8 @@ package com.gaia3d.converter.kml;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.Setter;
 import org.joml.Vector3d;
 
@@ -14,6 +16,8 @@ import java.util.Map;
 @Builder
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class TileTransformInfo {
     private String name;
 

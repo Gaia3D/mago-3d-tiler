@@ -147,7 +147,7 @@ public abstract class DefaultTiler {
     }
 
     protected void validateTileInfos(List<TileInfo> tileInfos, String context) {
-        if (tileInfos == null || tileInfos.isEmpty()) {
+        if (tileInfos == null) {
             throw new TileProcessingException(context + " requires at least one tile info.");
         }
         for (int i = 0; i < tileInfos.size(); i++) {

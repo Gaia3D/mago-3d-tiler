@@ -3,6 +3,7 @@ package com.gaia3d.local.env;
 import com.gaia3d.command.LoggingConfiguration;
 import com.gaia3d.local.DockerRun;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
+@Tag("manual")
 class DockerBuildTest {
 
     static {

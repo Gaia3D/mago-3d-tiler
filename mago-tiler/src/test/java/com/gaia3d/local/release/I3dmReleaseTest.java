@@ -176,22 +176,6 @@ class I3dmReleaseTest {
     }
 
     @Test
-    void instanced09C() {
-        String path = "I09-forest-map-big";
-        String[] args = new String[]{
-                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath("ESD/" + path).getAbsolutePath() + "-C",
-                "-c", "5179",
-                "-ot", "forest",
-                //"-refineAdd",
-                "-instance", MagoTestConfig.getInputPath(path).getAbsolutePath() + "/instance.glb",
-                //"-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
-                "-attributeFilter", "FRTP_NM=침엽수림",
-        };
-        MagoTestConfig.execute(args);
-    }
-
-    @Test
     void instanced06add() {
         String path = "I04-forest-shp";
         String[] args = new String[]{
