@@ -80,12 +80,6 @@ public class HalfEdgeScene implements Serializable {
         }
     }
 
-    public void checkSandClockFaces() {
-        for (HalfEdgeNode node : nodes) {
-            node.checkSandClockFaces();
-        }
-    }
-
     public void spendTransformationMatrix() {
         for (HalfEdgeNode node : nodes) {
             node.spendTransformationMatrix();

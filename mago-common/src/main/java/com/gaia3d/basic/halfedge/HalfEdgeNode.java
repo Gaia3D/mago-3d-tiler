@@ -36,15 +36,6 @@ public class HalfEdgeNode implements Serializable {
         children.clear();
     }
 
-    public void checkSandClockFaces() {
-        for (HalfEdgeMesh mesh : meshes) {
-            mesh.checkSandClockFaces();
-        }
-        for (HalfEdgeNode child : children) {
-            child.checkSandClockFaces();
-        }
-    }
-
     public void calculateNormals() {
         for (HalfEdgeMesh mesh : meshes) {
             mesh.calculateNormals();

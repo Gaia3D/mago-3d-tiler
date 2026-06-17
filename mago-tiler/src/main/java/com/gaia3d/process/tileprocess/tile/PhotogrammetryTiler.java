@@ -63,10 +63,21 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
     public final GlobalOptions globalOptions = GlobalOptions.getInstance();
+    public int projectMaxDepthIdx = -1;
+    public Map<Integer, List<TileInfo>> mapLodToTileInfos = new HashMap<>();
 
     @Override
     public Tileset run(List<TileInfo> tileInfos) throws FileNotFoundException {
         return runMode1(tileInfos);
+    }
+
+    protected void addTileInfoInLod(int lod, TileInfo tileInfo) {
+        // check mapLodToTileInfos
+        if (!mapLodToTileInfos.containsKey(lod)) {
+            mapLodToTileInfos.put(lod, new ArrayList<>());
+        }
+
+        mapLodToTileInfos.get(lod).add(tileInfo);
     }
 
     public Tileset runMode1(List<TileInfo> tileInfos) throws FileNotFoundException {
@@ -96,7 +107,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 
         double desiredLeafDist = GlobalConstants.REALISTIC_LEAF_TILE_SIZE;
 
-        int projectMaxDepthIdx = (int) Math.ceil(HalfEdgeUtils.log2(distanceFinal / desiredLeafDist));
+        projectMaxDepthIdx = (int) Math.ceil(HalfEdgeUtils.log2(distanceFinal / desiredLeafDist));
         double desiredDistanceBetweenLat = desiredLeafDist * Math.pow(2, projectMaxDepthIdx);
         double desiredAngRadLat = GlobeUtils.angRadLatitudeForDistance(minLatRad, desiredDistanceBetweenLat);
         double desiredAngRadLon = GlobeUtils.angRadLongitudeForDistance(minLatRad, desiredDistanceBetweenLat);

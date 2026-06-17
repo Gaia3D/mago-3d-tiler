@@ -28,12 +28,6 @@ public class HalfEdgeMesh implements Serializable {
         primitives.clear();
     }
 
-    public void checkSandClockFaces() {
-        for (HalfEdgePrimitive primitive : primitives) {
-            primitive.checkSandClockFaces();
-        }
-    }
-
     public void transformPoints(Matrix4d finalMatrix) {
         for (HalfEdgePrimitive primitive : primitives) {
             primitive.transformPoints(finalMatrix);

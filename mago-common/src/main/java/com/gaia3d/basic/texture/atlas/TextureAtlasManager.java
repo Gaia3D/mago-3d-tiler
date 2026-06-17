@@ -9,9 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector2d;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.awt.image.Raster;
-import java.awt.image.WritableRaster;
+import java.awt.image.*;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -1535,6 +1533,261 @@ public class TextureAtlasManager {
     }
 
     public static void dilateBackgroundColor(
+            BufferedImage image,
+            Color backgroundColor
+    ) {
+        if (image == null || backgroundColor == null) {
+            return;
+        }
+
+        log.debug("*** start dilate - Background - Color ***");
+
+        final int width = image.getWidth();
+        final int height = image.getHeight();
+
+        if (width <= 0 || height <= 0) {
+            return;
+        }
+
+        final int pixelCount = width * height;
+        final int rgbMask = 0x00FFFFFF;
+        final int backgroundRGB = backgroundColor.getRGB() & rgbMask;
+
+        /*
+         * Cuando la imagen tiene almacenamiento int[] compatible,
+         * trabajamos directamente sobre sus píxeles.
+         *
+         * Así evitamos:
+         *   image.getRGB(...)
+         *   image.setRGB(...)
+         *   una copia completa de la imagen
+         */
+        int[] pixels = null;
+        boolean directPixelAccess = false;
+
+        int imageType = image.getType();
+        WritableRaster raster = image.getRaster();
+
+        if ((imageType == BufferedImage.TYPE_INT_ARGB
+                || imageType == BufferedImage.TYPE_INT_RGB)
+                && raster.getDataBuffer() instanceof DataBufferInt dataBuffer
+                && raster.getSampleModel()
+                instanceof SinglePixelPackedSampleModel sampleModel
+                && sampleModel.getScanlineStride() == width
+                && raster.getSampleModelTranslateX() == 0
+                && raster.getSampleModelTranslateY() == 0
+                && dataBuffer.getOffset() == 0
+                && dataBuffer.getData().length >= pixelCount) {
+
+            pixels = dataBuffer.getData();
+            directPixelAccess = true;
+        }
+
+        /*
+         * Fallback seguro para otros tipos de BufferedImage,
+         * por ejemplo TYPE_3BYTE_BGR.
+         */
+        if (!directPixelAccess) {
+            pixels = image.getRGB(
+                    0,
+                    0,
+                    width,
+                    height,
+                    null,
+                    0,
+                    width
+            );
+        }
+
+        /*
+         * byte[] evita el coste de estructuras como HashSet.
+         *
+         * 0 = todavía no añadido
+         * 1 = ya añadido
+         */
+        byte[] queued = new byte[pixelCount];
+
+        /*
+         * Cola primitiva.
+         *
+         * Cada píxel puede añadirse como máximo una vez,
+         * por lo que pixelCount es capacidad suficiente.
+         */
+        int[] queue = new int[pixelCount];
+
+        int head = 0;
+        int tail = 0;
+
+        /*
+         * Primera fase:
+         * localizar píxeles de fondo que tocan algún píxel coloreado.
+         */
+        for (int y = 0; y < height; y++) {
+            int rowStart = y * width;
+
+            for (int x = 0; x < width; x++) {
+                int index = rowStart + x;
+
+                if ((pixels[index] & rgbMask) != backgroundRGB) {
+                    continue;
+                }
+
+                boolean touchesColoredPixel = false;
+
+                // Derecha.
+                if (x + 1 < width
+                        && (pixels[index + 1] & rgbMask) != backgroundRGB) {
+                    touchesColoredPixel = true;
+                }
+                // Izquierda.
+                else if (x > 0
+                        && (pixels[index - 1] & rgbMask) != backgroundRGB) {
+                    touchesColoredPixel = true;
+                }
+                // Abajo.
+                else if (index + width < pixelCount
+                        && (pixels[index + width] & rgbMask) != backgroundRGB) {
+                    touchesColoredPixel = true;
+                }
+                // Arriba.
+                else if (index >= width
+                        && (pixels[index - width] & rgbMask) != backgroundRGB) {
+                    touchesColoredPixel = true;
+                }
+
+                if (touchesColoredPixel) {
+                    queued[index] = 1;
+                    queue[tail++] = index;
+                }
+            }
+        }
+
+        /*
+         * Segunda fase:
+         * propagación BFS del color.
+         */
+        while (head < tail) {
+            int index = queue[head++];
+
+            /*
+             * Solo necesitamos x para controlar los límites
+             * izquierdo y derecho. No hace falta calcular y.
+             */
+            int x = index % width;
+
+            int replacement;
+
+            /*
+             * Conservamos el mismo orden que el código original:
+             * derecha, izquierda, abajo, arriba.
+             */
+            if (x + 1 < width
+                    && (pixels[index + 1] & rgbMask) != backgroundRGB) {
+
+                replacement = pixels[index + 1];
+
+            } else if (x > 0
+                    && (pixels[index - 1] & rgbMask) != backgroundRGB) {
+
+                replacement = pixels[index - 1];
+
+            } else if (index + width < pixelCount
+                    && (pixels[index + width] & rgbMask) != backgroundRGB) {
+
+                replacement = pixels[index + width];
+
+            } else if (index >= width
+                    && (pixels[index - width] & rgbMask) != backgroundRGB) {
+
+                replacement = pixels[index - width];
+
+            } else {
+                /*
+                 * En condiciones normales no debería ocurrir,
+                 * porque el píxel se añade solamente cuando toca
+                 * un píxel ya coloreado.
+                 */
+                continue;
+            }
+
+            pixels[index] = replacement;
+
+            /*
+             * Añadir los píxeles de fondo vecinos.
+             */
+
+            // Derecha.
+            if (x + 1 < width) {
+                int neighborIndex = index + 1;
+
+                if (queued[neighborIndex] == 0
+                        && (pixels[neighborIndex] & rgbMask) == backgroundRGB) {
+
+                    queued[neighborIndex] = 1;
+                    queue[tail++] = neighborIndex;
+                }
+            }
+
+            // Izquierda.
+            if (x > 0) {
+                int neighborIndex = index - 1;
+
+                if (queued[neighborIndex] == 0
+                        && (pixels[neighborIndex] & rgbMask) == backgroundRGB) {
+
+                    queued[neighborIndex] = 1;
+                    queue[tail++] = neighborIndex;
+                }
+            }
+
+            // Abajo.
+            if (index + width < pixelCount) {
+                int neighborIndex = index + width;
+
+                if (queued[neighborIndex] == 0
+                        && (pixels[neighborIndex] & rgbMask) == backgroundRGB) {
+
+                    queued[neighborIndex] = 1;
+                    queue[tail++] = neighborIndex;
+                }
+            }
+
+            // Arriba.
+            if (index >= width) {
+                int neighborIndex = index - width;
+
+                if (queued[neighborIndex] == 0
+                        && (pixels[neighborIndex] & rgbMask) == backgroundRGB) {
+
+                    queued[neighborIndex] = 1;
+                    queue[tail++] = neighborIndex;
+                }
+            }
+        }
+
+        /*
+         * Solo copiamos los píxeles de vuelta cuando no pudimos
+         * acceder directamente al DataBufferInt.
+         */
+        if (!directPixelAccess) {
+            image.setRGB(
+                    0,
+                    0,
+                    width,
+                    height,
+                    pixels,
+                    0,
+                    width
+            );
+        }
+
+        log.debug(
+                "--- end dilate - Background - Color. Dilated pixels: {} ---",
+                tail
+        );
+    }
+
+    public static void dilateBackgroundColor_original(
             BufferedImage image,
             Color backgroundColor
     ) {
