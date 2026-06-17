@@ -119,29 +119,16 @@ public class ImageUtils {
     }
 
     public static File getChildFile(File parent, String path) {
-        File file = new File(parent, path);
-        String name = FilenameUtils.getBaseName(path);
-        String ext = FilenameUtils.getExtension(path);
-        if (file.exists() && file.isFile()) {
-            return file;
+        File file = resolveCaseInsensitive(parent, new File(path));
+        return file != null && file.isFile() ? file : null;
+    }
+
+    public static String getChildPath(File parent, String path) {
+        File file = getChildFile(parent, path);
+        if (file == null) {
+            return null;
         }
-        file = new File(parent, name.toLowerCase() + "." + ext.toLowerCase());
-        if (file.exists() && file.isFile()) {
-            return file;
-        }
-        file = new File(parent, name.toUpperCase() + "." + ext.toUpperCase());
-        if (file.exists() && file.isFile()) {
-            return file;
-        }
-        file = new File(parent, name.toLowerCase() + "." + ext.toUpperCase());
-        if (file.exists() && file.isFile()) {
-            return file;
-        }
-        file = new File(parent, name.toUpperCase() + "." + ext.toLowerCase());
-        if (file.exists() && file.isFile()) {
-            return file;
-        }
-        return null;
+        return getRelativePath(parent, file);
     }
 
     public static File correctFile(File file) {
@@ -187,7 +174,7 @@ public class ImageUtils {
         }
 
         input = new File(parent, file.getPath());
-        result = correctFile(input);
+        result = resolveCaseInsensitive(parent, file);
         if (result != null && result.exists() && result.isFile()) {
             log.debug("Original Path: {}", file.getPath());
             log.debug("Corrected Path: {}", result.getPath());
@@ -203,6 +190,58 @@ public class ImageUtils {
         }
 
         throw new FileNotFoundException("File not found : " + file.getAbsolutePath());
+    }
+
+    private static File resolveCaseInsensitive(File parent, File file) {
+        File input = file.isAbsolute() ? file : new File(parent, file.getPath());
+        if (input.exists()) {
+            return input;
+        }
+
+        File correctedFile = correctFile(input);
+        if (correctedFile != null) {
+            return correctedFile;
+        }
+
+        File root = file.isAbsolute() ? input.toPath().getRoot().toFile() : parent;
+        File resolved = root;
+        Path relativePath = file.isAbsolute() ? input.toPath().getRoot().relativize(input.toPath()) : file.toPath();
+        for (Path segmentPath : relativePath) {
+            String segment = segmentPath.toString();
+            File exact = new File(resolved, segment);
+            if (exact.exists()) {
+                resolved = exact;
+                continue;
+            }
+
+            File[] children = resolved.listFiles();
+            if (children == null) {
+                return null;
+            }
+
+            File matched = null;
+            for (File child : children) {
+                if (child.getName().equalsIgnoreCase(segment)) {
+                    matched = child;
+                    break;
+                }
+            }
+            if (matched == null) {
+                return null;
+            }
+            resolved = matched;
+        }
+        return resolved.exists() ? resolved : null;
+    }
+
+    private static String getRelativePath(File parent, File child) {
+        try {
+            Path parentPath = parent.toPath().toAbsolutePath().normalize();
+            Path childPath = child.toPath().toAbsolutePath().normalize();
+            return parentPath.relativize(childPath).toString();
+        } catch (IllegalArgumentException e) {
+            return child.getName();
+        }
     }
 
     public static int[] readImageSize(String imagePath) {

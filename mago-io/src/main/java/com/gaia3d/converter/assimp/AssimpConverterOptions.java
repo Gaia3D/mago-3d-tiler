@@ -12,4 +12,6 @@ public class AssimpConverterOptions {
     private boolean isSplitByNode = false;
     @Builder.Default
     private boolean isGenerateNormals = true;
+    @Builder.Default
+    private boolean isCalculateTangentSpace = false;
 }

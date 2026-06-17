@@ -40,10 +40,8 @@ public class AssimpConverter implements Converter {
     private final AssimpConverterOptions options;
     private final GaiaSceneGeometryValidator sceneGeometryValidator = new GaiaSceneGeometryValidator();
 
-    public final int DEFAULT_FLAGS = Assimp.aiProcess_GenNormals |
-            Assimp.aiProcess_Triangulate |
+    public final int DEFAULT_FLAGS = Assimp.aiProcess_Triangulate |
             Assimp.aiProcess_JoinIdenticalVertices |
-            Assimp.aiProcess_CalcTangentSpace |
             Assimp.aiProcess_SortByPType;
 
     public List<GaiaScene> load(String filePath) {
@@ -62,7 +60,7 @@ public class AssimpConverter implements Converter {
 
         String path = file.getAbsolutePath().replace(file.getName(), "");
 
-        AIScene aiScene = Assimp.aiImportFile(file.getAbsolutePath(), DEFAULT_FLAGS);
+        AIScene aiScene = Assimp.aiImportFile(file.getAbsolutePath(), getImportFlags());
 
         if (aiScene == null) {
             log.error("[ERROR] Assimp failed to load file: {}", file.getAbsolutePath());
@@ -87,8 +85,16 @@ public class AssimpConverter implements Converter {
             //validateScenes(file, gaiaScenes);
         }
 
-        Assimp.aiFreeScene(aiScene);
+        Assimp.aiReleaseImport(aiScene);
         return gaiaScenes;
+    }
+
+    int getImportFlags() {
+        int flags = DEFAULT_FLAGS;
+        if (options.isCalculateTangentSpace()) {
+            flags |= Assimp.aiProcess_CalcTangentSpace;
+        }
+        return flags;
     }
 
     private void validateScenes(File file, List<GaiaScene> gaiaScenes) {
@@ -431,7 +437,7 @@ public class AssimpConverter implements Converter {
 
             File file = ImageUtils.getChildFile(parentPath, diffTexPath);
             if (file != null && file.exists() && file.isFile()) {
-                texture.setPath(diffTexPath);
+                texture.setPath(ImageUtils.getChildPath(parentPath, diffTexPath));
                 textures.add(texture);
                 material.getTextures().put(texture.getType(), textures);
             } else {
@@ -471,7 +477,7 @@ public class AssimpConverter implements Converter {
 
             File file = ImageUtils.getChildFile(parentPath, ambientTexPath);
             if (file != null && file.exists() && file.isFile()) {
-                texture.setPath(ambientTexPath);
+                texture.setPath(ImageUtils.getChildPath(parentPath, ambientTexPath));
                 textures.add(texture);
                 material.getTextures().put(texture.getType(), textures);
             } else {
@@ -509,7 +515,7 @@ public class AssimpConverter implements Converter {
 
             File file = ImageUtils.getChildFile(parentPath, specularTexPath);
             if (file != null && file.exists() && file.isFile()) {
-                texture.setPath(specularTexPath);
+                texture.setPath(ImageUtils.getChildPath(parentPath, specularTexPath));
                 textures.add(texture);
                 material.getTextures().put(texture.getType(), textures);
             } else {
@@ -547,7 +553,7 @@ public class AssimpConverter implements Converter {
 
             File file = ImageUtils.getChildFile(parentPath, shininessTexPath);
             if (file != null && file.exists() && file.isFile()) {
-                texture.setPath(shininessTexPath);
+                texture.setPath(ImageUtils.getChildPath(parentPath, shininessTexPath));
                 textures.add(texture);
                 material.getTextures().put(texture.getType(), textures);
             } else {
@@ -586,7 +592,7 @@ public class AssimpConverter implements Converter {
 
             File file = ImageUtils.getChildFile(parentPath, normalTexPath);
             if (file != null && file.exists() && file.isFile()) {
-                texture.setPath(normalTexPath);
+                texture.setPath(ImageUtils.getChildPath(parentPath, normalTexPath));
                 textures.add(texture);
                 material.getTextures().put(texture.getType(), textures);
             } else {
@@ -676,6 +682,7 @@ public class AssimpConverter implements Converter {
         int mNumVertices = aiMesh.mNumVertices();
         AIVector3D.Buffer verticesBuffer = aiMesh.mVertices();
         AIVector3D.Buffer normalsBuffer = aiMesh.mNormals();
+        boolean shouldGenerateNormals = options.isGenerateNormals() && normalsBuffer == null;
         AIVector3D.Buffer textureCoordiantesBuffer = aiMesh.mTextureCoords(0);
         AIColor4D.Buffer colorsBuffer = aiMesh.mColors(0);
         for (int i = 0; i < mNumVertices; i++) {
@@ -725,7 +732,11 @@ public class AssimpConverter implements Converter {
             primitive.getVertices().add(vertex);
         }
 
-        primitive.calculateNormal();
+        if (shouldGenerateNormals) {
+            primitive.calculateVertexNormals();
+        } else {
+            primitive.calculateNormal();
+        }
         return primitive;
     }
 

@@ -11,6 +11,22 @@ import org.junit.jupiter.api.Test;
 @Slf4j
 class RealisticReleaseTest {
 
+    @Disabled
+    @Test
+    void realistic00() {
+        String path = "R00-Hwangyonggak-mesh-glb";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-log", MagoTestConfig.getLogPath(path).getAbsolutePath(),
+                "-pg",
+                "-c", "32652",
+                "-rotateX", "90",
+                //"-debug",
+        };
+        MagoTestConfig.execute(args);
+    }
+
     @Test
     void realistic01() {
         String path = "R01-bansong-part-obj";
