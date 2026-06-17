@@ -86,7 +86,7 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
         int iteration = 0;
 
         Map<HalfEdge, Vector3d> mapHalfEdgeToInitialDirection = new HashMap<>();
-        Map<HalfEdgeVertex, List<HalfEdge>> vertexAllOutingEdgesMap = new HashMap<>();
+        //Map<HalfEdgeVertex, List<HalfEdge>> vertexAllOutingEdgesMap = new HashMap<>();
         Map<HalfEdgeFace, List<HalfEdge>> mapFaceToHalfEdges = new HashMap<>();
         Map<HalfEdgeVertex, List<HalfEdgeVertex>> mapVertexToSamePosVertices = new HashMap<>();
 
@@ -130,7 +130,7 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
             }
 
             // clear maps
-            vertexAllOutingEdgesMap.clear();
+            //vertexAllOutingEdgesMap.clear();
             mapFaceToHalfEdges.clear();
             mapVertexToSamePosVertices.clear();
 
@@ -321,8 +321,19 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
                     halfEdgeVertex.add(halfEdge.getStartVertex());
                 }
 
+                int vertexCount = vertices.size();
+                for(int j=0; j<vertexCount; j++) {
+                    vertices.get(j).setId(-1);
+                }
+
+                List<HalfEdgeVertex> leafOctreeVertices = halfEdgeVertex.stream().toList();
+                int leafOctreeVertexCount = leafOctreeVertices.size();
+                for(int j=0; j<leafOctreeVertexCount; j++) {
+                    leafOctreeVertices.get(j).setId(j);
+                }
+
                 log.debug("Decimating:" + i + " / " + leafOctreesCount);
-                int hedgesCollapsedCount = decimateSurface(productTransformMatrix, halfEdgeVertex.stream().toList(), surface, halfEdges);
+                int hedgesCollapsedCount = decimateSurface(productTransformMatrix, leafOctreeVertices, surface, halfEdges);
                 hedgesCollapsedInIteration += hedgesCollapsedCount;
             }
 
@@ -352,6 +363,11 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
             }
 
             iteration++;
+        }
+
+        int vertexCount = vertices.size();
+        for(int j=0; j<vertexCount; j++) {
+            vertices.get(j).setId(j);
         }
 
     }
@@ -408,7 +424,6 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
         int iteration = 0;
 
         Map<HalfEdge, Vector3d> mapHalfEdgeToInitialDirection = new HashMap<>();
-        Map<HalfEdgeVertex, List<HalfEdge>> vertexAllOutingEdgesMap = new HashMap<>();
         Map<HalfEdgeFace, List<HalfEdge>> mapFaceToHalfEdges = new HashMap<>();
         Map<HalfEdgeVertex, List<HalfEdgeVertex>> mapVertexToSamePosVertices = new HashMap<>();
 
@@ -433,13 +448,11 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
         }
 
         // clear maps
-        vertexAllOutingEdgesMap.clear();
         mapFaceToHalfEdges.clear();
         mapVertexToSamePosVertices.clear();
 
-        //vertexAllOutingEdgesMap = HalfEdgeDecimaterUtils.getMapVertexAllOutingEdges(vertexAllOutingEdgesMap, vertices, surface);
         mapVertexToSamePosVertices = HalfEdgeDecimaterUtils.getMapVertexToSamePosVertices(mapVertexToSamePosVertices, vertices, false);
-        List<HalfEdge>[] outgoingEdgesByVertexId = HalfEdgeDecimaterUtils.getOutgoingEdgesByVertexIdExact(halfEdges, vertices.size());
+        List<HalfEdge>[] outgoingEdgesByVertexId = HalfEdgeDecimaterUtils.getOutgoingEdgesByVertexIdExact(surface.getHalfEdges(), vertices.size());
 
         boolean collapsed = false;
         hedgesCollapsedInOneIteration = 0;
@@ -462,7 +475,8 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
             HalfEdgeVertex startVertex = halfEdge.getStartVertex();
 
             PositionType positionType = PositionType.INTERIOR;
-            List<HalfEdge> outingEdges = vertexAllOutingEdgesMap.get(startVertex);
+            //List<HalfEdge> outingEdges = vertexAllOutingEdgesMap.get(startVertex);
+            List<HalfEdge> outingEdges = outgoingEdgesByVertexId[startVertex.getId()];
             int outingEdgesCount = outingEdges.size();
             for (int j = 0; j < outingEdgesCount; j++) {
                 HalfEdge outingEdge = outingEdges.get(j);
