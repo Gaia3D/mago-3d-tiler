@@ -755,12 +755,6 @@ public class MainVoxelizer implements IAppLogic {
             weld.apply(gaiaSceneMaster);
             cleaner.apply(gaiaSceneMaster);
 
-//            // Make horizontal skirt.************************************************************************************
-//            GaiaHorizontalSkirtMaker horizontalSkirtMaker = new GaiaHorizontalSkirtMaker();
-//            double maxNodeBBoxSize = nodeBBox.getMaxSize();
-//            horizontalSkirtMaker.addHorizontalSkirtsToScene(gaiaSceneMaster, nodeBBox, 0.1f, maxNodeBBoxSize*0.005);
-//            // End making horizontal skirt.-------------------------------------------------------------------------------
-
             // Make frontier expansion.************************************************************************************
             GaiaFrontierExpander frontierExpander = new GaiaFrontierExpander();
             double maxNodeBBoxSize = nodeBBox.getMaxSize();
