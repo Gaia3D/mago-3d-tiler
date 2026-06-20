@@ -19,6 +19,13 @@ public class MagoRenderableScene {
     private final List<GaiaMaterial> materials =
             new ArrayList<>();
 
-    private GaiaScene originalGaiaScene;
     private Path originalPath;
+
+    public void deleteObjects(){
+        if(!renderableNodes.isEmpty()){
+            for(MagoRenderableNode node : renderableNodes){
+                node.deleteObjects();
+            }
+        }
+    }
 }

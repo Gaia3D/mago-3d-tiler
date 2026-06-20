@@ -10,9 +10,12 @@ import java.util.List;
 @Getter
 @Setter
 public class MagoRenderableMesh {
-
-    private GaiaMesh originalGaiaMesh;
-
     private final List<MagoRenderablePrimitive> renderablePrimitives =
             new ArrayList<>();
+
+    public void deleteObjects(){
+        for(MagoRenderablePrimitive primitive : this.renderablePrimitives){
+            primitive.deleteObjects();
+        }
+    }
 }

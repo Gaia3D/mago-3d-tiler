@@ -5,7 +5,6 @@ import com.gaia3d.basic.geometry.modifier.topology.GaiaExtractor;
 import com.gaia3d.basic.halfedge.CameraDirectionType;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.renderer.engine.fbo.Fbo;
-import com.gaia3d.renderer.engine.scene.Camera;
 import lombok.Getter;
 import lombok.Setter;
 import org.joml.Matrix4d;

@@ -25,13 +25,9 @@ import com.gaia3d.basic.magogl.shader.resources.MagoDefaultVertexShader;
 import com.gaia3d.basic.magogl.shader.resources.MagoTexturedFragmentShader;
 import com.gaia3d.basic.texture.atlas.TextureAtlasManager;
 import com.gaia3d.basic.types.TextureType;
-import com.gaia3d.renderer.engine.InternDataConverter;
-import com.gaia3d.renderer.engine.dataStructure.FaceVisibilityDataManagerV3;
-import com.gaia3d.renderer.engine.dataStructure.GaiaScenesContainer;
 import com.gaia3d.renderer.engine.dataStructure.IntegralReMeshParameters;
-import com.gaia3d.renderer.engine.fbo.FboManager;
-import com.gaia3d.renderer.engine.scene.Camera;
-import com.gaia3d.renderer.engine.scene.Projection;
+import com.gaia3d.basic.magogl.Camera;
+import com.gaia3d.basic.magogl.Projection;
 import com.gaia3d.renderer.renderable.RenderableGaiaScene;
 import com.gaia3d.util.GaiaTextureUtils;
 import lombok.Getter;
@@ -52,7 +48,6 @@ import java.util.*;
 import java.util.List;
 
 import static com.gaia3d.basic.magogl.MagoRenderEngine.toArgb;
-import static org.lwjgl.opengl.GL11.GL_LINEAR;
 
 @Slf4j
 @Getter
@@ -453,20 +448,20 @@ public class MagoReTextureByObliqueCamera {
         }
 
         // Test save 9 camera rendered.*************************
-        String outputPathStringTest = "D:\\temp";
-        String nodeNameTest = "albedo";
-        save9MagoFboAsPng(
-                fboSet,
-                outputPathStringTest,
-                nodeNameTest
-        );
-
-        nodeNameTest = "colorCode";
-        save9MagoFboAsPng(
-                faceCodeFboSet,
-                outputPathStringTest,
-                nodeNameTest
-        );
+//        String outputPathStringTest = "D:\\temp";
+//        String nodeNameTest = "albedo";
+//        save9MagoFboAsPng(
+//                fboSet,
+//                outputPathStringTest,
+//                nodeNameTest
+//        );
+//
+//        nodeNameTest = "colorCode";
+//        save9MagoFboAsPng(
+//                faceCodeFboSet,
+//                outputPathStringTest,
+//                nodeNameTest
+//        );
         // End test.------------------------------------------------------
 
         // Join all surfaces and weld vertices of the gaiaSceneMaster.
@@ -584,7 +579,7 @@ public class MagoReTextureByObliqueCamera {
 
         // render the scenes
         int scenesCount = sceneInfos.size();
-        List<RenderableGaiaScene> renderableGaiaScenes = new ArrayList<>();
+        //List<RenderableGaiaScene> renderableGaiaScenes = new ArrayList<>();
         int counter = 0;
         int faceIdAvailable = 0;
 
@@ -885,6 +880,230 @@ public class MagoReTextureByObliqueCamera {
                 outputPathString, nodeName);
 
         resultHalfEdgeScenes.add(halfEdgeSceneMaster);
+    }
+
+    public MagoFbo renderTopView(List<SceneInfo> sceneInfos,
+                                       GaiaBoundingBox nodeBBox,
+                                       Matrix4d nodeTMatrix,
+                                       int maxScreenSize,
+                                       int maxDepthScreenSize) {
+        // render the scene
+        log.info("Rendering the scene...getColorAndDepthRender");
+
+        int screenWidth = 1024;
+        int screenHeight = 1024;
+
+        // calculate the projectionMatrix for the camera
+        Vector3d bboxCenter = nodeBBox.getCenter();
+        float xLength = (float) nodeBBox.getSizeX();
+        float yLength = (float) nodeBBox.getSizeY();
+        float zLength = (float) nodeBBox.getSizeZ();
+
+        Projection projection = new Projection(0, screenWidth, screenHeight);
+        float safeXLength =
+                Math.max(xLength, 0.001f);
+
+        float safeYLength =
+                Math.max(yLength, 0.001f);
+
+        float safeZLength =
+                Math.max(zLength, 0.001f);
+
+        float zPadding =
+                Math.max(
+                        safeZLength * 0.01f,
+                        0.1f
+                );
+
+        projection.setProjectionOrthographic(
+                -safeXLength * 0.5f,
+                safeXLength * 0.5f,
+                -safeYLength * 0.5f,
+                safeYLength * 0.5f,
+                -safeZLength * 0.5f - zPadding,
+                safeZLength * 0.5f + zPadding
+        );
+
+        MagoFbo colorFbo = new MagoFbo("topView", 1024, 1024);
+        Vector4f backgroundColor =
+                new Vector4f(
+                        1.0f,
+                        0.0f,
+                        1.0f,
+                        1.0f
+                );
+
+        int backgroundArgb =
+                toArgb(backgroundColor);
+
+        colorFbo.clear(
+                backgroundArgb,
+                1.0f
+        );
+
+        // now set camera position
+        Camera camera = new Camera();
+        camera.setPosition(bboxCenter);
+        camera.setDirection(new Vector3d(0, 0, -1));
+        camera.setUp(new Vector3d(0, 1, 0));
+
+        Matrix4d modelViewMatrix =
+                new Matrix4d(camera.getModelViewMatrix());
+
+        // 1. albedo-render.
+        if (modelViewMatrix == null) {
+            throw new IllegalStateException(
+                    "model-view matrix is null"
+            );
+        }
+
+        if (projection == null) {
+            throw new IllegalStateException(
+                    "projection is null"
+            );
+        }
+
+        MagoRenderEngine magoRenderEngine =
+                new MagoRenderEngine();
+
+        MagoShaderProgram shaderProgram =
+                new MagoShaderProgram(
+                        "texturedShader",
+                        new MagoDefaultVertexShader(),
+                        new MagoTexturedFragmentShader()
+                );
+
+        // Render-context.
+        MagoRenderContext renderContext =
+                new MagoRenderContext();
+
+        renderContext.setShaderProgram(
+                shaderProgram
+        );
+
+        renderContext.setDepthTestEnabled(true);
+        renderContext.setCullFaceEnabled(true);
+        renderContext.setBlendEnabled(false);
+        renderContext.getUniforms().textureFilter = MagoTextureFilter.BILINEAR;
+        renderContext.getUniforms().wrapS = MagoTextureWrap.CLAMP_TO_EDGE;
+        renderContext.getUniforms().wrapT = MagoTextureWrap.CLAMP_TO_EDGE;
+        renderContext.getUniforms().invertTextureV = false;
+
+        renderContext.setFbo(colorFbo);
+        renderContext.setViewMatrix(modelViewMatrix);
+
+        renderContext.setProjectionMatrix(
+                projection.getProjMatrix()
+        );
+
+        renderContext.setPolygonMode(
+                MagoPolygonMode.FILL
+        );
+
+
+        Matrix4d nodeMatrixInv = new Matrix4d(nodeTMatrix);
+        nodeMatrixInv.invert();
+
+        MagoRenderableMaker magoRenderableMaker = new MagoRenderableMaker();
+        GaiaTriangulator triangulator = new GaiaTriangulator();
+
+        // render the scenes
+        int scenesCount = sceneInfos.size();
+        int counter = 0;
+        for (int i = 0; i < scenesCount; i++) {
+            // load and render, one by one
+            SceneInfo sceneInfo = sceneInfos.get(i);
+            String scenePath = sceneInfo.getScenePath();
+            Matrix4d sceneTMat = sceneInfo.getTransformMatrix();
+
+            // must find the local position of the scene rel to node
+            Vector3d scenePosWC = new Vector3d(sceneTMat.m30(), sceneTMat.m31(), sceneTMat.m32());
+            Vector3d scenePosLC = nodeMatrixInv.transformPosition(scenePosWC, new Vector3d());
+
+            // calculate the local sceneTMat
+            Matrix4d sceneTMatLC = new Matrix4d();
+            sceneTMatLC.identity();
+            sceneTMatLC.m30(scenePosLC.x);
+            sceneTMatLC.m31(scenePosLC.y);
+            sceneTMatLC.m32(scenePosLC.z);
+
+            // load the set file
+            GaiaSet gaiaSet = null;
+            GaiaScene gaiaScene = null;
+            MagoRenderableScene renderableScene = null;
+            Path path = Paths.get(scenePath);
+            try {
+                gaiaSet = GaiaSet.readFile(path);
+                gaiaScene = new GaiaScene(gaiaSet);
+                triangulator.apply(gaiaScene);
+                GaiaNode gaiaNode = gaiaScene.getNodes().get(0);
+                gaiaNode.setTransformMatrix(sceneTMatLC);
+                gaiaNode.setPreMultipliedTransformMatrix(sceneTMatLC);
+                renderableScene = magoRenderableMaker.makeScene(gaiaScene);
+            } catch (Exception e) {
+                log.error("[ERROR] reading the file: ", e);
+            }
+
+            try {
+                // render the scene
+                Objects.requireNonNull(
+                        renderableScene,
+                        "renderableScene must not be null"
+                );
+
+                magoRenderEngine.renderIntoFbo(
+                        renderableScene,
+                        renderContext
+                );
+
+            } catch (Exception e) {
+                log.error("[ERROR] initializing the engine: ", e);
+            }
+
+            if (gaiaSet != null) {
+                gaiaSet.clear();
+            }
+
+            if (gaiaScene != null) {
+                gaiaScene.clear();
+            }
+
+            counter++;
+            if (counter > 20) {
+                counter = 0;
+            }
+        }
+
+//        String outputPathString = "D:\\temp";
+//        String nodeName = "test";
+//        saveMagoFboAsPng(
+//                colorFbo,
+//                outputPathString,
+//                nodeName + "_topView"
+//        );
+
+        int hola = 0;
+
+        return colorFbo;
+
+        // take the final rendered colorBuffer of the fbo
+//        colorFbo.bind();
+//        BufferedImage image = colorFbo.getBufferedImage(bufferedImageType);
+//        resultImages.add(image);
+//        colorFbo.unbind();
+//
+//        // take the final rendered depthBuffer of the fbo
+//        int depthBufferedImageType = BufferedImage.TYPE_INT_ARGB;
+//        depthFbo.bind();
+//        BufferedImage depthImage = depthFbo.getBufferedImage(depthBufferedImageType);
+//        resultImages.add(depthImage);
+//        depthFbo.unbind();
+
+        // delete renderableGaiaScenes
+//        engine.deleteObjects();
+//        for (RenderableGaiaScene renderableScene : renderableGaiaScenes) {
+//            renderableScene.deleteGLBuffers();
+//        }
     }
 
     private void calculateGlobalBoundaryAnchors(
@@ -1544,6 +1763,54 @@ public class MagoReTextureByObliqueCamera {
                     renderDirection,
                     outputPathString,
                     nodeName + renderDirection.getName() + ".png"
+            );
+        }
+    }
+
+    private void saveMagoFboAsPng(
+            MagoFbo fbo,
+            String outputPathString,
+            String nodeName
+    ){
+        Objects.requireNonNull(fbo, "fbo must not be null");
+        BufferedImage image = fbo.getBufferedImage();
+
+        Path outputDirectory = Paths.get(
+                outputPathString,
+                "mago-render-debug"
+        );
+
+        Path outputFile = outputDirectory.resolve(
+                nodeName
+                        + "_"
+                        + ".png"
+        );
+
+        try {
+            Files.createDirectories(outputDirectory);
+
+            boolean written = ImageIO.write(
+                    image,
+                    "png",
+                    outputFile.toFile()
+            );
+
+            if (!written) {
+                throw new IOException(
+                        "No PNG ImageIO writer is available."
+                );
+            }
+
+            log.info(
+                    "MagoGL debug render saved: {} ({}x{})",
+                    outputFile,
+                    image.getWidth(),
+                    image.getHeight()
+            );
+        } catch (IOException e) {
+            throw new RuntimeException(
+                    "Failed to save MagoGL render: " + outputFile,
+                    e
             );
         }
     }

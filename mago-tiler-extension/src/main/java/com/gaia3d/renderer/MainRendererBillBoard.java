@@ -19,7 +19,7 @@ import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.renderer.engine.*;
 import com.gaia3d.renderer.engine.dataStructure.GaiaScenesContainer;
-import com.gaia3d.renderer.engine.scene.Camera;
+import com.gaia3d.basic.magogl.Camera;
 import com.gaia3d.renderer.renderable.RenderableGaiaScene;
 import lombok.Getter;
 import lombok.Setter;

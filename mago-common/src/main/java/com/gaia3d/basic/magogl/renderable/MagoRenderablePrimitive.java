@@ -15,21 +15,21 @@ public final class MagoRenderablePrimitive {
     /*
      * Required attributes.
      */
-    private final MagoBuffer positionsBuffer;
-    private final MagoBuffer indicesBuffer;
+    private MagoBuffer positionsBuffer;
+    private MagoBuffer indicesBuffer;
 
     /*
      * Optional vertex attributes.
      */
-    private final MagoBuffer normalsBuffer;
-    private final MagoBuffer texCoordsBuffer;
-    private final MagoBuffer colorsBuffer;
+    private MagoBuffer normalsBuffer;
+    private MagoBuffer texCoordsBuffer;
+    private MagoBuffer colorsBuffer;
 
     private final int vertexCount;
     private final int indexCount;
 
-    private final GaiaMaterial material;
-    private final MagoTexture2D diffuseTexture;
+    private GaiaMaterial material;
+    private MagoTexture2D diffuseTexture;
 
 
 
@@ -328,5 +328,33 @@ public final class MagoRenderablePrimitive {
                 );
             }
         }
+    }
+
+    public void deleteObjects() {
+        positionsBuffer.delete();
+        indicesBuffer.delete();
+
+        if (normalsBuffer != null) {
+            normalsBuffer.delete();
+        }
+
+        if (texCoordsBuffer != null) {
+            texCoordsBuffer.delete();
+        }
+
+        if (colorsBuffer != null) {
+            colorsBuffer.delete();
+        }
+
+        if (diffuseTexture != null) {
+            diffuseTexture.delete();
+        }
+
+        positionsBuffer = null;
+        indicesBuffer = null;
+        normalsBuffer = null;
+        texCoordsBuffer = null;
+        colorsBuffer = null;
+        diffuseTexture = null;
     }
 }

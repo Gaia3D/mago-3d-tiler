@@ -9,7 +9,7 @@ public final class MagoTexture2D {
 
     private final int width;
     private final int height;
-    private final int[] pixels;
+    private int[] pixels;
 
     public MagoTexture2D(
             int width,
@@ -219,5 +219,9 @@ public final class MagoTexture2D {
                 (argb & 0xFF) / 255.0f,
                 ((argb >>> 24) & 0xFF) / 255.0f
         );
+    }
+
+    public void delete(){
+        pixels = null;
     }
 }

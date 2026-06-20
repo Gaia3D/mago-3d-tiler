@@ -6,7 +6,7 @@ import com.gaia3d.renderer.engine.graph.RenderEngine;
 import com.gaia3d.renderer.engine.graph.ShaderManager;
 import com.gaia3d.renderer.engine.graph.ShaderProgram;
 import com.gaia3d.renderer.engine.graph.UniformsMap;
-import com.gaia3d.renderer.engine.scene.Camera;
+import com.gaia3d.basic.magogl.Camera;
 import com.gaia3d.renderer.engine.screen.ScreenQuad;
 import com.gaia3d.renderer.renderable.SelectionColorManager;
 import lombok.Getter;

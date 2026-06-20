@@ -527,6 +527,10 @@ public class HalfEdgeUtils {
                 int rInv = numRows - 1 - r;
                 double depthValue = depthValues[c][rInv];
 
+                if(c == 0 || c == numCols - 1) {
+                    int hola = 0;
+                }
+
                 double depthValueInv = 1.0 - depthValue;
                 double z = minZ + (maxZ - minZ) * depthValueInv;
                 HalfEdgeVertex halfEdgeVertex = new HalfEdgeVertex();
@@ -626,6 +630,295 @@ public class HalfEdgeUtils {
         }
 
         return halfEdgeSurface;
+    }
+
+    public static boolean verifyDepthGrid(
+            float[][] depthGrid,
+            float nearZeroEpsilon,
+            int maxValuesToPrint
+    ) {
+        if (depthGrid == null || depthGrid.length == 0) {
+            throw new IllegalArgumentException(
+                    "depthGrid must not be null or empty."
+            );
+        }
+
+        if (depthGrid[0] == null
+                || depthGrid[0].length == 0) {
+
+            throw new IllegalArgumentException(
+                    "depthGrid height must be greater than zero."
+            );
+        }
+
+        if (nearZeroEpsilon < 0.0f
+                || !Float.isFinite(nearZeroEpsilon)) {
+
+            throw new IllegalArgumentException(
+                    "nearZeroEpsilon must be finite and non-negative."
+            );
+        }
+
+        int width =
+                depthGrid.length;
+
+        int height =
+                depthGrid[0].length;
+
+        for (int x = 0; x < width; x++) {
+            if (depthGrid[x] == null
+                    || depthGrid[x].length != height) {
+
+                throw new IllegalArgumentException(
+                        "depthGrid must be rectangular. Invalid column x="
+                                + x
+                );
+            }
+        }
+
+        int exactZeroCount =
+                0;
+
+        int nearZeroCount =
+                0;
+
+        int nonFiniteCount =
+                0;
+
+        int outOfRangeCount =
+                0;
+
+        int printedCount =
+                0;
+
+        float minDepth =
+                Float.POSITIVE_INFINITY;
+
+        float maxDepth =
+                Float.NEGATIVE_INFINITY;
+
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+
+                float depth =
+                        depthGrid[x][y];
+
+                if (!Float.isFinite(depth)) {
+                    nonFiniteCount++;
+
+                    if (printedCount < maxValuesToPrint) {
+                        System.out.println(
+                                "[NON-FINITE DEPTH]"
+                                        + " x=" + x
+                                        + ", y=" + y
+                                        + ", value=" + depth
+                        );
+
+                        printedCount++;
+                    }
+
+                    continue;
+                }
+
+                minDepth =
+                        Math.min(
+                                minDepth,
+                                depth
+                        );
+
+                maxDepth =
+                        Math.max(
+                                maxDepth,
+                                depth
+                        );
+
+                boolean isExactZero =
+                        depth == 0.0f;
+
+                boolean isNearZero =
+                        !isExactZero
+                                && Math.abs(depth)
+                                <= nearZeroEpsilon;
+
+                if (isExactZero) {
+                    exactZeroCount++;
+
+                    if (printedCount < maxValuesToPrint) {
+                        System.out.println(
+                                "[EXACT ZERO DEPTH]"
+                                        + " x=" + x
+                                        + ", y=" + y
+                                        + ", value=" + depth
+                                        + ", rawBits=0x"
+                                        + Integer.toHexString(
+                                        Float.floatToRawIntBits(
+                                                depth
+                                        )
+                                )
+                        );
+
+                        printedCount++;
+                    }
+                } else if (isNearZero) {
+                    nearZeroCount++;
+
+                    if (printedCount < maxValuesToPrint) {
+                        System.out.println(
+                                "[NEAR-ZERO DEPTH]"
+                                        + " x=" + x
+                                        + ", y=" + y
+                                        + ", value=" + depth
+                        );
+
+                        printedCount++;
+                    }
+                }
+
+                if (depth < 0.0f || depth > 1.0f) {
+                    outOfRangeCount++;
+
+                    if (printedCount < maxValuesToPrint) {
+                        System.out.println(
+                                "[OUT-OF-RANGE DEPTH]"
+                                        + " x=" + x
+                                        + ", y=" + y
+                                        + ", value=" + depth
+                        );
+
+                        printedCount++;
+                    }
+                }
+            }
+        }
+
+        int totalValues =
+                Math.multiplyExact(
+                        width,
+                        height
+                );
+
+        System.out.println(
+                "========== DepthGrid verification =========="
+        );
+
+        System.out.println(
+                "Size             : "
+                        + width
+                        + " x "
+                        + height
+        );
+
+        System.out.println(
+                "Total values     : "
+                        + totalValues
+        );
+
+        System.out.println(
+                "Exact zeros      : "
+                        + exactZeroCount
+        );
+
+        System.out.println(
+                "Near zeros       : "
+                        + nearZeroCount
+                        + " (epsilon="
+                        + nearZeroEpsilon
+                        + ")"
+        );
+
+        System.out.println(
+                "Non-finite       : "
+                        + nonFiniteCount
+        );
+
+        System.out.println(
+                "Out of range     : "
+                        + outOfRangeCount
+        );
+
+        System.out.println(
+                "Minimum depth    : "
+                        + minDepth
+        );
+
+        System.out.println(
+                "Maximum depth    : "
+                        + maxDepth
+        );
+
+        System.out.println(
+                "============================================"
+        );
+
+        return exactZeroCount == 0
+                && nearZeroCount == 0
+                && nonFiniteCount == 0
+                && outOfRangeCount == 0;
+    }
+
+    public static boolean hasNearZeroDepthOnPerimeter(
+            float[][] depthGrid,
+            float epsilon
+    ) {
+        if (depthGrid == null
+                || depthGrid.length == 0
+                || depthGrid[0] == null
+                || depthGrid[0].length == 0) {
+
+            throw new IllegalArgumentException(
+                    "depthGrid must not be null or empty."
+            );
+        }
+
+        int width = depthGrid.length;
+        int height = depthGrid[0].length;
+
+        /*
+         * Filas inferior y superior.
+         */
+        for (int x = 0; x < width; x++) {
+            if (isNearZero(depthGrid[x][0], epsilon)) {
+                return true;
+            }
+
+            if (height > 1
+                    && isNearZero(
+                    depthGrid[x][height - 1],
+                    epsilon
+            )) {
+
+                return true;
+            }
+        }
+
+        /*
+         * Columnas izquierda y derecha.
+         * Las esquinas ya se comprobaron antes.
+         */
+        for (int y = 1; y < height - 1; y++) {
+            if (isNearZero(depthGrid[0][y], epsilon)) {
+                return true;
+            }
+
+            if (width > 1
+                    && isNearZero(
+                    depthGrid[width - 1][y],
+                    epsilon
+            )) {
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean isNearZero(
+            float value,
+            float epsilon
+    ) {
+        return Float.isFinite(value)
+                && Math.abs(value) <= epsilon;
     }
 
     public static HalfEdgeScene getHalfEdgeSceneRectangularNet(int numCols, int numRows, float[][] depthValues,

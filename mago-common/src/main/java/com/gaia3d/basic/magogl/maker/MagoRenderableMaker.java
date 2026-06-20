@@ -33,8 +33,6 @@ public final class MagoRenderableMaker {
 
         MagoRenderableScene result = new MagoRenderableScene();
 
-        result.setOriginalGaiaScene(gaiaScene);
-
         List<GaiaMaterial> sourceMaterials = gaiaScene.getMaterials();
 
         if (sourceMaterials != null) {
@@ -125,8 +123,6 @@ public final class MagoRenderableMaker {
             List<GaiaMaterial> materials
     ) {
         MagoRenderableMesh result = new MagoRenderableMesh();
-
-        result.setOriginalGaiaMesh(gaiaMesh);
 
         List<GaiaPrimitive> gaiaPrimitives =
                 gaiaMesh.getPrimitives();

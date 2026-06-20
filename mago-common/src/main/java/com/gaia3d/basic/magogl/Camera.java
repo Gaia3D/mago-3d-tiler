@@ -1,4 +1,4 @@
-package com.gaia3d.renderer.engine.scene;
+package com.gaia3d.basic.magogl;
 
 import lombok.Getter;
 import lombok.Setter;

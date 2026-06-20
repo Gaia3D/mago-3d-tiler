@@ -2,6 +2,7 @@ package com.gaia3d.basic.magogl;
 
 import lombok.Getter;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.util.Arrays;
@@ -209,5 +210,46 @@ public final class MagoFbo {
                             + width + "x" + height
             );
         }
+    }
+
+    public float[][] getDepthGridRaw() {
+        ensureAllocated();
+
+        float[][] depthGrid =
+                new float[width][height];
+
+        for (int y = 0; y < height; y++) {
+            int sourceOffset =
+                    y * width;
+
+            for (int x = 0; x < width; x++) {
+                depthGrid[x][y] =
+                        depthBuffer[sourceOffset + x];
+            }
+        }
+
+        return depthGrid;
+    }
+
+    public float[][] getDepthGridFlippedY() {
+        ensureAllocated();
+
+        float[][] depthGrid =
+                new float[width][height];
+
+        for (int y = 0; y < height; y++) {
+            int sourceY =
+                    height - 1 - y;
+
+            int sourceOffset =
+                    sourceY * width;
+
+            for (int x = 0; x < width; x++) {
+                depthGrid[x][y] =
+                        depthBuffer[sourceOffset + x];
+            }
+        }
+
+        return depthGrid;
     }
 }

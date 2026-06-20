@@ -1137,9 +1137,6 @@ public final class MagoRenderer {
             return null;
         }
 
-        /*
-         * The first version does not clip triangles crossing w = 0.
-         */
         if (!(clip.w > EPSILON)) {
             return null;
         }
@@ -1164,19 +1161,23 @@ public final class MagoRenderer {
         }
 
         /*
-         * Bottom-left origin, like OpenGL.
+         * Viewport coordinates.
+         *
+         * Pixel centers are:
+         *
+         *   0.5, 1.5, ..., width - 0.5
+         *
+         * Therefore NDC [-1, 1] maps to [0, width],
+         * not to [0, width - 1].
          */
         float screenX =
                 (ndcX * 0.5f + 0.5f)
-                        * (width - 1);
+                        * width;
 
         float screenY =
                 (ndcY * 0.5f + 0.5f)
-                        * (height - 1);
+                        * height;
 
-        /*
-         * OpenGL NDC depth [-1, 1] -> depth [0, 1].
-         */
         float depth =
                 ndcZ * 0.5f + 0.5f;
 

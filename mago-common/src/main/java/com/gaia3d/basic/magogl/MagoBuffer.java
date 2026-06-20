@@ -5,26 +5,36 @@ import java.util.Objects;
 
 public final class MagoBuffer {
 
-    private final ByteBuffer data;
+    private ByteBuffer data;
 
     public MagoBuffer(ByteBuffer data) {
-        Objects.requireNonNull(data, "data must not be null");
-
-        this.data = data.slice()
-                .order(data.order())
-                .asReadOnlyBuffer()
-                .order(data.order());
+        this.data = Objects.requireNonNull(
+                data,
+                "data must not be null"
+        );
     }
 
     public ByteBuffer getData() {
-        ByteBuffer view = data.asReadOnlyBuffer()
-                .order(data.order());
+        if (data == null) {
+            throw new IllegalStateException(
+                    "MagoBuffer has already been deleted."
+            );
+        }
 
-        view.position(0);
-        return view;
+        return data;
     }
 
     public int getSizeBytes() {
-        return data.limit();
+        return data == null
+                ? 0
+                : data.capacity();
+    }
+
+    public boolean isDeleted() {
+        return data == null;
+    }
+
+    public void delete() {
+        data = null;
     }
 }

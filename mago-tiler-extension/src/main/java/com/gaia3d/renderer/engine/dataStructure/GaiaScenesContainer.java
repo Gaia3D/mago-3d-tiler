@@ -1,7 +1,7 @@
 package com.gaia3d.renderer.engine.dataStructure;
 
-import com.gaia3d.renderer.engine.scene.Camera;
-import com.gaia3d.renderer.engine.scene.Projection;
+import com.gaia3d.basic.magogl.Camera;
+import com.gaia3d.basic.magogl.Projection;
 import com.gaia3d.renderer.renderable.RenderableGaiaScene;
 import lombok.Getter;
 import lombok.Setter;
