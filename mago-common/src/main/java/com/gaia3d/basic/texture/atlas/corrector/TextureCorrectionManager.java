@@ -30,6 +30,37 @@ public class TextureCorrectionManager {
     ) {
     }
 
+    public void mergeFrom(
+            TextureCorrectionManager other
+    ) {
+        if (other == null
+                || other.sampledPixels == 0) {
+            return;
+        }
+
+        this.sampledPixels +=
+                other.sampledPixels;
+
+        this.luminanceSum +=
+                other.luminanceSum;
+
+        this.luminanceSqSum +=
+                other.luminanceSqSum;
+
+        this.saturationSum +=
+                other.saturationSum;
+
+        int histogramSize = Math.min(
+                this.luminanceHistogram.length,
+                other.luminanceHistogram.length
+        );
+
+        for (int i = 0; i < histogramSize; i++) {
+            this.luminanceHistogram[i] +=
+                    other.luminanceHistogram[i];
+        }
+    }
+
     public static TexturePixelData createPixelData(
             BufferedImage image
     ) {

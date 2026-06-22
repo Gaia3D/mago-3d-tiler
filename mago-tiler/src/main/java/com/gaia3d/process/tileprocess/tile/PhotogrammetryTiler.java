@@ -1507,7 +1507,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 
             List<TileInfo> resultTileInfoList = new ArrayList<>();
             try {
-                cutRectangleCakeAllLod(singleTileInfoList, lod, rootNodeBoundingVolumeCopy, maxDepth, resultTileInfoList);
+                cutRectangleCakeAllLod(tileInfo, lod, rootNodeBoundingVolumeCopy, maxDepth, resultTileInfoList);
             } catch (Exception e) {
                 log.error("[ERROR] :", e);
                 throw new RuntimeException(e);
@@ -1518,17 +1518,14 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         }
     }
 
-    private void cutRectangleCakeAllLod(List<TileInfo> tileInfos,
+    private void cutRectangleCakeAllLod(TileInfo tileInfo,
                                         int lod,
                                         BoundingVolume rootNodeBoundingVolume,
                                         int depthIdx,
                                         List<TileInfo> resultTileInfos) throws FileNotFoundException {
-        // Note : tileInfos must contain only one tileInfo
-        // now, cut the scene by the divisions
         boolean someSceneCut = false;
 
         // load the first scene of the tileInfo
-        TileInfo tileInfo = tileInfos.get(0);
         Path path = tileInfo.getTempPath();
 
         GaiaBoundingBox setBBox = tileInfo.getBoundingBox();
