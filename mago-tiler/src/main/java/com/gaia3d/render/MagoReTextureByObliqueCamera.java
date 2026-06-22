@@ -503,6 +503,7 @@ public class MagoReTextureByObliqueCamera {
 
         HalfEdgeScene halfEdgeSceneMaster = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(gaiaSceneMaster);
 
+        List<GaiaTexture> resultAtlasTextures = new ArrayList<>();
         // Here scissor the atlas textures.
         atlasTextureForIntegralReMesh9Directions(fboSet,
                 faceCodeFboSet,
@@ -510,12 +511,15 @@ public class MagoReTextureByObliqueCamera {
                 halfEdgeSceneMaster,
                 mapCameraDirectionTypeBBox,
                 mapCameraDirectionTypeModelViewMatrix,
-                mapCameraDirectionTypeProjection,
+                resultAtlasTextures,
                 mapClassificationCamDirTypeFacesList,
                 outputPathString, nodeName);
         // end of atlas texture*************************************************************************************
 
-        resultHalfEdgeScenes.add(halfEdgeSceneMaster);
+        // check if atlasTexture is made.
+        if (!resultAtlasTextures.isEmpty()) {
+            resultHalfEdgeScenes.add(halfEdgeSceneMaster);
+        }
     }
 
     public void integralDecimateByObliqueCamera(List<SceneInfo> sceneInfos,
@@ -868,6 +872,7 @@ public class MagoReTextureByObliqueCamera {
 
         HalfEdgeScene halfEdgeSceneMaster = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(gaiaSceneMaster);
 
+        List<GaiaTexture> resultAtlasTextures = new ArrayList<>();
         // Here scissor the atlas textures.
         atlasTextureForIntegralReMesh9Directions(fboSet,
                 faceCodeFboSet,
@@ -875,11 +880,15 @@ public class MagoReTextureByObliqueCamera {
                 halfEdgeSceneMaster,
                 mapCameraDirectionTypeBBox,
                 mapCameraDirectionTypeModelViewMatrix,
-                mapCameraDirectionTypeProjection,
+                resultAtlasTextures,
                 mapClassificationCamDirTypeFacesList,
                 outputPathString, nodeName);
 
-        resultHalfEdgeScenes.add(halfEdgeSceneMaster);
+        // check if atlasTexture is made.
+        if (!resultAtlasTextures.isEmpty()) {
+            resultHalfEdgeScenes.add(halfEdgeSceneMaster);
+        }
+
     }
 
     public MagoFbo renderTopView(List<SceneInfo> sceneInfos,
@@ -1172,7 +1181,7 @@ public class MagoReTextureByObliqueCamera {
                                                           HalfEdgeScene halfEdgeSceneMaster,
                                                           Map<CameraDirectionType, GaiaBoundingBox> mapCameraDirectionTypeBBox,
                                                           Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix,
-                                                          Map<CameraDirectionType, Projection> mapCameraDirectionTypeProjection,
+                                                          List<GaiaTexture> resultAtlasTextures,
                                                           Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapClassificationCamDirTypeFacesList,
                                                           String outputPathString,
                                                           String nodeName) {
@@ -1227,7 +1236,6 @@ public class MagoReTextureByObliqueCamera {
         }
 
         // check visibility data manager****************************************************************************
-        //FaceVisibilityDataManagerV3 faceVisibilityDataManager = new FaceVisibilityDataManagerV3();
         FaceVisibilityManager visibilityManager =
                 new FaceVisibilityManager();
 
@@ -1248,38 +1256,6 @@ public class MagoReTextureByObliqueCamera {
             );
         }
 
-//        visibilityManager.printInnerPointDiagnostics(
-//                gaiaSceneMaster
-//        );
-
-        int hola2 = 0;
-
-
-//        Map<String, Fbo> colorCodeFboMap = integralReMeshParameters.getColorCodeFboMap();
-        //Map<GaiaFace, HalfEdgeFace> mapGaiaFaceToHalfEdgeFace = mapClassifyIdToGaiaFaceToHalfEdgeFace.computeIfAbsent(classificationId, k -> new HashMap<>());
-//        Map<GaiaFace, CameraDirectionTypeInfo> mapGaiaFaceToCameraDirectionTypeInfo = mapClassifyIdToGaiaFaceToCameraDirectionTypeInfo.computeIfAbsent(classificationId, k -> new HashMap<>());
-//        GaiaScene gaiaSceneFromFaces = HalfEdgeUtils.gaiaSceneFromHalfEdgeFaces(facesList, mapGaiaFaceToHalfEdgeFace);
-//
-//        Fbo fboColorCodeZNeg = colorCodeFboMap.get("ZNEG");
-//        faceVisibilityDataManager.updateFaceInnerPointsVisibilityData(gaiaSceneFromFaces, CameraDirectionType.ZNEG, fboColorCodeZNeg, mapClassificationCamDirTypeModelViewMatrix, mapClassificationCamDirTypeBBox);
-//        Fbo fboColorCodeYPosZNeg = colorCodeFboMap.get("YPOS_ZNEG");
-//        faceVisibilityDataManager.updateFaceInnerPointsVisibilityData(gaiaSceneFromFaces, CameraDirectionType.YPOS_ZNEG, fboColorCodeYPosZNeg, mapClassificationCamDirTypeModelViewMatrix, mapClassificationCamDirTypeBBox);
-//        Fbo fboColorCodeYNegZNeg = colorCodeFboMap.get("YNEG_ZNEG");
-//        faceVisibilityDataManager.updateFaceInnerPointsVisibilityData(gaiaSceneFromFaces, CameraDirectionType.YNEG_ZNEG, fboColorCodeYNegZNeg, mapClassificationCamDirTypeModelViewMatrix, mapClassificationCamDirTypeBBox);
-//        Fbo fboColorCodeXPosZNeg = colorCodeFboMap.get("XPOS_ZNEG");
-//        faceVisibilityDataManager.updateFaceInnerPointsVisibilityData(gaiaSceneFromFaces, CameraDirectionType.XPOS_ZNEG, fboColorCodeXPosZNeg, mapClassificationCamDirTypeModelViewMatrix, mapClassificationCamDirTypeBBox);
-//        Fbo fboColorCodeXNegZNeg = colorCodeFboMap.get("XNEG_ZNEG");
-//        faceVisibilityDataManager.updateFaceInnerPointsVisibilityData(gaiaSceneFromFaces, CameraDirectionType.XNEG_ZNEG, fboColorCodeXNegZNeg, mapClassificationCamDirTypeModelViewMatrix, mapClassificationCamDirTypeBBox);
-//        Fbo fboColorCodeXPosYPosZNeg = colorCodeFboMap.get("XPOS_YPOS_ZNEG");
-//        faceVisibilityDataManager.updateFaceInnerPointsVisibilityData(gaiaSceneFromFaces, CameraDirectionType.XPOS_YPOS_ZNEG, fboColorCodeXPosYPosZNeg, mapClassificationCamDirTypeModelViewMatrix, mapClassificationCamDirTypeBBox);
-//        Fbo fboColorCodeXNegYPosZNeg = colorCodeFboMap.get("XNEG_YPOS_ZNEG");
-//        faceVisibilityDataManager.updateFaceInnerPointsVisibilityData(gaiaSceneFromFaces, CameraDirectionType.XNEG_YPOS_ZNEG, fboColorCodeXNegYPosZNeg, mapClassificationCamDirTypeModelViewMatrix, mapClassificationCamDirTypeBBox);
-//        Fbo fboColorCodeXPosYNegZNeg = colorCodeFboMap.get("XPOS_YNEG_ZNEG");
-//        faceVisibilityDataManager.updateFaceInnerPointsVisibilityData(gaiaSceneFromFaces, CameraDirectionType.XPOS_YNEG_ZNEG, fboColorCodeXPosYNegZNeg, mapClassificationCamDirTypeModelViewMatrix, mapClassificationCamDirTypeBBox);
-//        Fbo fboColorCodeXNegYNegZNeg = colorCodeFboMap.get("XNEG_YNEG_ZNEG");
-//        faceVisibilityDataManager.updateFaceInnerPointsVisibilityData(gaiaSceneFromFaces, CameraDirectionType.XNEG_YNEG_ZNEG, fboColorCodeXNegYNegZNeg, mapClassificationCamDirTypeModelViewMatrix, mapClassificationCamDirTypeBBox);
-//        // end of checking visibility data manager*****************************************************************
-
         // now assign face to each cameraDirectionType
         GaiaExtractor extractor = new GaiaExtractor();
         List<GaiaPrimitive> gaiaPrimitives = extractor.extractAllPrimitives(gaiaSceneMaster);
@@ -1299,31 +1275,6 @@ public class MagoReTextureByObliqueCamera {
             CameraDirectionType cameraDirectionType = mapFaceIdToBestCameraDirectionType.get(faceId);
             halfEdgeFace.setCameraDirectionType(cameraDirectionType);
         }
-
-        int hola = 0;
-        // Assign the CameraDirectionType to faces.***
-//        for (GaiaPrimitive gaiaPrimitive : gaiaPrimitives) {
-//            List<GaiaSurface> gaiaSurfaces = gaiaPrimitive.getSurfaces();
-//            for (GaiaSurface surface : gaiaSurfaces) {
-//                List<GaiaFace> faces = surface.getFaces();
-//                for (GaiaFace face : faces) {
-//                    CameraDirectionTypeInfo cameraDirectionTypeInfo = new CameraDirectionTypeInfo();
-//                    cameraDirectionTypeInfo.setCameraDirectionType(mapFaceIdToBestCameraDirectionType.get(face));
-//                    mapGaiaFaceToCameraDirectionTypeInfo.put(face, cameraDirectionTypeInfo);
-//                }
-//            }
-//        }
-
-
-//        // end assign face to each cameraDirectionType.---
-
-        // now set cameraDirectionType to halfEdgeFaces
-//        for (Map.Entry<GaiaFace, CameraDirectionTypeInfo> entry1 : mapGaiaFaceToCameraDirectionTypeInfo.entrySet()) {
-//            GaiaFace gaiaFace = entry1.getKey();
-//            CameraDirectionTypeInfo cameraDirectionTypeInfo = entry1.getValue();
-//            HalfEdgeFace halfEdgeFace = mapGaiaFaceToHalfEdgeFace.get(gaiaFace);
-//            halfEdgeFace.setCameraDirectionType(cameraDirectionTypeInfo.getCameraDirectionType());
-//        }
 
         //**************************************************************************************************************
         halfEdgeSceneMaster.splitFacesByBestObliqueCameraDirectionToProject();
@@ -1442,8 +1393,6 @@ public class MagoReTextureByObliqueCamera {
             return;
         }
 
-        //BufferedImage atlasImage = atlasTexture.getBufferedImage();
-
         // delete texturesAtlasDataList
         for (com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasData : texturesAtlasDataList) {
             texturesAtlasData.deleteObjects();
@@ -1482,6 +1431,8 @@ public class MagoReTextureByObliqueCamera {
             log.info("atlasScissoredTexture.getBufferedImage() is null.");
             return;
         }
+
+        resultAtlasTextures.add(atlasScissoredTexture);
 
         // save the atlas image to disk
         try {
