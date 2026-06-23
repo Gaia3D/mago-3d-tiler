@@ -25,7 +25,7 @@ import com.gaia3d.basic.magogl.shader.resources.MagoDefaultVertexShader;
 import com.gaia3d.basic.magogl.shader.resources.MagoTexturedFragmentShader;
 import com.gaia3d.basic.texture.atlas.TextureAtlasManager;
 import com.gaia3d.basic.types.TextureType;
-import com.gaia3d.renderer.engine.dataStructure.IntegralReMeshParameters;
+//import com.gaia3d.renderer.engine.dataStructure.IntegralReMeshParameters;
 import com.gaia3d.basic.magogl.Camera;
 import com.gaia3d.basic.magogl.Projection;
 import com.gaia3d.util.GaiaTextureUtils;
@@ -136,10 +136,6 @@ public class MagoReTextureByObliqueCamera {
         Map<Vector3i, List<GaiaVertex>> vertexClusters = new HashMap<>();
         GaiaScene gaiaSceneMaster = null;
         double weldError = 1e-5; // 1e-6 is a good value for remeshing
-
-        // IntegralReMeshParameters
-        IntegralReMeshParameters integralReMeshParameters = new IntegralReMeshParameters();
-        integralReMeshParameters.setBackgroundColor(backgroundColor);
 
         // render the scenes
         int scenesCount = sceneInfos.size();
@@ -519,7 +515,7 @@ public class MagoReTextureByObliqueCamera {
         // Here scissor the atlas textures.
         atlasTextureForIntegralReMesh9Directions(fboSet,
                 faceCodeFboSet,
-                integralReMeshParameters,
+                backgroundColor,
                 halfEdgeSceneMaster,
                 mapCameraDirectionTypeBBox,
                 mapCameraDirectionTypeModelViewMatrix,
@@ -598,10 +594,6 @@ public class MagoReTextureByObliqueCamera {
 
         GaiaScene gaiaSceneMaster = null;
         double weldError = 1e-6; // 1e-6 is a good value for remeshing
-
-        // IntegralReMeshParameters
-        IntegralReMeshParameters integralReMeshParameters = new IntegralReMeshParameters();
-        integralReMeshParameters.setBackgroundColor(backgroundColor);
 
         // render the scenes
         int scenesCount = sceneInfos.size();
@@ -906,7 +898,7 @@ public class MagoReTextureByObliqueCamera {
         // Here scissor the atlas textures.
         atlasTextureForIntegralReMesh9Directions(fboSet,
                 faceCodeFboSet,
-                integralReMeshParameters,
+                backgroundColor,
                 halfEdgeSceneMaster,
                 mapCameraDirectionTypeBBox,
                 mapCameraDirectionTypeModelViewMatrix,
@@ -1207,7 +1199,7 @@ public class MagoReTextureByObliqueCamera {
 
     private void atlasTextureForIntegralReMesh9Directions(MagoFboSet fboSet,
                                                           MagoFboSet faceCodeFboSet,
-                                                          IntegralReMeshParameters integralReMeshParameters,
+                                                          Vector4f backgroundColor,
                                                           HalfEdgeScene halfEdgeSceneMaster,
                                                           Map<CameraDirectionType, GaiaBoundingBox> mapCameraDirectionTypeBBox,
                                                           Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix,
@@ -1235,7 +1227,7 @@ public class MagoReTextureByObliqueCamera {
 
         int bufferedImageType = BufferedImage.TYPE_INT_ARGB;
         List<com.gaia3d.basic.texture.atlas.TexturesAtlasData> texturesAtlasDataList = new ArrayList<>();
-        Vector4f backgroundColor = integralReMeshParameters.getBackgroundColor();
+        //Vector4f backgroundColor = integralReMeshParameters.getBackgroundColor();
         Color backGroundColor = new Color(
                 (int) (backgroundColor.x * 255),
                 (int) (backgroundColor.y * 255),

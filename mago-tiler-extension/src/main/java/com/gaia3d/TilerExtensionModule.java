@@ -73,20 +73,6 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
         deleteObjects();
     }
 
-    @Override
-    public void integralLeafScene(List<SceneInfo> sceneInfos,
-                                  List<GaiaScene> resultGaiaScenes,
-                                                GaiaBoundingBox nodeBBox,
-                                                Matrix4d nodeTMatrix,
-                                                int maxScreenSize,
-                                                String outputPathString,
-                                                String nodeName,
-                                                int lod) {
-        if (voxelizer == null) voxelizer = new MainVoxelizer();
-        voxelizer.integralLeafScene(sceneInfos, resultGaiaScenes, nodeBBox, nodeTMatrix, maxScreenSize, outputPathString, nodeName, lod);
-        deleteObjects();
-    }
-
 
     @Override
     public void makeBillBoard(List<GaiaScene> scenes, List<GaiaScene> resultScenes, int verticalPlanesCount, int horizontalPlanesCount) {

@@ -27,28 +27,6 @@ public class IntegralReMeshParameters {
         colorCodeFboMap.clear();
     }
 
-    public void createFBOsByCameraDirectionsType(FboManager fboManager,
-                                                 int fboWidth,
-                                                 int fboHeight,
-                                                 int minFilter,
-                                                 int magFilter,
-                                                 List<CameraDirectionType> cameraDirectionTypes) {
-        for (CameraDirectionType cameraDirectionType : cameraDirectionTypes) {
-            Fbo colorFbo = fboManager.getOrCreateFbo(cameraDirectionType.name(), fboWidth, fboHeight, minFilter, magFilter);
-            colorFboMap.put(cameraDirectionType.name(), colorFbo);
-
-            Fbo colorCodedFbo = fboManager.getOrCreateFbo("ColorCoded_" + cameraDirectionType.name(), fboWidth, fboHeight);
-            colorCodeFboMap.put(cameraDirectionType.name(), colorCodedFbo);
-
-            // initialize the fbos
-            Vector4f clearColor = backgroundColor;
-            initFbo(colorFbo, clearColor, true);
-
-            Vector4f colorCodeClearColor = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
-            initFbo(colorCodedFbo, colorCodeClearColor, true);
-        }
-    }
-
     public void createFBOsObliqueCamera9Directions(FboManager fboManager, int fboWidth, int fboHeight, int minFilter, int magFilter) {
         Fbo colorFbo_ZNEG = fboManager.getOrCreateFbo("ZNEG", fboWidth, fboHeight, minFilter, magFilter);
         Fbo colorFbo_XPOS_ZNEG = fboManager.getOrCreateFbo("XPOS_ZNEG", fboWidth, fboHeight, minFilter, magFilter);
