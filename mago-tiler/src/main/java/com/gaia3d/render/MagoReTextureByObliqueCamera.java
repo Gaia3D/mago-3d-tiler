@@ -28,7 +28,6 @@ import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.renderer.engine.dataStructure.IntegralReMeshParameters;
 import com.gaia3d.basic.magogl.Camera;
 import com.gaia3d.basic.magogl.Projection;
-import com.gaia3d.renderer.renderable.RenderableGaiaScene;
 import com.gaia3d.util.GaiaTextureUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -144,7 +143,6 @@ public class MagoReTextureByObliqueCamera {
 
         // render the scenes
         int scenesCount = sceneInfos.size();
-        List<RenderableGaiaScene> renderableGaiaScenes = new ArrayList<>();
         int counter = 0;
         int faceIdAvailable = 0;
 
@@ -176,7 +174,7 @@ public class MagoReTextureByObliqueCamera {
                 .checkBatchId(false)
                 .build();
 
-        MagoRenderableMaker magoRenderableMaker = new MagoRenderableMaker();
+
         GaiaTriangulator triangulator = new GaiaTriangulator();
 
         for (int i = 0; i < scenesCount; i++) {
@@ -195,8 +193,6 @@ public class MagoReTextureByObliqueCamera {
             sceneTMatLC.m30(scenePosLC.x);
             sceneTMatLC.m31(scenePosLC.y);
             sceneTMatLC.m32(scenePosLC.z);
-
-            renderableGaiaScenes.clear();
 
             // load the set file
             GaiaSet gaiaSet = null;
@@ -253,6 +249,8 @@ public class MagoReTextureByObliqueCamera {
         GaiaSceneCleaner cleaner = new GaiaSceneCleaner();
         GaiaWelder weld = new GaiaWelder(weldOptions);
 
+        MagoRenderableMaker magoRenderableMaker = new MagoRenderableMaker();
+
         // PASADA 2: remeshear mesh por mesh
         for (int i = 0; i < scenesCount; i++) {
             // load and render, one by one
@@ -270,8 +268,6 @@ public class MagoReTextureByObliqueCamera {
             sceneTMatLC.m30(scenePosLC.x);
             sceneTMatLC.m31(scenePosLC.y);
             sceneTMatLC.m32(scenePosLC.z);
-
-            renderableGaiaScenes.clear();
 
             // load the set file
             GaiaSet gaiaSet = null;
@@ -297,8 +293,6 @@ public class MagoReTextureByObliqueCamera {
                 // throw error
                 throw new RuntimeException("[ERROR] integralReMeshByObliqueCamera : GaiaScene is null");
             }
-
-            //gaiaScenesContainer.setRenderableGaiaScenes(renderableGaiaScenes);
 
             // reMesh the scene.****************************************************************************************
             // The "scenePositionRelToCellGrid" is the relative position of the scene respect the center of RootNode (Depth = 0). All scenes must be synchronized to the RootNode.

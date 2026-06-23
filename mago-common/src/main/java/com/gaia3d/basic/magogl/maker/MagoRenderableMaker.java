@@ -16,14 +16,39 @@ import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public final class MagoRenderableMaker {
     private final Map<String, MagoTexture2D> textureCache =
             new HashMap<>();
+
+    public void deleteTextureCache() {
+        if (textureCache.isEmpty()) {
+            return;
+        }
+
+        /*
+         * IdentityHashMap to avoid deleting same instance
+         */
+        Set<MagoTexture2D> uniqueTextures =
+                Collections.newSetFromMap(
+                        new IdentityHashMap<>()
+                );
+
+        uniqueTextures.addAll(
+                textureCache.values()
+        );
+
+        textureCache.clear();
+
+        for (MagoTexture2D texture : uniqueTextures) {
+            if (texture != null) {
+                texture.delete();
+            }
+        }
+
+        uniqueTextures.clear();
+    }
 
     public MagoRenderableScene makeScene(GaiaScene gaiaScene) {
         Objects.requireNonNull(
@@ -60,6 +85,8 @@ public final class MagoRenderableMaker {
 
             result.getRenderableNodes().add(renderableNode);
         }
+
+        textureCache.clear();
 
         return result;
     }
