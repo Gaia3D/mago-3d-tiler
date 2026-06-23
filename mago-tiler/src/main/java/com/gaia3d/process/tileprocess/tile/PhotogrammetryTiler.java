@@ -1158,7 +1158,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         Map<Node, List<TileInfo>> nodeTileInfoMap = new HashMap<>();
         cutAndScissorAllLod(tileInfosCopy, root);
         List<TileInfo> cuttedTileInfos = mapLodToTileInfos.get(lod);
-        integralLeafScenes(cuttedTileInfos, lod, currDepth, root, projectMaxDepthIdx);
+        integralLeafScenesMT(cuttedTileInfos, lod, currDepth, root, projectMaxDepthIdx, 3);
         /* End lod 0 processes */
 
         DecimateParameters decimateParameters = new DecimateParameters();
@@ -1480,6 +1480,487 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         }
 
         return cellSizeGreaterThanTileInfosBBox;
+    }
+
+    public boolean integralLeafScenesMT(
+            List<TileInfo> tileInfos,
+            int lod,
+            int nodeDepth,
+            Node rootNode,
+            int maxDepth,
+            int threadsCount
+    ) {
+        log.info(
+                "Creating integral leaf nodes for nodeDepth: {} of maxDepth: {}",
+                nodeDepth,
+                maxDepth
+        );
+
+        if (tileInfos == null || tileInfos.isEmpty()) {
+            return false;
+        }
+
+        if (rootNode == null) {
+            throw new IllegalArgumentException(
+                    "rootNode must not be null"
+            );
+        }
+
+        Matrix4d rootTransformMatrix =
+                getNodeTransformMatrix(rootNode);
+
+        Matrix4d rootTransformMatrixInverse =
+                new Matrix4d(rootTransformMatrix).invert();
+
+        /*
+         * Primera fase secuencial:
+         * asignar cada TileInfo a sus nodos.
+         */
+        Map<Node, List<TileInfo>> nodeTileInfosMap =
+                new IdentityHashMap<>();
+
+        List<Node> intersectedNodes =
+                new ArrayList<>();
+
+        for (TileInfo tileInfo : tileInfos) {
+            if (tileInfo == null) {
+                continue;
+            }
+
+            GaiaBoundingBox cartographicBBox =
+                    tileInfo.getCartographicBBox();
+
+            if (cartographicBBox == null) {
+                log.error(
+                        "cartographicBBox is null for TileInfo: {}",
+                        tileInfo.getTempPath()
+                );
+                continue;
+            }
+
+            intersectedNodes.clear();
+
+            Vector3d cartographicCenterDegree =
+                    cartographicBBox.getCenter();
+
+            rootNode.getIntersectedNodesAsOctree(
+                    cartographicCenterDegree,
+                    nodeDepth,
+                    intersectedNodes
+            );
+
+            for (Node node : intersectedNodes) {
+                if (node == null
+                        || node.getDepth() != nodeDepth) {
+                    continue;
+                }
+
+                nodeTileInfosMap
+                        .computeIfAbsent(
+                                node,
+                                ignored -> new ArrayList<>()
+                        )
+                        .add(tileInfo);
+            }
+        }
+
+        if (nodeTileInfosMap.isEmpty()) {
+            log.warn(
+                    "No nodes with TileInfos found for depth {}",
+                    nodeDepth
+            );
+            return false;
+        }
+
+        /*
+         * Creamos una lista estable de trabajos.
+         * El índice queda fijado antes de lanzar los threads.
+         */
+        List<NodeIntegralWork> works =
+                new ArrayList<>(nodeTileInfosMap.size());
+
+        int nodeIndex = 0;
+
+        for (Map.Entry<Node, List<TileInfo>> entry
+                : nodeTileInfosMap.entrySet()) {
+
+            Node node = entry.getKey();
+            List<TileInfo> nodeTileInfos = entry.getValue();
+
+            if (nodeTileInfos == null
+                    || nodeTileInfos.isEmpty()) {
+                continue;
+            }
+
+            node.setRefine(Node.RefineType.REPLACE);
+
+            works.add(
+                    new NodeIntegralWork(
+                            nodeIndex,
+                            node,
+                            List.copyOf(nodeTileInfos)
+                    )
+            );
+
+            nodeIndex++;
+        }
+
+        if (works.isEmpty()) {
+            return false;
+        }
+
+        int availableProcessors =
+                Runtime.getRuntime().availableProcessors();
+
+        int realThreadCount = Math.min(
+                works.size(),
+                Math.min(
+                        Math.max(1, threadsCount),
+                        availableProcessors
+                )
+        );
+
+        log.info(
+                "Integrating {} nodes using {} threads",
+                works.size(),
+                realThreadCount
+        );
+
+        ExecutorService executor =
+                Executors.newFixedThreadPool(
+                        realThreadCount,
+                        new IntegralLeafThreadFactory()
+                );
+
+        CompletionService<NodeIntegralResult> completionService =
+                new ExecutorCompletionService<>(executor);
+
+        for (NodeIntegralWork work : works) {
+            completionService.submit(
+                    () -> processIntegralNode(
+                            work,
+                            lod,
+                            nodeDepth,
+                            rootTransformMatrixInverse
+                    )
+            );
+        }
+
+        executor.shutdown();
+
+        try {
+            for (int i = 0; i < works.size(); i++) {
+                Future<NodeIntegralResult> future =
+                        completionService.take();
+
+                NodeIntegralResult result =
+                        future.get();
+
+                int completed = i + 1;
+
+                if (result == null
+                        || result.gaiaScene() == null) {
+
+                    log.warn(
+                            "Integral leaf node produced no scene: {} / {}",
+                            completed,
+                            works.size()
+                    );
+                    continue;
+                }
+
+                /*
+                 * Se ejecuta en el hilo principal.
+                 * Así evitamos posibles carreras dentro de
+                 * makeContentsForNode().
+                 */
+                makeContentsForNode(
+                        result.node(),
+                        result.gaiaScene(),
+                        lod,
+                        nodeDepth,
+                        result.nodeIndex()
+                );
+
+                log.info(
+                        "Integral leaf node completed: {} / {}. Node: {}",
+                        completed,
+                        works.size(),
+                        result.node().getNodeCode()
+                );
+            }
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            executor.shutdownNow();
+
+            throw new RuntimeException(
+                    "Integral leaf processing interrupted",
+                    e
+            );
+
+        } catch (ExecutionException e) {
+            executor.shutdownNow();
+
+            Throwable cause = e.getCause();
+
+            if (cause instanceof RuntimeException runtimeException) {
+                throw runtimeException;
+            }
+
+            throw new RuntimeException(
+                    "Integral leaf worker failed",
+                    cause
+            );
+        }
+
+        /*
+         * En el código original siempre era false.
+         */
+        return false;
+    }
+
+    private static final class IntegralLeafThreadFactory
+            implements ThreadFactory {
+
+        private final AtomicInteger counter =
+                new AtomicInteger();
+
+        @Override
+        public Thread newThread(Runnable runnable) {
+            Thread thread =
+                    new Thread(
+                            runnable,
+                            "integral-leaf-"
+                                    + counter.incrementAndGet()
+                    );
+
+            thread.setDaemon(false);
+
+            return thread;
+        }
+    }
+
+    private NodeIntegralResult processIntegralNode(
+            NodeIntegralWork work,
+            int lod,
+            int nodeDepth,
+            Matrix4d rootTransformMatrixInverse
+    ) {
+        Node node =
+                work.node();
+
+        List<SceneInfo> sceneInfos =
+                createSceneInfos(
+                        work.tileInfos(),
+                        rootTransformMatrixInverse
+                );
+
+        if (sceneInfos.isEmpty()) {
+            log.warn(
+                    "No SceneInfo generated for node: {}",
+                    node.getNodeCode()
+            );
+
+            return new NodeIntegralResult(
+                    work.nodeIndex(),
+                    node,
+                    null
+            );
+        }
+
+        Vector3d nodeCenterGeoCoordRad =
+                node.getBoundingVolume().calcCenter();
+
+        Vector3d nodeCenterGeoCoordDeg =
+                new Vector3d(
+                        Math.toDegrees(nodeCenterGeoCoordRad.x),
+                        Math.toDegrees(nodeCenterGeoCoordRad.y),
+                        nodeCenterGeoCoordRad.z
+                );
+
+        Vector3d nodePositionWorld =
+                GlobeUtils.geographicToCartesianWgs84(
+                        nodeCenterGeoCoordDeg
+                );
+
+        Matrix4d nodeTransformMatrix =
+                node.getTransformMatrix();
+
+        if (nodeTransformMatrix == null) {
+            nodeTransformMatrix =
+                    GlobeUtils.transformMatrixAtCartesianPointWgs84(
+                            nodePositionWorld
+                    );
+        } else {
+            /*
+             * Copia defensiva, ya que Matrix4d es mutable.
+             */
+            nodeTransformMatrix =
+                    new Matrix4d(nodeTransformMatrix);
+        }
+
+        GaiaBoundingBox nodeBoundingBoxLocal =
+                node.calculateLocalBoundingBox();
+
+        int maxScreenSize = 2048;
+
+        List<GaiaScene> resultGaiaScenes =
+                new ArrayList<>(1);
+
+        String outputPathString =
+                globalOptions.getOutputPath();
+
+        /*
+         * El nombre depende del índice asignado antes de lanzar
+         * los threads, no del orden de finalización.
+         */
+        String nodeName =
+                "node_L_"
+                        + nodeDepth
+                        + "_"
+                        + work.nodeIndex();
+
+        /*
+         * Una instancia por worker.
+         * No compartimos manager entre nodos.
+         */
+        MagoLeafTileManager magoLeafTileManager =
+                new MagoLeafTileManager();
+
+        log.info(
+                "Integrating node {} with {} source scenes on thread {}",
+                node.getNodeCode(),
+                sceneInfos.size(),
+                Thread.currentThread().getName()
+        );
+
+        magoLeafTileManager.integralLeafScene(
+                sceneInfos,
+                resultGaiaScenes,
+                nodeBoundingBoxLocal,
+                nodeTransformMatrix,
+                maxScreenSize,
+                outputPathString,
+                nodeName,
+                lod
+        );
+
+        if (resultGaiaScenes.isEmpty()) {
+            log.warn(
+                    "Integral leaf result is empty for node: {}",
+                    node.getNodeCode()
+            );
+
+            return new NodeIntegralResult(
+                    work.nodeIndex(),
+                    node,
+                    null
+            );
+        }
+
+        return new NodeIntegralResult(
+                work.nodeIndex(),
+                node,
+                resultGaiaScenes.getFirst()
+        );
+    }
+
+    private List<SceneInfo> createSceneInfos(
+            List<TileInfo> tileInfos,
+            Matrix4d rootTransformMatrixInverse
+    ) {
+        List<SceneInfo> sceneInfos =
+                new ArrayList<>(tileInfos.size());
+
+        for (TileInfo tileInfo : tileInfos) {
+            if (tileInfo == null
+                    || tileInfo.getTempPath() == null) {
+                continue;
+            }
+
+            TileTransformInfo tileTransformInfo =
+                    tileInfo.getTileTransformInfo();
+
+            if (tileTransformInfo == null
+                    || tileTransformInfo.getPosition() == null) {
+
+                log.warn(
+                        "TileTransformInfo is null for TileInfo: {}",
+                        tileInfo.getTempPath()
+                );
+                continue;
+            }
+
+            Vector3d geographicPosition =
+                    tileTransformInfo.getPosition();
+
+            Vector3d positionWorld =
+                    GlobeUtils.geographicToCartesianWgs84(
+                            geographicPosition
+                    );
+
+            Matrix4d transformMatrix =
+                    GlobeUtils.transformMatrixAtCartesianPointWgs84(
+                            positionWorld
+                    );
+
+            Vector4d positionLocal4d =
+                    new Vector4d(
+                            positionWorld.x,
+                            positionWorld.y,
+                            positionWorld.z,
+                            1.0
+                    );
+
+            /*
+             * transform() no debe modificar la matriz.
+             * Usamos un Vector4d independiente en cada iteración.
+             */
+            rootTransformMatrixInverse.transform(
+                    positionLocal4d
+            );
+
+            Vector3d positionLocal =
+                    new Vector3d(
+                            positionLocal4d.x,
+                            positionLocal4d.y,
+                            positionLocal4d.z
+                    );
+
+            SceneInfo sceneInfo =
+                    new SceneInfo();
+
+            sceneInfo.setScenePath(
+                    tileInfo.getTempPath().toString()
+            );
+
+            sceneInfo.setTransformMatrix(
+                    transformMatrix
+            );
+
+            sceneInfo.setScenePosLC(
+                    positionLocal
+            );
+
+            sceneInfos.add(sceneInfo);
+        }
+
+        return sceneInfos;
+    }
+
+    private record NodeIntegralWork(
+            int nodeIndex,
+            Node node,
+            List<TileInfo> tileInfos
+    ) {
+    }
+
+    private record NodeIntegralResult(
+            int nodeIndex,
+            Node node,
+            GaiaScene gaiaScene
+    ) {
     }
 
     protected void cutAndScissorAllLod(List<TileInfo> tileInfos, Node rootNode) {

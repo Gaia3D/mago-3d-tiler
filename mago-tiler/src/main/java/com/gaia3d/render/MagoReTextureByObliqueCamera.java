@@ -25,7 +25,6 @@ import com.gaia3d.basic.magogl.shader.resources.MagoDefaultVertexShader;
 import com.gaia3d.basic.magogl.shader.resources.MagoTexturedFragmentShader;
 import com.gaia3d.basic.texture.atlas.TextureAtlasManager;
 import com.gaia3d.basic.types.TextureType;
-//import com.gaia3d.renderer.engine.dataStructure.IntegralReMeshParameters;
 import com.gaia3d.basic.magogl.Camera;
 import com.gaia3d.basic.magogl.Projection;
 import com.gaia3d.util.GaiaTextureUtils;
@@ -53,7 +52,7 @@ import static com.gaia3d.basic.magogl.MagoRenderEngine.toArgb;
 @Setter
 
 public class MagoReTextureByObliqueCamera {
-    private MagoRenderEngine engine;
+    //private MagoRenderEngine engine;
     private CameraDirectionType[] renderDirections = {
             CameraDirectionType.ZNEG,
             CameraDirectionType.XPOS_ZNEG,
@@ -69,7 +68,7 @@ public class MagoReTextureByObliqueCamera {
     public static final int BACKGROUND_FACE_CODE =
             0xFFFFFFFF;
     public MagoReTextureByObliqueCamera() {
-        this.engine = new MagoRenderEngine();
+        //this.engine = new MagoRenderEngine();
     }
 
     public void integralReMeshByObliqueCameraV2(List<SceneInfo> sceneInfos,
