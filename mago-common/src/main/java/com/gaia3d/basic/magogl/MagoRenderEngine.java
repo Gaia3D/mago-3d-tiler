@@ -33,7 +33,6 @@ public final class MagoRenderEngine {
                 "MagoRenderContext has no shader program"
         );
 
-
         renderer.renderScene(
                 scene,
                 context

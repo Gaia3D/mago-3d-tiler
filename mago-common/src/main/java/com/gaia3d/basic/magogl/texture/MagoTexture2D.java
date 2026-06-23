@@ -2,7 +2,10 @@ package com.gaia3d.basic.magogl.texture;
 
 import org.joml.Vector4f;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferInt;
 import java.util.Objects;
 
 public final class MagoTexture2D {
@@ -24,27 +27,60 @@ public final class MagoTexture2D {
     public static MagoTexture2D fromBufferedImage(
             BufferedImage image
     ) {
-        Objects.requireNonNull(image, "image must not be null");
-
-        int width = image.getWidth();
-        int height = image.getHeight();
-
-        int[] pixels = image.getRGB(
-                0,
-                0,
-                width,
-                height,
-                null,
-                0,
-                width
+        Objects.requireNonNull(
+                image,
+                "image must not be null"
         );
 
+        BufferedImage compatibleImage = image;
+
+        if (image.getType()
+                != BufferedImage.TYPE_INT_ARGB) {
+
+            compatibleImage =
+                    new BufferedImage(
+                            image.getWidth(),
+                            image.getHeight(),
+                            BufferedImage.TYPE_INT_ARGB
+                    );
+
+            Graphics2D graphics =
+                    compatibleImage.createGraphics();
+
+            try {
+                graphics.drawImage(
+                        image,
+                        0,
+                        0,
+                        null
+                );
+            } finally {
+                graphics.dispose();
+            }
+        }
+
+        DataBuffer dataBuffer =
+                compatibleImage
+                        .getRaster()
+                        .getDataBuffer();
+
+        if (!(dataBuffer instanceof DataBufferInt)) {
+            throw new IllegalStateException(
+                    "Expected DataBufferInt"
+            );
+        }
+
+        int[] pixels =
+                ((DataBufferInt) dataBuffer)
+                        .getData();
+
         return new MagoTexture2D(
-                width,
-                height,
+                compatibleImage.getWidth(),
+                compatibleImage.getHeight(),
                 pixels
         );
     }
+
 
     public int getWidth() {
         return width;
@@ -164,6 +200,74 @@ public final class MagoTexture2D {
                 lerp(b0, b1, ty),
                 lerp(a0, a1, ty)
         );
+    }
+
+    private static BufferedImage resizeIfNecessary(
+            BufferedImage source,
+            int maxSize
+    ) {
+        int sourceWidth = source.getWidth();
+        int sourceHeight = source.getHeight();
+
+        int largestDimension =
+                Math.max(
+                        sourceWidth,
+                        sourceHeight
+                );
+
+        if (largestDimension <= maxSize) {
+            return source;
+        }
+
+        double scale =
+                (double) maxSize
+                        / largestDimension;
+
+        int targetWidth =
+                Math.max(
+                        1,
+                        (int) Math.round(
+                                sourceWidth * scale
+                        )
+                );
+
+        int targetHeight =
+                Math.max(
+                        1,
+                        (int) Math.round(
+                                sourceHeight * scale
+                        )
+                );
+
+        BufferedImage resized =
+                new BufferedImage(
+                        targetWidth,
+                        targetHeight,
+                        BufferedImage.TYPE_INT_ARGB
+                );
+
+        Graphics2D graphics =
+                resized.createGraphics();
+
+        try {
+            graphics.setRenderingHint(
+                    RenderingHints.KEY_INTERPOLATION,
+                    RenderingHints.VALUE_INTERPOLATION_BILINEAR
+            );
+
+            graphics.drawImage(
+                    source,
+                    0,
+                    0,
+                    targetWidth,
+                    targetHeight,
+                    null
+            );
+        } finally {
+            graphics.dispose();
+        }
+
+        return resized;
     }
 
     private static float wrapCoordinate(

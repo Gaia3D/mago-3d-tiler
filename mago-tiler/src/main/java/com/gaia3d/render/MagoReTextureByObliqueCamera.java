@@ -87,10 +87,20 @@ public class MagoReTextureByObliqueCamera {
         Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix = new HashMap<>();
         Map<CameraDirectionType, Projection> mapCameraDirectionTypeProjection = new HashMap<>();
 
-        int screenPixelsForMeter = 20;
+        double screenPixelsForMeter = 20;
         double nodeBBoxMaxSize = nodeBBox.getMaxSize();
+
+        if (!Double.isFinite(nodeBBoxMaxSize)
+                || nodeBBoxMaxSize <= 0.0) {
+
+            throw new IllegalStateException(
+                    "Invalid node bounding-box size: "
+                            + nodeBBoxMaxSize
+            );
+        }
+
         int targetMaxSize = 512;
-        screenPixelsForMeter = targetMaxSize / (int) nodeBBoxMaxSize;
+        screenPixelsForMeter = targetMaxSize / nodeBBoxMaxSize;
         MagoFboSet fboSet = create9MagoFbos(nodeBBox,
                 renderDirections,
                 mapCameraDirectionTypeBBox,
@@ -420,6 +430,14 @@ public class MagoReTextureByObliqueCamera {
                         mapCameraDirectionTypeProjection);
                 // end of making oblique camera textures
 
+                if(magoRenderableScene != null) {
+                    magoRenderableScene.deleteObjects();
+                }
+
+                if(decimatedRenderableScene != null) {
+                    decimatedRenderableScene.deleteObjects();
+                }
+
             } catch (Exception e) {
                 log.error("[ERROR] initializing the engine: ", e);
             }
@@ -537,10 +555,20 @@ public class MagoReTextureByObliqueCamera {
         Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix = new HashMap<>();
         Map<CameraDirectionType, Projection> mapCameraDirectionTypeProjection = new HashMap<>();
 
-        int screenPixelsForMeter = 20;
+        double screenPixelsForMeter = 20;
         double nodeBBoxMaxSize = nodeBBox.getMaxSize();
+
+        if (!Double.isFinite(nodeBBoxMaxSize)
+                || nodeBBoxMaxSize <= 0.0) {
+
+            throw new IllegalStateException(
+                    "Invalid node bounding-box size: "
+                            + nodeBBoxMaxSize
+            );
+        }
+
         int targetMaxSize = 512;
-        screenPixelsForMeter = targetMaxSize / (int) nodeBBoxMaxSize;
+        screenPixelsForMeter = targetMaxSize / nodeBBoxMaxSize;
         MagoFboSet fboSet = create9MagoFbos(nodeBBox,
                 renderDirections,
                 mapCameraDirectionTypeBBox,
@@ -777,6 +805,14 @@ public class MagoReTextureByObliqueCamera {
                         faceCodeFboSet,
                         mapCameraDirectionTypeModelViewMatrix,
                         mapCameraDirectionTypeProjection);
+
+                if(magoRenderableScene != null) {
+                    magoRenderableScene.deleteObjects();
+                }
+
+                if(decimatedRenderableScene != null) {
+                    decimatedRenderableScene.deleteObjects();
+                }
 
             } catch (Exception e) {
                 log.error("[ERROR] initializing the engine: ", e);

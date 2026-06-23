@@ -391,7 +391,13 @@ public final class MagoRenderableMaker {
             );
         }
 
-        return MagoTexture2D.fromBufferedImage(image);
+        try {
+            return MagoTexture2D.fromBufferedImage(image);
+        } finally {
+            // free memory.
+            image.flush();
+            gaiaTexture.setBufferedImage(null);
+        }
     }
 
     private ByteBuffer createPositionsBuffer(
