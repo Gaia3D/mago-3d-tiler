@@ -70,15 +70,6 @@ public class PhotogrammetryProcessFlow implements ProcessFlow {
         List<PostProcess> postProcessors = new ArrayList<>();
 
         // In photogrammetry there are no post-processes.
-//        postProcessors.add(new GaiaMaximizer());
-//        postProcessors.add(new GaiaRelocator());
-//        if (globalOptions.getTilesVersion()
-//                .equals("1.0")) {
-//            postProcessors.add(new Batched3DModel());
-//        } else {
-//            postProcessors.add(new Batched3DModelV2());
-//        }
-
         Pipeline processPipeline = new TilingPipeline(preProcessors, tilingProcess, postProcessors);
         processPipeline.process(fileLoader);
     }

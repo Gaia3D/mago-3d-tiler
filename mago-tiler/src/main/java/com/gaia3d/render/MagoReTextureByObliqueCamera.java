@@ -26,6 +26,7 @@ import com.gaia3d.basic.remesher.information.GaiaStatistics;
 import com.gaia3d.basic.texture.atlas.TextureAtlasManager;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.util.GaiaTextureUtils;
+import com.gaia3d.util.ImageResizer;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -942,7 +943,6 @@ public class MagoReTextureByObliqueCamera {
         if (!resultAtlasTextures.isEmpty()) {
             resultHalfEdgeScenes.add(halfEdgeSceneMaster);
         }
-
     }
 
     public MagoFbo renderTopView(List<SceneInfo> sceneInfos,
@@ -1488,6 +1488,13 @@ public class MagoReTextureByObliqueCamera {
             log.info("atlasScissoredTexture.getBufferedImage() is null.");
             return;
         }
+
+        // resize the atlas texture if necessary.
+        int lod = 1; // resizer distingis lod 0 or greater than 0, so lod = 1 for resizing is correct.
+        ImageResizer imageResizer = new ImageResizer();
+        BufferedImage resized = imageResizer.resizeMultiStepSmart(atlasScissoredTexture.getBufferedImage(), lod);
+        atlasScissoredTexture.getBufferedImage().flush();
+        atlasScissoredTexture.setBufferedImage(resized);
 
         resultAtlasTextures.add(atlasScissoredTexture);
 
