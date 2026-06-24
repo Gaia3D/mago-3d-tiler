@@ -11,25 +11,8 @@ import java.util.Objects;
 @Getter
 public final class MagoRenderablePrimitive {
 
-    /*
-     * Required attributes.
-     */
-    private MagoBuffer positionsBuffer;
-    private MagoBuffer indicesBuffer;
-
-    /*
-     * Optional vertex attributes.
-     */
-    private MagoBuffer normalsBuffer;
-    private MagoBuffer texCoordsBuffer;
-    private MagoBuffer colorsBuffer;
-
     private final int vertexCount;
     private final int indexCount;
-
-    private MagoTexture2D diffuseTexture;
-
-
     /*
      * One face code per rendered triangle.
      *
@@ -38,6 +21,18 @@ public final class MagoRenderablePrimitive {
      */
     @Getter(AccessLevel.NONE)
     private final int[] faceCodes;
+    /*
+     * Required attributes.
+     */
+    private MagoBuffer positionsBuffer;
+    private MagoBuffer indicesBuffer;
+    /*
+     * Optional vertex attributes.
+     */
+    private MagoBuffer normalsBuffer;
+    private MagoBuffer texCoordsBuffer;
+    private MagoBuffer colorsBuffer;
+    private MagoTexture2D diffuseTexture;
 
     /**
      * Constructor used when face-code rendering is not required,
@@ -169,56 +164,6 @@ public final class MagoRenderablePrimitive {
         );
     }
 
-    public boolean hasNormals() {
-        return normalsBuffer != null;
-    }
-
-    public boolean hasTexCoords() {
-        return texCoordsBuffer != null;
-    }
-
-    public boolean hasColors() {
-        return colorsBuffer != null;
-    }
-
-    public int getTrianglesCount() {
-        return indexCount / 3;
-    }
-
-    public boolean hasFaceCodes() {
-        return faceCodes != null;
-    }
-
-    public int getFaceCode(int triangleIndex) {
-        if (faceCodes == null) {
-            throw new IllegalStateException(
-                    "MagoRenderablePrimitive has no face codes."
-            );
-        }
-
-        if (triangleIndex < 0
-                || triangleIndex >= faceCodes.length) {
-
-            throw new IndexOutOfBoundsException(
-                    "Invalid triangle index: "
-                            + triangleIndex
-                            + ", trianglesCount="
-                            + faceCodes.length
-            );
-        }
-
-        return faceCodes[triangleIndex];
-    }
-
-    public int[] getFaceCodesCopy() {
-        return faceCodes == null
-                ? null
-                : Arrays.copyOf(
-                faceCodes,
-                faceCodes.length
-        );
-    }
-
     private static void validateBufferSizes(
             MagoBuffer positionsBuffer,
             MagoBuffer indicesBuffer,
@@ -321,6 +266,56 @@ public final class MagoRenderablePrimitive {
                 );
             }
         }
+    }
+
+    public boolean hasNormals() {
+        return normalsBuffer != null;
+    }
+
+    public boolean hasTexCoords() {
+        return texCoordsBuffer != null;
+    }
+
+    public boolean hasColors() {
+        return colorsBuffer != null;
+    }
+
+    public int getTrianglesCount() {
+        return indexCount / 3;
+    }
+
+    public boolean hasFaceCodes() {
+        return faceCodes != null;
+    }
+
+    public int getFaceCode(int triangleIndex) {
+        if (faceCodes == null) {
+            throw new IllegalStateException(
+                    "MagoRenderablePrimitive has no face codes."
+            );
+        }
+
+        if (triangleIndex < 0
+                || triangleIndex >= faceCodes.length) {
+
+            throw new IndexOutOfBoundsException(
+                    "Invalid triangle index: "
+                            + triangleIndex
+                            + ", trianglesCount="
+                            + faceCodes.length
+            );
+        }
+
+        return faceCodes[triangleIndex];
+    }
+
+    public int[] getFaceCodesCopy() {
+        return faceCodes == null
+                ? null
+                : Arrays.copyOf(
+                faceCodes,
+                faceCodes.length
+        );
     }
 
     public void deleteObjects() {

@@ -15,325 +15,6 @@ import java.util.Objects;
 public final class MagoRenderer {
     private static final float EPSILON = 1e-7f;
 
-    public void renderScene(
-            MagoRenderableScene scene,
-            MagoRenderContext context
-    ) {
-        Objects.requireNonNull(scene, "scene must not be null");
-        Objects.requireNonNull(context, "context must not be null");
-
-        if (context.getFbo() == null) {
-            throw new IllegalStateException(
-                    "No MagoFbo configured in render context."
-            );
-        }
-
-        if (context.getShaderProgram() == null) {
-            throw new IllegalStateException(
-                    "No shader program configured."
-            );
-        }
-
-        for (MagoRenderableNode rootNode
-                : scene.getRenderableNodes()) {
-
-            if (rootNode != null) {
-                renderNode(rootNode, context);
-            }
-        }
-    }
-
-    private void renderNode(
-            MagoRenderableNode node,
-            MagoRenderContext context
-    ) {
-        prepareNodeUniforms(node, context);
-
-        for (MagoRenderableMesh mesh
-                : node.getRenderableMeshes()) {
-
-            renderMesh(mesh, context);
-        }
-
-        for (MagoRenderableNode child
-                : node.getChildren()) {
-
-            renderNode(child, context);
-        }
-    }
-
-    private void renderMesh(
-            MagoRenderableMesh mesh,
-            MagoRenderContext context
-    ) {
-        for (MagoRenderablePrimitive primitive
-                : mesh.getRenderablePrimitives()) {
-
-            renderPrimitive(primitive, context);
-        }
-    }
-
-    private void renderPrimitive(
-            MagoRenderablePrimitive primitive,
-            MagoRenderContext context
-    ) {
-        Objects.requireNonNull(
-                primitive,
-                "primitive must not be null"
-        );
-
-        Objects.requireNonNull(
-                context,
-                "context must not be null"
-        );
-
-        MagoFbo fbo = Objects.requireNonNull(
-                context.getFbo(),
-                "No MagoFbo configured."
-        );
-
-        MagoShaderProgram shaderProgram =
-                Objects.requireNonNull(
-                        context.getShaderProgram(),
-                        "No MagoShaderProgram configured."
-                );
-
-        MagoVertexShader vertexShader =
-                shaderProgram.getVertexShader();
-
-        MagoFragmentShader fragmentShader =
-                shaderProgram.getFragmentShader();
-
-        boolean requiresFaceCode =
-                fragmentShader.requiresFaceCode();
-
-        if (requiresFaceCode
-                && !primitive.hasFaceCodes()) {
-
-            throw new IllegalStateException(
-                    "The current fragment shader requires face codes, "
-                            + "but the primitive has no face codes."
-            );
-        }
-
-        MagoUniforms uniforms =
-                context.getUniforms();
-
-        uniforms.diffuseTexture =
-                primitive.getDiffuseTexture();
-
-        ByteBuffer positions =
-                primitive.getPositionsBuffer().getData();
-
-        ByteBuffer indices =
-                primitive.getIndicesBuffer().getData();
-
-        ByteBuffer normals = primitive.hasNormals()
-                ? primitive.getNormalsBuffer().getData()
-                : null;
-
-        ByteBuffer texCoords = primitive.hasTexCoords()
-                ? primitive.getTexCoordsBuffer().getData()
-                : null;
-
-        ByteBuffer colors = primitive.hasColors()
-                ? primitive.getColorsBuffer().getData()
-                : null;
-
-        int vertexCount = primitive.getVertexCount();
-        int indexCount = primitive.getIndexCount();
-
-        /*
-         * Execute the vertex shader exactly once per vertex.
-         */
-        MagoVertexOutput[] vertexOutputs =
-                new MagoVertexOutput[vertexCount];
-
-        ScreenVertex[] screenVertices =
-                new ScreenVertex[vertexCount];
-
-        MagoVertexInput vertexInput =
-                new MagoVertexInput();
-
-        for (int vertexIndex = 0;
-             vertexIndex < vertexCount;
-             vertexIndex++) {
-
-            readVertex(
-                    vertexIndex,
-                    positions,
-                    normals,
-                    texCoords,
-                    colors,
-                    vertexInput
-            );
-
-            MagoVertexOutput vertexOutput =
-                    new MagoVertexOutput();
-
-            vertexShader.process(
-                    vertexInput,
-                    vertexOutput,
-                    uniforms
-            );
-
-            vertexOutputs[vertexIndex] = vertexOutput;
-
-            screenVertices[vertexIndex] = projectVertex(
-                    vertexOutput,
-                    fbo.getWidth(),
-                    fbo.getHeight()
-            );
-        }
-
-        /*
-         * Reusable fragment objects.
-         * The rasterizer is currently single-threaded.
-         */
-        MagoFragmentInput fragmentInput =
-                new MagoFragmentInput();
-
-        MagoFragmentOutput fragmentOutput =
-                new MagoFragmentOutput();
-
-        /*
-         * Each group of three indices represents one triangle.
-         */
-        for (int indexPosition = 0;
-             indexPosition + 2 < indexCount;
-             indexPosition += 3) {
-
-            int triangleIndex =
-                    indexPosition / 3;
-
-            int faceCode = 0;
-            if (requiresFaceCode) {
-                faceCode =
-                        primitive.getFaceCode(
-                                triangleIndex
-                        );
-            }
-
-            int index0 = indices.getInt(
-                    indexPosition * Integer.BYTES
-            );
-
-            int index1 = indices.getInt(
-                    (indexPosition + 1) * Integer.BYTES
-            );
-
-            int index2 = indices.getInt(
-                    (indexPosition + 2) * Integer.BYTES
-            );
-
-            validateVertexIndex(index0, vertexCount);
-            validateVertexIndex(index1, vertexCount);
-            validateVertexIndex(index2, vertexCount);
-
-            MagoVertexOutput output0 =
-                    vertexOutputs[index0];
-
-            MagoVertexOutput output1 =
-                    vertexOutputs[index1];
-
-            MagoVertexOutput output2 =
-                    vertexOutputs[index2];
-
-            /*
-             * Reject triangles completely outside one clip plane.
-             */
-            if (isCompletelyOutsideClipVolume(
-                    output0,
-                    output1,
-                    output2
-            )) {
-                continue;
-            }
-
-            ScreenVertex vertex0 =
-                    screenVertices[index0];
-
-            ScreenVertex vertex1 =
-                    screenVertices[index1];
-
-            ScreenVertex vertex2 =
-                    screenVertices[index2];
-
-            /*
-             * A null ScreenVertex means invalid coordinates or w <= 0.
-             * Full homogeneous clipping will later handle these cases.
-             */
-            if (vertex0 == null
-                    || vertex1 == null
-                    || vertex2 == null) {
-                continue;
-            }
-
-            float triangleArea = edgeFunction(
-                    vertex0.x,
-                    vertex0.y,
-                    vertex1.x,
-                    vertex1.y,
-                    vertex2.x,
-                    vertex2.y
-            );
-
-            if (!Float.isFinite(triangleArea)
-                    || Math.abs(triangleArea) <= EPSILON) {
-                continue;
-            }
-
-            if (context.isCullFaceEnabled()
-                    && triangleArea <= 0.0f) {
-                continue;
-            }
-
-            switch (context.getPolygonMode()) {
-                case FILL -> rasterizeFilledTriangle(
-                        vertex0,
-                        vertex1,
-                        vertex2,
-                        faceCode,
-                        fragmentShader,
-                        fragmentInput,
-                        fragmentOutput,
-                        uniforms,
-                        context
-                );
-
-                case LINE -> rasterizeWireTriangle(
-                        vertex0,
-                        vertex1,
-                        vertex2,
-                        context,
-                        false
-                );
-
-                case FILL_AND_LINE -> {
-                    rasterizeFilledTriangle(
-                            vertex0,
-                            vertex1,
-                            vertex2,
-                            faceCode,
-                            fragmentShader,
-                            fragmentInput,
-                            fragmentOutput,
-                            uniforms,
-                            context
-                    );
-
-                    rasterizeWireTriangle(
-                            vertex0,
-                            vertex1,
-                            vertex2,
-                            context,
-                            true
-                    );
-                }
-            }
-        }
-    }
-
     private static void rasterizeWireTriangle(
             ScreenVertex vertex0,
             ScreenVertex vertex1,
@@ -1199,6 +880,325 @@ public final class MagoRenderer {
                 && Float.isFinite(value.y)
                 && Float.isFinite(value.z)
                 && Float.isFinite(value.w);
+    }
+
+    public void renderScene(
+            MagoRenderableScene scene,
+            MagoRenderContext context
+    ) {
+        Objects.requireNonNull(scene, "scene must not be null");
+        Objects.requireNonNull(context, "context must not be null");
+
+        if (context.getFbo() == null) {
+            throw new IllegalStateException(
+                    "No MagoFbo configured in render context."
+            );
+        }
+
+        if (context.getShaderProgram() == null) {
+            throw new IllegalStateException(
+                    "No shader program configured."
+            );
+        }
+
+        for (MagoRenderableNode rootNode
+                : scene.getRenderableNodes()) {
+
+            if (rootNode != null) {
+                renderNode(rootNode, context);
+            }
+        }
+    }
+
+    private void renderNode(
+            MagoRenderableNode node,
+            MagoRenderContext context
+    ) {
+        prepareNodeUniforms(node, context);
+
+        for (MagoRenderableMesh mesh
+                : node.getRenderableMeshes()) {
+
+            renderMesh(mesh, context);
+        }
+
+        for (MagoRenderableNode child
+                : node.getChildren()) {
+
+            renderNode(child, context);
+        }
+    }
+
+    private void renderMesh(
+            MagoRenderableMesh mesh,
+            MagoRenderContext context
+    ) {
+        for (MagoRenderablePrimitive primitive
+                : mesh.getRenderablePrimitives()) {
+
+            renderPrimitive(primitive, context);
+        }
+    }
+
+    private void renderPrimitive(
+            MagoRenderablePrimitive primitive,
+            MagoRenderContext context
+    ) {
+        Objects.requireNonNull(
+                primitive,
+                "primitive must not be null"
+        );
+
+        Objects.requireNonNull(
+                context,
+                "context must not be null"
+        );
+
+        MagoFbo fbo = Objects.requireNonNull(
+                context.getFbo(),
+                "No MagoFbo configured."
+        );
+
+        MagoShaderProgram shaderProgram =
+                Objects.requireNonNull(
+                        context.getShaderProgram(),
+                        "No MagoShaderProgram configured."
+                );
+
+        MagoVertexShader vertexShader =
+                shaderProgram.getVertexShader();
+
+        MagoFragmentShader fragmentShader =
+                shaderProgram.getFragmentShader();
+
+        boolean requiresFaceCode =
+                fragmentShader.requiresFaceCode();
+
+        if (requiresFaceCode
+                && !primitive.hasFaceCodes()) {
+
+            throw new IllegalStateException(
+                    "The current fragment shader requires face codes, "
+                            + "but the primitive has no face codes."
+            );
+        }
+
+        MagoUniforms uniforms =
+                context.getUniforms();
+
+        uniforms.diffuseTexture =
+                primitive.getDiffuseTexture();
+
+        ByteBuffer positions =
+                primitive.getPositionsBuffer().getData();
+
+        ByteBuffer indices =
+                primitive.getIndicesBuffer().getData();
+
+        ByteBuffer normals = primitive.hasNormals()
+                ? primitive.getNormalsBuffer().getData()
+                : null;
+
+        ByteBuffer texCoords = primitive.hasTexCoords()
+                ? primitive.getTexCoordsBuffer().getData()
+                : null;
+
+        ByteBuffer colors = primitive.hasColors()
+                ? primitive.getColorsBuffer().getData()
+                : null;
+
+        int vertexCount = primitive.getVertexCount();
+        int indexCount = primitive.getIndexCount();
+
+        /*
+         * Execute the vertex shader exactly once per vertex.
+         */
+        MagoVertexOutput[] vertexOutputs =
+                new MagoVertexOutput[vertexCount];
+
+        ScreenVertex[] screenVertices =
+                new ScreenVertex[vertexCount];
+
+        MagoVertexInput vertexInput =
+                new MagoVertexInput();
+
+        for (int vertexIndex = 0;
+             vertexIndex < vertexCount;
+             vertexIndex++) {
+
+            readVertex(
+                    vertexIndex,
+                    positions,
+                    normals,
+                    texCoords,
+                    colors,
+                    vertexInput
+            );
+
+            MagoVertexOutput vertexOutput =
+                    new MagoVertexOutput();
+
+            vertexShader.process(
+                    vertexInput,
+                    vertexOutput,
+                    uniforms
+            );
+
+            vertexOutputs[vertexIndex] = vertexOutput;
+
+            screenVertices[vertexIndex] = projectVertex(
+                    vertexOutput,
+                    fbo.getWidth(),
+                    fbo.getHeight()
+            );
+        }
+
+        /*
+         * Reusable fragment objects.
+         * The rasterizer is currently single-threaded.
+         */
+        MagoFragmentInput fragmentInput =
+                new MagoFragmentInput();
+
+        MagoFragmentOutput fragmentOutput =
+                new MagoFragmentOutput();
+
+        /*
+         * Each group of three indices represents one triangle.
+         */
+        for (int indexPosition = 0;
+             indexPosition + 2 < indexCount;
+             indexPosition += 3) {
+
+            int triangleIndex =
+                    indexPosition / 3;
+
+            int faceCode = 0;
+            if (requiresFaceCode) {
+                faceCode =
+                        primitive.getFaceCode(
+                                triangleIndex
+                        );
+            }
+
+            int index0 = indices.getInt(
+                    indexPosition * Integer.BYTES
+            );
+
+            int index1 = indices.getInt(
+                    (indexPosition + 1) * Integer.BYTES
+            );
+
+            int index2 = indices.getInt(
+                    (indexPosition + 2) * Integer.BYTES
+            );
+
+            validateVertexIndex(index0, vertexCount);
+            validateVertexIndex(index1, vertexCount);
+            validateVertexIndex(index2, vertexCount);
+
+            MagoVertexOutput output0 =
+                    vertexOutputs[index0];
+
+            MagoVertexOutput output1 =
+                    vertexOutputs[index1];
+
+            MagoVertexOutput output2 =
+                    vertexOutputs[index2];
+
+            /*
+             * Reject triangles completely outside one clip plane.
+             */
+            if (isCompletelyOutsideClipVolume(
+                    output0,
+                    output1,
+                    output2
+            )) {
+                continue;
+            }
+
+            ScreenVertex vertex0 =
+                    screenVertices[index0];
+
+            ScreenVertex vertex1 =
+                    screenVertices[index1];
+
+            ScreenVertex vertex2 =
+                    screenVertices[index2];
+
+            /*
+             * A null ScreenVertex means invalid coordinates or w <= 0.
+             * Full homogeneous clipping will later handle these cases.
+             */
+            if (vertex0 == null
+                    || vertex1 == null
+                    || vertex2 == null) {
+                continue;
+            }
+
+            float triangleArea = edgeFunction(
+                    vertex0.x,
+                    vertex0.y,
+                    vertex1.x,
+                    vertex1.y,
+                    vertex2.x,
+                    vertex2.y
+            );
+
+            if (!Float.isFinite(triangleArea)
+                    || Math.abs(triangleArea) <= EPSILON) {
+                continue;
+            }
+
+            if (context.isCullFaceEnabled()
+                    && triangleArea <= 0.0f) {
+                continue;
+            }
+
+            switch (context.getPolygonMode()) {
+                case FILL -> rasterizeFilledTriangle(
+                        vertex0,
+                        vertex1,
+                        vertex2,
+                        faceCode,
+                        fragmentShader,
+                        fragmentInput,
+                        fragmentOutput,
+                        uniforms,
+                        context
+                );
+
+                case LINE -> rasterizeWireTriangle(
+                        vertex0,
+                        vertex1,
+                        vertex2,
+                        context,
+                        false
+                );
+
+                case FILL_AND_LINE -> {
+                    rasterizeFilledTriangle(
+                            vertex0,
+                            vertex1,
+                            vertex2,
+                            faceCode,
+                            fragmentShader,
+                            fragmentInput,
+                            fragmentOutput,
+                            uniforms,
+                            context
+                    );
+
+                    rasterizeWireTriangle(
+                            vertex0,
+                            vertex1,
+                            vertex2,
+                            context,
+                            true
+                    );
+                }
+            }
+        }
     }
 
     private void prepareNodeUniforms(

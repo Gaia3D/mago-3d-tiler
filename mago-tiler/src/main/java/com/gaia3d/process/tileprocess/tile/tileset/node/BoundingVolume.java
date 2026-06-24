@@ -25,16 +25,14 @@ import java.util.List;
 @NoArgsConstructor
 public class BoundingVolume implements Serializable {
     private static final float GOLDEN_RATIO = 1.61803398875f;
-
-    @JsonIgnore
-    private BoundingVolumeType type;
-
     // minx, miny, maxx, maxy, minz, maxz
     double[] region;
     // centerX, centerY, centerZ, halfX1, halfX2, halfX3, halfY1, halfY2, halfY3, halfZ1, halfZ2, halfZ3
     double[] box;
     // centerX, centerY, centerZ, radius
     double[] sphere;
+    @JsonIgnore
+    private BoundingVolumeType type;
 
     public BoundingVolume(BoundingVolumeType type) {
         this.type = type;
@@ -133,12 +131,6 @@ public class BoundingVolume implements Serializable {
         this.region[3] = DecimalUtils.cutFast(this.region[3]);
         this.region[4] = DecimalUtils.cutFast(this.region[4]);
         this.region[5] = DecimalUtils.cutFast(this.region[5]);
-    }
-
-    public enum BoundingVolumeType {
-        BOX,
-        SPHERE,
-        REGION
     }
 
     public List<List<TileInfo>> distributeScene(List<TileInfo> tileInfos) {
@@ -322,6 +314,12 @@ public class BoundingVolume implements Serializable {
             log.error("Unsupported bounding volume type: {}", type);
             throw new IllegalArgumentException("Unsupported bounding volume type: " + type);
         }
+    }
+
+    public enum BoundingVolumeType {
+        BOX,
+        SPHERE,
+        REGION
     }
 }
 

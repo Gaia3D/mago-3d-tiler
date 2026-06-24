@@ -11,18 +11,14 @@ import org.joml.Matrix4f;
 @Setter
 public final class MagoRenderContext {
 
-    private MagoFbo fbo;
-    private MagoShaderProgram shaderProgram;
-
     private final Matrix4d viewMatrix =
             new Matrix4d();
-
     private final Matrix4d projectionMatrix =
             new Matrix4d();
-
     private final MagoUniforms uniforms =
             new MagoUniforms();
-
+    private MagoFbo fbo;
+    private MagoShaderProgram shaderProgram;
     private boolean depthTestEnabled = true;
     private boolean cullFaceEnabled = true;
     private boolean blendEnabled = false;

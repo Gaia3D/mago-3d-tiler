@@ -30,10 +30,6 @@ public enum CameraDirectionType {
     XNEG_YPOS_ZPOS,
     XNEG_YNEG_ZPOS;
 
-    public String getName() {
-        return this.name();
-    }
-
     public static Vector3d getCameraDirection(CameraDirectionType cameraDirectionType) {
         Vector3d result = new Vector3d();
         double z = 1.0;
@@ -209,6 +205,10 @@ public enum CameraDirectionType {
         result.add(XNEG_YNEG_ZNEG);
 
         return result;
+    }
+
+    public String getName() {
+        return this.name();
     }
 
 }

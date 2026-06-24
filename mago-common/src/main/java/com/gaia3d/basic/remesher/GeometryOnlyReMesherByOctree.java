@@ -28,12 +28,7 @@ public class GeometryOnlyReMesherByOctree {
     private GaiaStatistics sceneStats = null;
     private boolean reMeshAnyWay = false;
 
-    public static class BarInfo {
-        public boolean isBar;
-        public Vector3d axis = new Vector3d(1, 0, 0);
-        public double length;
-        public double radius;
-        public double slenderness;
+    public GeometryOnlyReMesherByOctree() {
     }
 
     public BarInfo detectBarByPCA(List<GaiaVertex> vertices) {
@@ -128,31 +123,6 @@ public class GeometryOnlyReMesherByOctree {
                         info.slenderness > 6.0;
 
         return info;
-    }
-
-    public enum OctreeShapeType {
-        UNKNOWN,
-        BAR,
-        FLOOR,
-        WALL,
-        VOLUME
-    }
-
-    public static class OctreeShapeInfo {
-        public OctreeShapeType type = OctreeShapeType.UNKNOWN;
-
-        public double sizeX;
-        public double sizeY;
-        public double sizeZ;
-
-        public double longest;
-        public double middle;
-        public double shortest;
-
-        public double elongation; // longest / middle
-        public double flatness;   // middle / shortest
-
-        public Vector3d averageNormal = new Vector3d();
     }
 
     public OctreeShapeInfo classifyOctreeShape(
@@ -290,9 +260,6 @@ public class GeometryOnlyReMesherByOctree {
 
         info.type = OctreeShapeType.VOLUME;
         return info;
-    }
-
-    public GeometryOnlyReMesherByOctree() {
     }
 
     public void reMeshScene(GaiaScene scene,
@@ -1060,5 +1027,38 @@ public class GeometryOnlyReMesherByOctree {
                 vertex.getTexcoords().set(avgU, avgV);
             }
         }
+    }
+
+    public enum OctreeShapeType {
+        UNKNOWN,
+        BAR,
+        FLOOR,
+        WALL,
+        VOLUME
+    }
+
+    public static class BarInfo {
+        public boolean isBar;
+        public Vector3d axis = new Vector3d(1, 0, 0);
+        public double length;
+        public double radius;
+        public double slenderness;
+    }
+
+    public static class OctreeShapeInfo {
+        public OctreeShapeType type = OctreeShapeType.UNKNOWN;
+
+        public double sizeX;
+        public double sizeY;
+        public double sizeZ;
+
+        public double longest;
+        public double middle;
+        public double shortest;
+
+        public double elongation; // longest / middle
+        public double flatness;   // middle / shortest
+
+        public Vector3d averageNormal = new Vector3d();
     }
 }

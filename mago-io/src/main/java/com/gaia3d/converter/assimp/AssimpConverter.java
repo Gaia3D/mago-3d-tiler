@@ -37,12 +37,11 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class AssimpConverter implements Converter {
 
-    private final AssimpConverterOptions options;
-    private final GaiaSceneGeometryValidator sceneGeometryValidator = new GaiaSceneGeometryValidator();
-
     public final int DEFAULT_FLAGS = Assimp.aiProcess_Triangulate |
             Assimp.aiProcess_JoinIdenticalVertices |
             Assimp.aiProcess_SortByPType;
+    private final AssimpConverterOptions options;
+    private final GaiaSceneGeometryValidator sceneGeometryValidator = new GaiaSceneGeometryValidator();
 
     public List<GaiaScene> load(String filePath) {
         return load(new File(filePath));

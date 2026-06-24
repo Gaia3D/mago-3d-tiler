@@ -16,6 +16,44 @@ public class WorldVertexClusters {
     public final Map<Vector3i, Vector3d> interiorAveragePositions = new HashMap<>();
     public final Map<Vector3i, Vector3d> frontierAveragePositions = new HashMap<>();
 
+    private static void calculateAveragePositions(
+            Map<Vector3i, List<GaiaVertex>> clusters,
+            Map<Vector3i, Vector3d> result) {
+
+        if (clusters == null || result == null) {
+            return;
+        }
+
+        for (Map.Entry<Vector3i, List<GaiaVertex>> entry : clusters.entrySet()) {
+            Vector3i cellIndex = entry.getKey();
+            List<GaiaVertex> cluster = entry.getValue();
+
+            if (cellIndex == null || cluster == null || cluster.isEmpty()) {
+                continue;
+            }
+
+            Vector3d average = new Vector3d();
+            int count = 0;
+
+            for (GaiaVertex vertex : cluster) {
+                if (vertex == null || vertex.getPosition() == null) {
+                    continue;
+                }
+
+                average.add(vertex.getPosition());
+                count++;
+            }
+
+            if (count == 0) {
+                continue;
+            }
+
+            average.div(count);
+
+            result.put(new Vector3i(cellIndex), average);
+        }
+    }
+
     public Vector3d getInteriorAverage(Vector3i cellIndex) {
         if (cellIndex == null) {
             return null;
@@ -53,43 +91,5 @@ public class WorldVertexClusters {
 
         calculateAveragePositions(interiorClusters, interiorAveragePositions);
         calculateAveragePositions(frontierClusters, frontierAveragePositions);
-    }
-
-    private static void calculateAveragePositions(
-            Map<Vector3i, List<GaiaVertex>> clusters,
-            Map<Vector3i, Vector3d> result) {
-
-        if (clusters == null || result == null) {
-            return;
-        }
-
-        for (Map.Entry<Vector3i, List<GaiaVertex>> entry : clusters.entrySet()) {
-            Vector3i cellIndex = entry.getKey();
-            List<GaiaVertex> cluster = entry.getValue();
-
-            if (cellIndex == null || cluster == null || cluster.isEmpty()) {
-                continue;
-            }
-
-            Vector3d average = new Vector3d();
-            int count = 0;
-
-            for (GaiaVertex vertex : cluster) {
-                if (vertex == null || vertex.getPosition() == null) {
-                    continue;
-                }
-
-                average.add(vertex.getPosition());
-                count++;
-            }
-
-            if (count == 0) {
-                continue;
-            }
-
-            average.div(count);
-
-            result.put(new Vector3i(cellIndex), average);
-        }
     }
 }

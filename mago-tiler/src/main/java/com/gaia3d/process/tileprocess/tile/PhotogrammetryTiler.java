@@ -65,6 +65,31 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
     public int projectMaxDepthIdx = -1;
     public Map<Integer, List<TileInfo>> mapLodToTileInfos = new HashMap<>();
 
+    protected static double depthToZ01(
+            float depth,
+            double minZ,
+            double maxZ,
+            boolean depthInverted
+    ) {
+        double clampedDepth =
+                Math.max(
+                        0.0,
+                        Math.min(
+                                1.0,
+                                depth
+                        )
+                );
+
+        double normalizedHeight =
+                depthInverted
+                        ? 1.0 - clampedDepth
+                        : clampedDepth;
+
+        return minZ
+                + (maxZ - minZ)
+                * normalizedHeight;
+    }
+
     @Override
     public Tileset run(List<TileInfo> tileInfos) throws FileNotFoundException {
         return runModeMagoGL(tileInfos);
@@ -946,31 +971,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         }
     }
 
-    protected static double depthToZ01(
-            float depth,
-            double minZ,
-            double maxZ,
-            boolean depthInverted
-    ) {
-        double clampedDepth =
-                Math.max(
-                        0.0,
-                        Math.min(
-                                1.0,
-                                depth
-                        )
-                );
-
-        double normalizedHeight =
-                depthInverted
-                        ? 1.0 - clampedDepth
-                        : clampedDepth;
-
-        return minZ
-                + (maxZ - minZ)
-                * normalizedHeight;
-    }
-
     protected float zToDepth01(double z, double minZ, double maxZ, boolean depthInverted) {
         double sizeZ = maxZ - minZ;
 
@@ -1713,27 +1713,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         return false;
     }
 
-    private static final class IntegralLeafThreadFactory
-            implements ThreadFactory {
-
-        private final AtomicInteger counter =
-                new AtomicInteger();
-
-        @Override
-        public Thread newThread(Runnable runnable) {
-            Thread thread =
-                    new Thread(
-                            runnable,
-                            "integral-leaf-"
-                                    + counter.incrementAndGet()
-                    );
-
-            thread.setDaemon(false);
-
-            return thread;
-        }
-    }
-
     private NodeIntegralResult processIntegralNode(
             NodeIntegralWork work,
             int lod,
@@ -1940,20 +1919,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         }
 
         return sceneInfos;
-    }
-
-    private record NodeIntegralWork(
-            int nodeIndex,
-            Node node,
-            List<TileInfo> tileInfos
-    ) {
-    }
-
-    private record NodeIntegralResult(
-            int nodeIndex,
-            Node node,
-            GaiaScene gaiaScene
-    ) {
     }
 
     protected void cutAndScissorAllLod(List<TileInfo> tileInfos, Node rootNode) {
@@ -2622,7 +2587,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         return resultBBox;
     }
 
-
     private GaiaBoundingBox calculateCartographicBoundingBox(GaiaScene gaiaScene, Matrix4d transformMatrix, GaiaBoundingBox resultBoundingBoxLC) {
 //        GaiaScene gaiaSceneCut = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
         GaiaBoundingBox boundingBoxCutLC = gaiaScene.updateBoundingBox();
@@ -2885,7 +2849,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         }
     }
 
-
     // for multi-threading
     private void executeThread(ExecutorService executorService, List<Runnable> tasks) throws InterruptedException {
         try {
@@ -2905,5 +2868,40 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 executorService.shutdownNow();
             }
         } while (!executorService.awaitTermination(2, TimeUnit.SECONDS));
+    }
+
+    private static final class IntegralLeafThreadFactory
+            implements ThreadFactory {
+
+        private final AtomicInteger counter =
+                new AtomicInteger();
+
+        @Override
+        public Thread newThread(Runnable runnable) {
+            Thread thread =
+                    new Thread(
+                            runnable,
+                            "integral-leaf-"
+                                    + counter.incrementAndGet()
+                    );
+
+            thread.setDaemon(false);
+
+            return thread;
+        }
+    }
+
+    private record NodeIntegralWork(
+            int nodeIndex,
+            Node node,
+            List<TileInfo> tileInfos
+    ) {
+    }
+
+    private record NodeIntegralResult(
+            int nodeIndex,
+            Node node,
+            GaiaScene gaiaScene
+    ) {
     }
 }

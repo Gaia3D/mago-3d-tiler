@@ -10,56 +10,13 @@ import java.awt.image.SinglePixelPackedSampleModel;
 public class TextureCorrectionManager {
 
     private static final double EPSILON = 1e-8;
-
+    private final long[] luminanceHistogram = new long[256];
     private long sampledPixels = 0;
-
     private double luminanceSum = 0.0;
     private double luminanceSqSum = 0.0;
     private double saturationSum = 0.0;
-
-    private final long[] luminanceHistogram = new long[256];
-
     // Para acelerar. 1 = todos los píxeles, 2 = uno de cada 2, 4 = uno de cada 4...
     private int sampleStep = 4;
-
-    public record TexturePixelData(
-            int[] pixels,
-            int width,
-            int height,
-            boolean hasAlpha
-    ) {
-    }
-
-    public void mergeFrom(
-            TextureCorrectionManager other
-    ) {
-        if (other == null
-                || other.sampledPixels == 0) {
-            return;
-        }
-
-        this.sampledPixels +=
-                other.sampledPixels;
-
-        this.luminanceSum +=
-                other.luminanceSum;
-
-        this.luminanceSqSum +=
-                other.luminanceSqSum;
-
-        this.saturationSum +=
-                other.saturationSum;
-
-        int histogramSize = Math.min(
-                this.luminanceHistogram.length,
-                other.luminanceHistogram.length
-        );
-
-        for (int i = 0; i < histogramSize; i++) {
-            this.luminanceHistogram[i] +=
-                    other.luminanceHistogram[i];
-        }
-    }
 
     public static TexturePixelData createPixelData(
             BufferedImage image
@@ -120,6 +77,74 @@ public class TextureCorrectionManager {
                 height,
                 hasAlpha
         );
+    }
+
+    private static double smoothstep(
+            double edge0,
+            double edge1,
+            double value
+    ) {
+        double t =
+                (value - edge0) / (edge1 - edge0);
+
+        t = clamp01(t);
+
+        return t * t * (3.0 - 2.0 * t);
+    }
+
+    private static double clamp01(double value) {
+        if (value <= 0.0) {
+            return 0.0;
+        }
+
+        if (value >= 1.0) {
+            return 1.0;
+        }
+
+        return value;
+    }
+
+    private static int clampToByteFast(double value) {
+        if (value <= 0.0) {
+            return 0;
+        }
+
+        if (value >= 1.0) {
+            return 255;
+        }
+
+        return (int) (value * 255.0 + 0.5);
+    }
+
+    public void mergeFrom(
+            TextureCorrectionManager other
+    ) {
+        if (other == null
+                || other.sampledPixels == 0) {
+            return;
+        }
+
+        this.sampledPixels +=
+                other.sampledPixels;
+
+        this.luminanceSum +=
+                other.luminanceSum;
+
+        this.luminanceSqSum +=
+                other.luminanceSqSum;
+
+        this.saturationSum +=
+                other.saturationSum;
+
+        int histogramSize = Math.min(
+                this.luminanceHistogram.length,
+                other.luminanceHistogram.length
+        );
+
+        for (int i = 0; i < histogramSize; i++) {
+            this.luminanceHistogram[i] +=
+                    other.luminanceHistogram[i];
+        }
     }
 
     public void addStatisticsByUvTriangle(
@@ -641,19 +666,6 @@ public class TextureCorrectionManager {
         return params;
     }
 
-    private static double smoothstep(
-            double edge0,
-            double edge1,
-            double value
-    ) {
-        double t =
-                (value - edge0) / (edge1 - edge0);
-
-        t = clamp01(t);
-
-        return t * t * (3.0 - 2.0 * t);
-    }
-
     private double applyProtectedExposure(double value, double exposure, double protectionFactor) {
         double effectiveExposure = 1.0 + (exposure - 1.0) * protectionFactor;
         return value * effectiveExposure;
@@ -1059,18 +1071,6 @@ public class TextureCorrectionManager {
         return result;
     }
 
-    private static double clamp01(double value) {
-        if (value <= 0.0) {
-            return 0.0;
-        }
-
-        if (value >= 1.0) {
-            return 1.0;
-        }
-
-        return value;
-    }
-
     private double[] createToneLut(
             double blackPoint,
             double whitePoint,
@@ -1096,18 +1096,6 @@ public class TextureCorrectionManager {
         }
 
         return lut;
-    }
-
-    private static int clampToByteFast(double value) {
-        if (value <= 0.0) {
-            return 0;
-        }
-
-        if (value >= 1.0) {
-            return 255;
-        }
-
-        return (int) (value * 255.0 + 0.5);
     }
 
     private double applyLevels(double value, double blackPoint, double whitePoint) {
@@ -1273,5 +1261,13 @@ public class TextureCorrectionManager {
 
     private double lerp(double a, double b, double t) {
         return a + (b - a) * t;
+    }
+
+    public record TexturePixelData(
+            int[] pixels,
+            int width,
+            int height,
+            boolean hasAlpha
+    ) {
     }
 }

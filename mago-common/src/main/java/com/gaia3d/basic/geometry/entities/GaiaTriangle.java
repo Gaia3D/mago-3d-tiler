@@ -44,11 +44,6 @@ public class GaiaTriangle {
         invalidateCaches();
     }
 
-    public void setNormal(Vector3d normal) {
-        this.normal = normal;
-        this.plane = null;
-    }
-
     private void invalidateCaches() {
         this.boundingBox = null;
         this.plane = null;
@@ -76,6 +71,11 @@ public class GaiaTriangle {
             normal.normalize();
         }
         return normal;
+    }
+
+    public void setNormal(Vector3d normal) {
+        this.normal = normal;
+        this.plane = null;
     }
 
     public GaiaPlane getPlane() {

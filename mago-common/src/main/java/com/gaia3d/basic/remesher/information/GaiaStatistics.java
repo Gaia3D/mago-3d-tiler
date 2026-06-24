@@ -28,43 +28,29 @@ public class GaiaStatistics {
     public double trianglesDensity = 0.0;
 
     public double normalVariance = 0.0;
-    //    normalVariance ≈ 0.00  -> todos los triángulos miran parecido
-//    normalVariance ≈ 0.05  -> casi plano / ordenado
-//    normalVariance ≈ 0.15  -> algo rugoso
-//    normalVariance ≈ 0.25+ -> bastante caótico
-//    normalVariance ≈ 0.40+ -> muy caótico
-    private double normalVarianceWeightedSum = 0.0;
-
     public double verticalRange = 0.0;
     public double areaFoldRatio = 0.0;
+    public double minX = Double.POSITIVE_INFINITY;
 
 //    trianglesDensity  -> hay muchos triángulos pequeños
 //    normalVariance    -> las normales son caóticas
 //    areaFoldRatio     -> hay mucha superficie plegada dentro del volumen (lisa = 1, plegada > 1)
-
-    public double minX = Double.POSITIVE_INFINITY;
     public double minY = Double.POSITIVE_INFINITY;
     public double minZ = Double.POSITIVE_INFINITY;
-
     public double maxX = Double.NEGATIVE_INFINITY;
     public double maxY = Double.NEGATIVE_INFINITY;
     public double maxZ = Double.NEGATIVE_INFINITY;
-
     public double edgeSizeTotal = 0.0;
     public int edgeSizeCount = 0;
     public double averageEdgeSize = 0.0;
-
     public double minEdgeSize = Double.POSITIVE_INFINITY;
     public double maxEdgeSize = 0.0;
-
     public double trianglesDensityByXY = 0.0;
     public double trianglesDensityByMaxProjection = 0.0;
     public double trianglesDensityBySurfaceArea = 0.0;
     public double trianglesDensityByMaxProjectedArea = 0.0;
-
     public double areaFoldRatioByXY = 0.0;
     public double areaFoldRatioByMaxProjection = 0.0;
-
     public int edgesBelow1mm = 0;
     public int edgesBelow1cm = 0;
     public int edgesBelow5cm = 0;
@@ -74,7 +60,6 @@ public class GaiaStatistics {
     public int edgesBelow100cm = 0;
     public int edgesBelow150cm = 0;
     public int edgesBelow200cm = 0;
-
     public double edgesBelow1mmRatio = 0.0;
     public double edgesBelow1cmRatio = 0.0;
     public double edgesBelow5cmRatio = 0.0;
@@ -84,104 +69,12 @@ public class GaiaStatistics {
     public double edgesBelow100cmRatio = 0.0;
     public double edgesBelow150cmRatio = 0.0;
     public double edgesBelow200cmRatio = 0.0;
-
-
-    public void logGaiaStatisticsCompact(String title) {
-        if (!hasValidBoundingBox()) {
-            log.info(
-                    "{} | triangles={}, area={}, density={}, normalVariance={}, verticalRange={}, areaFoldRatio={}, " +
-                            "avgEdge={}, minEdge={}, maxEdge={}, bboxSize=INVALID",
-                    title,
-                    trianglesCount,
-                    areaTotal,
-                    trianglesDensity,
-                    normalVariance,
-                    verticalRange,
-                    areaFoldRatio,
-                    averageEdgeSize,
-                    minEdgeSize,
-                    maxEdgeSize
-            );
-            return;
-        }
-
-        double sizeX = maxX - minX;
-        double sizeY = maxY - minY;
-        double sizeZ = maxZ - minZ;
-
-        log.info(
-                "{} | triangles={}, area={}, density={}, normalVariance={}, verticalRange={}, areaFoldRatio={}, " +
-                        "avgEdge={}, minEdge={}, maxEdge={}, bboxSize=({}, {}, {})",
-                title,
-                trianglesCount,
-                areaTotal,
-                trianglesDensity,
-                normalVariance,
-                verticalRange,
-                areaFoldRatio,
-                averageEdgeSize,
-                minEdgeSize,
-                maxEdgeSize,
-                sizeX,
-                sizeY,
-                sizeZ
-        );
-    }
-
-    public void logGaiaStatistics(String title) {
-
-        log.info("========== GaiaStatistics : {} ==========", title);
-
-        log.info("Triangles:");
-        log.info("  trianglesCount   = {}", trianglesCount);
-        log.info("  areaTotal        = {}", areaTotal);
-        log.info("  trianglesDensity = {}", trianglesDensity);
-
-        log.info("Normals / shape:");
-        log.info("  normalVariance   = {}", normalVariance);
-        log.info("  verticalRange    = {}", verticalRange);
-        log.info("  areaFoldRatio    = {}", areaFoldRatio);
-
-        log.info("BoundingBox:");
-        log.info("  minX = {}, minY = {}, minZ = {}", minX, minY, minZ);
-        log.info("  maxX = {}, maxY = {}, maxZ = {}", maxX, maxY, maxZ);
-        log.info("  sizeX = {}", maxX - minX);
-        log.info("  sizeY = {}", maxY - minY);
-        log.info("  sizeZ = {}", maxZ - minZ);
-
-        log.info("Edges:");
-        log.info("  edgeSizeTotal   = {}", edgeSizeTotal);
-        log.info("  edgeSizeCount   = {}", edgeSizeCount);
-        log.info("  averageEdgeSize = {}", averageEdgeSize);
-        log.info("  minEdgeSize     = {}", minEdgeSize);
-        log.info("  maxEdgeSize     = {}", maxEdgeSize);
-
-        log.info("Small edges:");
-        log.info("  edgesBelow1mm   = {} ({} %)", edgesBelow1mm, edgesBelow1mmRatio * 100.0);
-        log.info("  edgesBelow1cm   = {} ({} %)", edgesBelow1cm, edgesBelow1cmRatio * 100.0);
-        log.info("  edgesBelow5cm   = {} ({} %)", edgesBelow5cm, edgesBelow5cmRatio * 100.0);
-        log.info("  edgesBelow10cm  = {} ({} %)", edgesBelow10cm, edgesBelow10cmRatio * 100.0);
-        log.info("  edgesBelow25cm  = {} ({} %)", edgesBelow25cm, edgesBelow25cmRatio * 100.0);
-        log.info("  edgesBelow50cm  = {} ({} %)", edgesBelow50cm, edgesBelow50cmRatio * 100.0);
-        log.info("  edgesBelow100cm = {} ({} %)", edgesBelow100cm, edgesBelow100cmRatio * 100.0);
-        log.info("  edgesBelow150cm = {} ({} %)", edgesBelow150cm, edgesBelow150cmRatio * 100.0);
-        log.info("  edgesBelow200cm = {} ({} %)", edgesBelow200cm, edgesBelow200cmRatio * 100.0);
-
-        log.info("Interpretation:");
-        log.info("  normalVariance: 0.00=planar, 0.05=ordered, 0.15=rough, 0.25+=chaotic, 0.40+=very chaotic");
-        log.info("  areaFoldRatio : 1.0=smooth/simple, >1.0=folded/complex surface");
-        log.info("  trianglesDensity: high value means many small triangles per area");
-
-        log.info("==========================================");
-    }
-
-    private boolean hasValidBoundingBox() {
-        return Double.isFinite(minX) && Double.isFinite(minY) && Double.isFinite(minZ)
-                && Double.isFinite(maxX) && Double.isFinite(maxY) && Double.isFinite(maxZ)
-                && maxX >= minX
-                && maxY >= minY
-                && maxZ >= minZ;
-    }
+    //    normalVariance ≈ 0.00  -> todos los triángulos miran parecido
+//    normalVariance ≈ 0.05  -> casi plano / ordenado
+//    normalVariance ≈ 0.15  -> algo rugoso
+//    normalVariance ≈ 0.25+ -> bastante caótico
+//    normalVariance ≈ 0.40+ -> muy caótico
+    private double normalVarianceWeightedSum = 0.0;
 
     private static double calculateDistance(Vector3d a, Vector3d b) {
         double dx = b.x - a.x;
@@ -236,79 +129,6 @@ public class GaiaStatistics {
         }
     }
 
-    public void accumulate(GaiaStatistics other) {
-        if (other == null || other.trianglesCount == 0) {
-            return;
-        }
-
-        this.areaTotal += other.areaTotal;
-        this.trianglesCount += other.trianglesCount;
-
-        this.edgeSizeTotal += other.edgeSizeTotal;
-        this.edgeSizeCount += other.edgeSizeCount;
-
-        this.edgesBelow1mm += other.edgesBelow1mm;
-        this.edgesBelow1cm += other.edgesBelow1cm;
-        this.edgesBelow5cm += other.edgesBelow5cm;
-        this.edgesBelow10cm += other.edgesBelow10cm;
-        this.edgesBelow25cm += other.edgesBelow25cm;
-        this.edgesBelow50cm += other.edgesBelow50cm;
-        this.edgesBelow100cm += other.edgesBelow100cm;
-        this.edgesBelow150cm += other.edgesBelow150cm;
-        this.edgesBelow200cm += other.edgesBelow200cm;
-
-        this.minEdgeSize = Math.min(this.minEdgeSize, other.minEdgeSize);
-        this.maxEdgeSize = Math.max(this.maxEdgeSize, other.maxEdgeSize);
-
-        this.minX = Math.min(this.minX, other.minX);
-        this.minY = Math.min(this.minY, other.minY);
-        this.minZ = Math.min(this.minZ, other.minZ);
-
-        this.maxX = Math.max(this.maxX, other.maxX);
-        this.maxY = Math.max(this.maxY, other.maxY);
-        this.maxZ = Math.max(this.maxZ, other.maxZ);
-
-        this.normalVarianceWeightedSum += other.normalVarianceWeightedSum;
-    }
-
-    public void finishAccumulatedStatistics() {
-        finishEdgeStatistics();
-
-        if (this.areaTotal <= EPSILON || this.trianglesCount == 0) {
-            this.trianglesDensity = 0.0;
-            this.areaFoldRatio = 0.0;
-            this.normalVariance = 0.0;
-            this.verticalRange = 0.0;
-            return;
-        }
-
-        double sizeX = this.maxX - this.minX;
-        double sizeY = this.maxY - this.minY;
-        double sizeZ = this.maxZ - this.minZ;
-
-        this.verticalRange = sizeZ;
-
-        double projectedAreaXY = sizeX * sizeY;
-        double projectedAreaXZ = sizeX * sizeZ;
-        double projectedAreaYZ = sizeY * sizeZ;
-
-        double maxProjectedArea = Math.max(
-                projectedAreaXY,
-                Math.max(projectedAreaXZ, projectedAreaYZ)
-        );
-
-        maxProjectedArea = Math.max(maxProjectedArea, EPSILON);
-
-        this.trianglesDensity = this.trianglesCount / maxProjectedArea;
-        this.areaFoldRatio = this.areaTotal / maxProjectedArea;
-
-        if (this.areaTotal > EPSILON) {
-            this.normalVariance = this.normalVarianceWeightedSum / this.areaTotal;
-        } else {
-            this.normalVariance = 0.0;
-        }
-    }
-
     private static void accumulateEdgeStatistics(GaiaStatistics stats, double edgeLength) {
         if (stats == null || edgeLength <= EPSILON || !Double.isFinite(edgeLength)) {
             return;
@@ -347,20 +167,6 @@ public class GaiaStatistics {
         if (edgeLength < EDGE_200CM) {
             stats.edgesBelow200cm++;
         }
-    }
-
-    private void resetDerivedStatistics() {
-        this.verticalRange = 0.0;
-        this.trianglesDensity = 0.0;
-        this.areaFoldRatio = 0.0;
-        this.normalVariance = 0.0;
-
-        this.trianglesDensityByXY = 0.0;
-        this.trianglesDensityByMaxProjection = 0.0;
-        this.trianglesDensityBySurfaceArea = 0.0;
-
-        this.areaFoldRatioByXY = 0.0;
-        this.areaFoldRatioByMaxProjection = 0.0;
     }
 
     public static GaiaStatistics calculateStatistics(GaiaPrimitive primitive) {
@@ -555,37 +361,6 @@ public class GaiaStatistics {
         return stats;
     }
 
-    private void finishEdgeStatistics() {
-        if (this.edgeSizeCount <= 0) {
-            this.averageEdgeSize = 0.0;
-            this.minEdgeSize = 0.0;
-            this.maxEdgeSize = 0.0;
-
-            this.edgesBelow1mmRatio = 0.0;
-            this.edgesBelow1cmRatio = 0.0;
-            this.edgesBelow5cmRatio = 0.0;
-            this.edgesBelow10cmRatio = 0.0;
-            this.edgesBelow25cmRatio = 0.0;
-            this.edgesBelow50cmRatio = 0.0;
-            this.edgesBelow100cmRatio = 0.0;
-            this.edgesBelow150cmRatio = 0.0;
-            this.edgesBelow200cmRatio = 0.0;
-            return;
-        }
-
-        this.averageEdgeSize = this.edgeSizeTotal / this.edgeSizeCount;
-
-        this.edgesBelow1mmRatio = (double) this.edgesBelow1mm / this.edgeSizeCount;
-        this.edgesBelow1cmRatio = (double) this.edgesBelow1cm / this.edgeSizeCount;
-        this.edgesBelow5cmRatio = (double) this.edgesBelow5cm / this.edgeSizeCount;
-        this.edgesBelow10cmRatio = (double) this.edgesBelow10cm / this.edgeSizeCount;
-        this.edgesBelow25cmRatio = (double) this.edgesBelow25cm / this.edgeSizeCount;
-        this.edgesBelow50cmRatio = (double) this.edgesBelow50cm / this.edgeSizeCount;
-        this.edgesBelow100cmRatio = (double) this.edgesBelow100cm / this.edgeSizeCount;
-        this.edgesBelow150cmRatio = (double) this.edgesBelow150cm / this.edgeSizeCount;
-        this.edgesBelow200cmRatio = (double) this.edgesBelow200cm / this.edgeSizeCount;
-    }
-
     private static boolean isValidIndex(int index, int verticesCount) {
         return index >= 0 && index < verticesCount;
     }
@@ -640,5 +415,220 @@ public class GaiaStatistics {
 
     private static double clamp(double value, double min, double max) {
         return Math.max(min, Math.min(max, value));
+    }
+
+    public void logGaiaStatisticsCompact(String title) {
+        if (!hasValidBoundingBox()) {
+            log.info(
+                    "{} | triangles={}, area={}, density={}, normalVariance={}, verticalRange={}, areaFoldRatio={}, " +
+                            "avgEdge={}, minEdge={}, maxEdge={}, bboxSize=INVALID",
+                    title,
+                    trianglesCount,
+                    areaTotal,
+                    trianglesDensity,
+                    normalVariance,
+                    verticalRange,
+                    areaFoldRatio,
+                    averageEdgeSize,
+                    minEdgeSize,
+                    maxEdgeSize
+            );
+            return;
+        }
+
+        double sizeX = maxX - minX;
+        double sizeY = maxY - minY;
+        double sizeZ = maxZ - minZ;
+
+        log.info(
+                "{} | triangles={}, area={}, density={}, normalVariance={}, verticalRange={}, areaFoldRatio={}, " +
+                        "avgEdge={}, minEdge={}, maxEdge={}, bboxSize=({}, {}, {})",
+                title,
+                trianglesCount,
+                areaTotal,
+                trianglesDensity,
+                normalVariance,
+                verticalRange,
+                areaFoldRatio,
+                averageEdgeSize,
+                minEdgeSize,
+                maxEdgeSize,
+                sizeX,
+                sizeY,
+                sizeZ
+        );
+    }
+
+    public void logGaiaStatistics(String title) {
+
+        log.info("========== GaiaStatistics : {} ==========", title);
+
+        log.info("Triangles:");
+        log.info("  trianglesCount   = {}", trianglesCount);
+        log.info("  areaTotal        = {}", areaTotal);
+        log.info("  trianglesDensity = {}", trianglesDensity);
+
+        log.info("Normals / shape:");
+        log.info("  normalVariance   = {}", normalVariance);
+        log.info("  verticalRange    = {}", verticalRange);
+        log.info("  areaFoldRatio    = {}", areaFoldRatio);
+
+        log.info("BoundingBox:");
+        log.info("  minX = {}, minY = {}, minZ = {}", minX, minY, minZ);
+        log.info("  maxX = {}, maxY = {}, maxZ = {}", maxX, maxY, maxZ);
+        log.info("  sizeX = {}", maxX - minX);
+        log.info("  sizeY = {}", maxY - minY);
+        log.info("  sizeZ = {}", maxZ - minZ);
+
+        log.info("Edges:");
+        log.info("  edgeSizeTotal   = {}", edgeSizeTotal);
+        log.info("  edgeSizeCount   = {}", edgeSizeCount);
+        log.info("  averageEdgeSize = {}", averageEdgeSize);
+        log.info("  minEdgeSize     = {}", minEdgeSize);
+        log.info("  maxEdgeSize     = {}", maxEdgeSize);
+
+        log.info("Small edges:");
+        log.info("  edgesBelow1mm   = {} ({} %)", edgesBelow1mm, edgesBelow1mmRatio * 100.0);
+        log.info("  edgesBelow1cm   = {} ({} %)", edgesBelow1cm, edgesBelow1cmRatio * 100.0);
+        log.info("  edgesBelow5cm   = {} ({} %)", edgesBelow5cm, edgesBelow5cmRatio * 100.0);
+        log.info("  edgesBelow10cm  = {} ({} %)", edgesBelow10cm, edgesBelow10cmRatio * 100.0);
+        log.info("  edgesBelow25cm  = {} ({} %)", edgesBelow25cm, edgesBelow25cmRatio * 100.0);
+        log.info("  edgesBelow50cm  = {} ({} %)", edgesBelow50cm, edgesBelow50cmRatio * 100.0);
+        log.info("  edgesBelow100cm = {} ({} %)", edgesBelow100cm, edgesBelow100cmRatio * 100.0);
+        log.info("  edgesBelow150cm = {} ({} %)", edgesBelow150cm, edgesBelow150cmRatio * 100.0);
+        log.info("  edgesBelow200cm = {} ({} %)", edgesBelow200cm, edgesBelow200cmRatio * 100.0);
+
+        log.info("Interpretation:");
+        log.info("  normalVariance: 0.00=planar, 0.05=ordered, 0.15=rough, 0.25+=chaotic, 0.40+=very chaotic");
+        log.info("  areaFoldRatio : 1.0=smooth/simple, >1.0=folded/complex surface");
+        log.info("  trianglesDensity: high value means many small triangles per area");
+
+        log.info("==========================================");
+    }
+
+    private boolean hasValidBoundingBox() {
+        return Double.isFinite(minX) && Double.isFinite(minY) && Double.isFinite(minZ)
+                && Double.isFinite(maxX) && Double.isFinite(maxY) && Double.isFinite(maxZ)
+                && maxX >= minX
+                && maxY >= minY
+                && maxZ >= minZ;
+    }
+
+    public void accumulate(GaiaStatistics other) {
+        if (other == null || other.trianglesCount == 0) {
+            return;
+        }
+
+        this.areaTotal += other.areaTotal;
+        this.trianglesCount += other.trianglesCount;
+
+        this.edgeSizeTotal += other.edgeSizeTotal;
+        this.edgeSizeCount += other.edgeSizeCount;
+
+        this.edgesBelow1mm += other.edgesBelow1mm;
+        this.edgesBelow1cm += other.edgesBelow1cm;
+        this.edgesBelow5cm += other.edgesBelow5cm;
+        this.edgesBelow10cm += other.edgesBelow10cm;
+        this.edgesBelow25cm += other.edgesBelow25cm;
+        this.edgesBelow50cm += other.edgesBelow50cm;
+        this.edgesBelow100cm += other.edgesBelow100cm;
+        this.edgesBelow150cm += other.edgesBelow150cm;
+        this.edgesBelow200cm += other.edgesBelow200cm;
+
+        this.minEdgeSize = Math.min(this.minEdgeSize, other.minEdgeSize);
+        this.maxEdgeSize = Math.max(this.maxEdgeSize, other.maxEdgeSize);
+
+        this.minX = Math.min(this.minX, other.minX);
+        this.minY = Math.min(this.minY, other.minY);
+        this.minZ = Math.min(this.minZ, other.minZ);
+
+        this.maxX = Math.max(this.maxX, other.maxX);
+        this.maxY = Math.max(this.maxY, other.maxY);
+        this.maxZ = Math.max(this.maxZ, other.maxZ);
+
+        this.normalVarianceWeightedSum += other.normalVarianceWeightedSum;
+    }
+
+    public void finishAccumulatedStatistics() {
+        finishEdgeStatistics();
+
+        if (this.areaTotal <= EPSILON || this.trianglesCount == 0) {
+            this.trianglesDensity = 0.0;
+            this.areaFoldRatio = 0.0;
+            this.normalVariance = 0.0;
+            this.verticalRange = 0.0;
+            return;
+        }
+
+        double sizeX = this.maxX - this.minX;
+        double sizeY = this.maxY - this.minY;
+        double sizeZ = this.maxZ - this.minZ;
+
+        this.verticalRange = sizeZ;
+
+        double projectedAreaXY = sizeX * sizeY;
+        double projectedAreaXZ = sizeX * sizeZ;
+        double projectedAreaYZ = sizeY * sizeZ;
+
+        double maxProjectedArea = Math.max(
+                projectedAreaXY,
+                Math.max(projectedAreaXZ, projectedAreaYZ)
+        );
+
+        maxProjectedArea = Math.max(maxProjectedArea, EPSILON);
+
+        this.trianglesDensity = this.trianglesCount / maxProjectedArea;
+        this.areaFoldRatio = this.areaTotal / maxProjectedArea;
+
+        if (this.areaTotal > EPSILON) {
+            this.normalVariance = this.normalVarianceWeightedSum / this.areaTotal;
+        } else {
+            this.normalVariance = 0.0;
+        }
+    }
+
+    private void resetDerivedStatistics() {
+        this.verticalRange = 0.0;
+        this.trianglesDensity = 0.0;
+        this.areaFoldRatio = 0.0;
+        this.normalVariance = 0.0;
+
+        this.trianglesDensityByXY = 0.0;
+        this.trianglesDensityByMaxProjection = 0.0;
+        this.trianglesDensityBySurfaceArea = 0.0;
+
+        this.areaFoldRatioByXY = 0.0;
+        this.areaFoldRatioByMaxProjection = 0.0;
+    }
+
+    private void finishEdgeStatistics() {
+        if (this.edgeSizeCount <= 0) {
+            this.averageEdgeSize = 0.0;
+            this.minEdgeSize = 0.0;
+            this.maxEdgeSize = 0.0;
+
+            this.edgesBelow1mmRatio = 0.0;
+            this.edgesBelow1cmRatio = 0.0;
+            this.edgesBelow5cmRatio = 0.0;
+            this.edgesBelow10cmRatio = 0.0;
+            this.edgesBelow25cmRatio = 0.0;
+            this.edgesBelow50cmRatio = 0.0;
+            this.edgesBelow100cmRatio = 0.0;
+            this.edgesBelow150cmRatio = 0.0;
+            this.edgesBelow200cmRatio = 0.0;
+            return;
+        }
+
+        this.averageEdgeSize = this.edgeSizeTotal / this.edgeSizeCount;
+
+        this.edgesBelow1mmRatio = (double) this.edgesBelow1mm / this.edgeSizeCount;
+        this.edgesBelow1cmRatio = (double) this.edgesBelow1cm / this.edgeSizeCount;
+        this.edgesBelow5cmRatio = (double) this.edgesBelow5cm / this.edgeSizeCount;
+        this.edgesBelow10cmRatio = (double) this.edgesBelow10cm / this.edgeSizeCount;
+        this.edgesBelow25cmRatio = (double) this.edgesBelow25cm / this.edgeSizeCount;
+        this.edgesBelow50cmRatio = (double) this.edgesBelow50cm / this.edgeSizeCount;
+        this.edgesBelow100cmRatio = (double) this.edgesBelow100cm / this.edgeSizeCount;
+        this.edgesBelow150cmRatio = (double) this.edgesBelow150cm / this.edgeSizeCount;
+        this.edgesBelow200cmRatio = (double) this.edgesBelow200cm / this.edgeSizeCount;
     }
 }

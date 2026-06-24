@@ -12,126 +12,6 @@ import java.util.Map;
 
 public class GaiaWeldedFacesFinder {
 
-    public static class Island {
-        private final List<GaiaFace> faces = new ArrayList<>();
-        private final List<Integer> faceIndices = new ArrayList<>();
-
-        public List<GaiaFace> getFaces() {
-            return faces;
-        }
-
-        public List<Integer> getFaceIndices() {
-            return faceIndices;
-        }
-
-        public int getFacesCount() {
-            return faces.size();
-        }
-    }
-
-    public static class PositionKey {
-        public final long x;
-        public final long y;
-        public final long z;
-
-        public PositionKey(Vector3d p, double tolerance) {
-            this.x = Math.round(p.x / tolerance);
-            this.y = Math.round(p.y / tolerance);
-            this.z = Math.round(p.z / tolerance);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {return true;}
-            if (!(obj instanceof PositionKey)) {return false;}
-
-            PositionKey other = (PositionKey) obj;
-            return x == other.x && y == other.y && z == other.z;
-        }
-
-        @Override
-        public int hashCode() {
-            int result = Long.hashCode(x);
-            result = 31 * result + Long.hashCode(y);
-            result = 31 * result + Long.hashCode(z);
-            return result;
-        }
-    }
-
-    public static class EdgeKey {
-        public final int a;
-        public final int b;
-
-        public EdgeKey(int i0, int i1) {
-            if (i0 < i1) {
-                this.a = i0;
-                this.b = i1;
-            } else {
-                this.a = i1;
-                this.b = i0;
-            }
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {return true;}
-            if (!(obj instanceof EdgeKey)) {return false;}
-
-            EdgeKey other = (EdgeKey) obj;
-            return a == other.a && b == other.b;
-        }
-
-        @Override
-        public int hashCode() {
-            int result = Integer.hashCode(a);
-            result = 31 * result + Integer.hashCode(b);
-            return result;
-        }
-    }
-
-    private static class UnionFind {
-        private final int[] parent;
-        private final int[] rank;
-
-        public UnionFind(int size) {
-            this.parent = new int[size];
-            this.rank = new int[size];
-
-            for (int i = 0; i < size; i++) {
-                parent[i] = i;
-                rank[i] = 0;
-            }
-        }
-
-        public int find(int x) {
-            int p = parent[x];
-
-            if (p != x) {
-                parent[x] = find(p);
-            }
-
-            return parent[x];
-        }
-
-        public void union(int a, int b) {
-            int rootA = find(a);
-            int rootB = find(b);
-
-            if (rootA == rootB) {
-                return;
-            }
-
-            if (rank[rootA] < rank[rootB]) {
-                parent[rootA] = rootB;
-            } else if (rank[rootA] > rank[rootB]) {
-                parent[rootB] = rootA;
-            } else {
-                parent[rootB] = rootA;
-                rank[rootA]++;
-            }
-        }
-    }
-
     public static List<Island> findIslands(
             GaiaSurface surface,
             List<GaiaVertex> vertices,
@@ -269,5 +149,125 @@ public class GaiaWeldedFacesFinder {
 
     private static boolean isValidIndex(int index, int count) {
         return index >= 0 && index < count;
+    }
+
+    public static class Island {
+        private final List<GaiaFace> faces = new ArrayList<>();
+        private final List<Integer> faceIndices = new ArrayList<>();
+
+        public List<GaiaFace> getFaces() {
+            return faces;
+        }
+
+        public List<Integer> getFaceIndices() {
+            return faceIndices;
+        }
+
+        public int getFacesCount() {
+            return faces.size();
+        }
+    }
+
+    public static class PositionKey {
+        public final long x;
+        public final long y;
+        public final long z;
+
+        public PositionKey(Vector3d p, double tolerance) {
+            this.x = Math.round(p.x / tolerance);
+            this.y = Math.round(p.y / tolerance);
+            this.z = Math.round(p.z / tolerance);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {return true;}
+            if (!(obj instanceof PositionKey)) {return false;}
+
+            PositionKey other = (PositionKey) obj;
+            return x == other.x && y == other.y && z == other.z;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = Long.hashCode(x);
+            result = 31 * result + Long.hashCode(y);
+            result = 31 * result + Long.hashCode(z);
+            return result;
+        }
+    }
+
+    public static class EdgeKey {
+        public final int a;
+        public final int b;
+
+        public EdgeKey(int i0, int i1) {
+            if (i0 < i1) {
+                this.a = i0;
+                this.b = i1;
+            } else {
+                this.a = i1;
+                this.b = i0;
+            }
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {return true;}
+            if (!(obj instanceof EdgeKey)) {return false;}
+
+            EdgeKey other = (EdgeKey) obj;
+            return a == other.a && b == other.b;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = Integer.hashCode(a);
+            result = 31 * result + Integer.hashCode(b);
+            return result;
+        }
+    }
+
+    private static class UnionFind {
+        private final int[] parent;
+        private final int[] rank;
+
+        public UnionFind(int size) {
+            this.parent = new int[size];
+            this.rank = new int[size];
+
+            for (int i = 0; i < size; i++) {
+                parent[i] = i;
+                rank[i] = 0;
+            }
+        }
+
+        public int find(int x) {
+            int p = parent[x];
+
+            if (p != x) {
+                parent[x] = find(p);
+            }
+
+            return parent[x];
+        }
+
+        public void union(int a, int b) {
+            int rootA = find(a);
+            int rootB = find(b);
+
+            if (rootA == rootB) {
+                return;
+            }
+
+            if (rank[rootA] < rank[rootB]) {
+                parent[rootA] = rootB;
+            } else if (rank[rootA] > rank[rootB]) {
+                parent[rootB] = rootA;
+            } else {
+                parent[rootB] = rootA;
+                rank[rootA]++;
+            }
+        }
     }
 }

@@ -36,10 +36,10 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
 
-    private GlobalOptions globalOptions = GlobalOptions.getInstance();
     private final double maximumGeometricError = 64.0;
-    private double instanceGeometricError = 1.0;
     private final double maximumDistance = 1000.0; // 1km
+    private GlobalOptions globalOptions = GlobalOptions.getInstance();
+    private double instanceGeometricError = 1.0;
 
     @Override
     public Tileset run(List<TileInfo> tileInfos) {

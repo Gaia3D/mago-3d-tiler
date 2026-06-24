@@ -21,6 +21,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class HalfEdgeVertex implements Serializable {
+    private static final int MAX_OUTGOING_HALF_EDGES = 50;
     private Vector2d texcoords;
     private Vector3d position;
     private Vector3d normal;
@@ -35,6 +36,20 @@ public class HalfEdgeVertex implements Serializable {
 
     public HalfEdgeVertex(GaiaVertex vertex) {
         copyFromGaiaVertex(vertex);
+    }
+
+    private static boolean containsIdentity(
+            List<HalfEdge> halfEdges,
+            int startIndex,
+            HalfEdge target
+    ) {
+        for (int i = startIndex; i < halfEdges.size(); i++) {
+            if (halfEdges.get(i) == target) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void deleteObjects() {
@@ -153,22 +168,6 @@ public class HalfEdgeVertex implements Serializable {
         }
 
         return resultHalfEdges;
-    }
-
-    private static final int MAX_OUTGOING_HALF_EDGES = 50;
-
-    private static boolean containsIdentity(
-            List<HalfEdge> halfEdges,
-            int startIndex,
-            HalfEdge target
-    ) {
-        for (int i = startIndex; i < halfEdges.size(); i++) {
-            if (halfEdges.get(i) == target) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     public List<HalfEdge> getOutingHalfEdges_new(

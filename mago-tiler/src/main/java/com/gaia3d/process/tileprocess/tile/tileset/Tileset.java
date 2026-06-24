@@ -17,11 +17,11 @@ import java.util.List;
 @Getter
 @Setter
 public class Tileset {
-    private AssetV1 asset;
     @JsonInclude(JsonInclude.Include.USE_DEFAULTS)
     protected double geometricError = 0.0d;
     protected Node root;
     protected Properties properties;
+    private AssetV1 asset;
 
     @JsonIgnore
     public List<ContentInfo> findAllContentInfo() {

@@ -17,6 +17,10 @@ import java.util.List;
 @Slf4j
 class DefaultReleaseTest {
 
+    static {
+        LoggingConfiguration.initConsoleLogger();
+    }
+
     @Test
     void batched01() {
         String path = "B01-wangsuk2-3ds";
@@ -93,10 +97,6 @@ class DefaultReleaseTest {
         argList.add("-c");
         argList.add("5186");
         runCommand(argList);
-    }
-
-    static {
-        LoggingConfiguration.initConsoleLogger();
     }
 
     private String getJarPathFromDist() {

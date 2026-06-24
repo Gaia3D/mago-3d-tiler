@@ -9,6 +9,10 @@ import java.nio.ByteBuffer;
 
 @Slf4j
 public class MagoKTX {
+    private final static byte[] fileIdentifier = {
+            (byte) 0xAB, (byte) 0x4B, (byte) 0x54, (byte) 0x58, (byte) 0x20, (byte) 0x31, (byte) 0x31, (byte) 0xBB, (byte) 0x0D, (byte) 0x0A, (byte) 0x1A, (byte) 0x0A
+    };
+
     public void start(String inputPath, String outputPath) {
         BufferedImage image = null;
         try {
@@ -21,10 +25,6 @@ public class MagoKTX {
         ByteBuffer imageData = loadPngImage(pngData);
         saveAsKtx(imageData, image.getWidth(), image.getHeight(), 4, outputPath);
     }
-
-    private final static byte[] fileIdentifier = {
-            (byte) 0xAB, (byte) 0x4B, (byte) 0x54, (byte) 0x58, (byte) 0x20, (byte) 0x31, (byte) 0x31, (byte) 0xBB, (byte) 0x0D, (byte) 0x0A, (byte) 0x1A, (byte) 0x0A
-    };
 
     // KTX Save
     private void saveAsKtx(ByteBuffer imageData, int imageWidth, int imageHeight, int channels, String ktxFilePath) {

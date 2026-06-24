@@ -22,6 +22,24 @@ public class GaiaTextureScissorDataFull extends GaiaTextureScissorData {
     private int motherImageWidth;
     private int motherImageHeight;
 
+    private static double clamp(double value, double min, double max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    private static int clamp(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    private static int getSafeImageType(BufferedImage image) {
+        int type = image.getType();
+
+        if (type == BufferedImage.TYPE_CUSTOM) {
+            return BufferedImage.TYPE_INT_ARGB;
+        }
+
+        return type;
+    }
+
     public void recalculateTexCoordsForAtlas(int atlasWidth, int atlasHeight) {
         if (faces == null || faces.isEmpty()) {
             return;
@@ -192,24 +210,6 @@ public class GaiaTextureScissorDataFull extends GaiaTextureScissorData {
         g.dispose();
 
         this.scissoredImage = copy;
-    }
-
-    private static double clamp(double value, double min, double max) {
-        return Math.max(min, Math.min(max, value));
-    }
-
-    private static int clamp(int value, int min, int max) {
-        return Math.max(min, Math.min(max, value));
-    }
-
-    private static int getSafeImageType(BufferedImage image) {
-        int type = image.getType();
-
-        if (type == BufferedImage.TYPE_CUSTOM) {
-            return BufferedImage.TYPE_INT_ARGB;
-        }
-
-        return type;
     }
 
     public void expandScissorImage(int expandPixels) {

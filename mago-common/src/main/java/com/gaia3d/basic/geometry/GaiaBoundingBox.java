@@ -33,6 +33,16 @@ public class GaiaBoundingBox implements Serializable {
     private double maxX, maxY, maxZ;
     private boolean isInit = false;
 
+    public GaiaBoundingBox(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
+        this.minX = minX;
+        this.minY = minY;
+        this.minZ = minZ;
+        this.maxX = maxX;
+        this.maxY = maxY;
+        this.maxZ = maxZ;
+        this.isInit = true;
+    }
+
     public Vector3d getCenter() {
         return new Vector3d((minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2);
     }
@@ -51,16 +61,6 @@ public class GaiaBoundingBox implements Serializable {
 
     public Vector3d getVolume() {
         return new Vector3d(maxX - minX, maxY - minY, maxZ - minZ);
-    }
-
-    public GaiaBoundingBox(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
-        this.minX = minX;
-        this.minY = minY;
-        this.minZ = minZ;
-        this.maxX = maxX;
-        this.maxY = maxY;
-        this.maxZ = maxZ;
-        this.isInit = true;
     }
 
     public boolean isValid() {

@@ -11,129 +11,6 @@ public class DominantPlaneProjector {
 
     double maxPlaneDistance = 0.05;
 
-    private static class FaceGeometryDebugStats {
-        int total = 0;
-
-        int nullRef = 0;
-        int nullFace = 0;
-        int nullVertices = 0;
-        int nullIndices = 0;
-        int shortIndices = 0;
-        int outOfBounds = 0;
-        int nullVertex = 0;
-        int nullPosition = 0;
-        int degenerated = 0;
-
-        int success = 0;
-
-        int printedExamples = 0;
-        int maxExamples = 5;
-
-    }
-
-    public static class FaceCluster {
-        public int id = -1;
-        public final List<GaiaFace> faces = new ArrayList<>();
-
-        public Vector3d normal = new Vector3d();
-        public Vector3d centroid = new Vector3d();
-        public double area = 0.0;
-
-        public FaceCluster(int id) {
-            this.id = id;
-        }
-    }
-
-    private static class VertexRef {
-        GaiaPrimitive primitive;
-        int vertexIndex;
-        GaiaVertex vertex;
-
-        VertexRef(GaiaPrimitive primitive, int vertexIndex, GaiaVertex vertex) {
-            this.primitive = primitive;
-            this.vertexIndex = vertexIndex;
-            this.vertex = vertex;
-        }
-    }
-
-    private static class FaceRef {
-        GaiaPrimitive primitive;
-        GaiaFace face;
-        int localFaceIndex;
-
-        Vector3d normal = new Vector3d();
-        Vector3d centroid = new Vector3d();
-        double area = 0.0;
-
-        FaceRef(GaiaPrimitive primitive, GaiaFace face, int localFaceIndex) {
-            this.primitive = primitive;
-            this.face = face;
-            this.localFaceIndex = localFaceIndex;
-        }
-    }
-
-    private static class PosKey {
-        final long x;
-        final long y;
-        final long z;
-
-        PosKey(Vector3d p, double eps) {
-            this.x = Math.round(p.x / eps);
-            this.y = Math.round(p.y / eps);
-            this.z = Math.round(p.z / eps);
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (!(o instanceof PosKey)) {return false;}
-            PosKey other = (PosKey) o;
-            return x == other.x && y == other.y && z == other.z;
-        }
-
-        @Override
-        public int hashCode() {
-            int h = Long.hashCode(x);
-            h = 31 * h + Long.hashCode(y);
-            h = 31 * h + Long.hashCode(z);
-            return h;
-        }
-    }
-
-    private static class EdgeKey {
-        final PosKey a;
-        final PosKey b;
-
-        EdgeKey(PosKey p0, PosKey p1) {
-            if (compare(p0, p1) <= 0) {
-                this.a = p0;
-                this.b = p1;
-            } else {
-                this.a = p1;
-                this.b = p0;
-            }
-        }
-
-        private static int compare(PosKey p0, PosKey p1) {
-            if (p0.x != p1.x) {return Long.compare(p0.x, p1.x);}
-            if (p0.y != p1.y) {return Long.compare(p0.y, p1.y);}
-            return Long.compare(p0.z, p1.z);
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (!(o instanceof EdgeKey)) {return false;}
-            EdgeKey other = (EdgeKey) o;
-            return a.equals(other.a) && b.equals(other.b);
-        }
-
-        @Override
-        public int hashCode() {
-            int h = a.hashCode();
-            h = 31 * h + b.hashCode();
-            return h;
-        }
-    }
-
     public PrimitiveClusterBuildResult buildClustersOnPrimitiveWithResult(
             GaiaPrimitive primitive,
             double positionEpsilon,
@@ -522,7 +399,6 @@ public class DominantPlaneProjector {
         return map;
     }
 
-
     private Vector3d[] copyOriginalPositions(GaiaPrimitive primitive) {
         List<GaiaVertex> vertices = primitive.getVertices();
 
@@ -691,12 +567,6 @@ public class DominantPlaneProjector {
                     0.2 // moveDistance test
             );
         }
-    }
-
-    private static class PrimitiveClusterBuildResult {
-        List<FaceCluster> clusters = new ArrayList<>();
-        Map<GaiaFace, FaceRef> faceRefMap = new IdentityHashMap<>();
-        List<FaceRef> faceRefs = new ArrayList<>();
     }
 
     public void projectClustersOnPrimitive_SimpleTest(
@@ -895,6 +765,134 @@ public class DominantPlaneProjector {
 
         log.debug("MoveTest: movedGroups = " + movedGroups);
         log.debug("MoveTest: movedVertices writes = " + movedVertices);
+    }
+
+    private static class FaceGeometryDebugStats {
+        int total = 0;
+
+        int nullRef = 0;
+        int nullFace = 0;
+        int nullVertices = 0;
+        int nullIndices = 0;
+        int shortIndices = 0;
+        int outOfBounds = 0;
+        int nullVertex = 0;
+        int nullPosition = 0;
+        int degenerated = 0;
+
+        int success = 0;
+
+        int printedExamples = 0;
+        int maxExamples = 5;
+
+    }
+
+    public static class FaceCluster {
+        public final List<GaiaFace> faces = new ArrayList<>();
+        public int id = -1;
+        public Vector3d normal = new Vector3d();
+        public Vector3d centroid = new Vector3d();
+        public double area = 0.0;
+
+        public FaceCluster(int id) {
+            this.id = id;
+        }
+    }
+
+    private static class VertexRef {
+        GaiaPrimitive primitive;
+        int vertexIndex;
+        GaiaVertex vertex;
+
+        VertexRef(GaiaPrimitive primitive, int vertexIndex, GaiaVertex vertex) {
+            this.primitive = primitive;
+            this.vertexIndex = vertexIndex;
+            this.vertex = vertex;
+        }
+    }
+
+    private static class FaceRef {
+        GaiaPrimitive primitive;
+        GaiaFace face;
+        int localFaceIndex;
+
+        Vector3d normal = new Vector3d();
+        Vector3d centroid = new Vector3d();
+        double area = 0.0;
+
+        FaceRef(GaiaPrimitive primitive, GaiaFace face, int localFaceIndex) {
+            this.primitive = primitive;
+            this.face = face;
+            this.localFaceIndex = localFaceIndex;
+        }
+    }
+
+    private static class PosKey {
+        final long x;
+        final long y;
+        final long z;
+
+        PosKey(Vector3d p, double eps) {
+            this.x = Math.round(p.x / eps);
+            this.y = Math.round(p.y / eps);
+            this.z = Math.round(p.z / eps);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof PosKey)) {return false;}
+            PosKey other = (PosKey) o;
+            return x == other.x && y == other.y && z == other.z;
+        }
+
+        @Override
+        public int hashCode() {
+            int h = Long.hashCode(x);
+            h = 31 * h + Long.hashCode(y);
+            h = 31 * h + Long.hashCode(z);
+            return h;
+        }
+    }
+
+    private static class EdgeKey {
+        final PosKey a;
+        final PosKey b;
+
+        EdgeKey(PosKey p0, PosKey p1) {
+            if (compare(p0, p1) <= 0) {
+                this.a = p0;
+                this.b = p1;
+            } else {
+                this.a = p1;
+                this.b = p0;
+            }
+        }
+
+        private static int compare(PosKey p0, PosKey p1) {
+            if (p0.x != p1.x) {return Long.compare(p0.x, p1.x);}
+            if (p0.y != p1.y) {return Long.compare(p0.y, p1.y);}
+            return Long.compare(p0.z, p1.z);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof EdgeKey)) {return false;}
+            EdgeKey other = (EdgeKey) o;
+            return a.equals(other.a) && b.equals(other.b);
+        }
+
+        @Override
+        public int hashCode() {
+            int h = a.hashCode();
+            h = 31 * h + b.hashCode();
+            return h;
+        }
+    }
+
+    private static class PrimitiveClusterBuildResult {
+        List<FaceCluster> clusters = new ArrayList<>();
+        Map<GaiaFace, FaceRef> faceRefMap = new IdentityHashMap<>();
+        List<FaceRef> faceRefs = new ArrayList<>();
     }
 
 

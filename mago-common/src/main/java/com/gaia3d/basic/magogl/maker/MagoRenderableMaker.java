@@ -22,6 +22,71 @@ public final class MagoRenderableMaker {
     private final Map<String, MagoTexture2D> textureCache =
             new HashMap<>();
 
+    private static int[] createFaceCodes(
+            List<GaiaFace> faces
+    ) {
+        Objects.requireNonNull(
+                faces,
+                "faces must not be null"
+        );
+
+        boolean hasAssignedIds = false;
+        boolean hasUnassignedIds = false;
+
+        for (int i = 0; i < faces.size(); i++) {
+            GaiaFace face = faces.get(i);
+
+            if (face == null) {
+                throw new IllegalStateException(
+                        "Null GaiaFace at index " + i
+                );
+            }
+
+            int[] indices = face.getIndices();
+
+            if (indices == null || indices.length != 3) {
+                throw new IllegalStateException(
+                        "GaiaFace must contain exactly 3 indices. "
+                                + "faceIndex=" + i
+                                + ", faceId=" + face.getId()
+                );
+            }
+
+            if (face.getId() < 0) {
+                hasUnassignedIds = true;
+            } else {
+                hasAssignedIds = true;
+            }
+        }
+
+        /*
+         * A primitive should not contain a mixture of assigned
+         * and unassigned face IDs.
+         */
+        if (hasAssignedIds && hasUnassignedIds) {
+            throw new IllegalStateException(
+                    "Primitive contains both assigned and unassigned "
+                            + "GaiaFace IDs."
+            );
+        }
+
+        /*
+         * Normal textured scene:
+         * face codes are not required.
+         */
+        if (!hasAssignedIds) {
+            return null;
+        }
+
+        int[] faceCodes = new int[faces.size()];
+
+        for (int i = 0; i < faces.size(); i++) {
+            faceCodes[i] = faces.get(i).getId();
+        }
+
+        return faceCodes;
+    }
+
     public void deleteTextureCache() {
         if (textureCache.isEmpty()) {
             return;
@@ -289,71 +354,6 @@ public final class MagoRenderableMaker {
                 diffuseTexture,
                 faceCodes
         );
-    }
-
-    private static int[] createFaceCodes(
-            List<GaiaFace> faces
-    ) {
-        Objects.requireNonNull(
-                faces,
-                "faces must not be null"
-        );
-
-        boolean hasAssignedIds = false;
-        boolean hasUnassignedIds = false;
-
-        for (int i = 0; i < faces.size(); i++) {
-            GaiaFace face = faces.get(i);
-
-            if (face == null) {
-                throw new IllegalStateException(
-                        "Null GaiaFace at index " + i
-                );
-            }
-
-            int[] indices = face.getIndices();
-
-            if (indices == null || indices.length != 3) {
-                throw new IllegalStateException(
-                        "GaiaFace must contain exactly 3 indices. "
-                                + "faceIndex=" + i
-                                + ", faceId=" + face.getId()
-                );
-            }
-
-            if (face.getId() < 0) {
-                hasUnassignedIds = true;
-            } else {
-                hasAssignedIds = true;
-            }
-        }
-
-        /*
-         * A primitive should not contain a mixture of assigned
-         * and unassigned face IDs.
-         */
-        if (hasAssignedIds && hasUnassignedIds) {
-            throw new IllegalStateException(
-                    "Primitive contains both assigned and unassigned "
-                            + "GaiaFace IDs."
-            );
-        }
-
-        /*
-         * Normal textured scene:
-         * face codes are not required.
-         */
-        if (!hasAssignedIds) {
-            return null;
-        }
-
-        int[] faceCodes = new int[faces.size()];
-
-        for (int i = 0; i < faces.size(); i++) {
-            faceCodes[i] = faces.get(i).getId();
-        }
-
-        return faceCodes;
     }
 
     private MagoTexture2D resolveDiffuseTexture(

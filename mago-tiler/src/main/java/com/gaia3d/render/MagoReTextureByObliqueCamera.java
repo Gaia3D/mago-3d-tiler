@@ -50,6 +50,8 @@ import static com.gaia3d.basic.magogl.MagoRenderEngine.toArgb;
 @Setter
 
 public class MagoReTextureByObliqueCamera {
+    public static final int BACKGROUND_FACE_CODE =
+            0xFFFFFFFF;
     private final MagoRenderingBackend renderingBackend;
     private CameraDirectionType[] renderDirections = {
             CameraDirectionType.ZNEG,
@@ -63,8 +65,6 @@ public class MagoReTextureByObliqueCamera {
             CameraDirectionType.XNEG_YNEG_ZNEG
     };
     private FaceColorCodeManager faceColorCodeManager = new FaceColorCodeManager();
-    public static final int BACKGROUND_FACE_CODE =
-            0xFFFFFFFF;
 
     public MagoReTextureByObliqueCamera() {
         this(new SoftwareRenderingBackend());
@@ -74,6 +74,20 @@ public class MagoReTextureByObliqueCamera {
         this.renderingBackend = Objects.requireNonNull(
                 renderingBackend,
                 "renderingBackend must not be null"
+        );
+    }
+
+    public static void faceCodeToColor(
+            int faceCode,
+            Vector4f result
+    ) {
+        float inverse255 = 1.0f / 255.0f;
+
+        result.set(
+                ((faceCode >>> 16) & 0xFF) * inverse255,
+                ((faceCode >>> 8) & 0xFF) * inverse255,
+                (faceCode & 0xFF) * inverse255,
+                ((faceCode >>> 24) & 0xFF) * inverse255
         );
     }
 
@@ -1482,7 +1496,6 @@ public class MagoReTextureByObliqueCamera {
         }
     }
 
-
     private MagoFboSet create9MagoFbos(
             GaiaBoundingBox nodeBBox,
             CameraDirectionType[] renderDirections,
@@ -1647,7 +1660,6 @@ public class MagoReTextureByObliqueCamera {
         return fboSet;
     }
 
-
     private void finishRenderingSession(
             MagoRenderingSession renderingSession,
             MagoFboSet albedoFbos,
@@ -1766,20 +1778,6 @@ public class MagoReTextureByObliqueCamera {
                     renderContext
             );
         }
-    }
-
-    public static void faceCodeToColor(
-            int faceCode,
-            Vector4f result
-    ) {
-        float inverse255 = 1.0f / 255.0f;
-
-        result.set(
-                ((faceCode >>> 16) & 0xFF) * inverse255,
-                ((faceCode >>> 8) & 0xFF) * inverse255,
-                (faceCode & 0xFF) * inverse255,
-                ((faceCode >>> 24) & 0xFF) * inverse255
-        );
     }
 
     private void save9MagoFboAsPng(
