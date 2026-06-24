@@ -6,6 +6,8 @@ import com.gaia3d.basic.temp.GaiaSceneTempGroup;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.converter.Converter;
+import com.gaia3d.converter.assimp.validation.GaiaSceneValidationReport;
+import com.gaia3d.converter.assimp.validation.GaiaSceneValidator;
 import com.gaia3d.util.ImageUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +26,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,11 +40,9 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class AssimpConverter implements Converter {
 
-    public final int DEFAULT_FLAGS = Assimp.aiProcess_Triangulate |
-            Assimp.aiProcess_JoinIdenticalVertices |
-            Assimp.aiProcess_SortByPType;
+    public final int DEFAULT_FLAGS = Assimp.aiProcess_Triangulate | Assimp.aiProcess_JoinIdenticalVertices | Assimp.aiProcess_SortByPType;
     private final AssimpConverterOptions options;
-    private final GaiaSceneGeometryValidator sceneGeometryValidator = new GaiaSceneGeometryValidator();
+    private final GaiaSceneValidator sceneGeometryValidator = new GaiaSceneValidator();
 
     public List<GaiaScene> load(String filePath) {
         return load(new File(filePath));
@@ -52,9 +53,14 @@ public class AssimpConverter implements Converter {
     }
 
     public List<GaiaScene> load(File file) throws RuntimeException {
-        if (!file.isFile() && !file.exists()) {
-            log.error("[ERROR] File does not exist: {}", file.getAbsolutePath());
-            throw new RuntimeException("File does not exist: " + file.getAbsolutePath());
+        if (file == null || !file.isFile()) {
+            String path = file == null ? "null" : file.getAbsolutePath();
+            log.error("[ERROR] File does not exist or is not a regular file: {}", path);
+            throw new RuntimeException("File does not exist or is not a regular file: " + path);
+        }
+        if (!Files.isReadable(file.toPath())) {
+            log.error("[ERROR] File is not readable: {}", file.getAbsolutePath());
+            throw new RuntimeException("File is not readable: " + file.getAbsolutePath());
         }
 
         String path = file.getAbsolutePath().replace(file.getName(), "");
@@ -66,7 +72,6 @@ public class AssimpConverter implements Converter {
             return new ArrayList<>();
         }
 
-        // TODO : Handle multiple scenes in a single file
         List<GaiaScene> gaiaScenes = new ArrayList<>();
         if (options.isSplitByNode()) {
             gaiaScenes = convertScenes(file, aiScene, path);
@@ -81,8 +86,8 @@ public class AssimpConverter implements Converter {
             gaiaScene.setAttribute(attribute);
 
             gaiaScenes.add(gaiaScene);
-            //validateScenes(file, gaiaScenes);
         }
+        validateScenes(file, gaiaScenes);
 
         Assimp.aiReleaseImport(aiScene);
         return gaiaScenes;
@@ -97,7 +102,7 @@ public class AssimpConverter implements Converter {
     }
 
     private void validateScenes(File file, List<GaiaScene> gaiaScenes) {
-        GaiaSceneGeometryValidator.ValidationReport report = sceneGeometryValidator.validate(file, gaiaScenes);
+        GaiaSceneValidationReport report = sceneGeometryValidator.validate(file, gaiaScenes);
         if (report.hasIssues()) {
             log.warn("[WARN] Converted scene geometry validation failed. {}", report.toDetailString());
         } else if (log.isDebugEnabled()) {
@@ -437,11 +442,12 @@ public class AssimpConverter implements Converter {
             File file = ImageUtils.getChildFile(parentPath, diffTexPath);
             if (file != null && file.exists() && file.isFile()) {
                 texture.setPath(ImageUtils.getChildPath(parentPath, diffTexPath));
-                textures.add(texture);
-                material.getTextures().put(texture.getType(), textures);
             } else {
-                log.error("[ERROR] Diffuse Texture is not found: {}", diffTexPath);
+                log.warn("[WARN] Diffuse Texture is not found: {}", diffTexPath);
+                texture.setPath(diffTexPath);
             }
+            textures.add(texture);
+            material.getTextures().put(texture.getType(), textures);
         } else {
             material.setName("NoTexture");
             List<GaiaTexture> textures = new ArrayList<>();
@@ -477,11 +483,12 @@ public class AssimpConverter implements Converter {
             File file = ImageUtils.getChildFile(parentPath, ambientTexPath);
             if (file != null && file.exists() && file.isFile()) {
                 texture.setPath(ImageUtils.getChildPath(parentPath, ambientTexPath));
-                textures.add(texture);
-                material.getTextures().put(texture.getType(), textures);
             } else {
-                log.error("[ERROR] AmbientTexture Texture is not found: {}", ambientTexPath);
+                log.warn("[WARN] Ambient Texture is not found: {}", ambientTexPath);
+                texture.setPath(ambientTexPath);
             }
+            textures.add(texture);
+            material.getTextures().put(texture.getType(), textures);
         } else {
             textures = new ArrayList<>();
             material.getTextures().put(TextureType.AMBIENT, textures);
@@ -515,11 +522,12 @@ public class AssimpConverter implements Converter {
             File file = ImageUtils.getChildFile(parentPath, specularTexPath);
             if (file != null && file.exists() && file.isFile()) {
                 texture.setPath(ImageUtils.getChildPath(parentPath, specularTexPath));
-                textures.add(texture);
-                material.getTextures().put(texture.getType(), textures);
             } else {
-                log.error("[ERROR] SpecularTexture Texture is not found: {}", specularTexPath);
+                log.warn("[WARN] Specular Texture is not found: {}", specularTexPath);
+                texture.setPath(specularTexPath);
             }
+            textures.add(texture);
+            material.getTextures().put(texture.getType(), textures);
         } else {
             textures = new ArrayList<>();
             material.getTextures().put(TextureType.SPECULAR, textures);
@@ -553,11 +561,12 @@ public class AssimpConverter implements Converter {
             File file = ImageUtils.getChildFile(parentPath, shininessTexPath);
             if (file != null && file.exists() && file.isFile()) {
                 texture.setPath(ImageUtils.getChildPath(parentPath, shininessTexPath));
-                textures.add(texture);
-                material.getTextures().put(texture.getType(), textures);
             } else {
-                log.error("[ERROR] Shininess Texture is not found: {}", shininessTexPath);
+                log.warn("[WARN] Shininess Texture is not found: {}", shininessTexPath);
+                texture.setPath(shininessTexPath);
             }
+            textures.add(texture);
+            material.getTextures().put(texture.getType(), textures);
         } else {
             textures = new ArrayList<>();
             material.getTextures().put(TextureType.SHININESS, textures);
@@ -592,11 +601,12 @@ public class AssimpConverter implements Converter {
             File file = ImageUtils.getChildFile(parentPath, normalTexPath);
             if (file != null && file.exists() && file.isFile()) {
                 texture.setPath(ImageUtils.getChildPath(parentPath, normalTexPath));
-                textures.add(texture);
-                material.getTextures().put(texture.getType(), textures);
             } else {
-                log.error("[ERROR] Normal Texture is not found: {}", normalTexPath);
+                log.warn("[WARN] Normal Texture is not found: {}", normalTexPath);
+                texture.setPath(normalTexPath);
             }
+            textures.add(texture);
+            material.getTextures().put(texture.getType(), textures);
         } else {
             textures = new ArrayList<>();
             material.getTextures().put(TextureType.NORMALS, textures);
