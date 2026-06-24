@@ -268,8 +268,8 @@ public class GaiaSet implements Serializable {
                         FileUtils.copyFile(imageFile, outputImageFile);
                         continue;
                     }
-                    int resizeWidth = Math.max(1, (int)Math.round(bufferedImage.getWidth() * scale));
-                    int resizeHeight = Math.max(1, (int)Math.round(bufferedImage.getHeight() * scale));
+                    int resizeWidth = Math.max(1, (int) Math.round(bufferedImage.getWidth() * scale));
+                    int resizeHeight = Math.max(1, (int) Math.round(bufferedImage.getHeight() * scale));
                     BufferedImage resizedImage = imageResizer.resizeImageGraphic2D(bufferedImage, resizeWidth, resizeHeight);
                     //ImageIO.write(resizedImage, fileFormat, outputImageFile);
                     if (fileFormat.equals("jpg") || fileFormat.equals("jpeg")) {
@@ -353,7 +353,7 @@ public class GaiaSet implements Serializable {
         this.bufferDataList.forEach(GaiaBufferDataSet::clear);
         this.bufferDataList.clear();
 
-        if(this.materials != null) {
+        if (this.materials != null) {
             int materialsCount = this.materials.size();
             for (int i = 0; i < materialsCount; i++) {
                 GaiaMaterial material = this.materials.get(i);

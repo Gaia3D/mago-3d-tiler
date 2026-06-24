@@ -1,11 +1,10 @@
 package com.gaia3d.process.preprocess;
 
+import com.gaia3d.basic.geometry.modifier.transform.UpAxisTransformer;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.basic.geometry.modifier.transform.UpAxisTransformer;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
-import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix3d;
@@ -56,7 +55,6 @@ public class GaiaZUpTransformer implements PreProcess {
             return tileInfo;
         }
         recentScene = scene;
-
 
         try {
             if (globalOptions.isParametric()) {

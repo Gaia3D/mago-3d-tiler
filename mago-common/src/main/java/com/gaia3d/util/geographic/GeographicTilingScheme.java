@@ -1,6 +1,5 @@
 package com.gaia3d.util.geographic;
 
-import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import org.joml.Vector3d;
 
@@ -43,7 +42,6 @@ public class GeographicTilingScheme {
     /**
      * (lat, lon) 좌표를 타일 좌표(level, x, y)로 변환한다.
      * y=0 이 북쪽, y 증가할수록 남쪽으로 내려간다.
-     *
      * @param level tile level (0 ~ maxLevel)
      * @param latitude 위도(-90 ~ 90)
      * @param longitude 경도(-180 ~ 180)
@@ -67,8 +65,8 @@ public class GeographicTilingScheme {
         int y = (int) Math.floor(vNorthDown * numY);
 
         // 경계값 처리 (lon=180, lat=-90 일 때 마지막 타일에 들어가도록)
-        if (x == numX) x = numX - 1;
-        if (y == numY) y = numY - 1;
+        if (x == numX) {x = numX - 1;}
+        if (y == numY) {y = numY - 1;}
 
         return new TileCoordinate(level, x, y);
     }
@@ -117,8 +115,8 @@ public class GeographicTilingScheme {
     }
 
     private static double clamp(double value, double min, double max) {
-        if (value < min) return min;
-        if (value > max) return max;
+        if (value < min) {return min;}
+        if (value > max) {return max;}
         return value;
     }
 }

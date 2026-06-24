@@ -1,11 +1,11 @@
 package com.gaia3d.basic.magogl.shader;
 
+import com.gaia3d.basic.magogl.texture.MagoTexture2D;
 import com.gaia3d.basic.magogl.texture.MagoTextureFilter;
+import com.gaia3d.basic.magogl.texture.MagoTextureWrap;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import com.gaia3d.basic.magogl.texture.MagoTexture2D;
-import com.gaia3d.basic.magogl.texture.MagoTextureWrap;
 
 public final class MagoUniforms {
 
@@ -34,4 +34,7 @@ public final class MagoUniforms {
      * mantén esta convención.
      */
     public boolean invertTextureV = false;
+
+    public float alphaCutoff = 0.0f;
+    public float minimumAlpha = 0.0f;
 }

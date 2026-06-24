@@ -8,25 +8,23 @@ import com.gaia3d.basic.geometry.modifier.topology.*;
 import com.gaia3d.basic.geometry.modifier.transform.GaiaBaker;
 import com.gaia3d.basic.geometry.octree.OctreeBBoxInfo;
 import com.gaia3d.basic.halfedge.*;
+import com.gaia3d.basic.magogl.*;
+import com.gaia3d.basic.magogl.backend.MagoRenderingBackend;
+import com.gaia3d.basic.magogl.backend.MagoRenderingSession;
+import com.gaia3d.basic.magogl.backend.SoftwareRenderingBackend;
+import com.gaia3d.basic.magogl.maker.MagoRenderableMaker;
+import com.gaia3d.basic.magogl.renderable.MagoRenderableScene;
+import com.gaia3d.basic.magogl.shader.program.MagoShaderProgram;
+import com.gaia3d.basic.magogl.shader.resources.MagoDefaultVertexShader;
 import com.gaia3d.basic.magogl.shader.resources.MagoFaceCodeFragmentShader;
+import com.gaia3d.basic.magogl.shader.resources.MagoTexturedFragmentShader;
 import com.gaia3d.basic.magogl.texture.MagoTextureFilter;
 import com.gaia3d.basic.magogl.texture.MagoTextureWrap;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.remesher.*;
 import com.gaia3d.basic.remesher.information.GaiaStatistics;
-import com.gaia3d.basic.magogl.MagoFbo;
-import com.gaia3d.basic.magogl.MagoPolygonMode;
-import com.gaia3d.basic.magogl.MagoRenderContext;
-import com.gaia3d.basic.magogl.MagoRenderEngine;
-import com.gaia3d.basic.magogl.maker.MagoRenderableMaker;
-import com.gaia3d.basic.magogl.renderable.MagoRenderableScene;
-import com.gaia3d.basic.magogl.shader.program.MagoShaderProgram;
-import com.gaia3d.basic.magogl.shader.resources.MagoDefaultVertexShader;
-import com.gaia3d.basic.magogl.shader.resources.MagoTexturedFragmentShader;
 import com.gaia3d.basic.texture.atlas.TextureAtlasManager;
 import com.gaia3d.basic.types.TextureType;
-import com.gaia3d.basic.magogl.Camera;
-import com.gaia3d.basic.magogl.Projection;
 import com.gaia3d.util.GaiaTextureUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -52,7 +50,7 @@ import static com.gaia3d.basic.magogl.MagoRenderEngine.toArgb;
 @Setter
 
 public class MagoReTextureByObliqueCamera {
-    //private MagoRenderEngine engine;
+    private final MagoRenderingBackend renderingBackend;
     private CameraDirectionType[] renderDirections = {
             CameraDirectionType.ZNEG,
             CameraDirectionType.XPOS_ZNEG,
@@ -67,8 +65,16 @@ public class MagoReTextureByObliqueCamera {
     private FaceColorCodeManager faceColorCodeManager = new FaceColorCodeManager();
     public static final int BACKGROUND_FACE_CODE =
             0xFFFFFFFF;
+
     public MagoReTextureByObliqueCamera() {
-        //this.engine = new MagoRenderEngine();
+        this(new SoftwareRenderingBackend());
+    }
+
+    public MagoReTextureByObliqueCamera(MagoRenderingBackend renderingBackend) {
+        this.renderingBackend = Objects.requireNonNull(
+                renderingBackend,
+                "renderingBackend must not be null"
+        );
     }
 
     public void integralReMeshByObliqueCameraV2(List<SceneInfo> sceneInfos,
@@ -148,15 +154,15 @@ public class MagoReTextureByObliqueCamera {
 
         // PASADA 1: acumular fronteras de todos los meshes del tile
         TileBoundaryAnchors tileBoundaryAnchors = reMeshParams.getTileBoundaryAnchors();
-        if(tileBoundaryAnchors == null) {
-            tileBoundaryAnchors =  new TileBoundaryAnchors();
+        if (tileBoundaryAnchors == null) {
+            tileBoundaryAnchors = new TileBoundaryAnchors();
             reMeshParams.setTileBoundaryAnchors(tileBoundaryAnchors);
-        }else {
+        } else {
             tileBoundaryAnchors.clear();
         }
 
         GlobalBoundaryAnchors globalBoundaryAnchors = reMeshParams.getGlobalBoundaryAnchors();
-        if(globalBoundaryAnchors == null) {
+        if (globalBoundaryAnchors == null) {
             globalBoundaryAnchors = new GlobalBoundaryAnchors();
             reMeshParams.setGlobalBoundaryAnchors(globalBoundaryAnchors);
         }
@@ -168,7 +174,6 @@ public class MagoReTextureByObliqueCamera {
                 .checkColor(false)
                 .checkBatchId(false)
                 .build();
-
 
         GaiaTriangulator triangulator = new GaiaTriangulator();
 
@@ -209,12 +214,10 @@ public class MagoReTextureByObliqueCamera {
             // The "scenePositionRelToCellGrid" is the relative position of the scene respect the center of RootNode (Depth = 0). All scenes must be synchronized to the RootNode.
             Vector3d scenePositionRelToCellGrid = sceneInfo.getScenePosLC(); // relative position of the scene respect the center of RootNode (Depth = 0).
 
-
             triangulator.apply(gaiaScene);
             GaiaBaker baker = new GaiaBaker();
             baker.apply(gaiaScene);
             gaiaScene.joinAllSurfaces();
-
 
             GaiaWelder weld = new GaiaWelder(weldOptions);
             weld.apply(gaiaScene);
@@ -247,211 +250,218 @@ public class MagoReTextureByObliqueCamera {
         MagoRenderableMaker magoRenderableMaker = new MagoRenderableMaker();
 
         // PASADA 2: remeshear mesh por mesh
-        for (int i = 0; i < scenesCount; i++) {
-            // load and render, one by one
-            SceneInfo sceneInfo = sceneInfos.get(i);
-            String scenePath = sceneInfo.getScenePath();
-            Matrix4d sceneTMat = sceneInfo.getTransformMatrix();
+        MagoRenderingSession renderingSession = renderingBackend.openSession();
+        try {
+            for (int i = 0; i < scenesCount; i++) {
+                // load and render, one by one
+                SceneInfo sceneInfo = sceneInfos.get(i);
+                String scenePath = sceneInfo.getScenePath();
+                Matrix4d sceneTMat = sceneInfo.getTransformMatrix();
 
-            // must find the local position of the scene rel to node
-            Vector3d scenePosWC = new Vector3d(sceneTMat.m30(), sceneTMat.m31(), sceneTMat.m32());
-            Vector3d scenePosLC = nodeMatrixInv.transformPosition(scenePosWC, new Vector3d());
+                // must find the local position of the scene rel to node
+                Vector3d scenePosWC = new Vector3d(sceneTMat.m30(), sceneTMat.m31(), sceneTMat.m32());
+                Vector3d scenePosLC = nodeMatrixInv.transformPosition(scenePosWC, new Vector3d());
 
-            // calculate the local sceneTMat
-            Matrix4d sceneTMatLC = new Matrix4d();
-            sceneTMatLC.identity();
-            sceneTMatLC.m30(scenePosLC.x);
-            sceneTMatLC.m31(scenePosLC.y);
-            sceneTMatLC.m32(scenePosLC.z);
+                // calculate the local sceneTMat
+                Matrix4d sceneTMatLC = new Matrix4d();
+                sceneTMatLC.identity();
+                sceneTMatLC.m30(scenePosLC.x);
+                sceneTMatLC.m31(scenePosLC.y);
+                sceneTMatLC.m32(scenePosLC.z);
 
-            // load the set file
-            GaiaSet gaiaSet = null;
-            GaiaScene gaiaScene = null;
-            GaiaScene gaiaSceneToRender = null;
-            MagoRenderableScene magoRenderableScene = null;
-            Path path = Paths.get(scenePath);
-            try {
-                gaiaSet = GaiaSet.readFile(path);
-                gaiaScene = new GaiaScene(gaiaSet);
-                gaiaSceneToRender = new GaiaScene(gaiaSet);
-                triangulator.apply(gaiaSceneToRender);
+                // load the set file
+                GaiaSet gaiaSet = null;
+                GaiaScene gaiaScene = null;
+                GaiaScene gaiaSceneToRender = null;
+                MagoRenderableScene magoRenderableScene = null;
+                Path path = Paths.get(scenePath);
+                try {
+                    gaiaSet = GaiaSet.readFile(path);
+                    gaiaScene = new GaiaScene(gaiaSet);
+                    gaiaSceneToRender = new GaiaScene(gaiaSet);
+                    triangulator.apply(gaiaSceneToRender);
 
-                GaiaNode gaiaNode = gaiaSceneToRender.getNodes().get(0);
+                    GaiaNode gaiaNode = gaiaSceneToRender.getNodes().get(0);
+                    gaiaNode.setTransformMatrix(new Matrix4d(sceneTMatLC));
+                    gaiaNode.setPreMultipliedTransformMatrix(new Matrix4d(sceneTMatLC));
+                    magoRenderableScene = magoRenderableMaker.makeScene(gaiaSceneToRender);
+                } catch (Exception e) {
+                    log.error("[ERROR] reading the file: ", e);
+                }
+
+                if (gaiaScene == null) {
+                    // throw error
+                    throw new RuntimeException("[ERROR] integralReMeshByObliqueCamera : GaiaScene is null");
+                }
+
+                // reMesh the scene.****************************************************************************************
+                // The "scenePositionRelToCellGrid" is the relative position of the scene respect the center of RootNode (Depth = 0). All scenes must be synchronized to the RootNode.
+                Vector3d scenePositionRelToCellGrid = sceneInfo.getScenePosLC(); // relative position of the scene respect the center of RootNode (Depth = 0).
+                Vector3d scenePosRelToCellGridNegative = new Vector3d(-scenePositionRelToCellGrid.x, -scenePositionRelToCellGrid.y, -scenePositionRelToCellGrid.z);
+                triangulator.apply(gaiaScene);
+                GaiaBaker baker = new GaiaBaker();
+                baker.apply(gaiaScene);
+                gaiaScene.joinAllSurfaces();
+
+                GaiaStatistics stats = GaiaStatistics.calculateStatistics(gaiaScene);
+
+                // Pre-ReMesh.******************************************************************************************
+                GeometryOnlyReMesherByOctree preReMesher = new GeometryOnlyReMesherByOctree();
+                GaiaBoundingBox effectiveNodeBBox = nodeBBox.clone();
+
+                double desiredLeafSize = 1.5;
+                OctreeBBoxInfo octreeBoxInfo = preReMesher.calculateBoundingBoxForLeafDistInfo(nodeBBox, desiredLeafSize);
+                int octreeMaxDepth = octreeBoxInfo.maxDepth;
+                double rootOctreeSize = octreeBoxInfo.rootCubeSize;
+                double nodeSize = nodeBBox.getMaxSize();
+                double scaleFactor = rootOctreeSize / nodeSize;
+                effectiveNodeBBox.expand(nodeSize * scaleFactor * 0.5);
+                preReMesher.setReMeshAnyWay(true);
+                preReMesher.setLimitDepth(octreeMaxDepth);
+                preReMesher.setMinFacesCount(1);
+                preReMesher.setLimitBoxSize(desiredLeafSize);
+                preReMesher.reMeshScene(gaiaScene, stats, effectiveNodeBBox);
+                weld.apply(gaiaScene);
+                cleaner.apply(gaiaScene);
+                // End pre-ReMesh.--------------------------------------------------------------------------------------
+
+                weld.apply(gaiaScene);
+                cleaner.apply(gaiaScene);
+                List<GaiaMaterial> materials = gaiaScene.getMaterials();
+
+                // Here decimate the scene.*******************************************************************************************************
+                DecimateParameters decimateParameters = new DecimateParameters();
+                //decimateParameters.setBasicValues(14.0, 0.01, 0.9, 40.0, 1000000, 5, 1.0);
+                decimateParameters.setBasicValues(12.0, 0.001, 0.9, 40.0, 1000000, 5, 0.1);
+                HalfEdgeScene halfEdgeSceneToDecimate = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(gaiaScene);
+                HalfEdgeDecimator decimator = new HalfEdgeDecimator(decimateParameters);
+                decimator.apply(halfEdgeSceneToDecimate);
+
+                // now, try to reMesh vegetation.
+                gaiaScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneToDecimate);
+
+                // delete materials.
+                for (GaiaMaterial material : materials) {
+                    material.clear();
+                }
+                gaiaScene.getMaterials().clear();
+
+                Vector3i sceneMinCellIndex = new Vector3i();
+                Vector3i sceneMaxCellIndex = new Vector3i();
+                translateScene(gaiaScene, scenePositionRelToCellGrid); // translate the scene to the cell grid position
+                // new.*******************************************************
+
+                ReMesherVertexClusterV2.reMeshScene(
+                        gaiaScene,
+                        reMeshParams,
+                        tileBoundaryAnchors,
+                        globalBoundaryAnchors,
+                        sceneMinCellIndex,
+                        sceneMaxCellIndex
+                );
+                // end new.-------------------------------------------------------------------------------
+                translateScene(gaiaScene, scenePosRelToCellGridNegative); // translate the scene back to the original position
+
+                // update the node cell index bbox
+                if (sceneMinCellIndex.x < nodeMinCellIndex.x) {
+                    nodeMinCellIndex.x = sceneMinCellIndex.x;
+                }
+                if (sceneMinCellIndex.y < nodeMinCellIndex.y) {
+                    nodeMinCellIndex.y = sceneMinCellIndex.y;
+                }
+                if (sceneMinCellIndex.z < nodeMinCellIndex.z) {
+                    nodeMinCellIndex.z = sceneMinCellIndex.z;
+                }
+                if (sceneMaxCellIndex.x > nodeMaxCellIndex.x) {
+                    nodeMaxCellIndex.x = sceneMaxCellIndex.x;
+                }
+                if (sceneMaxCellIndex.y > nodeMaxCellIndex.y) {
+                    nodeMaxCellIndex.y = sceneMaxCellIndex.y;
+                }
+                if (sceneMaxCellIndex.z > nodeMaxCellIndex.z) {
+                    nodeMaxCellIndex.z = sceneMaxCellIndex.z;
+                }
+                // end of reMeshing the scene.******************************************************************************
+
+                // now must translate to the relative position in the node
+                GaiaNode gaiaNode = gaiaScene.getNodes().get(0);
                 gaiaNode.setTransformMatrix(new Matrix4d(sceneTMatLC));
                 gaiaNode.setPreMultipliedTransformMatrix(new Matrix4d(sceneTMatLC));
-                magoRenderableScene = magoRenderableMaker.makeScene(gaiaSceneToRender);
-            } catch (Exception e) {
-                log.error("[ERROR] reading the file: ", e);
-            }
+                baker.apply(gaiaScene);
+                gaiaScene.joinAllSurfaces();
+                weld.apply(gaiaScene);
+                cleaner.apply(gaiaScene);
 
-            if (gaiaScene == null) {
-                // throw error
-                throw new RuntimeException("[ERROR] integralReMeshByObliqueCamera : GaiaScene is null");
-            }
+                // Test 2nd decimating.*****************************************************************************************
+                DecimateParameters decimateParameters2ndTest = new DecimateParameters();
+                decimateParameters.setBasicValues(12.0, 0.001, 0.0, 40.0, 1000000, 2, 0.1);
+                HalfEdgeScene halfEdgeSceneToDecimate2ndTest = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(gaiaScene);
+                HalfEdgeDecimator decimator2ndTest = new HalfEdgeDecimator(decimateParameters2ndTest);
+                decimator2ndTest.apply(halfEdgeSceneToDecimate2ndTest);
+                gaiaScene.clear();
+                gaiaScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneToDecimate2ndTest);
+                halfEdgeSceneToDecimate2ndTest.deleteObjects();
+                // End test 2nd decimating.-------------------------------------------------------------------------------------
 
-            // reMesh the scene.****************************************************************************************
-            // The "scenePositionRelToCellGrid" is the relative position of the scene respect the center of RootNode (Depth = 0). All scenes must be synchronized to the RootNode.
-            Vector3d scenePositionRelToCellGrid = sceneInfo.getScenePosLC(); // relative position of the scene respect the center of RootNode (Depth = 0).
-            Vector3d scenePosRelToCellGridNegative = new Vector3d(-scenePositionRelToCellGrid.x, -scenePositionRelToCellGrid.y, -scenePositionRelToCellGrid.z);
-            triangulator.apply(gaiaScene);
-            GaiaBaker baker = new GaiaBaker();
-            baker.apply(gaiaScene);
-            gaiaScene.joinAllSurfaces();
+                try {
+                    // render the scene
+                    log.debug("Rendering the scene : " + i + " / " + scenesCount + ". LOD : " + lod);
 
-            GaiaStatistics stats = GaiaStatistics.calculateStatistics(gaiaScene);
+                    // for each gaiaScene, set the available faceIds, to use for colorCoded rendering
+                    GaiaExtractor extractor = new GaiaExtractor();
+                    List<GaiaFace> gaiaFaces = extractor.extractAllFaces(gaiaScene);
+                    for (GaiaFace gaiaFace : gaiaFaces) {
+                        gaiaFace.setId(faceIdAvailable);
+                        faceIdAvailable++;
+                    }
 
-            // Pre-ReMesh.******************************************************************************************
-            GeometryOnlyReMesherByOctree preReMesher = new GeometryOnlyReMesherByOctree();
-            GaiaBoundingBox effectiveNodeBBox = nodeBBox.clone();
+                    MagoRenderableScene decimatedRenderableScene = magoRenderableMaker.makeScene(gaiaScene);
+                    makeIntegralBoxTexturesByObliqueCamera9Directions(magoRenderableScene,
+                            decimatedRenderableScene,
+                            fboSet,
+                            faceCodeFboSet,
+                            mapCameraDirectionTypeModelViewMatrix,
+                            mapCameraDirectionTypeProjection,
+                            renderingSession);
+                    // end of making oblique camera textures
 
-            double desiredLeafSize = 1.5;
-            OctreeBBoxInfo octreeBoxInfo = preReMesher.calculateBoundingBoxForLeafDistInfo(nodeBBox, desiredLeafSize);
-            int octreeMaxDepth = octreeBoxInfo.maxDepth;
-            double rootOctreeSize = octreeBoxInfo.rootCubeSize;
-            double nodeSize = nodeBBox.getMaxSize();
-            double scaleFactor = rootOctreeSize / nodeSize;
-            effectiveNodeBBox.expand(nodeSize * scaleFactor * 0.5);
-            preReMesher.setReMeshAnyWay(true);
-            preReMesher.setLimitDepth(octreeMaxDepth);
-            preReMesher.setMinFacesCount(1);
-            preReMesher.setLimitBoxSize(desiredLeafSize);
-            preReMesher.reMeshScene(gaiaScene, stats, effectiveNodeBBox);
-            weld.apply(gaiaScene);
-            cleaner.apply(gaiaScene);
-            // End pre-ReMesh.--------------------------------------------------------------------------------------
+                    if (magoRenderableScene != null) {
+                        magoRenderableScene.deleteObjects();
+                    }
 
-            weld.apply(gaiaScene);
-            cleaner.apply(gaiaScene);
-            List<GaiaMaterial> materials = gaiaScene.getMaterials();
+                    if (decimatedRenderableScene != null) {
+                        decimatedRenderableScene.deleteObjects();
+                    }
 
-            // Here decimate the scene.*******************************************************************************************************
-            DecimateParameters decimateParameters = new DecimateParameters();
-            //decimateParameters.setBasicValues(14.0, 0.01, 0.9, 40.0, 1000000, 5, 1.0);
-            decimateParameters.setBasicValues(12.0, 0.001, 0.9, 40.0, 1000000, 5, 0.1);
-            HalfEdgeScene halfEdgeSceneToDecimate = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(gaiaScene);
-            HalfEdgeDecimator decimator = new HalfEdgeDecimator(decimateParameters);
-            decimator.apply(halfEdgeSceneToDecimate);
-
-            // now, try to reMesh vegetation.
-            gaiaScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneToDecimate);
-
-            // delete materials.
-            for (GaiaMaterial material : materials) {
-                material.clear();
-            }
-            gaiaScene.getMaterials().clear();
-
-            Vector3i sceneMinCellIndex = new Vector3i();
-            Vector3i sceneMaxCellIndex = new Vector3i();
-            translateScene(gaiaScene, scenePositionRelToCellGrid); // translate the scene to the cell grid position
-            // new.*******************************************************
-
-            ReMesherVertexClusterV2.reMeshScene(
-                    gaiaScene,
-                    reMeshParams,
-                    tileBoundaryAnchors,
-                    globalBoundaryAnchors,
-                    sceneMinCellIndex,
-                    sceneMaxCellIndex
-            );
-            // end new.-------------------------------------------------------------------------------
-            translateScene(gaiaScene, scenePosRelToCellGridNegative); // translate the scene back to the original position
-
-            // update the node cell index bbox
-            if (sceneMinCellIndex.x < nodeMinCellIndex.x) {
-                nodeMinCellIndex.x = sceneMinCellIndex.x;
-            }
-            if (sceneMinCellIndex.y < nodeMinCellIndex.y) {
-                nodeMinCellIndex.y = sceneMinCellIndex.y;
-            }
-            if (sceneMinCellIndex.z < nodeMinCellIndex.z) {
-                nodeMinCellIndex.z = sceneMinCellIndex.z;
-            }
-            if (sceneMaxCellIndex.x > nodeMaxCellIndex.x) {
-                nodeMaxCellIndex.x = sceneMaxCellIndex.x;
-            }
-            if (sceneMaxCellIndex.y > nodeMaxCellIndex.y) {
-                nodeMaxCellIndex.y = sceneMaxCellIndex.y;
-            }
-            if (sceneMaxCellIndex.z > nodeMaxCellIndex.z) {
-                nodeMaxCellIndex.z = sceneMaxCellIndex.z;
-            }
-            // end of reMeshing the scene.******************************************************************************
-
-            // now must translate to the relative position in the node
-            GaiaNode gaiaNode = gaiaScene.getNodes().get(0);
-            gaiaNode.setTransformMatrix(new Matrix4d(sceneTMatLC));
-            gaiaNode.setPreMultipliedTransformMatrix(new Matrix4d(sceneTMatLC));
-            baker.apply(gaiaScene);
-            gaiaScene.joinAllSurfaces();
-            weld.apply(gaiaScene);
-            cleaner.apply(gaiaScene);
-
-            // Test 2nd decimating.*****************************************************************************************
-            DecimateParameters decimateParameters2ndTest = new DecimateParameters();
-            decimateParameters.setBasicValues(12.0, 0.001, 0.0, 40.0, 1000000, 2, 0.1);
-            HalfEdgeScene halfEdgeSceneToDecimate2ndTest = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(gaiaScene);
-            HalfEdgeDecimator decimator2ndTest = new HalfEdgeDecimator(decimateParameters2ndTest);
-            decimator2ndTest.apply(halfEdgeSceneToDecimate2ndTest);
-            gaiaScene.clear();
-            gaiaScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneToDecimate2ndTest);
-            halfEdgeSceneToDecimate2ndTest.deleteObjects();
-            // End test 2nd decimating.-------------------------------------------------------------------------------------
-
-            try {
-                // render the scene
-                log.debug("Rendering the scene : " + i + " / " + scenesCount + ". LOD : " + lod);
-
-                // for each gaiaScene, set the available faceIds, to use for colorCoded rendering
-                GaiaExtractor extractor = new GaiaExtractor();
-                List<GaiaFace> gaiaFaces = extractor.extractAllFaces(gaiaScene);
-                for (GaiaFace gaiaFace : gaiaFaces) {
-                    gaiaFace.setId(faceIdAvailable);
-                    faceIdAvailable++;
+                } catch (Exception e) {
+                    log.error("[ERROR] initializing the engine: ", e);
                 }
 
-                MagoRenderableScene decimatedRenderableScene = magoRenderableMaker.makeScene(gaiaScene);
-                makeIntegralBoxTexturesByObliqueCamera9Directions(magoRenderableScene,
-                        decimatedRenderableScene,
-                        fboSet,
-                        faceCodeFboSet,
-                        mapCameraDirectionTypeModelViewMatrix,
-                        mapCameraDirectionTypeProjection);
-                // end of making oblique camera textures
-
-                if(magoRenderableScene != null) {
-                    magoRenderableScene.deleteObjects();
+                if (gaiaSceneMaster == null) {
+                    gaiaSceneMaster = gaiaScene;
+                } else {
+                    GaiaExtractor extractor = new GaiaExtractor();
+                    List<GaiaPrimitive> primitives = extractor.extractAllPrimitives(gaiaScene);
+                    GaiaNode rootNodeMaster = gaiaSceneMaster.getNodes().get(0);
+                    GaiaNode nodeMaster = rootNodeMaster.getChildren().get(0);
+                    GaiaMesh meshMaster = nodeMaster.getMeshes().get(0);
+                    meshMaster.getPrimitives().addAll(primitives);
+                    gaiaScene = null;
                 }
 
-                if(decimatedRenderableScene != null) {
-                    decimatedRenderableScene.deleteObjects();
+                if (gaiaSet != null) {
+                    gaiaSet.clear();
                 }
 
-            } catch (Exception e) {
-                log.error("[ERROR] initializing the engine: ", e);
+                counter++;
+                if (counter > 20) {
+                    counter = 0;
+                }
             }
 
-
-            if (gaiaSceneMaster == null) {
-                gaiaSceneMaster = gaiaScene;
-            } else {
-                GaiaExtractor extractor = new GaiaExtractor();
-                List<GaiaPrimitive> primitives = extractor.extractAllPrimitives(gaiaScene);
-                GaiaNode rootNodeMaster = gaiaSceneMaster.getNodes().get(0);
-                GaiaNode nodeMaster = rootNodeMaster.getChildren().get(0);
-                GaiaMesh meshMaster = nodeMaster.getMeshes().get(0);
-                meshMaster.getPrimitives().addAll(primitives);
-                gaiaScene = null;
-            }
-
-            if (gaiaSet != null) {
-                gaiaSet.clear();
-            }
-
-            counter++;
-            if (counter > 20) {
-                counter = 0;
-            }
+            finishRenderingSession(renderingSession, fboSet, faceCodeFboSet);
+        } finally {
+            renderingSession.close();
         }
 
         // Test save 9 camera rendered.*************************
@@ -614,219 +624,223 @@ public class MagoReTextureByObliqueCamera {
         MagoRenderableMaker magoRenderableMaker = new MagoRenderableMaker();
         GaiaTriangulator triangulator = new GaiaTriangulator();
 
+        MagoRenderingSession renderingSession = renderingBackend.openSession();
+        try {
+            for (int i = 0; i < scenesCount; i++) {
+                // load and render, one by one
+                SceneInfo sceneInfo = sceneInfos.get(i);
+                String scenePath = sceneInfo.getScenePath();
+                Matrix4d sceneTMat = sceneInfo.getTransformMatrix();
 
-        for (int i = 0; i < scenesCount; i++) {
-            // load and render, one by one
-            SceneInfo sceneInfo = sceneInfos.get(i);
-            String scenePath = sceneInfo.getScenePath();
-            Matrix4d sceneTMat = sceneInfo.getTransformMatrix();
+                // must find the local position of the scene rel to node
+                Vector3d scenePosWC = new Vector3d(sceneTMat.m30(), sceneTMat.m31(), sceneTMat.m32());
+                Vector3d scenePosLC = nodeMatrixInv.transformPosition(scenePosWC, new Vector3d());
 
-            // must find the local position of the scene rel to node
-            Vector3d scenePosWC = new Vector3d(sceneTMat.m30(), sceneTMat.m31(), sceneTMat.m32());
-            Vector3d scenePosLC = nodeMatrixInv.transformPosition(scenePosWC, new Vector3d());
+                // calculate the local sceneTMat
+                Matrix4d sceneTMatLC = new Matrix4d();
+                sceneTMatLC.identity();
+                sceneTMatLC.m30(scenePosLC.x);
+                sceneTMatLC.m31(scenePosLC.y);
+                sceneTMatLC.m32(scenePosLC.z);
 
-            // calculate the local sceneTMat
-            Matrix4d sceneTMatLC = new Matrix4d();
-            sceneTMatLC.identity();
-            sceneTMatLC.m30(scenePosLC.x);
-            sceneTMatLC.m31(scenePosLC.y);
-            sceneTMatLC.m32(scenePosLC.z);
+                // load the set file
+                GaiaSet gaiaSet = null;
+                GaiaScene gaiaScene = null;
+                GaiaScene gaiaSceneToRender = null;
+                MagoRenderableScene magoRenderableScene = null;
+                Path path = Paths.get(scenePath);
+                try {
+                    gaiaSet = GaiaSet.readFile(path);
+                    gaiaScene = new GaiaScene(gaiaSet);
+                    gaiaSceneToRender = new GaiaScene(gaiaSet);
+                    triangulator.apply(gaiaSceneToRender);
 
-            // load the set file
-            GaiaSet gaiaSet = null;
-            GaiaScene gaiaScene = null;
-            GaiaScene gaiaSceneToRender = null;
-            MagoRenderableScene magoRenderableScene = null;
-            Path path = Paths.get(scenePath);
-            try {
-                gaiaSet = GaiaSet.readFile(path);
-                gaiaScene = new GaiaScene(gaiaSet);
-                gaiaSceneToRender = new GaiaScene(gaiaSet);
-                triangulator.apply(gaiaSceneToRender);
+                    GaiaNode gaiaNode = gaiaSceneToRender.getNodes().getFirst();
+                    gaiaNode.setTransformMatrix(new Matrix4d(sceneTMatLC));
+                    gaiaNode.setPreMultipliedTransformMatrix(new Matrix4d(sceneTMatLC));
+                    magoRenderableScene = magoRenderableMaker.makeScene(gaiaSceneToRender);
+                } catch (Exception e) {
+                    log.error("[ERROR] reading the file: ", e);
+                }
 
-                GaiaNode gaiaNode = gaiaSceneToRender.getNodes().getFirst();
+                if (gaiaScene == null) {
+                    // throw error
+                    throw new RuntimeException("[ERROR] integralReMeshByObliqueCamera : GaiaScene is null");
+                }
+
+                if (gaiaSceneToRender != null) {
+                    gaiaSceneToRender.clear();
+                    gaiaSceneToRender = null;
+                }
+
+                //gaiaScenesContainer.setRenderableGaiaScenes(renderableGaiaScenes);
+
+                // decimate the scene.****************************************************************************************
+                triangulator.apply(gaiaScene);
+
+                GaiaNode gaiaNode = gaiaScene.getNodes().getFirst();
                 gaiaNode.setTransformMatrix(new Matrix4d(sceneTMatLC));
                 gaiaNode.setPreMultipliedTransformMatrix(new Matrix4d(sceneTMatLC));
-                magoRenderableScene = magoRenderableMaker.makeScene(gaiaSceneToRender);
-            } catch (Exception e) {
-                log.error("[ERROR] reading the file: ", e);
-            }
 
-            if (gaiaScene == null) {
-                // throw error
-                throw new RuntimeException("[ERROR] integralReMeshByObliqueCamera : GaiaScene is null");
-            }
+                GaiaBaker baker = new GaiaBaker();
+                baker.apply(gaiaScene);
+                gaiaScene.joinAllSurfaces();
 
-            if (gaiaSceneToRender != null) {
-                gaiaSceneToRender.clear();
-                gaiaSceneToRender = null;
-            }
+                List<GaiaMaterial> materials = gaiaScene.getMaterials();
 
-            //gaiaScenesContainer.setRenderableGaiaScenes(renderableGaiaScenes);
+                // delete materials.
+                for (GaiaMaterial material : materials) {
+                    material.clear();
+                }
+                gaiaScene.getMaterials().clear();
 
-            // decimate the scene.****************************************************************************************
-            triangulator.apply(gaiaScene);
+                GaiaStatistics stats = GaiaStatistics.calculateStatistics(gaiaScene);
 
-            GaiaNode gaiaNode = gaiaScene.getNodes().getFirst();
-            gaiaNode.setTransformMatrix(new Matrix4d(sceneTMatLC));
-            gaiaNode.setPreMultipliedTransformMatrix(new Matrix4d(sceneTMatLC));
+                // Pre-ReMesh.******************************************************************************************
+                GeometryOnlyReMesherByOctree preReMesher = new GeometryOnlyReMesherByOctree();
+                GaiaBoundingBox effectiveNodeBBox = nodeBBox.clone();
 
-            GaiaBaker baker = new GaiaBaker();
-            baker.apply(gaiaScene);
-            gaiaScene.joinAllSurfaces();
+                if (lod == 1) {
+                    double desiredLeafSize = 0.8;
+                    OctreeBBoxInfo octreeBoxInfo = preReMesher.calculateBoundingBoxForLeafDistInfo(nodeBBox, desiredLeafSize);
+                    int octreeMaxDepth = octreeBoxInfo.maxDepth;
+                    double rootOctreeSize = octreeBoxInfo.rootCubeSize;
+                    double nodeSize = nodeBBox.getMaxSize();
+                    double scaleFactor = rootOctreeSize / nodeSize;
+                    effectiveNodeBBox.expand(nodeSize * scaleFactor * 0.5);
 
-            List<GaiaMaterial> materials = gaiaScene.getMaterials();
+                    preReMesher.setReMeshAnyWay(false);
+                    preReMesher.setLimitDepth(octreeMaxDepth);
+                    preReMesher.setMinFacesCount(1);
+                    preReMesher.setLimitBoxSize(desiredLeafSize);
+                } else {
+                    double desiredLeafSize = 1.2;
+                    OctreeBBoxInfo octreeBoxInfo = preReMesher.calculateBoundingBoxForLeafDistInfo(nodeBBox, desiredLeafSize);
+                    int octreeMaxDepth = octreeBoxInfo.maxDepth;
+                    double rootOctreeSize = octreeBoxInfo.rootCubeSize;
+                    double nodeSize = nodeBBox.getMaxSize();
+                    double scaleFactor = rootOctreeSize / nodeSize;
+                    effectiveNodeBBox.expand(nodeSize * scaleFactor * 0.5);
 
-            // delete materials.
-            for (GaiaMaterial material : materials) {
-                material.clear();
-            }
-            gaiaScene.getMaterials().clear();
+                    preReMesher.setReMeshAnyWay(true);
+                    preReMesher.setLimitDepth(octreeMaxDepth);
+                    preReMesher.setMinFacesCount(1);
+                    preReMesher.setLimitBoxSize(desiredLeafSize);
+                }
 
-            GaiaStatistics stats = GaiaStatistics.calculateStatistics(gaiaScene);
+                preReMesher.reMeshScene(gaiaScene, stats, effectiveNodeBBox);
+                GaiaWelder weld = new GaiaWelder(weldOptions);
+                weld.apply(gaiaScene);
+                cleaner.apply(gaiaScene);
+                // End pre-ReMesh.--------------------------------------------------------------------------------------
 
-            // Pre-ReMesh.******************************************************************************************
-            GeometryOnlyReMesherByOctree preReMesher = new GeometryOnlyReMesherByOctree();
-            GaiaBoundingBox effectiveNodeBBox = nodeBBox.clone();
+                double averageEdgeSize = stats.getAverageEdgeSize();
+                double smallHedgeSize = averageEdgeSize * 1.2;
+                smallHedgeSize = Math.min(smallHedgeSize, 1.0);
+                double minHedgeSize = averageEdgeSize;
+                minHedgeSize = Math.min(minHedgeSize, 0.5);
+                decimateParameters.setSmallHedgeSize(smallHedgeSize);
+                decimateParameters.setHedgeMinLength(minHedgeSize);
+                HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(gaiaScene);
+                HalfEdgeDecimator decimator = new HalfEdgeDecimator(decimateParameters);
+                decimator.apply(halfEdgeScene);
 
-            if (lod == 1) {
-                double desiredLeafSize = 0.8;
-                OctreeBBoxInfo octreeBoxInfo = preReMesher.calculateBoundingBoxForLeafDistInfo(nodeBBox, desiredLeafSize);
-                int octreeMaxDepth = octreeBoxInfo.maxDepth;
-                double rootOctreeSize = octreeBoxInfo.rootCubeSize;
-                double nodeSize = nodeBBox.getMaxSize();
-                double scaleFactor = rootOctreeSize / nodeSize;
-                effectiveNodeBBox.expand(nodeSize * scaleFactor * 0.5);
+                // now, try to reMesh vegetation.
+                log.debug("trianglesCount = " + stats.trianglesCount
+                        + ", areaTotal = " + stats.areaTotal
+                        + ", density = " + stats.trianglesDensity
+                        + ", normalVariance = " + stats.normalVariance
+                        + ", verticalRange = " + stats.verticalRange
+                        + ", areaFoldRatio = " + stats.areaFoldRatio
+                        + ", averageEdgeSize = " + stats.averageEdgeSize);
+                GeometryOnlyReMesherByOctree reMesherByOctree = new GeometryOnlyReMesherByOctree();
+                double nodeBoxSize = nodeBBox.getMaxSize();
+                double minBoxSize = nodeBoxSize / 17.0;
+                if (lod == 1) {
+                    reMesherByOctree.setLimitDepth(12);
+                    reMesherByOctree.setMinFacesCount(5);
+                    reMesherByOctree.setLimitBoxSize(minBoxSize);
+                } else {
+                    reMesherByOctree.setLimitDepth(12);
+                    reMesherByOctree.setMinFacesCount(5);
+                    reMesherByOctree.setLimitBoxSize(minBoxSize);
+                }
 
-                preReMesher.setReMeshAnyWay(false);
-                preReMesher.setLimitDepth(octreeMaxDepth);
-                preReMesher.setMinFacesCount(1);
-                preReMesher.setLimitBoxSize(desiredLeafSize);
-            } else {
-                double desiredLeafSize = 1.2;
-                OctreeBBoxInfo octreeBoxInfo = preReMesher.calculateBoundingBoxForLeafDistInfo(nodeBBox, desiredLeafSize);
-                int octreeMaxDepth = octreeBoxInfo.maxDepth;
-                double rootOctreeSize = octreeBoxInfo.rootCubeSize;
-                double nodeSize = nodeBBox.getMaxSize();
-                double scaleFactor = rootOctreeSize / nodeSize;
-                effectiveNodeBBox.expand(nodeSize * scaleFactor * 0.5);
+                Vector3d scenePositionRelToCellGrid = sceneInfo.getScenePosLC(); // relative position of the scene respect the center of RootNode (Depth = 0).
+                gaiaScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
+                reMesherByOctree.reMeshScene(gaiaScene, stats, nodeBBox);
 
-                preReMesher.setReMeshAnyWay(true);
-                preReMesher.setLimitDepth(octreeMaxDepth);
-                preReMesher.setMinFacesCount(1);
-                preReMesher.setLimitBoxSize(desiredLeafSize);
-            }
+                //******************************************************************************************************
+                halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(gaiaScene);
 
-            preReMesher.reMeshScene(gaiaScene, stats, effectiveNodeBBox);
-            GaiaWelder weld = new GaiaWelder(weldOptions);
-            weld.apply(gaiaScene);
-            cleaner.apply(gaiaScene);
-            // End pre-ReMesh.--------------------------------------------------------------------------------------
+                try {
+                    // render the scene
+                    log.debug("Rendering the scene : " + i + " / " + scenesCount + ". LOD : " + lod);
 
-
-            double averageEdgeSize = stats.getAverageEdgeSize();
-            double smallHedgeSize = averageEdgeSize * 1.2;
-            smallHedgeSize = Math.min(smallHedgeSize, 1.0);
-            double minHedgeSize = averageEdgeSize;
-            minHedgeSize = Math.min(minHedgeSize, 0.5);
-            decimateParameters.setSmallHedgeSize(smallHedgeSize);
-            decimateParameters.setHedgeMinLength(minHedgeSize);
-            HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(gaiaScene);
-            HalfEdgeDecimator decimator = new HalfEdgeDecimator(decimateParameters);
-            decimator.apply(halfEdgeScene);
-
-
-
-            // now, try to reMesh vegetation.
-            log.debug("trianglesCount = " + stats.trianglesCount
-                    + ", areaTotal = " + stats.areaTotal
-                    + ", density = " + stats.trianglesDensity
-                    + ", normalVariance = " + stats.normalVariance
-                    + ", verticalRange = " + stats.verticalRange
-                    + ", areaFoldRatio = " + stats.areaFoldRatio
-                    + ", averageEdgeSize = " + stats.averageEdgeSize);
-            GeometryOnlyReMesherByOctree reMesherByOctree = new GeometryOnlyReMesherByOctree();
-            double nodeBoxSize = nodeBBox.getMaxSize();
-            double minBoxSize = nodeBoxSize / 17.0;
-            if (lod == 1) {
-                reMesherByOctree.setLimitDepth(12);
-                reMesherByOctree.setMinFacesCount(5);
-                reMesherByOctree.setLimitBoxSize(minBoxSize);
-            } else {
-                reMesherByOctree.setLimitDepth(12);
-                reMesherByOctree.setMinFacesCount(5);
-                reMesherByOctree.setLimitBoxSize(minBoxSize);
-            }
-
-            Vector3d scenePositionRelToCellGrid = sceneInfo.getScenePosLC(); // relative position of the scene respect the center of RootNode (Depth = 0).
-            gaiaScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
-            reMesherByOctree.reMeshScene(gaiaScene, stats, nodeBBox);
-
-            //******************************************************************************************************
-            halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(gaiaScene);
-
-            try {
-                // render the scene
-                log.debug("Rendering the scene : " + i + " / " + scenesCount + ". LOD : " + lod);
-
-                // for each gaiaScene, set the available faceIds, to use for colorCoded rendering
-                List<HalfEdgeSurface> halfEdgeSurfaces = halfEdgeScene.extractSurfaces(null);
-                for (HalfEdgeSurface halfEdgeSurface : halfEdgeSurfaces) {
-                    List<HalfEdgeFace> halfEdgeFaces = halfEdgeSurface.getFaces();
-                    for (HalfEdgeFace halfEdgeFace : halfEdgeFaces) {
-                        halfEdgeFace.setId(faceIdAvailable);
-                        faceIdAvailable++;
+                    // for each gaiaScene, set the available faceIds, to use for colorCoded rendering
+                    List<HalfEdgeSurface> halfEdgeSurfaces = halfEdgeScene.extractSurfaces(null);
+                    for (HalfEdgeSurface halfEdgeSurface : halfEdgeSurfaces) {
+                        List<HalfEdgeFace> halfEdgeFaces = halfEdgeSurface.getFaces();
+                        for (HalfEdgeFace halfEdgeFace : halfEdgeFaces) {
+                            halfEdgeFace.setId(faceIdAvailable);
+                            faceIdAvailable++;
+                        }
                     }
+
+                    gaiaScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene); // decimated gaiaScene.
+                    MagoRenderableScene decimatedRenderableScene = magoRenderableMaker.makeScene(gaiaScene);
+
+                    int bufferedImageType = BufferedImage.TYPE_INT_ARGB;
+                    int texturePixelsForMeter = 20; // decimateParameters.getTexturePixelsForMeter();
+                    makeIntegralBoxTexturesByObliqueCamera9Directions(magoRenderableScene,
+                            decimatedRenderableScene,
+                            fboSet,
+                            faceCodeFboSet,
+                            mapCameraDirectionTypeModelViewMatrix,
+                            mapCameraDirectionTypeProjection,
+                            renderingSession);
+
+                    if (magoRenderableScene != null) {
+                        magoRenderableScene.deleteObjects();
+                    }
+
+                    if (decimatedRenderableScene != null) {
+                        decimatedRenderableScene.deleteObjects();
+                    }
+
+                } catch (Exception e) {
+                    log.error("[ERROR] initializing the engine: ", e);
                 }
 
-                gaiaScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene); // decimated gaiaScene.
-                MagoRenderableScene decimatedRenderableScene = magoRenderableMaker.makeScene(gaiaScene);
+                // Calculate globalBoundaryAnchors.*********************************************************************
+                calculateGlobalBoundaryAnchors(gaiaScene, reMeshParams, scenePositionRelToCellGrid, i);
+                // End calculating globalBoundaryAnchors.---------------------------------------------------------------
 
-                int bufferedImageType = BufferedImage.TYPE_INT_ARGB;
-                int texturePixelsForMeter = 20; // decimateParameters.getTexturePixelsForMeter();
-                makeIntegralBoxTexturesByObliqueCamera9Directions(magoRenderableScene,
-                        decimatedRenderableScene,
-                        fboSet,
-                        faceCodeFboSet,
-                        mapCameraDirectionTypeModelViewMatrix,
-                        mapCameraDirectionTypeProjection);
-
-                if(magoRenderableScene != null) {
-                    magoRenderableScene.deleteObjects();
+                if (gaiaSceneMaster == null) {
+                    gaiaSceneMaster = gaiaScene;
+                } else {
+                    GaiaExtractor extractor = new GaiaExtractor();
+                    List<GaiaPrimitive> primitives = extractor.extractAllPrimitives(gaiaScene);
+                    GaiaNode rootNodeMaster = gaiaSceneMaster.getNodes().get(0);
+                    GaiaNode nodeMaster = rootNodeMaster.getChildren().get(0);
+                    GaiaMesh meshMaster = nodeMaster.getMeshes().get(0);
+                    meshMaster.getPrimitives().addAll(primitives);
+                    gaiaScene = null;
                 }
 
-                if(decimatedRenderableScene != null) {
-                    decimatedRenderableScene.deleteObjects();
+                if (gaiaSet != null) {
+                    gaiaSet.clear();
                 }
 
-            } catch (Exception e) {
-                log.error("[ERROR] initializing the engine: ", e);
+                counter++;
+                if (counter > 20) {
+                    counter = 0;
+                }
             }
 
-            // Calculate globalBoundaryAnchors.*********************************************************************
-            calculateGlobalBoundaryAnchors(gaiaScene, reMeshParams, scenePositionRelToCellGrid, i);
-            // End calculating globalBoundaryAnchors.---------------------------------------------------------------
-
-            if (gaiaSceneMaster == null) {
-                gaiaSceneMaster = gaiaScene;
-            } else {
-                GaiaExtractor extractor = new GaiaExtractor();
-                List<GaiaPrimitive> primitives = extractor.extractAllPrimitives(gaiaScene);
-                GaiaNode rootNodeMaster = gaiaSceneMaster.getNodes().get(0);
-                GaiaNode nodeMaster = rootNodeMaster.getChildren().get(0);
-                GaiaMesh meshMaster = nodeMaster.getMeshes().get(0);
-                meshMaster.getPrimitives().addAll(primitives);
-                gaiaScene = null;
-            }
-
-            if (gaiaSet != null) {
-                gaiaSet.clear();
-            }
-
-            counter++;
-            if (counter > 20) {
-                counter = 0;
-            }
+            finishRenderingSession(renderingSession, fboSet, faceCodeFboSet);
+        } finally {
+            renderingSession.close();
         }
 
         // Test save 9 camera rendered.*************************
@@ -913,10 +927,10 @@ public class MagoReTextureByObliqueCamera {
     }
 
     public MagoFbo renderTopView(List<SceneInfo> sceneInfos,
-                                       GaiaBoundingBox nodeBBox,
-                                       Matrix4d nodeTMatrix,
-                                       int maxScreenSize,
-                                       int maxDepthScreenSize) {
+                                 GaiaBoundingBox nodeBBox,
+                                 Matrix4d nodeTMatrix,
+                                 int maxScreenSize,
+                                 int maxDepthScreenSize) {
         // render the scene
         log.info("Rendering the scene...getColorAndDepthRender");
 
@@ -993,9 +1007,6 @@ public class MagoReTextureByObliqueCamera {
             );
         }
 
-        MagoRenderEngine magoRenderEngine =
-                new MagoRenderEngine();
-
         MagoShaderProgram shaderProgram =
                 new MagoShaderProgram(
                         "texturedShader",
@@ -1030,7 +1041,6 @@ public class MagoReTextureByObliqueCamera {
                 MagoPolygonMode.FILL
         );
 
-
         Matrix4d nodeMatrixInv = new Matrix4d(nodeTMatrix);
         nodeMatrixInv.invert();
 
@@ -1040,68 +1050,75 @@ public class MagoReTextureByObliqueCamera {
         // render the scenes
         int scenesCount = sceneInfos.size();
         int counter = 0;
-        for (int i = 0; i < scenesCount; i++) {
-            // load and render, one by one
-            SceneInfo sceneInfo = sceneInfos.get(i);
-            String scenePath = sceneInfo.getScenePath();
-            Matrix4d sceneTMat = sceneInfo.getTransformMatrix();
+        MagoRenderingSession renderingSession = renderingBackend.openSession();
+        try {
+            for (int i = 0; i < scenesCount; i++) {
+                // load and render, one by one
+                SceneInfo sceneInfo = sceneInfos.get(i);
+                String scenePath = sceneInfo.getScenePath();
+                Matrix4d sceneTMat = sceneInfo.getTransformMatrix();
 
-            // must find the local position of the scene rel to node
-            Vector3d scenePosWC = new Vector3d(sceneTMat.m30(), sceneTMat.m31(), sceneTMat.m32());
-            Vector3d scenePosLC = nodeMatrixInv.transformPosition(scenePosWC, new Vector3d());
+                // must find the local position of the scene rel to node
+                Vector3d scenePosWC = new Vector3d(sceneTMat.m30(), sceneTMat.m31(), sceneTMat.m32());
+                Vector3d scenePosLC = nodeMatrixInv.transformPosition(scenePosWC, new Vector3d());
 
-            // calculate the local sceneTMat
-            Matrix4d sceneTMatLC = new Matrix4d();
-            sceneTMatLC.identity();
-            sceneTMatLC.m30(scenePosLC.x);
-            sceneTMatLC.m31(scenePosLC.y);
-            sceneTMatLC.m32(scenePosLC.z);
+                // calculate the local sceneTMat
+                Matrix4d sceneTMatLC = new Matrix4d();
+                sceneTMatLC.identity();
+                sceneTMatLC.m30(scenePosLC.x);
+                sceneTMatLC.m31(scenePosLC.y);
+                sceneTMatLC.m32(scenePosLC.z);
 
-            // load the set file
-            GaiaSet gaiaSet = null;
-            GaiaScene gaiaScene = null;
-            MagoRenderableScene renderableScene = null;
-            Path path = Paths.get(scenePath);
-            try {
-                gaiaSet = GaiaSet.readFile(path);
-                gaiaScene = new GaiaScene(gaiaSet);
-                triangulator.apply(gaiaScene);
-                GaiaNode gaiaNode = gaiaScene.getNodes().get(0);
-                gaiaNode.setTransformMatrix(sceneTMatLC);
-                gaiaNode.setPreMultipliedTransformMatrix(sceneTMatLC);
-                renderableScene = magoRenderableMaker.makeScene(gaiaScene);
-            } catch (Exception e) {
-                log.error("[ERROR] reading the file: ", e);
+                // load the set file
+                GaiaSet gaiaSet = null;
+                GaiaScene gaiaScene = null;
+                MagoRenderableScene renderableScene = null;
+                Path path = Paths.get(scenePath);
+                try {
+                    gaiaSet = GaiaSet.readFile(path);
+                    gaiaScene = new GaiaScene(gaiaSet);
+                    triangulator.apply(gaiaScene);
+                    GaiaNode gaiaNode = gaiaScene.getNodes().get(0);
+                    gaiaNode.setTransformMatrix(sceneTMatLC);
+                    gaiaNode.setPreMultipliedTransformMatrix(sceneTMatLC);
+                    renderableScene = magoRenderableMaker.makeScene(gaiaScene);
+                } catch (Exception e) {
+                    log.error("[ERROR] reading the file: ", e);
+                }
+
+                try {
+                    // render the scene
+                    Objects.requireNonNull(
+                            renderableScene,
+                            "renderableScene must not be null"
+                    );
+
+                    renderingSession.renderIntoFbo(
+                            renderableScene,
+                            renderContext
+                    );
+
+                } catch (Exception e) {
+                    log.error("[ERROR] initializing the engine: ", e);
+                }
+
+                if (gaiaSet != null) {
+                    gaiaSet.clear();
+                }
+
+                if (gaiaScene != null) {
+                    gaiaScene.clear();
+                }
+
+                counter++;
+                if (counter > 20) {
+                    counter = 0;
+                }
             }
 
-            try {
-                // render the scene
-                Objects.requireNonNull(
-                        renderableScene,
-                        "renderableScene must not be null"
-                );
-
-                magoRenderEngine.renderIntoFbo(
-                        renderableScene,
-                        renderContext
-                );
-
-            } catch (Exception e) {
-                log.error("[ERROR] initializing the engine: ", e);
-            }
-
-            if (gaiaSet != null) {
-                gaiaSet.clear();
-            }
-
-            if (gaiaScene != null) {
-                gaiaScene.clear();
-            }
-
-            counter++;
-            if (counter > 20) {
-                counter = 0;
-            }
+            renderingSession.readback();
+        } finally {
+            renderingSession.close();
         }
 
 //        String outputPathString = "D:\\temp";
@@ -1233,7 +1250,7 @@ public class MagoReTextureByObliqueCamera {
                 (int) (backgroundColor.z * 255)
         );
 
-        for(CameraDirectionType cameraDirectionType : renderDirections) {
+        for (CameraDirectionType cameraDirectionType : renderDirections) {
             MagoFbo fbo = fboSet.get(cameraDirectionType);
             BufferedImage image = fbo.getBufferedImage();
             if (image != null) {
@@ -1335,7 +1352,7 @@ public class MagoReTextureByObliqueCamera {
                 Matrix4d modelViewMatrix = mapCameraDirectionTypeModelViewMatrix.get(cameraDirectionType);
 
                 if (modelViewMatrix == null) {
-                    log.info("makeBoxTexturesByObliqueCamera() : modelViewMatrix is null." + "camDirType = " + cameraDirectionType);
+                    log.info("makeBoxTexturesByObliqueCamera() : modelViewMatrix is null." + " camDirType = " + cameraDirectionType);
                     continue;
                 }
 
@@ -1448,7 +1465,7 @@ public class MagoReTextureByObliqueCamera {
         atlasTextures = textures.get(TextureType.DIFFUSE);
         GaiaTexture atlasScissoredTexture = atlasTextures.getFirst();
         atlasScissoredTexture.setParentPath(netSetImagesFolderPath.toString());
-        if(atlasScissoredTexture.getBufferedImage() == null) {
+        if (atlasScissoredTexture.getBufferedImage() == null) {
             log.info("atlasScissoredTexture.getBufferedImage() is null.");
             return;
         }
@@ -1631,15 +1648,57 @@ public class MagoReTextureByObliqueCamera {
     }
 
 
+    private void finishRenderingSession(
+            MagoRenderingSession renderingSession,
+            MagoFboSet albedoFbos,
+            MagoFboSet faceCodeFbos
+    ) {
+        renderingSession.readback();
+        logComparison(renderingSession, albedoFbos, "albedo");
+        logComparison(renderingSession, faceCodeFbos, "face-code");
+    }
 
-    public void  makeIntegralBoxTexturesByObliqueCamera9Directions(MagoRenderableScene magoRenderableScene,
-                                                                         MagoRenderableScene magoDecimatedRenderableScene,
-                                                                         MagoFboSet fboSet,
-                                                                         MagoFboSet faceCodeFboSet,
-                                                                         Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix,
-                                                                    Map<CameraDirectionType, Projection> mapCameraDirectionTypeProjection) {
-        MagoRenderEngine magoRenderEngine =
-                new MagoRenderEngine();
+    private void logComparison(
+            MagoRenderingSession renderingSession,
+            MagoFboSet canonicalFbos,
+            String passName
+    ) {
+        for (CameraDirectionType direction : renderDirections) {
+            MagoFbo canonical = canonicalFbos.get(direction);
+            MagoFbo candidate = renderingSession.getComparisonFbo(canonical);
+            if (candidate == null) {
+                continue;
+            }
+
+            int[] expected = canonical.getColorBuffer();
+            int[] actual = candidate.getColorBuffer();
+            int different = 0;
+            for (int i = 0; i < expected.length; i++) {
+                if (expected[i] != actual[i]) {
+                    different++;
+                }
+            }
+            double mismatchPercent = expected.length == 0
+                    ? 0.0
+                    : different * 100.0 / expected.length;
+            log.info(
+                    "Render comparison [{}:{}] mismatched pixels: {}/{} ({}%)",
+                    passName,
+                    direction,
+                    different,
+                    expected.length,
+                    String.format(Locale.ROOT, "%.4f", mismatchPercent)
+            );
+        }
+    }
+
+    public void makeIntegralBoxTexturesByObliqueCamera9Directions(MagoRenderableScene magoRenderableScene,
+                                                                  MagoRenderableScene magoDecimatedRenderableScene,
+                                                                  MagoFboSet fboSet,
+                                                                  MagoFboSet faceCodeFboSet,
+                                                                  Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix,
+                                                                  Map<CameraDirectionType, Projection> mapCameraDirectionTypeProjection,
+                                                                  MagoRenderingSession renderingSession) {
 
         MagoShaderProgram shaderProgram =
                 new MagoShaderProgram(
@@ -1666,14 +1725,14 @@ public class MagoReTextureByObliqueCamera {
 
         // albedo render.
         // 9 camera render directions.
-        for(CameraDirectionType cameraDirectionType : renderDirections) {
+        for (CameraDirectionType cameraDirectionType : renderDirections) {
             renderIntegralAlbedoTextureByCameraDirection(
                     magoRenderableScene,
                     cameraDirectionType,
                     mapCameraDirectionTypeModelViewMatrix,
                     mapCameraDirectionTypeProjection,
                     fboSet,
-                    magoRenderEngine,
+                    renderingSession,
                     renderContext
             );
         }
@@ -1686,7 +1745,6 @@ public class MagoReTextureByObliqueCamera {
                         new MagoFaceCodeFragmentShader()
                 );
 
-
         renderContext.setShaderProgram(
                 shaderProgramColorCode
         );
@@ -1697,14 +1755,14 @@ public class MagoReTextureByObliqueCamera {
         renderContext.getUniforms().invertTextureV = false;
 
         // 9 camera render directions.
-        for(CameraDirectionType cameraDirectionType : renderDirections) {
+        for (CameraDirectionType cameraDirectionType : renderDirections) {
             renderIntegralColorCodeTextureByCameraDirection(
                     magoDecimatedRenderableScene,
                     cameraDirectionType,
                     mapCameraDirectionTypeModelViewMatrix,
                     mapCameraDirectionTypeProjection,
                     faceCodeFboSet,
-                    magoRenderEngine,
+                    renderingSession,
                     renderContext
             );
         }
@@ -1743,7 +1801,7 @@ public class MagoReTextureByObliqueCamera {
             MagoFbo fbo,
             String outputPathString,
             String nodeName
-    ){
+    ) {
         Objects.requireNonNull(fbo, "fbo must not be null");
         BufferedImage image = fbo.getBufferedImage();
 
@@ -1847,7 +1905,7 @@ public class MagoReTextureByObliqueCamera {
             Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix,
             Map<CameraDirectionType, Projection> mapCameraDirectionTypeProjection,
             MagoFboSet magoFboSet,
-            MagoRenderEngine magoRenderEngine,
+            MagoRenderingSession renderingSession,
             MagoRenderContext renderContext
     ) {
         Objects.requireNonNull(
@@ -1902,7 +1960,7 @@ public class MagoReTextureByObliqueCamera {
                 0xFF000000
         );
 
-        magoRenderEngine.renderIntoFbo(
+        renderingSession.renderIntoFbo(
                 renderableScene,
                 renderContext
         );
@@ -1914,7 +1972,7 @@ public class MagoReTextureByObliqueCamera {
             Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix,
             Map<CameraDirectionType, Projection> mapCameraDirectionTypeProjection,
             MagoFboSet magoFboSet,
-            MagoRenderEngine magoRenderEngine,
+            MagoRenderingSession renderingSession,
             MagoRenderContext renderContext
     ) {
         Objects.requireNonNull(
@@ -1969,7 +2027,7 @@ public class MagoReTextureByObliqueCamera {
                 0xFF000000
         );
 
-        magoRenderEngine.renderIntoFbo(
+        renderingSession.renderIntoFbo(
                 renderableScene,
                 renderContext
         );

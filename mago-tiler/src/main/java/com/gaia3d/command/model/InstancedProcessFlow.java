@@ -4,16 +4,16 @@ import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
+import com.gaia3d.converter.Parametric3DOptions;
 import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.assimp.AssimpConverterOptions;
+import com.gaia3d.converter.geojson.GeoJsonInstanceConverter;
+import com.gaia3d.converter.geopackage.GeoPackageInstanceConverter;
 import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.converter.kml.JacksonKmlReader;
 import com.gaia3d.converter.loader.FileLoader;
 import com.gaia3d.converter.loader.InstancedFileLoader;
 import com.gaia3d.converter.loader.InstancedTempGenerator;
-import com.gaia3d.converter.Parametric3DOptions;
-import com.gaia3d.converter.geojson.GeoJsonInstanceConverter;
-import com.gaia3d.converter.geopackage.GeoPackageInstanceConverter;
 import com.gaia3d.converter.shape.ShapeInstanceConverter;
 import com.gaia3d.process.TilingPipeline;
 import com.gaia3d.process.postprocess.PostProcess;
@@ -22,8 +22,8 @@ import com.gaia3d.process.postprocess.instance.Instanced3DModelV2;
 import com.gaia3d.process.preprocess.*;
 import com.gaia3d.process.tileprocess.Pipeline;
 import com.gaia3d.process.tileprocess.TilingProcess;
-import com.gaia3d.process.tileprocess.tile.Instanced3DModelTiler;
 import com.gaia3d.process.tileprocess.tile.ForestInstanceTiler;
+import com.gaia3d.process.tileprocess.tile.Instanced3DModelTiler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -77,7 +77,7 @@ public class InstancedProcessFlow implements ProcessFlow {
 
         /* Main-process */
         TilingProcess tilingProcess;
-        if (isForest)  {
+        if (isForest) {
             tilingProcess = new ForestInstanceTiler();
         } else {
             tilingProcess = new Instanced3DModelTiler();

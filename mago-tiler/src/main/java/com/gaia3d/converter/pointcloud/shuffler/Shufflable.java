@@ -4,5 +4,6 @@ import java.io.File;
 
 public interface Shufflable {
     void shuffle(File sourceFile, File targetFile, int blockSize);
+
     void clear();
 }

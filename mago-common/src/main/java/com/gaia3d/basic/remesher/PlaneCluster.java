@@ -4,7 +4,10 @@ import com.gaia3d.basic.model.GaiaFace;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Slf4j
 

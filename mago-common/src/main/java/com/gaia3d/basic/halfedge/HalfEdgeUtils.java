@@ -1,7 +1,6 @@
 package com.gaia3d.basic.halfedge;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.geometry.entities.GaiaPlane;
 import com.gaia3d.basic.geometry.octree.GaiaOctree;
 import com.gaia3d.basic.geometry.octree.GaiaOctreeVertices;
 import com.gaia3d.basic.geometry.octree.GeometryContent;
@@ -12,7 +11,10 @@ import org.joml.Vector2d;
 import org.joml.Vector3d;
 
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -211,7 +213,7 @@ public class HalfEdgeUtils {
             return null;
         }
 
-        if(memSaveVertices == null) {
+        if (memSaveVertices == null) {
             memSaveVertices = new ArrayList<>();
         }
 
@@ -527,7 +529,7 @@ public class HalfEdgeUtils {
                 int rInv = numRows - 1 - r;
                 double depthValue = depthValues[c][rInv];
 
-                if(c == 0 || c == numCols - 1) {
+                if (c == 0 || c == numCols - 1) {
                     int hola = 0;
                 }
 
@@ -1040,7 +1042,6 @@ public class HalfEdgeUtils {
             halfEdgeNode.getChildren().add(halfEdgeChild);
         }
 
-
         return halfEdgeNode;
     }
 
@@ -1191,7 +1192,7 @@ public class HalfEdgeUtils {
                 continue;
             }
 
-            if(gaiaFace.getIndices().length > 3) {
+            if (gaiaFace.getIndices().length > 3) {
                 memSaveGaiaFaces.clear();
                 memSaveGaiaFaces = HalfEdgeUtils.getGaiaTriangleFacesFromGaiaFace(gaiaFace, memSaveGaiaFaces);
                 for (GaiaFace gaiaTriangleFace : memSaveGaiaFaces) {
@@ -1226,7 +1227,7 @@ public class HalfEdgeUtils {
         HalfEdgeFace halfEdgeFace = new HalfEdgeFace();
 
         // indices
-        if(memSaveHalfEdges == null){
+        if (memSaveHalfEdges == null) {
             memSaveHalfEdges = new ArrayList<>();
         }
         memSaveHalfEdges.clear();
@@ -1408,7 +1409,6 @@ public class HalfEdgeUtils {
         if (resultMap == null) {
             resultMap = new HashMap<>();
         }
-
 
         List<HalfEdgePrimitive> halfEdgePrimitives = halfEdgeMesh.getPrimitives();
         for (HalfEdgePrimitive halfEdgePrimitive : halfEdgePrimitives) {
@@ -1741,7 +1741,7 @@ public class HalfEdgeUtils {
     }
 
     public static List<GaiaFace> getGaiaTriangleFacesFromGaiaFace(GaiaFace gaiaFace, List<GaiaFace> memSaveGaiaFaces) {
-        if(memSaveGaiaFaces == null){
+        if (memSaveGaiaFaces == null) {
             memSaveGaiaFaces = new ArrayList<>();
         }
         memSaveGaiaFaces.clear();

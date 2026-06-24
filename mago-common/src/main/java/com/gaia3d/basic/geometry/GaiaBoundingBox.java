@@ -6,7 +6,6 @@ import com.gaia3d.basic.geometry.entities.GaiaTriangle;
 import com.gaia3d.basic.halfedge.PlaneType;
 import com.gaia3d.util.GeometryUtils;
 import com.gaia3d.util.GlobeUtils;
-import com.gaia3d.util.VectorUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

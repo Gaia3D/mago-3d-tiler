@@ -2,11 +2,7 @@ package com.gaia3d.converter.pointcloud;
 
 import com.gaia3d.util.geographic.TileCoordinate;
 
-import java.io.BufferedOutputStream;
-import java.io.Closeable;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -119,12 +115,12 @@ public class FileHandlePool implements Closeable {
                 try {
                     handle.out.flush();
                 } catch (IOException e) {
-                    if (first == null) first = e;
+                    if (first == null) {first = e;}
                 }
                 try {
                     handle.out.close();
                 } catch (IOException e) {
-                    if (first == null) first = e;
+                    if (first == null) {first = e;}
                 } finally {
                     handle.out = null;
                 }

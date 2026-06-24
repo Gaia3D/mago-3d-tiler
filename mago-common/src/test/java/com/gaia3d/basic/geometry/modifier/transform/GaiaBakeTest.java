@@ -1,14 +1,12 @@
 package com.gaia3d.basic.geometry.modifier.transform;
 
 import com.gaia3d.basic.geometry.modifier.DefaultSceneFactory;
-import com.gaia3d.basic.geometry.modifier.SceneElementVisitor;
-import com.gaia3d.basic.geometry.modifier.SceneTraverser;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
 import org.joml.Matrix4d;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class GaiaBakeTest {
 

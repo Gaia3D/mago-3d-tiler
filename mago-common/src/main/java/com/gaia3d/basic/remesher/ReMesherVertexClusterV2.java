@@ -7,15 +7,18 @@ import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector3i;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 public class ReMesherVertexClusterV2 {
     /**
      * PASADA 1:
-     *
+     * <p>
      * Acumula anchors de frontera del tile.
-     *
+     * <p>
      * Llamar una vez por cada mesh/scene del tile.
      * No remeshea nada.
      * Solo guarda posiciones de frontera en TileBoundaryAnchors.
@@ -146,9 +149,9 @@ public class ReMesherVertexClusterV2 {
 
     /**
      * PASADA 2:
-     *
+     * <p>
      * Remeshea una scene/mesh usando:
-     *
+     * <p>
      * - frontera global del tile: TileBoundaryAnchors
      * - interiores calculados al vuelo dentro de esta función
      */

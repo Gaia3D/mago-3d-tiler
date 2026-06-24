@@ -4,9 +4,12 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.modifier.Modifier;
 import com.gaia3d.basic.geometry.octree.GaiaOctree;
 import com.gaia3d.basic.geometry.octree.GaiaOctreeVertices;
-import com.gaia3d.basic.halfedge.UnionFind;
 import com.gaia3d.basic.geometry.octree.GeometryContent;
-import com.gaia3d.basic.model.*;
+import com.gaia3d.basic.halfedge.UnionFind;
+import com.gaia3d.basic.model.GaiaFace;
+import com.gaia3d.basic.model.GaiaPrimitive;
+import com.gaia3d.basic.model.GaiaSurface;
+import com.gaia3d.basic.model.GaiaVertex;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
@@ -41,7 +44,7 @@ public class GaiaWelder extends Modifier {
 
     public void weldVertices(GaiaPrimitive primitive) {
         GaiaBoundingBox boundingBox = primitive.getBoundingBox(null);
-        if (boundingBox == null) return;
+        if (boundingBox == null) {return;}
 
         GaiaBoundingBox cubeBoundingBox = boundingBox.createCubeFromMinPosition();
 
@@ -54,7 +57,7 @@ public class GaiaWelder extends Modifier {
 
         List<GaiaOctree<GeometryContent>> octrees = octreeVertices.extractOctreesWithContents();
 
-        if(octrees == null || octrees.isEmpty()) {
+        if (octrees == null || octrees.isEmpty()) {
             log.debug("Welding : no octree cells with vertices. skipping welding.");
             return;
         }
@@ -73,7 +76,7 @@ public class GaiaWelder extends Modifier {
         log.debug("Welding : Checking weldable vertices in octree cells");
         int octreesCount = octrees.size();
         log.debug("Welding : octrees count: " + octreesCount);
-        int currOct=0;
+        int currOct = 0;
         for (GaiaOctree<GeometryContent> octree : octrees) {
             currOct++;
 
@@ -82,7 +85,7 @@ public class GaiaWelder extends Modifier {
                     .toList();
             int n = vertices.size();
 
-            if(currOct % 2000 == 0 || currOct == octreesCount) {
+            if (currOct % 2000 == 0 || currOct == octreesCount) {
                 log.debug("Welding : current octree {} / {}", currOct, octreesCount);
                 log.debug("Welding : vertices count in octree : " + n);
             }
@@ -142,7 +145,7 @@ public class GaiaWelder extends Modifier {
                             break;
                         }
                     }
-                    if (degenerate) break;
+                    if (degenerate) {break;}
                 }
 
                 if (!degenerate) {
@@ -251,7 +254,7 @@ public class GaiaWelder extends Modifier {
 
         // 5) Actualizar índices de las caras
         log.debug("Deleting NO-Used vertices : updating face vertex indices");
-        int surfacesCount =  surfaces.size();
+        int surfacesCount = surfaces.size();
         log.debug("SurfacesCount : " + surfacesCount);
         int s = 0;
         for (GaiaSurface surface : surfaces) {
@@ -261,14 +264,14 @@ public class GaiaWelder extends Modifier {
                 continue;
             }
             int f = 0;
-            int facesCount =  surface.getFaces().size();
+            int facesCount = surface.getFaces().size();
             for (GaiaFace face : surface.getFaces()) {
                 f++;
                 if (face == null || face.getIndices() == null) {
                     continue;
                 }
 
-                if(f % 50000 == 0){
+                if (f % 50000 == 0) {
                     log.debug("upDating face Idx : " + f + " / " + facesCount);
                 }
 
@@ -287,7 +290,7 @@ public class GaiaWelder extends Modifier {
         }
 
         int compactedVerticesCount = compactedVertices.size();
-        log.debug("Welding : vertices welded : " + compactedVerticesCount + " / "  + vertexCount);
+        log.debug("Welding : vertices welded : " + compactedVerticesCount + " / " + vertexCount);
 
         // 6) Sustituir vertices
         primitive.setVertices(compactedVertices);

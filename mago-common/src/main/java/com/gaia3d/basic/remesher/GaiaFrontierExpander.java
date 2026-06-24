@@ -1,13 +1,7 @@
 package com.gaia3d.basic.remesher;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.model.GaiaFace;
-import com.gaia3d.basic.model.GaiaMesh;
-import com.gaia3d.basic.model.GaiaNode;
-import com.gaia3d.basic.model.GaiaPrimitive;
-import com.gaia3d.basic.model.GaiaScene;
-import com.gaia3d.basic.model.GaiaVertex;
-
+import com.gaia3d.basic.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 

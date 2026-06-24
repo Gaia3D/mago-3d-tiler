@@ -1,6 +1,5 @@
 package com.gaia3d.basic.magogl.renderable;
 
-import com.gaia3d.basic.model.GaiaMaterial;
 import com.gaia3d.basic.magogl.MagoBuffer;
 import com.gaia3d.basic.magogl.texture.MagoTexture2D;
 import lombok.AccessLevel;
@@ -28,9 +27,7 @@ public final class MagoRenderablePrimitive {
     private final int vertexCount;
     private final int indexCount;
 
-    private GaiaMaterial material;
     private MagoTexture2D diffuseTexture;
-
 
 
     /*
@@ -54,7 +51,6 @@ public final class MagoRenderablePrimitive {
             MagoBuffer colorsBuffer,
             int vertexCount,
             int indexCount,
-            GaiaMaterial material,
             MagoTexture2D diffuseTexture
     ) {
         this(
@@ -65,7 +61,6 @@ public final class MagoRenderablePrimitive {
                 colorsBuffer,
                 vertexCount,
                 indexCount,
-                material,
                 diffuseTexture,
                 null
         );
@@ -82,7 +77,6 @@ public final class MagoRenderablePrimitive {
             MagoBuffer colorsBuffer,
             int vertexCount,
             int indexCount,
-            GaiaMaterial material,
             MagoTexture2D diffuseTexture,
             int[] faceCodes
     ) {
@@ -162,7 +156,6 @@ public final class MagoRenderablePrimitive {
         this.vertexCount = vertexCount;
         this.indexCount = indexCount;
 
-        this.material = material;
         this.diffuseTexture = diffuseTexture;
 
         /*

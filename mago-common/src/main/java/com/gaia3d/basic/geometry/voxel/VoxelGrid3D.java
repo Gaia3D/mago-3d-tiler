@@ -76,7 +76,6 @@ public class VoxelGrid3D {
                 byte b = bufferArray[index++];
                 byte a = bufferArray[index++];
 
-
                 int alphaInt = (int) a & 0xFF;
 
                 Voxel voxel = getVoxel(x, gridY, z);

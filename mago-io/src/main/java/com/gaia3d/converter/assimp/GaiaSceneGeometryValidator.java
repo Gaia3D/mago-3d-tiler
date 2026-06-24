@@ -1,12 +1,6 @@
 package com.gaia3d.converter.assimp;
 
-import com.gaia3d.basic.model.GaiaFace;
-import com.gaia3d.basic.model.GaiaMesh;
-import com.gaia3d.basic.model.GaiaNode;
-import com.gaia3d.basic.model.GaiaPrimitive;
-import com.gaia3d.basic.model.GaiaScene;
-import com.gaia3d.basic.model.GaiaSurface;
-import com.gaia3d.basic.model.GaiaVertex;
+import com.gaia3d.basic.model.*;
 import lombok.Getter;
 import org.joml.Vector2d;
 import org.joml.Vector3d;

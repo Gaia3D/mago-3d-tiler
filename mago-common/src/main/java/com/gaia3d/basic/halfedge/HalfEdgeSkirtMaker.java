@@ -226,7 +226,6 @@ public class HalfEdgeSkirtMaker {
                 continue;
             }
 
-
             if (classifyId == 20 || classifyId == 21) { // south or north border
                 direction.y = 0.0;
             } else if (classifyId == 22 || classifyId == 23) { // west or east border

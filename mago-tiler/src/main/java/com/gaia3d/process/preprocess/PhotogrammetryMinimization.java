@@ -2,14 +2,11 @@ package com.gaia3d.process.preprocess;
 
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.modifier.topology.*;
-import com.gaia3d.basic.model.GaiaMaterial;
-import com.gaia3d.basic.model.GaiaSamplers;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.Path;
-import java.util.List;
 
 
 @Slf4j

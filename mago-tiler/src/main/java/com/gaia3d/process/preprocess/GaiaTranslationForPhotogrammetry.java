@@ -4,7 +4,6 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.command.mago.ProcessOptions;
 import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.GlobeUtils;
@@ -16,7 +15,6 @@ import org.geotools.geometry.Position2D;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
-import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 
@@ -102,7 +100,7 @@ public class GaiaTranslationForPhotogrammetry implements PreProcess {
     }
 
     private GaiaBoundingBox transformSceneVertexPositionsToLocalCoords(GaiaScene scene, Vector3d geoCoordReference, GaiaBoundingBox resultBBoxLocalCoords) {
-        if(resultBBoxLocalCoords == null) {
+        if (resultBBoxLocalCoords == null) {
             resultBBoxLocalCoords = new GaiaBoundingBox();
         }
         double[] centerCartesianWC = GlobeUtils.geographicToCartesianWgs84(geoCoordReference.x, geoCoordReference.y, geoCoordReference.z);

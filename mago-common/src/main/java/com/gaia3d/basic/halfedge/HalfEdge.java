@@ -6,9 +6,6 @@ import lombok.Setter;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;

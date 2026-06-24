@@ -166,7 +166,7 @@ public class GaiaRectangle implements Serializable {
             return false;
         } else if (compare.minY > this.maxY - error) {
             return false;
-        } else return !(compare.maxY < this.minY + error);
+        } else {return !(compare.maxY < this.minY + error);}
     }
 
     public boolean intersectsInXAxis(GaiaRectangle compare) {

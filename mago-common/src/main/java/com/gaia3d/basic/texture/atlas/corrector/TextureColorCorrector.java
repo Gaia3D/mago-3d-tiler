@@ -61,8 +61,8 @@ public class TextureColorCorrector {
     }
 
     private static int clampToByte(double v) {
-        if (v < 0.0) return 0;
-        if (v > 1.0) return 255;
+        if (v < 0.0) {return 0;}
+        if (v > 1.0) {return 255;}
         return (int) (v * 255.0 + 0.5);
     }
 }

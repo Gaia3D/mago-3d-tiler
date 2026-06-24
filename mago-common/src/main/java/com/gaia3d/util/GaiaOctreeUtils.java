@@ -1,7 +1,6 @@
 package com.gaia3d.util;
 
 import com.gaia3d.basic.geometry.octree.GaiaFaceContent;
-import com.gaia3d.basic.geometry.octree.GaiaFaceData;
 import com.gaia3d.basic.geometry.octree.GeometryContent;
 import com.gaia3d.basic.model.*;
 import org.joml.Vector3d;

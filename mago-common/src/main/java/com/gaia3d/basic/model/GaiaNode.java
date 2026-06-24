@@ -153,7 +153,7 @@ public class GaiaNode extends NodeStructure implements Serializable {
 
     public GaiaBoundingBox getBoundingBox(Matrix4d parentTransformMatrix) {
         GaiaBoundingBox boundingBox = null;
-        if(this.transformMatrix == null) {
+        if (this.transformMatrix == null) {
             this.transformMatrix = new Matrix4d();
             this.transformMatrix.identity();
         }

@@ -6,6 +6,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferInt;
+import java.util.Arrays;
 import java.util.Objects;
 
 public final class MagoTexture2D {
@@ -88,6 +89,13 @@ public final class MagoTexture2D {
 
     public int getHeight() {
         return height;
+    }
+
+    public int[] getPixelsCopy() {
+        if (pixels == null) {
+            throw new IllegalStateException("MagoTexture2D has already been deleted.");
+        }
+        return Arrays.copyOf(pixels, pixels.length);
     }
 
     public void sampleNearest(
@@ -279,8 +287,7 @@ public final class MagoTexture2D {
         }
 
         return switch (wrap) {
-            case CLAMP_TO_EDGE ->
-                    Math.max(0.0f, Math.min(1.0f, coordinate));
+            case CLAMP_TO_EDGE -> Math.max(0.0f, Math.min(1.0f, coordinate));
 
             case REPEAT -> coordinate
                     - (float) Math.floor(coordinate);
@@ -325,7 +332,7 @@ public final class MagoTexture2D {
         );
     }
 
-    public void delete(){
+    public void delete() {
         pixels = null;
     }
 }

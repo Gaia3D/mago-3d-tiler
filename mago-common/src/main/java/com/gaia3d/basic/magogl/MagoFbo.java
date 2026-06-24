@@ -2,7 +2,6 @@ package com.gaia3d.basic.magogl;
 
 import lombok.Getter;
 
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.util.Arrays;

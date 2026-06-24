@@ -5,12 +5,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 
 @Getter

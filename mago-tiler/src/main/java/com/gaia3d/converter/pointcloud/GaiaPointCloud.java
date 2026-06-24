@@ -21,15 +21,23 @@ public class GaiaPointCloud {
     //public final int CHUNK_SIZE = GaiaLasPoint.BYTES_SIZE * 20_000_000;
     public final long CHUNK_SIZE = GaiaLasPoint.BYTES_SIZE * 40_000_000L;
 
-    private String code = "A";
     private Path originalPath;
+    @Builder.Default
+    private String code = "A";
+    @Builder.Default
     private GaiaBoundingBox gaiaBoundingBox = new GaiaBoundingBox();
+    @Builder.Default
     private List<GaiaLasPoint> lasPoints = new ArrayList<>();
+    @Builder.Default
     private long pointCount = 0;
+    @Builder.Default
     private File minimizedFile = null;
 
+    @Builder.Default
     private long limitPointCount = -1;
+    @Builder.Default
     private GaiaPointCloud parent = null;
+    @Builder.Default
     private List<GaiaPointCloud> children = new ArrayList<>();
 
     public String getFullCode() {
@@ -473,7 +481,7 @@ public class GaiaPointCloud {
 
         // bit-mask octree indexing
         @SuppressWarnings("unchecked")
-        List<GaiaLasPoint>[] bucketLists = new List[] {
+        List<GaiaLasPoint>[] bucketLists = new List[]{
                 verticesA, // 000
                 verticesC, // 001 (y)
                 verticesB, // 010 (x)
@@ -490,9 +498,9 @@ public class GaiaPointCloud {
             double z = vertex.getZ();
 
             int idx = 0;
-            if (z > midZ) idx |= 4;
-            if (x > midX) idx |= 2;
-            if (y > midY) idx |= 1;
+            if (z > midZ) {idx |= 4;}
+            if (x > midX) {idx |= 2;}
+            if (y > midY) {idx |= 1;}
 
             bucketLists[idx].add(vertex);
         }

@@ -238,7 +238,7 @@ public class GeometryOnlyReMesherByOctree {
         info.sizeY = maxY - minY;
         info.sizeZ = maxZ - minZ;
 
-        double[] sizes = new double[] {
+        double[] sizes = new double[]{
                 info.sizeX,
                 info.sizeY,
                 info.sizeZ
@@ -301,7 +301,7 @@ public class GeometryOnlyReMesherByOctree {
         //***********************************************************
         // The scene must be Baked (all tMatrix must be identity).***
         //-----------------------------------------------------------
-        if(sceneStatsOptional != null) {
+        if (sceneStatsOptional != null) {
             this.sceneStats = sceneStatsOptional;
         } else {
             this.sceneStats = GaiaStatistics.calculateStatistics(scene);
@@ -318,7 +318,7 @@ public class GeometryOnlyReMesherByOctree {
 //        areaFoldRatio = 3.43007347681656
 
         List<GaiaNode> nodes = scene.getNodes();
-        for(GaiaNode node : nodes) {
+        for (GaiaNode node : nodes) {
             reMeshNode(node, scene, nodeBBoxOptional);
         }
 
@@ -329,21 +329,21 @@ public class GeometryOnlyReMesherByOctree {
         cleaner.apply(scene);
     }
 
-    public void reMeshNode(GaiaNode node, GaiaScene parentScene, GaiaBoundingBox nodeBBoxOptional){
-        List<GaiaMesh>  meshes = node.getMeshes();
-        for(GaiaMesh mesh : meshes) {
+    public void reMeshNode(GaiaNode node, GaiaScene parentScene, GaiaBoundingBox nodeBBoxOptional) {
+        List<GaiaMesh> meshes = node.getMeshes();
+        for (GaiaMesh mesh : meshes) {
             reMeshMesh(mesh, node, parentScene, nodeBBoxOptional);
         }
 
         List<GaiaNode> children = node.getChildren();
-        for(GaiaNode child : children) {
+        for (GaiaNode child : children) {
             reMeshNode(child, parentScene, nodeBBoxOptional);
         }
     }
 
-    public void reMeshMesh(GaiaMesh mesh, GaiaNode parentNode, GaiaScene parentScene, GaiaBoundingBox nodeBBoxOptional){
-        List<GaiaPrimitive>  primitives = mesh.getPrimitives();
-        for(GaiaPrimitive primitive : primitives) {
+    public void reMeshMesh(GaiaMesh mesh, GaiaNode parentNode, GaiaScene parentScene, GaiaBoundingBox nodeBBoxOptional) {
+        List<GaiaPrimitive> primitives = mesh.getPrimitives();
+        for (GaiaPrimitive primitive : primitives) {
             reMeshPrimitive(primitive, parentNode, parentScene, nodeBBoxOptional);
         }
     }
@@ -497,7 +497,7 @@ public class GeometryOnlyReMesherByOctree {
         List<GaiaVertex> vertices = primitive.getVertices();
         List<GaiaFace> faces = new ArrayList<>();
         primitive.extractGaiaAllFaces(faces);
-        GaiaFrontierFinder  finder = new GaiaFrontierFinder();
+        GaiaFrontierFinder finder = new GaiaFrontierFinder();
         boolean[] frontierVertices = finder.findBoundaryVertices(vertices, faces, 1e-6, weldedIndices);
 
         GaiaOctreeFaces octreeFaces = new GaiaOctreeFaces(null, cubeBoundingBox);
@@ -509,7 +509,6 @@ public class GeometryOnlyReMesherByOctree {
         octreeFaces.setLimitFacesCount(minFacesCount);
         octreeFaces.setContentsCanBeInMultipleChildren(true);
         octreeFaces.makeTree();
-
 
         List<GaiaOctree<GeometryContent>> octreesWithContent = octreeFaces.extractOctreesWithContents();
 
@@ -551,7 +550,6 @@ public class GeometryOnlyReMesherByOctree {
             }
             GaiaStatistics stats = GaiaStatistics.calculateStatistics(facesOfParentOctree, vertices);
 
-
             for (int i = 0; i < facesCount; i++) {
                 GeometryContent faceData = facesDates.get(i);
                 GaiaFaceContent faceContent = (GaiaFaceContent) faceData;
@@ -588,7 +586,7 @@ public class GeometryOnlyReMesherByOctree {
                 continue;
             }
 
-            if(!reMeshAnyWay) {
+            if (!reMeshAnyWay) {
                 // Detector fuerte para barras oblicuas.
                 BarInfo barInfo = detectBarByPCA(verticesToTestShape);
                 if (barInfo.isBar) {
@@ -604,7 +602,7 @@ public class GeometryOnlyReMesherByOctree {
                     continue;
                 }
 
-                if(isBuildingWallProtected(shapeInfo, stats)) {
+                if (isBuildingWallProtected(shapeInfo, stats)) {
                     log.debug("Building wall detected by AABB and statistics. Skip reMesh it");
                     continue;
                 }
@@ -655,11 +653,11 @@ public class GeometryOnlyReMesherByOctree {
         int[] weldedIndices = new int[primitive.getVertices().size()];
 
         GaiaBoundingBox cubeBoundingBox = nodeBBoxOptional.clone();
-        if(cubeBoundingBox == null) {
+        if (cubeBoundingBox == null) {
             Matrix4d mat = new Matrix4d();
             mat.identity();
             GaiaBoundingBox boundingBox = primitive.getBoundingBox(mat);
-            if (boundingBox == null) return;
+            if (boundingBox == null) {return;}
 
             cubeBoundingBox = boundingBox.createCubeFromMinPosition();
         }
@@ -668,7 +666,7 @@ public class GeometryOnlyReMesherByOctree {
         List<GaiaVertex> vertices = primitive.getVertices();
         List<GaiaFace> faces = new ArrayList<>();
         primitive.extractGaiaAllFaces(faces);
-        GaiaFrontierFinder  finder = new GaiaFrontierFinder();
+        GaiaFrontierFinder finder = new GaiaFrontierFinder();
         boolean[] frontierVertices = finder.findBoundaryVertices(vertices, faces, 1e-6, weldedIndices);
 
         GaiaOctreeFaces octreeFaces = new GaiaOctreeFaces(null, cubeBoundingBox);
@@ -680,7 +678,6 @@ public class GeometryOnlyReMesherByOctree {
         octreeFaces.setLimitFacesCount(minFacesCount);
         octreeFaces.setContentsCanBeInMultipleChildren(true);
         octreeFaces.makeTree();
-
 
         List<GaiaOctree<GeometryContent>> octreesWithContent = octreeFaces.extractOctreesWithContents();
 
@@ -750,7 +747,7 @@ public class GeometryOnlyReMesherByOctree {
                 continue;
             }
 
-            if(!reMeshAnyWay) {
+            if (!reMeshAnyWay) {
                 // Detector fuerte para barras oblicuas.
                 BarInfo barInfo = detectBarByPCA(verticesToTestShape);
                 if (barInfo.isBar) {

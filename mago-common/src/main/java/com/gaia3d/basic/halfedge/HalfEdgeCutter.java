@@ -36,7 +36,6 @@ public class HalfEdgeCutter {
         resultOctree.getBoundingBox().set(cubeBBox.getMinX(), cubeBBox.getMinY(), cubeBBox.getMinZ(), cubeBBox.getMaxX(), cubeBBox.getMaxY(), cubeBBox.getMaxZ());
         resultOctree.setLimitDepth(desiredDepth);
 
-
         // create GaiaAAPlanes
         int leafOctreesCountForAxis = (int) Math.pow(2, desiredDepth);
         for (int i = 1; i < leafOctreesCountForAxis; i++) // 'i' starts in 1 because the first plane is the bbox min
@@ -127,7 +126,6 @@ public class HalfEdgeCutter {
             if (makeSkirt) {
                 cuttedScene.makeHorizontalSkirt();
             }
-
 
             resultScenes.add(cuttedScene);
         }

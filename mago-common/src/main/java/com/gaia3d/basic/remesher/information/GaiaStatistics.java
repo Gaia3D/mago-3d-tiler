@@ -1,25 +1,24 @@
 package com.gaia3d.basic.remesher.information;
 
 import com.gaia3d.basic.model.*;
-
-import java.util.List;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
+
+import java.util.List;
 
 @Slf4j
 @Getter
 @Setter
 public class GaiaStatistics {
     private static final double EPSILON = 1e-9;
-    private static final double EDGE_1MM   = 0.001;
-    private static final double EDGE_1CM   = 0.01;
-    private static final double EDGE_5CM   = 0.05;
-    private static final double EDGE_10CM  = 0.10;
-    private static final double EDGE_25CM  = 0.25;
-    private static final double EDGE_50CM  = 0.50;
+    private static final double EDGE_1MM = 0.001;
+    private static final double EDGE_1CM = 0.01;
+    private static final double EDGE_5CM = 0.05;
+    private static final double EDGE_10CM = 0.10;
+    private static final double EDGE_25CM = 0.25;
+    private static final double EDGE_50CM = 0.50;
     private static final double EDGE_100CM = 1.00;
     private static final double EDGE_150CM = 1.50;
     private static final double EDGE_200CM = 2.00;
@@ -29,7 +28,7 @@ public class GaiaStatistics {
     public double trianglesDensity = 0.0;
 
     public double normalVariance = 0.0;
-//    normalVariance ≈ 0.00  -> todos los triángulos miran parecido
+    //    normalVariance ≈ 0.00  -> todos los triángulos miran parecido
 //    normalVariance ≈ 0.05  -> casi plano / ordenado
 //    normalVariance ≈ 0.15  -> algo rugoso
 //    normalVariance ≈ 0.25+ -> bastante caótico
@@ -85,7 +84,6 @@ public class GaiaStatistics {
     public double edgesBelow100cmRatio = 0.0;
     public double edgesBelow150cmRatio = 0.0;
     public double edgesBelow200cmRatio = 0.0;
-
 
 
     public void logGaiaStatisticsCompact(String title) {
@@ -593,13 +591,13 @@ public class GaiaStatistics {
     }
 
     private static void updateBoundingBox(GaiaStatistics stats, Vector3d p) {
-        if (p.x < stats.minX) stats.minX = p.x;
-        if (p.y < stats.minY) stats.minY = p.y;
-        if (p.z < stats.minZ) stats.minZ = p.z;
+        if (p.x < stats.minX) {stats.minX = p.x;}
+        if (p.y < stats.minY) {stats.minY = p.y;}
+        if (p.z < stats.minZ) {stats.minZ = p.z;}
 
-        if (p.x > stats.maxX) stats.maxX = p.x;
-        if (p.y > stats.maxY) stats.maxY = p.y;
-        if (p.z > stats.maxZ) stats.maxZ = p.z;
+        if (p.x > stats.maxX) {stats.maxX = p.x;}
+        if (p.y > stats.maxY) {stats.maxY = p.y;}
+        if (p.z > stats.maxZ) {stats.maxZ = p.z;}
     }
 
     private static double calculateTriangleArea(Vector3d p0, Vector3d p1, Vector3d p2) {

@@ -14,7 +14,6 @@ public final class MagoDepthGridScaler {
     }
 
 
-
     public static float[][] resizeDepthNearestVerified(
             float[][] source,
             int targetWidth,

@@ -2,14 +2,10 @@ package com.gaia3d.basic.halfedge;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
-import com.gaia3d.basic.geometry.octree.GaiaOctree;
-import com.gaia3d.basic.geometry.octree.HalfEdgeOctreeVertices;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.texture.atlas.TextureAtlasManager;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.TextureType;
-import com.gaia3d.util.GaiaTextureUtils;
-import com.gaia3d.util.ImageUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -17,14 +13,10 @@ import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
-import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.Raster;
-import java.awt.image.WritableRaster;
-import java.io.*;
+import java.io.File;
+import java.io.Serializable;
 import java.util.*;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static java.lang.Double.isNaN;
 
@@ -57,8 +49,8 @@ public class HalfEdgeSurface implements Serializable {
             int a = strVertex.getId();
             int b = endVertex.getId();
 
-            long key = (((long)a) << 32) | (b & 0xffffffffL);
-            long twinKey = (((long)b) << 32) | (a & 0xffffffffL);
+            long key = (((long) a) << 32) | (b & 0xffffffffL);
+            long twinKey = (((long) b) << 32) | (a & 0xffffffffL);
 
             HalfEdge twin = map.get(twinKey);
 
@@ -218,12 +210,12 @@ public class HalfEdgeSurface implements Serializable {
             if (face.isDegenerated()) {
                 face.setStatus(ObjectStatus.DELETED);
                 List<HalfEdge> halfEdges = null;
-                if(mapFaceToHalfEdges != null) {
+                if (mapFaceToHalfEdges != null) {
                     halfEdges = mapFaceToHalfEdges.get(face);
                 } else {
                     halfEdges = face.getHalfEdgesLoop(halfEdges);
                 }
-                if(halfEdges == null) {
+                if (halfEdges == null) {
                     continue;
                 }
                 for (HalfEdge halfEdge : halfEdges) {
@@ -1905,7 +1897,7 @@ public class HalfEdgeSurface implements Serializable {
         //*************************************************************************************************
         // Before do scissoring and atlasing, check:
         // If the sum of GaiaTextureScissorData-rectangle is aprox 1.0, then do not scissor.
-        if(!checkIfNecessaryScissorTextures(mergedWeldedFacesGroups)) {
+        if (!checkIfNecessaryScissorTextures(mergedWeldedFacesGroups)) {
             log.debug("NO NEED Scissor textures");
             return;
         }
@@ -1926,8 +1918,6 @@ public class HalfEdgeSurface implements Serializable {
                 srcImage,
                 textureAtlas,
                 false);
-
-
 
         // write the textureAtlas into a file
         String imageParentPath = texture.getParentPath();
@@ -1950,7 +1940,7 @@ public class HalfEdgeSurface implements Serializable {
     }
 
     private GaiaRectangle getTexCoordBoundingRectangle(List<HalfEdgeFace> faces, boolean invertTexCoordY, GaiaRectangle resultTexCoordBRect) {
-        if(resultTexCoordBRect == null) {
+        if (resultTexCoordBRect == null) {
             resultTexCoordBRect = new GaiaRectangle();
         }
         boolean texCoordBBoxStarted = false;
@@ -1976,7 +1966,7 @@ public class HalfEdgeSurface implements Serializable {
         return resultTexCoordBRect;
     }
 
-    private boolean checkIfNecessaryScissorTextures(List<List<HalfEdgeFace>> mergedWeldedFacesGroups){
+    private boolean checkIfNecessaryScissorTextures(List<List<HalfEdgeFace>> mergedWeldedFacesGroups) {
         // If the sum of GaiaTextureScissorData-rectangle is aprox 1.0, then do not scissor.
         int weldedFacesGroupsCount = mergedWeldedFacesGroups.size();
         boolean invertTexCoordY = false;// original
@@ -1997,7 +1987,7 @@ public class HalfEdgeSurface implements Serializable {
             totalTextureUsedArea += width * height;
         }
 
-        if(totalTextureUsedArea > 0.85) {
+        if (totalTextureUsedArea > 0.85) {
             return false;
         }
         return true;
@@ -2043,10 +2033,10 @@ public class HalfEdgeSurface implements Serializable {
         //*************************************************************************************************
         // Before do scissoring and atlasing, check:
         // If the sum of GaiaTextureScissorData-rectangle is aprox 1.0, then do not scissor.
-        if(!checkIfNecessaryScissorTextures(mergedWeldedFacesGroups)) {
+        if (!checkIfNecessaryScissorTextures(mergedWeldedFacesGroups)) {
             // if exist motherMaterial, the copy the texture.
             log.debug("NO NEED Scissor textures by Mother material");
-            if(motherMaterial != null){
+            if (motherMaterial != null) {
                 GaiaMaterial motherMaterialCopy2 = motherMaterial.clone();
                 material.setTextures(motherMaterialCopy2.getTextures());
             }
@@ -2061,14 +2051,13 @@ public class HalfEdgeSurface implements Serializable {
         List<GaiaTextureScissorData> textureScissorDatasWidth = new ArrayList<>();
         List<GaiaTextureScissorData> textureScissorDatasHeight = new ArrayList<>();
 
-
         List<HalfEdgeVertex> faceVertices = new ArrayList<>();
         Map<HalfEdgeVertex, HalfEdgeVertex> groupVertexMap = new HashMap<>();
         Map<HalfEdgeVertex, HalfEdgeVertex> visitedVertexMap = new HashMap<>();
 
         // do texture atlas process
         TextureAtlasManager textureAtlasManager = new TextureAtlasManager();
-        if(mergedWeldedFacesGroups.size() == 0) {
+        if (mergedWeldedFacesGroups.size() == 0) {
             log.warn("[WARN] HalfEdgeSurface.scissorTexturesByMotherScene() : mergedWeldedFacesGroups.size() == 0.");
             return;
         }
@@ -2083,7 +2072,6 @@ public class HalfEdgeSurface implements Serializable {
                 srcImage,
                 textureAtlas,
                 false);
-
 
         // write the textureAtlas into a file
         String texturePath = textureMother.getPath();
@@ -2118,7 +2106,7 @@ public class HalfEdgeSurface implements Serializable {
             //log.debug("merge scissorDates " + i + " / " + originalSize);
             GaiaTextureScissorData current = list.get(i);
 
-            if (current.getFaces().isEmpty()) continue;
+            if (current.getFaces().isEmpty()) {continue;}
 
             boolean merged = false;
 

@@ -1,11 +1,6 @@
 package com.gaia3d.basic.geometry.octree;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.geometry.entities.GaiaPlane;
-import com.gaia3d.basic.geometry.entities.GaiaTriangle;
-import com.gaia3d.basic.model.GaiaFace;
-import com.gaia3d.basic.model.GaiaPrimitive;
-import com.gaia3d.basic.model.GaiaScene;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;

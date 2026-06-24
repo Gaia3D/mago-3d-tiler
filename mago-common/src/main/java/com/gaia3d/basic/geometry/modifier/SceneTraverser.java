@@ -1,7 +1,6 @@
 package com.gaia3d.basic.geometry.modifier;
 
 import com.gaia3d.basic.model.*;
-import jdk.jfr.Experimental;
 import org.joml.Matrix4d;
 
 @Deprecated

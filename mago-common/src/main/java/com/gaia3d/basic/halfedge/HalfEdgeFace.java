@@ -9,8 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.*;
 
@@ -249,7 +247,7 @@ public class HalfEdgeFace implements Serializable {
             return false;
         }
 
-        if(memSaveAdjacentFaces == null) {
+        if (memSaveAdjacentFaces == null) {
             memSaveAdjacentFaces = new ArrayList<>();
         }
 

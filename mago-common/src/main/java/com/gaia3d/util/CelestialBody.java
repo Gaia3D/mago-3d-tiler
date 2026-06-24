@@ -8,18 +8,18 @@ import lombok.Getter;
 @Getter
 public enum CelestialBody {
     EARTH(
-        "Earth",
-        6378137.0,           // equatorialRadius (meters)
-        6356752.3142,        // polarRadius (meters)
-        6.69437999014E-3,    // firstEccentricitySquared
-        "EPSG:4326"          // WGS84
+            "Earth",
+            6378137.0,           // equatorialRadius (meters)
+            6356752.3142,        // polarRadius (meters)
+            6.69437999014E-3,    // firstEccentricitySquared
+            "EPSG:4326"          // WGS84
     ),
     MOON(
-        "Moon",
-        1737400.0,           // equatorialRadius (meters, sphere)
-        1737400.0,           // polarRadius (meters, sphere)
-        0.0,                 // firstEccentricitySquared (perfect sphere)
-        "IAU:30100"          // IAU 2015 Moon CRS
+            "Moon",
+            1737400.0,           // equatorialRadius (meters, sphere)
+            1737400.0,           // polarRadius (meters, sphere)
+            0.0,                 // firstEccentricitySquared (perfect sphere)
+            "IAU:30100"          // IAU 2015 Moon CRS
     );
 
     private final String displayName;
@@ -32,7 +32,7 @@ public enum CelestialBody {
     private final double polarRadiusSquared;
 
     CelestialBody(String displayName, double equatorialRadius, double polarRadius,
-                   double firstEccentricitySquared, String crsCode) {
+                  double firstEccentricitySquared, String crsCode) {
         this.displayName = displayName;
         this.equatorialRadius = equatorialRadius;
         this.polarRadius = polarRadius;

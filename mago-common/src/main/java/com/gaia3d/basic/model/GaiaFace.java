@@ -185,7 +185,6 @@ public class GaiaFace extends FaceStructure implements Serializable {
             }
         }
 
-
         return false;
     }
 

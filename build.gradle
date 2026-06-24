@@ -86,14 +86,6 @@ project(':mago-tiler') {
     dependencies {
         implementation project(':mago-common')
         implementation project(':mago-io')
-        implementation project(':mago-tiler-extension')
-    }
-}
-
-// Extension module build configuration
-project(':mago-tiler-extension') {
-    dependencies {
-        implementation project(':mago-common')
     }
 }
 
@@ -111,7 +103,6 @@ tasks.register('all-javadoc', Javadoc) {
             project(':mago-tiler'),
             project(':mago-common'),
             project(':mago-io'),
-            project(':mago-tiler-extension')
     ]
     source = files(includedProjects.collect { it.sourceSets.main.allJava })
     classpath = files(includedProjects.collect { it.sourceSets.main.compileClasspath })

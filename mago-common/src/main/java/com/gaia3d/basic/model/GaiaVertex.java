@@ -11,8 +11,6 @@ import org.joml.Vector2d;
 import org.joml.Vector3d;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A class that represents a vertex of a Gaia object.

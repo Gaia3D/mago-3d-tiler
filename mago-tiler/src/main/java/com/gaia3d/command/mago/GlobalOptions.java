@@ -1,6 +1,5 @@
 package com.gaia3d.command.mago;
 
-import com.gaia3d.TilerExtensionModule;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.converter.AttributeFilter;
 import lombok.Getter;
@@ -448,14 +447,8 @@ public class GlobalOptions {
 
         instance.printDebugOptions();
 
-        TilerExtensionModule extensionModule = new TilerExtensionModule();
-        extensionModule.executePhotogrammetry(null, null);
         if (instance.isPhotogrammetry()) {
             instance.setUseQuantization(true);
-            if (!extensionModule.isSupported()) {
-                log.error("[ERROR] *** Extension is not supported ***");
-                throw new IllegalArgumentException("Extension is not supported.");
-            }
         }
 
         instance.setCurvatureCorrection(command.hasOption(ProcessOptions.CURVATURE_CORRECTION.getLongName()));
