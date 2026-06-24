@@ -15,6 +15,7 @@ public class MeshSimplifier {
     //********************************
     public MeshSimplifier() {
     }
+
     public void simplify(GaiaScene gaiaScene,
                          int lod,
                          DecimateParameters decimateParameters,

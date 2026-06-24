@@ -11,7 +11,8 @@ public class GlobalConstants {
     public static final String DEFAULT_INPUT_FORMAT = "kml";
     public static final String DEFAULT_INSTANCE_FILE = "instance.dae";
     public static final String DEFAULT_TEMP_FOLDER = "temp";
-    public static final long DEFAULT_RECOMMENDED_MEMORY = 64L * 1024 * 1024 * 1024;;
+    public static final long DEFAULT_RECOMMENDED_MEMORY = 64L * 1024 * 1024 * 1024;
+    ;
 
     public static final int DEFAULT_MIN_LOD = 0;
     public static final int DEFAULT_MAX_LOD = 3;

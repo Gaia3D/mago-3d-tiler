@@ -35,7 +35,7 @@ public class TopologicalNode {
     }
 
     public TopologicalEdge getEdge(int index) {
-        if (index < 0 || index >= edges.size()) return null;
+        if (index < 0 || index >= edges.size()) {return null;}
         return edges.get(index);
     }
 

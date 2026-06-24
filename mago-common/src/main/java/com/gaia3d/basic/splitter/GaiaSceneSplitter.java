@@ -266,7 +266,6 @@ public class GaiaSceneSplitter {
         int targetDepth = 1;
         octreeCopy.distributeContents(targetDepth);
 
-
         List<GaiaOctreeSceneSplitter> octrees = new ArrayList<>();
         octreeCopy.extractOctreesWithContents(octrees);
 

@@ -207,7 +207,7 @@ public final class MagoRenderer {
                     indexPosition / 3;
 
             int faceCode = 0;
-            if(requiresFaceCode) {
+            if (requiresFaceCode) {
                 faceCode =
                         primitive.getFaceCode(
                                 triangleIndex
@@ -1003,13 +1003,13 @@ public final class MagoRenderer {
          */
         int outputAlpha = separateAlphaBlend
                 ? sourceAlpha + (
-                        destinationAlpha * inverseSourceAlpha + 127
-                ) / 255
+                destinationAlpha * inverseSourceAlpha + 127
+        ) / 255
                 : (
-                        sourceAlpha * sourceAlpha
-                                + destinationAlpha * inverseSourceAlpha
-                                + 127
-                ) / 255;
+                sourceAlpha * sourceAlpha
+                + destinationAlpha * inverseSourceAlpha
+                + 127
+        ) / 255;
 
         return (outputAlpha << 24)
                 | (outputRed << 16)

@@ -29,9 +29,9 @@ public class BigEndianByteUtils {
 
     public static int toInt(byte[] bytes, int offset) {
         return ((bytes[offset] & 0xFF) << 24) |
-               ((bytes[offset + 1] & 0xFF) << 16) |
-               ((bytes[offset + 2] & 0xFF) << 8) |
-               ((bytes[offset + 3] & 0xFF));
+                ((bytes[offset + 1] & 0xFF) << 16) |
+                ((bytes[offset + 2] & 0xFF) << 8) |
+                ((bytes[offset + 3] & 0xFF));
     }
 
     public static byte[] fromShort(short value) {
@@ -53,7 +53,7 @@ public class BigEndianByteUtils {
 
     public static short toShort(byte[] bytes, int offset) {
         return (short) (((bytes[offset] & 0xFF) << 8) |
-                        ((bytes[offset + 1] & 0xFF)));
+                ((bytes[offset + 1] & 0xFF)));
     }
 
     public static byte[] fromChar(char value) {
@@ -75,7 +75,7 @@ public class BigEndianByteUtils {
 
     public static char toChar(byte[] bytes, int offset) {
         return (char) (((bytes[offset] & 0xFF) << 8) |
-                        ((bytes[offset + 1] & 0xFF)));
+                ((bytes[offset + 1] & 0xFF)));
     }
 
     public static byte[] fromLong(long value) {
@@ -102,14 +102,14 @@ public class BigEndianByteUtils {
     }
 
     public static long toLong(byte[] bytes, int offset) {
-        return ((long)(bytes[offset] & 0xFF) << 56) |
-               ((long)(bytes[offset + 1] & 0xFF) << 48) |
-               ((long)(bytes[offset + 2] & 0xFF) << 40) |
-               ((long)(bytes[offset + 3] & 0xFF) << 32) |
-               ((long)(bytes[offset + 4] & 0xFF) << 24) |
-               ((long)(bytes[offset + 5] & 0xFF) << 16) |
-               ((long)(bytes[offset + 6] & 0xFF) << 8) |
-               ((long)(bytes[offset + 7] & 0xFF));
+        return ((long) (bytes[offset] & 0xFF) << 56) |
+                ((long) (bytes[offset + 1] & 0xFF) << 48) |
+                ((long) (bytes[offset + 2] & 0xFF) << 40) |
+                ((long) (bytes[offset + 3] & 0xFF) << 32) |
+                ((long) (bytes[offset + 4] & 0xFF) << 24) |
+                ((long) (bytes[offset + 5] & 0xFF) << 16) |
+                ((long) (bytes[offset + 6] & 0xFF) << 8) |
+                ((long) (bytes[offset + 7] & 0xFF));
     }
 
     public static byte[] fromFloat(float value) {
@@ -163,14 +163,14 @@ public class BigEndianByteUtils {
 
     public static double toDoubleNew(byte[] bytes, int offset) {
         long longTemp =
-                ((long) (bytes[offset]     & 0xFF) << 56) |
-                ((long) (bytes[offset + 1] & 0xFF) << 48) |
-                ((long) (bytes[offset + 2] & 0xFF) << 40) |
-                ((long) (bytes[offset + 3] & 0xFF) << 32) |
-                ((long) (bytes[offset + 4] & 0xFF) << 24) |
-                ((long) (bytes[offset + 5] & 0xFF) << 16) |
-                ((long) (bytes[offset + 6] & 0xFF) << 8)  |
-                ((long) (bytes[offset + 7] & 0xFF));
+                ((long) (bytes[offset] & 0xFF) << 56) |
+                        ((long) (bytes[offset + 1] & 0xFF) << 48) |
+                        ((long) (bytes[offset + 2] & 0xFF) << 40) |
+                        ((long) (bytes[offset + 3] & 0xFF) << 32) |
+                        ((long) (bytes[offset + 4] & 0xFF) << 24) |
+                        ((long) (bytes[offset + 5] & 0xFF) << 16) |
+                        ((long) (bytes[offset + 6] & 0xFF) << 8) |
+                        ((long) (bytes[offset + 7] & 0xFF));
         return Double.longBitsToDouble(longTemp);
     }
 
@@ -180,14 +180,14 @@ public class BigEndianByteUtils {
         for (int i = 0; i < count; i++) {
             int offset = i * 8;
             long longTemp =
-                    ((long) (bytes[offset]     & 0xFF) << 56) |
-                    ((long) (bytes[offset + 1] & 0xFF) << 48) |
-                    ((long) (bytes[offset + 2] & 0xFF) << 40) |
-                    ((long) (bytes[offset + 3] & 0xFF) << 32) |
-                    ((long) (bytes[offset + 4] & 0xFF) << 24) |
-                    ((long) (bytes[offset + 5] & 0xFF) << 16) |
-                    ((long) (bytes[offset + 6] & 0xFF) << 8)  |
-                    ((long) (bytes[offset + 7] & 0xFF));
+                    ((long) (bytes[offset] & 0xFF) << 56) |
+                            ((long) (bytes[offset + 1] & 0xFF) << 48) |
+                            ((long) (bytes[offset + 2] & 0xFF) << 40) |
+                            ((long) (bytes[offset + 3] & 0xFF) << 32) |
+                            ((long) (bytes[offset + 4] & 0xFF) << 24) |
+                            ((long) (bytes[offset + 5] & 0xFF) << 16) |
+                            ((long) (bytes[offset + 6] & 0xFF) << 8) |
+                            ((long) (bytes[offset + 7] & 0xFF));
             result[i] = Double.longBitsToDouble(longTemp);
         }
         return result;

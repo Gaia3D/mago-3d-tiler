@@ -55,7 +55,7 @@ public class GaiaTextureScissorDataFull extends GaiaTextureScissorData {
             face.getVertices(vertices);
 
             for (HalfEdgeVertex vertex : vertices) {
-                if(visitedVertices.contains(vertex)) {
+                if (visitedVertices.contains(vertex)) {
                     continue;
                 }
                 visitedVertices.add(vertex);
@@ -88,7 +88,7 @@ public class GaiaTextureScissorDataFull extends GaiaTextureScissorData {
     }
 
     private GaiaRectangle getTexCoordBoundingRectangle(List<HalfEdgeFace> faces, boolean invertTexCoordY, GaiaRectangle resultTexCoordBRect) {
-        if(resultTexCoordBRect == null) {
+        if (resultTexCoordBRect == null) {
             resultTexCoordBRect = new GaiaRectangle();
         }
         boolean texCoordBBoxStarted = false;
@@ -268,7 +268,7 @@ public class GaiaTextureScissorDataFull extends GaiaTextureScissorData {
     }
 
     public void clear() {
-        if(scissoredImage != null) {
+        if (scissoredImage != null) {
             scissoredImage.flush();
         }
         scissoredImage = null;

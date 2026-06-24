@@ -516,7 +516,6 @@ public class GaiaTessellator {
         }
         // End make maps & Arrays.-------------------------------------------------------------------------------------------
 
-
         // finally create the resultPolygon
         Polygon2DTess resultPolygon = new Polygon2DTess(new ArrayList<>());
         for (int i = 0; i < originalPoints3dCount; i++) {
@@ -706,7 +705,6 @@ public class GaiaTessellator {
             return;
         }
 
-
         for (int i = 0; i < pointsCount; i++) {
             int idxNext = getNextIdx(i, pointsCount);
             int idxPrev = getPrevIdx(i, pointsCount);
@@ -777,7 +775,6 @@ public class GaiaTessellator {
 
             Vector3d cross = new Vector3d();
             v1.cross(v2, cross);
-
 
             if (!isValidVector(cross)) {
                 // cross is invalid

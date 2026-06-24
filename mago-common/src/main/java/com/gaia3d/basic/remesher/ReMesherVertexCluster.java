@@ -1,15 +1,16 @@
 package com.gaia3d.basic.remesher;
 
 import com.gaia3d.basic.geometry.modifier.topology.GaiaExtractor;
-import com.gaia3d.basic.geometry.modifier.topology.GaiaNormalCleaner;
 import com.gaia3d.basic.model.*;
 import lombok.extern.slf4j.Slf4j;
-
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector3i;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 public class ReMesherVertexCluster {
@@ -55,13 +56,13 @@ public class ReMesherVertexCluster {
                 continue;
             }
 
-            if (resultMinCellIndex.x > currCellX) resultMinCellIndex.x = currCellX;
-            if (resultMinCellIndex.y > currCellY) resultMinCellIndex.y = currCellY;
-            if (resultMinCellIndex.z > currCellZ) resultMinCellIndex.z = currCellZ;
+            if (resultMinCellIndex.x > currCellX) {resultMinCellIndex.x = currCellX;}
+            if (resultMinCellIndex.y > currCellY) {resultMinCellIndex.y = currCellY;}
+            if (resultMinCellIndex.z > currCellZ) {resultMinCellIndex.z = currCellZ;}
 
-            if (resultMaxCellIndex.x < currCellX) resultMaxCellIndex.x = currCellX;
-            if (resultMaxCellIndex.y < currCellY) resultMaxCellIndex.y = currCellY;
-            if (resultMaxCellIndex.z < currCellZ) resultMaxCellIndex.z = currCellZ;
+            if (resultMaxCellIndex.x < currCellX) {resultMaxCellIndex.x = currCellX;}
+            if (resultMaxCellIndex.y < currCellY) {resultMaxCellIndex.y = currCellY;}
+            if (resultMaxCellIndex.z < currCellZ) {resultMaxCellIndex.z = currCellZ;}
         }
     }
 
@@ -75,7 +76,6 @@ public class ReMesherVertexCluster {
         }
         return false;
     }
-
 
 //    // Delete normals.
 //    GaiaNormalCleaner normalCleaner = new GaiaNormalCleaner();
@@ -206,13 +206,13 @@ public class ReMesherVertexCluster {
 
                     firstVertex = false;
                 } else {
-                    if (currCellX < sceneMinCellIndex.x) sceneMinCellIndex.x = currCellX;
-                    if (currCellY < sceneMinCellIndex.y) sceneMinCellIndex.y = currCellY;
-                    if (currCellZ < sceneMinCellIndex.z) sceneMinCellIndex.z = currCellZ;
+                    if (currCellX < sceneMinCellIndex.x) {sceneMinCellIndex.x = currCellX;}
+                    if (currCellY < sceneMinCellIndex.y) {sceneMinCellIndex.y = currCellY;}
+                    if (currCellZ < sceneMinCellIndex.z) {sceneMinCellIndex.z = currCellZ;}
 
-                    if (currCellX > sceneMaxCellIndex.x) sceneMaxCellIndex.x = currCellX;
-                    if (currCellY > sceneMaxCellIndex.y) sceneMaxCellIndex.y = currCellY;
-                    if (currCellZ > sceneMaxCellIndex.z) sceneMaxCellIndex.z = currCellZ;
+                    if (currCellX > sceneMaxCellIndex.x) {sceneMaxCellIndex.x = currCellX;}
+                    if (currCellY > sceneMaxCellIndex.y) {sceneMaxCellIndex.y = currCellY;}
+                    if (currCellZ > sceneMaxCellIndex.z) {sceneMaxCellIndex.z = currCellZ;}
                 }
             }
         }
@@ -499,10 +499,10 @@ public class ReMesherVertexCluster {
     }
 
     public static void reMeshScene_original(GaiaScene gaiaScene,
-                                   ReMeshParameters reMeshParams,
-                                   Map<Vector3i, List<GaiaVertex>> vertexClusters,
-                                   Vector3i sceneMinCellIndex,
-                                   Vector3i sceneMaxCellIndex) {
+                                            ReMeshParameters reMeshParams,
+                                            Map<Vector3i, List<GaiaVertex>> vertexClusters,
+                                            Vector3i sceneMinCellIndex,
+                                            Vector3i sceneMaxCellIndex) {
         //************************************************************************************
         // Note: the gaiaScene must spend its transform matrix before calling this method*
         // Note: the gaiaScene must join all surfaces before calling this method**********
@@ -552,13 +552,13 @@ public class ReMesherVertexCluster {
                             sceneMaxCellIndex.z = currCellZ;
                             firstVertex = false;
                         } else {
-                            if (currCellX < sceneMinCellIndex.x) sceneMinCellIndex.x = currCellX;
-                            if (currCellY < sceneMinCellIndex.y) sceneMinCellIndex.y = currCellY;
-                            if (currCellZ < sceneMinCellIndex.z) sceneMinCellIndex.z = currCellZ;
+                            if (currCellX < sceneMinCellIndex.x) {sceneMinCellIndex.x = currCellX;}
+                            if (currCellY < sceneMinCellIndex.y) {sceneMinCellIndex.y = currCellY;}
+                            if (currCellZ < sceneMinCellIndex.z) {sceneMinCellIndex.z = currCellZ;}
 
-                            if (currCellX > sceneMaxCellIndex.x) sceneMaxCellIndex.x = currCellX;
-                            if (currCellY > sceneMaxCellIndex.y) sceneMaxCellIndex.y = currCellY;
-                            if (currCellZ > sceneMaxCellIndex.z) sceneMaxCellIndex.z = currCellZ;
+                            if (currCellX > sceneMaxCellIndex.x) {sceneMaxCellIndex.x = currCellX;}
+                            if (currCellY > sceneMaxCellIndex.y) {sceneMaxCellIndex.y = currCellY;}
+                            if (currCellZ > sceneMaxCellIndex.z) {sceneMaxCellIndex.z = currCellZ;}
                         }
                     }
                 }

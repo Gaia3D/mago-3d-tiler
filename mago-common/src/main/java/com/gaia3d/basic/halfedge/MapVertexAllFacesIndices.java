@@ -45,7 +45,7 @@ public class MapVertexAllFacesIndices {
 
     public int[] getFaceIndices(int vertexIdx) {
         int start = getStart(vertexIdx);
-        int end   = getEnd(vertexIdx);
+        int end = getEnd(vertexIdx);
 
         int faceCount = end - start;
         int[] faceIndices = new int[faceCount];
@@ -58,7 +58,7 @@ public class MapVertexAllFacesIndices {
 
     public void forEachFace(int vertexIdx, java.util.function.IntConsumer consumer) {
         int start = vertexOffsets[vertexIdx];
-        int end   = vertexOffsets[vertexIdx + 1];
+        int end = vertexOffsets[vertexIdx + 1];
 
         for (int i = start; i < end; i++) {
             consumer.accept(vertexFaces[i]);

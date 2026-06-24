@@ -1,7 +1,10 @@
 package com.gaia3d.basic.geometry.modifier.topology;
 
 import com.gaia3d.basic.geometry.modifier.Modifier;
-import com.gaia3d.basic.model.*;
+import com.gaia3d.basic.model.GaiaFace;
+import com.gaia3d.basic.model.GaiaPrimitive;
+import com.gaia3d.basic.model.GaiaSurface;
+import com.gaia3d.basic.model.GaiaVertex;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 

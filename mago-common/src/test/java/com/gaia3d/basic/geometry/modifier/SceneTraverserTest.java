@@ -3,7 +3,7 @@ package com.gaia3d.basic.geometry.modifier;
 import com.gaia3d.basic.model.GaiaScene;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class SceneTraverserTest {
 

@@ -112,7 +112,7 @@ public class ImageUtils {
                     buffer = new byte[is.available()];
                 }
             }
-            if (flip) byteBuffer.flip();
+            if (flip) {byteBuffer.flip();}
             return byteBuffer;
         } catch (IOException e) {
             log.error("[ERROR] :", e);
@@ -467,9 +467,9 @@ public class ImageUtils {
 //    }
 
     /**
-     * @param savePath       Ruta de destino.
-     * @param fastPng        true para priorizar velocidad sobre tamaño del PNG.
-     * @param jpegQuality    Calidad JPEG entre 0.0 y 1.0.
+     * @param savePath Ruta de destino.
+     * @param fastPng true para priorizar velocidad sobre tamaño del PNG.
+     * @param jpegQuality Calidad JPEG entre 0.0 y 1.0.
      * @return true cuando la imagen se escribió correctamente.
      */
     public static boolean saveBufferedImage(
@@ -740,18 +740,18 @@ public class ImageUtils {
 
                     // más vida al verde
                     sat *= 1.10f;
-                    if (sat > 1f) sat = 1f;
+                    if (sat > 1f) {sat = 1f;}
 
                     // verde más claro natural
                     bri += (1f - bri) * 0.08f;
 
                     // pequeño shift para evitar verde oliva
                     hue -= 0.01f;
-                    if (hue < 0f) hue += 1f;
+                    if (hue < 0f) {hue += 1f;}
                 }
 
-                if (sat > 1f) sat = 1f;
-                if (bri > 1f) bri = 1f;
+                if (sat > 1f) {sat = 1f;}
+                if (bri > 1f) {bri = 1f;}
 
                 int rgb = Color.HSBtoRGB(hue, sat, bri);
 
@@ -803,7 +803,7 @@ public class ImageUtils {
 
                 // subir saturación
                 hsb[1] *= saturationFactor;
-                if (hsb[1] > 1f) hsb[1] = 1f;
+                if (hsb[1] > 1f) {hsb[1] = 1f;}
 
                 int rgb = Color.HSBtoRGB(hsb[0], hsb[1], hsb[2]);
 

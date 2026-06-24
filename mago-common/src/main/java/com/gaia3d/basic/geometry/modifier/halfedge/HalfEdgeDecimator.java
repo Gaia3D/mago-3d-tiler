@@ -45,13 +45,13 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
         int trianglesCount = surface.getTrianglesCount();
         log.debug("trianglesCount: {}", trianglesCount);
 
-        if(trianglesCount > 200000){
+        if (trianglesCount > 200000) {
             applySurfaceByOctree(productTransformMatrix, vertices, surface);
         } else {
             applySurfaceDirect(productTransformMatrix, vertices, surface);
         }
     }
-    
+
     protected void applySurfaceDirect(Matrix4d productTransformMatrix, List<HalfEdgeVertex> vertices, HalfEdgeSurface surface) {
         // 1rst, find possible halfEdges to remove
         // Reasons to remove a halfEdge:
@@ -267,7 +267,7 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
         }
         // end classify vertices.---------------------------------------------------
 
-        Set<HalfEdge> leafOctreeHalfEdges= new HashSet<>();
+        Set<HalfEdge> leafOctreeHalfEdges = new HashSet<>();
         List<HalfEdge> faceHalfEdges = new ArrayList<>();
         boolean finished = false;
         int maxIterations = decimateParameters.getIterationsCount();
@@ -292,43 +292,43 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
 
             int leafOctreesCount = leafOctrees.size();
             int hedgesCollapsedInIteration = 0;
-            for(int i=0; i<leafOctreesCount; i++) {
+            for (int i = 0; i < leafOctreesCount; i++) {
                 leafOctreeHalfEdges.clear();
                 GaiaOctree<HalfEdgeFace> leafOctree = leafOctrees.get(i);
                 int halfEdgeFacesCount = leafOctree.getContentsLength();
-                for(int j=0; j<halfEdgeFacesCount; j++) {
+                for (int j = 0; j < halfEdgeFacesCount; j++) {
                     HalfEdgeFace face = leafOctree.getContents().get(j);
-                    if(face.getStatus() == ObjectStatus.DELETED) {
+                    if (face.getStatus() == ObjectStatus.DELETED) {
                         continue;
                     }
                     faceHalfEdges.clear();
                     faceHalfEdges = face.getHalfEdgesLoop(faceHalfEdges);
-                    for(HalfEdge halfEdge : faceHalfEdges) {
-                        if(halfEdge.getStatus() == ObjectStatus.DELETED) {
+                    for (HalfEdge halfEdge : faceHalfEdges) {
+                        if (halfEdge.getStatus() == ObjectStatus.DELETED) {
                             continue;
                         }
                         leafOctreeHalfEdges.add(halfEdge);
                     }
                 }
 
-                if(leafOctreeHalfEdges.size() == 0) {
+                if (leafOctreeHalfEdges.size() == 0) {
                     continue;
                 }
 
                 List<HalfEdge> halfEdges = leafOctreeHalfEdges.stream().toList();
                 Set<HalfEdgeVertex> halfEdgeVertex = new HashSet<>();
-                for(HalfEdge halfEdge : halfEdges) {
+                for (HalfEdge halfEdge : halfEdges) {
                     halfEdgeVertex.add(halfEdge.getStartVertex());
                 }
 
                 int vertexCount = vertices.size();
-                for(int j=0; j<vertexCount; j++) {
+                for (int j = 0; j < vertexCount; j++) {
                     vertices.get(j).setId(-1);
                 }
 
                 List<HalfEdgeVertex> leafOctreeVertices = halfEdgeVertex.stream().toList();
                 int leafOctreeVertexCount = leafOctreeVertices.size();
-                for(int j=0; j<leafOctreeVertexCount; j++) {
+                for (int j = 0; j < leafOctreeVertexCount; j++) {
                     leafOctreeVertices.get(j).setId(j);
                 }
 
@@ -358,7 +358,7 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
             log.debug("Welding vertices");
             surface.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
 
-            if(hedgesCollapsedInIteration == 0) {
+            if (hedgesCollapsedInIteration == 0) {
                 finished = true;
             }
 
@@ -366,7 +366,7 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
         }
 
         int vertexCount = vertices.size();
-        for(int j=0; j<vertexCount; j++) {
+        for (int j = 0; j < vertexCount; j++) {
             vertices.get(j).setId(j);
         }
 
@@ -378,7 +378,7 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
         HalfEdgeDecimaterUtils.calculateVerticesRoughness(surface);
 
         // 2. suavizado (muy importante)
-        HalfEdgeDecimaterUtils.smoothRoughness(surface,2);
+        HalfEdgeDecimaterUtils.smoothRoughness(surface, 2);
 
         // 3. regiones
         List<List<HalfEdgeVertex>> regions = HalfEdgeDecimaterUtils.buildRegions(surface, 0.05f);
@@ -533,7 +533,6 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
 
         iteration++;
 
-
         //}
         log.debug("*** TOTAL HALFEDGES DELETED = " + hedgesCollapsedCount);
 
@@ -553,14 +552,14 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
     }
 
     public boolean collapseHalfEdge_original(HalfEdge halfEdge,
-                                    int iteration,
-                                    Map<HalfEdgeVertex, List<HalfEdge>> vertexAllOutingEdgesMap,
-                                    Map<HalfEdgeVertex, List<HalfEdgeVertex>> mapVertexToSamePosVertices,
-                                    double maxDiffAngDeg,
-                                    double frontierMaxDiffAngDeg,
-                                    double hedgeMinLength,
-                                    double maxAspectRatio,
-                                    double smallHedgeSize) {
+                                             int iteration,
+                                             Map<HalfEdgeVertex, List<HalfEdge>> vertexAllOutingEdgesMap,
+                                             Map<HalfEdgeVertex, List<HalfEdgeVertex>> mapVertexToSamePosVertices,
+                                             double maxDiffAngDeg,
+                                             double frontierMaxDiffAngDeg,
+                                             double hedgeMinLength,
+                                             double maxAspectRatio,
+                                             double smallHedgeSize) {
         // When collapse a halfEdge, we delete the face, the twin's face, the twin & the startVertex
         // When deleting a face, must delete all halfEdges of the face
         // must find all halfEdges that startVertex is the deletingVertex, and set as startVertex the endVertex of the deletingHalfEdge
@@ -652,14 +651,14 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
     }
 
     public boolean collapseHalfEdge_new(HalfEdge halfEdge,
-                                             int iteration,
+                                        int iteration,
                                         List<HalfEdge>[] outgoingEdgesByVertexId,
-                                             Map<HalfEdgeVertex, List<HalfEdgeVertex>> mapVertexToSamePosVertices,
-                                             double maxDiffAngDeg,
-                                             double frontierMaxDiffAngDeg,
-                                             double hedgeMinLength,
-                                             double maxAspectRatio,
-                                             double smallHedgeSize) {
+                                        Map<HalfEdgeVertex, List<HalfEdgeVertex>> mapVertexToSamePosVertices,
+                                        double maxDiffAngDeg,
+                                        double frontierMaxDiffAngDeg,
+                                        double hedgeMinLength,
+                                        double maxAspectRatio,
+                                        double smallHedgeSize) {
         // When collapse a halfEdge, we delete the face, the twin's face, the twin & the startVertex
         // When deleting a face, must delete all halfEdges of the face
         // must find all halfEdges that startVertex is the deletingVertex, and set as startVertex the endVertex of the deletingHalfEdge
@@ -907,12 +906,12 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
     }
 
     public boolean collapseFrontierHalfEdge_new(HalfEdge halfEdge,
-                                            int iteration,
+                                                int iteration,
                                                 List<HalfEdge>[] outgoingEdgesByVertexId,
-                                            Map<HalfEdge, Vector3d> mapHalfEdgeToInitialDirection,
-                                            Map<HalfEdgeVertex, List<HalfEdgeVertex>> mapVertexToSamePosVertices,
-                                            double maxDiffAngDeg, double frontierMaxDiffAngDeg, double hedgeMinLength,
-                                            double maxAspectRatio, double smallHedgeSize) {
+                                                Map<HalfEdge, Vector3d> mapHalfEdgeToInitialDirection,
+                                                Map<HalfEdgeVertex, List<HalfEdgeVertex>> mapVertexToSamePosVertices,
+                                                double maxDiffAngDeg, double frontierMaxDiffAngDeg, double hedgeMinLength,
+                                                double maxAspectRatio, double smallHedgeSize) {
 
         HalfEdgeVertex startVertex = halfEdge.getStartVertex();
         HalfEdgeVertex endVertex = halfEdge.getEndVertex();

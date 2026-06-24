@@ -2,7 +2,6 @@ package com.gaia3d.converter.pointcloud;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.util.geographic.GeographicTilingScheme;
-import com.gaia3d.util.geographic.TileCoordinate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.joml.Vector3d;
@@ -10,9 +9,7 @@ import org.joml.Vector3d;
 import java.io.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 public class BucketReader {
@@ -92,7 +89,7 @@ public class BucketReader {
                 .r(rgb[0])
                 .g(rgb[1])
                 .b(rgb[2])
-                .a((byte)255)
+                .a((byte) 255)
                 .intensity(intensity)
                 .classification(classification)
                 .build();

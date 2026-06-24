@@ -127,11 +127,6 @@ public class ForestExperimentalTest {
     }
 
 
-
-
-
-
-
     /*
         Forest-DT-2500ha test cases
      */
@@ -232,7 +227,6 @@ public class ForestExperimentalTest {
         };
         MagoTestConfig.execute(args);
     }
-
 
 
     @Test

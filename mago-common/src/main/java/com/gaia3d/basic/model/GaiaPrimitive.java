@@ -463,7 +463,6 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
             return;
         }
 
-
         GaiaBoundingBox cubeBoundingBox = boundingBox.createCubeFromMinPosition();
         GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null, cubeBoundingBox);
         List<GeometryContent> gaiaContents = this.vertices.stream().map(v -> (GeometryContent) v).collect(Collectors.toList());

@@ -16,9 +16,8 @@ public class LittleEndianDataInputStream extends FilterInputStream implements Da
      * by assigning the  argument <code>in</code>
      * to the field <code>this.in</code> so as
      * to remember it for later use.
-     *
      * @param in the underlying input stream, or <code>null</code> if
-     *           this instance is to be created without an underlying stream.
+     * this instance is to be created without an underlying stream.
      */
     public LittleEndianDataInputStream(InputStream in) {
         super(in);
@@ -42,16 +41,14 @@ public class LittleEndianDataInputStream extends FilterInputStream implements Da
     @Override
     public boolean readBoolean() throws IOException {
         int b = in.read();
-        if (b == -1)
-            throw new EOFException();
+        if (b == -1) {throw new EOFException();}
         return b != 0;
     }
 
     @Override
     public byte readByte() throws IOException {
         int b = in.read();
-        if (b == -1)
-            throw new EOFException();
+        if (b == -1) {throw new EOFException();}
         return (byte) b;
     }
 
@@ -66,8 +63,7 @@ public class LittleEndianDataInputStream extends FilterInputStream implements Da
     @Override
     public int readUnsignedByte() throws IOException {
         int b = in.read();
-        if (b == -1)
-            throw new EOFException();
+        if (b == -1) {throw new EOFException();}
         return (byte) b;
     }
 
@@ -75,8 +71,7 @@ public class LittleEndianDataInputStream extends FilterInputStream implements Da
     public short readShort() throws IOException {
         int b1 = in.read();
         int b2 = in.read();
-        if ((b1 | b2) < 0)
-            throw new EOFException();
+        if ((b1 | b2) < 0) {throw new EOFException();}
         return (short) ((b2 << 8) + b1);
     }
 
@@ -92,8 +87,7 @@ public class LittleEndianDataInputStream extends FilterInputStream implements Da
     public int readUnsignedShort() throws IOException {
         int b1 = in.read();
         int b2 = in.read();
-        if ((b1 | b2) < 0)
-            throw new EOFException();
+        if ((b1 | b2) < 0) {throw new EOFException();}
         return (short) ((b2 << 8) + b1);
     }
 
@@ -101,8 +95,7 @@ public class LittleEndianDataInputStream extends FilterInputStream implements Da
     public char readChar() throws IOException {
         int b1 = in.read();
         int b2 = in.read();
-        if ((b1 | b2) < 0)
-            throw new EOFException();
+        if ((b1 | b2) < 0) {throw new EOFException();}
         return (char) ((b2 << 8) + b1);
     }
 
@@ -112,8 +105,7 @@ public class LittleEndianDataInputStream extends FilterInputStream implements Da
         int b2 = in.read();
         int b3 = in.read();
         int b4 = in.read();
-        if ((b1 | b2 | b3 | b4) < 0)
-            throw new EOFException();
+        if ((b1 | b2 | b3 | b4) < 0) {throw new EOFException();}
         return (b4 << 24) + (b3 << 16) + (b2 << 8) + b1;
     }
 
@@ -131,8 +123,7 @@ public class LittleEndianDataInputStream extends FilterInputStream implements Da
         for (int i = 0; i < 8; i++) {
             b[i] = in.read();
         }
-        if (b[0] < 0)
-            throw new EOFException();
+        if (b[0] < 0) {throw new EOFException();}
         return (((long) b[0] << 56) +
                 ((long) (b[1] & 255) << 48) +
                 ((long) (b[2] & 255) << 40) +
@@ -149,8 +140,7 @@ public class LittleEndianDataInputStream extends FilterInputStream implements Da
         for (int i = 0; i < 4; i++) {
             b[i] = in.read();
         }
-        if (b[0] < 0)
-            throw new EOFException();
+        if (b[0] < 0) {throw new EOFException();}
 
         byte[] bytes = intsToBytes(b);
         ByteBuffer byteBuffer = ByteBuffer
@@ -177,8 +167,7 @@ public class LittleEndianDataInputStream extends FilterInputStream implements Da
         for (int i = 0; i < 8; i++) {
             b[i] = in.read();
         }
-        if (b[0] < 0)
-            throw new EOFException();
+        if (b[0] < 0) {throw new EOFException();}
         byte[] bytes = intsToBytes(b);
         ByteBuffer byteBuffer = ByteBuffer
                 .wrap(bytes)

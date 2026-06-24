@@ -1,6 +1,5 @@
 package com.gaia3d.basic.model;
 
-import com.gaia3d.basic.remesher.GaiaFrontierExpander;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +15,7 @@ public class GaiaSamplers implements Serializable {
     private int minFilter = 9729; // GL_LINEAR
     private int magFilter = 9729; // GL_LINEAR
 
-    public GaiaSamplers clone(){
+    public GaiaSamplers clone() {
         GaiaSamplers cloned = new GaiaSamplers();
         cloned.setMagFilter(this.magFilter);
         cloned.setMinFilter(this.minFilter);

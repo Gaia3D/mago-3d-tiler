@@ -30,7 +30,7 @@ public class HalfEdgeDecimatorSmallTriangles extends HalfEdgeModifier {
         int trianglesCount = surface.getTrianglesCount();
         log.debug("trianglesCount: {}", trianglesCount);
 
-        if(trianglesCount > 200000){
+        if (trianglesCount > 200000) {
             applySurfaceByOctree(productTransformMatrix, vertices, surface);
         } else {
             applySurfaceDirect(productTransformMatrix, vertices, surface);
@@ -258,8 +258,7 @@ public class HalfEdgeDecimatorSmallTriangles extends HalfEdgeModifier {
         //HalfEdgeDecimaterUtils.calculateVerticesRoughness(surface);
         // end calculate roughness of vertices.---
 
-
-        Set<HalfEdge> leafOctreeHalfEdges= new HashSet<>();
+        Set<HalfEdge> leafOctreeHalfEdges = new HashSet<>();
         List<HalfEdge> faceHalfEdges = new ArrayList<>();
         boolean finished = false;
         int maxIterations = decimateParameters.getIterationsCount();
@@ -278,32 +277,32 @@ public class HalfEdgeDecimatorSmallTriangles extends HalfEdgeModifier {
 
             int leafOctreesCount = leafOctrees.size();
             int hedgesCollapsedInIteration = 0;
-            for(int i=0; i<leafOctreesCount; i++) {
+            for (int i = 0; i < leafOctreesCount; i++) {
                 leafOctreeHalfEdges.clear();
                 GaiaOctree<HalfEdgeFace> leafOctree = leafOctrees.get(i);
                 int halfEdgeFacesCount = leafOctree.getContentsLength();
-                for(int j=0; j<halfEdgeFacesCount; j++) {
+                for (int j = 0; j < halfEdgeFacesCount; j++) {
                     HalfEdgeFace face = leafOctree.getContents().get(j);
-                    if(face.getStatus() == ObjectStatus.DELETED) {
+                    if (face.getStatus() == ObjectStatus.DELETED) {
                         continue;
                     }
                     faceHalfEdges.clear();
                     faceHalfEdges = face.getHalfEdgesLoop(faceHalfEdges);
-                    for(HalfEdge halfEdge : faceHalfEdges) {
-                        if(halfEdge.getStatus() == ObjectStatus.DELETED) {
+                    for (HalfEdge halfEdge : faceHalfEdges) {
+                        if (halfEdge.getStatus() == ObjectStatus.DELETED) {
                             continue;
                         }
                         leafOctreeHalfEdges.add(halfEdge);
                     }
                 }
 
-                if(leafOctreeHalfEdges.size() == 0) {
+                if (leafOctreeHalfEdges.size() == 0) {
                     continue;
                 }
 
                 List<HalfEdge> halfEdges = leafOctreeHalfEdges.stream().toList();
                 Set<HalfEdgeVertex> halfEdgeVertex = new HashSet<>();
-                for(HalfEdge halfEdge : halfEdges) {
+                for (HalfEdge halfEdge : halfEdges) {
                     halfEdgeVertex.add(halfEdge.getStartVertex());
                 }
 
@@ -333,7 +332,7 @@ public class HalfEdgeDecimatorSmallTriangles extends HalfEdgeModifier {
 
             log.info("Total edges collapsed: " + hedgesCollapsedInIteration + " iteration: " + iteration);
 
-            if(hedgesCollapsedInIteration == 0) {
+            if (hedgesCollapsedInIteration == 0) {
                 finished = true;
             }
 
@@ -474,7 +473,6 @@ public class HalfEdgeDecimatorSmallTriangles extends HalfEdgeModifier {
 
         iteration++;
 
-
         //}
         log.debug("*** TOTAL HALFEDGES DELETED = " + hedgesCollapsedCount);
 
@@ -520,9 +518,9 @@ public class HalfEdgeDecimatorSmallTriangles extends HalfEdgeModifier {
 
         if (halfEdge.getLength() > hedgeMinLength) {
             //if(roughness < 1.5) {
-                if (!HalfEdgeDecimaterUtils.decideIfCollapseCheckingFacesOnlySmallTriangles(halfEdge, vertexAllOutingEdgesMap, mapVertexToSamePosVertices, maxDiffAngDeg, maxAspectRatio, smallHedgeSize, smallTriangleMinSize)) {
-                    return false;
-                }
+            if (!HalfEdgeDecimaterUtils.decideIfCollapseCheckingFacesOnlySmallTriangles(halfEdge, vertexAllOutingEdgesMap, mapVertexToSamePosVertices, maxDiffAngDeg, maxAspectRatio, smallHedgeSize, smallTriangleMinSize)) {
+                return false;
+            }
             //}
         }
         // end check if collapse

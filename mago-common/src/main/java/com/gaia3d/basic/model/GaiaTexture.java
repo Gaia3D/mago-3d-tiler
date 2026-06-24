@@ -11,21 +11,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
-import javax.imageio.stream.FileImageOutputStream;
-import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.*;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Iterator;
-import java.util.Locale;
 
 /**
  * A class that represents a texture of a Gaia object.
@@ -85,9 +77,9 @@ public class GaiaTexture extends TextureStructure implements Serializable {
     }
 
     /**
-     * @param savePath       Ruta de destino.
-     * @param fastPng        true para priorizar velocidad sobre tamaño del PNG.
-     * @param jpegQuality    Calidad JPEG entre 0.0 y 1.0.
+     * @param savePath Ruta de destino.
+     * @param fastPng true para priorizar velocidad sobre tamaño del PNG.
+     * @param jpegQuality Calidad JPEG entre 0.0 y 1.0.
      * @return true cuando la imagen se escribió correctamente.
      */
     public boolean saveImage(

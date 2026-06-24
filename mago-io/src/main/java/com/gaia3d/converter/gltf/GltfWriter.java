@@ -765,7 +765,7 @@ public class GltfWriter {
 
     protected Sampler genSampler(GaiaMaterial gaiaMaterial) {
         GaiaSamplers gaiaSamplers = gaiaMaterial.getSamplers();
-        if(gaiaSamplers == null){
+        if (gaiaSamplers == null) {
             // create with default values.
             gaiaSamplers = new GaiaSamplers();
         }

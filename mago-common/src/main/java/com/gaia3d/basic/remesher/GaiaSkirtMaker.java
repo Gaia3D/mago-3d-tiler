@@ -1,24 +1,11 @@
 package com.gaia3d.basic.remesher;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.model.GaiaFace;
-import com.gaia3d.basic.model.GaiaMesh;
-import com.gaia3d.basic.model.GaiaNode;
-import com.gaia3d.basic.model.GaiaPrimitive;
-import com.gaia3d.basic.model.GaiaScene;
-import com.gaia3d.basic.model.GaiaSurface;
-import com.gaia3d.basic.model.GaiaVertex;
-
+import com.gaia3d.basic.model.*;
 import lombok.extern.slf4j.Slf4j;
-
 import org.joml.Vector3d;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 public class GaiaSkirtMaker {
@@ -290,7 +277,7 @@ public class GaiaSkirtMaker {
                     }
 
                     // filter by face normal.
-                    if(faceNormal == null) {
+                    if (faceNormal == null) {
                         faceNormal = calculateFaceNormal(face, vertices);
                     }
                     if (faceNormal != null && faceNormal.z < 0.0) {
@@ -609,7 +596,7 @@ public class GaiaSkirtMaker {
         }
 
         GaiaFace face = new GaiaFace();
-        face.setIndices(new int[] { i0, i1, i2 });
+        face.setIndices(new int[]{i0, i1, i2});
 
         surface.getFaces().add(face);
     }

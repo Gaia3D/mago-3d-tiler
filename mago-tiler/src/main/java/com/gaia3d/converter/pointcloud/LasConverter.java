@@ -1,7 +1,8 @@
 package com.gaia3d.converter.pointcloud;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.converter.pointcloud.shuffler.*;
+import com.gaia3d.converter.pointcloud.shuffler.OptimizedCardShuffler;
+import com.gaia3d.converter.pointcloud.shuffler.Shuffler;
 import com.gaia3d.util.GlobeUtils;
 import com.github.mreutegg.laszip4j.*;
 import lombok.extern.slf4j.Slf4j;

@@ -4,8 +4,6 @@ import com.gaia3d.basic.exchangable.SceneInfo;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.entities.GaiaAAPlane;
 import com.gaia3d.basic.geometry.octree.HalfEdgeOctreeFaces;
-import com.gaia3d.basic.geometry.voxel.VoxelGrid3D;
-import com.gaia3d.basic.geometry.voxel.VoxelizeParameters;
 import com.gaia3d.basic.halfedge.DecimateParameters;
 import com.gaia3d.basic.halfedge.HalfEdgeScene;
 import com.gaia3d.basic.model.GaiaScene;

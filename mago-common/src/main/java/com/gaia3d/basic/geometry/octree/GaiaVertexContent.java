@@ -1,9 +1,7 @@
 package com.gaia3d.basic.geometry.octree;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.geometry.entities.GaiaTriangle;
 import com.gaia3d.basic.model.GaiaVertex;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;

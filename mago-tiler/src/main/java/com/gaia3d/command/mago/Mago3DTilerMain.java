@@ -3,7 +3,10 @@ package com.gaia3d.command.mago;
 import com.gaia3d.command.LoggingConfiguration;
 import com.gaia3d.util.DecimalUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.cli.*;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.logging.log4j.Level;
 
 import java.io.IOException;

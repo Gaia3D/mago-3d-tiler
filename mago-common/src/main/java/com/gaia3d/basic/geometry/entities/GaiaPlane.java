@@ -56,7 +56,7 @@ public class GaiaPlane {
     }
 
     public Vector3d intersectionAASegment(GaiaSegment aaSegment, int axis) {
-        if(axis == 0) { // X-axis
+        if (axis == 0) { // X-axis
             // ax + by + cz + d = 0
             // x = (-d -by - cz) / a;
             double segStartX = aaSegment.getStartPoint().x;
@@ -71,7 +71,7 @@ public class GaiaPlane {
                 return null; // Intersection is outside the segment bounds
             }
             return new Vector3d(x, segStartY, segStartZ); // Return the
-        } else if(axis == 1) { // Y-axis
+        } else if (axis == 1) { // Y-axis
             // ax + by + cz + d = 0
             // y = (-d - ax - cz) / b;
             double segStartY = aaSegment.getStartPoint().y;
@@ -86,7 +86,7 @@ public class GaiaPlane {
                 return null; // Intersection is outside the segment bounds
             }
             return new Vector3d(segStartX, y, segStartZ); // Return the intersection point on the Y-axis
-        } else if(axis == 2) { // Z-axis
+        } else if (axis == 2) { // Z-axis
             // ax + by + cz + d = 0
             // z = (-d - ax - by) / c;
             double segStartZ = aaSegment.getStartPoint().z;

@@ -3,11 +3,11 @@ package com.gaia3d.basic.magogl.backend;
 import com.gaia3d.basic.magogl.MagoFbo;
 import com.gaia3d.basic.magogl.MagoRenderContext;
 import com.gaia3d.basic.magogl.renderable.MagoRenderableScene;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Objects;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Renders with the candidate backend first and software second. The software

@@ -9,8 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -158,6 +156,7 @@ public class HalfEdgeVertex implements Serializable {
     }
 
     private static final int MAX_OUTGOING_HALF_EDGES = 50;
+
     private static boolean containsIdentity(
             List<HalfEdge> halfEdges,
             int startIndex,
@@ -370,7 +369,7 @@ public class HalfEdgeVertex implements Serializable {
         } else {
             HalfEdge nextOutingEdge = currTwin.getNext();
             while (nextOutingEdge != this.outingHalfEdge) {
-                if(visited.contains(nextOutingEdge)) {
+                if (visited.contains(nextOutingEdge)) {
                     break;
                 }
                 visited.add(nextOutingEdge);
@@ -401,7 +400,7 @@ public class HalfEdgeVertex implements Serializable {
             HalfEdge prevEdge = outingEdge.getPrev();
             HalfEdge prevTwin = prevEdge.getTwin();
             while (prevTwin != null && prevTwin != outingEdge) {
-                if(visited.contains(prevTwin)) {
+                if (visited.contains(prevTwin)) {
                     break;
                 }
                 visited.add(prevTwin);
@@ -433,7 +432,6 @@ public class HalfEdgeVertex implements Serializable {
                 return true;
             }
         }
-
 
         return true;
     }

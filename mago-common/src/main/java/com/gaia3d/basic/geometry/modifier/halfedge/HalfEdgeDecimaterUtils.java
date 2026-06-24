@@ -65,7 +65,7 @@ public class HalfEdgeDecimaterUtils {
             resultVertexAllOutingEdgesMap = new HashMap<>();
         }
 
-        for(HalfEdgeVertex vertex: halfEdgeVertices) {
+        for (HalfEdgeVertex vertex : halfEdgeVertices) {
             resultVertexAllOutingEdgesMap.computeIfAbsent(vertex, k -> new ArrayList<>());
         }
 
@@ -75,7 +75,7 @@ public class HalfEdgeDecimaterUtils {
                 continue;
             }
             HalfEdgeVertex startVertex = halfEdge.getStartVertex();
-            if(startVertex == null){
+            if (startVertex == null) {
                 continue;
             }
             if (startVertex.getStatus() == ObjectStatus.DELETED) {
@@ -84,7 +84,7 @@ public class HalfEdgeDecimaterUtils {
 
             // check if exist key.
             List<HalfEdge> edges = resultVertexAllOutingEdgesMap.get(startVertex);
-            if(edges == null){
+            if (edges == null) {
                 continue;
             }
             edges.add(halfEdge);
@@ -105,7 +105,7 @@ public class HalfEdgeDecimaterUtils {
                 continue;
             }
             HalfEdgeVertex startVertex = halfEdge.getStartVertex();
-            if(startVertex == null){
+            if (startVertex == null) {
                 continue;
             }
             if (startVertex.getStatus() == ObjectStatus.DELETED) {
@@ -362,7 +362,7 @@ public class HalfEdgeDecimaterUtils {
 
         // Faces B.
         List<HalfEdge> outingEdgesOfEndVertex = vertexAllOutingEdgesMap.get(endVertex);
-        for(HalfEdge outingEdge : outingEdgesOfEndVertex){
+        for (HalfEdge outingEdge : outingEdgesOfEndVertex) {
             if (outingEdge.getStatus() == ObjectStatus.DELETED) {
                 continue;
             }
@@ -377,8 +377,8 @@ public class HalfEdgeDecimaterUtils {
     }
 
     public static void getFacesImplicatedWithHalfEdge_v2(HalfEdge hedge,
-                                                      List<HalfEdgeFace> resultFacesA,
-                                                      List<HalfEdgeFace> resultFacesB,
+                                                         List<HalfEdgeFace> resultFacesA,
+                                                         List<HalfEdgeFace> resultFacesB,
                                                          List<HalfEdge>[] outgoingEdgesByVertexId) {
         HalfEdgeVertex startVertex = hedge.getStartVertex();
         HalfEdgeVertex endVertex = hedge.getEndVertex();
@@ -401,7 +401,7 @@ public class HalfEdgeDecimaterUtils {
 
         // Faces B.
         List<HalfEdge> outingEdgesOfEndVertex = outgoingEdgesByVertexId[endVertex.getId()];
-        for(HalfEdge outingEdge : outingEdgesOfEndVertex){
+        for (HalfEdge outingEdge : outingEdgesOfEndVertex) {
             if (outingEdge.getStatus() == ObjectStatus.DELETED) {
                 continue;
             }
@@ -416,11 +416,11 @@ public class HalfEdgeDecimaterUtils {
     }
 
     public static boolean decideIfCollapseCheckingFacesAdvanced(HalfEdge halfEdge,
-                                                                 Map<HalfEdgeVertex, List<HalfEdge>> vertexAllOutingEdgesMap,
-                                                                 Map<HalfEdgeVertex, List<HalfEdgeVertex>> mapVertexToSamePosVertices,
-                                                                 double maxDiffAngDeg,
-                                                                 double maxAspectRatio,
-                                                                 double smallHedgeSize) {
+                                                                Map<HalfEdgeVertex, List<HalfEdge>> vertexAllOutingEdgesMap,
+                                                                Map<HalfEdgeVertex, List<HalfEdgeVertex>> mapVertexToSamePosVertices,
+                                                                double maxDiffAngDeg,
+                                                                double maxAspectRatio,
+                                                                double smallHedgeSize) {
 
         HalfEdgeVertex deletingVertex = halfEdge.getStartVertex();
         HalfEdgeVertex endVertex = halfEdge.getEndVertex();
@@ -431,7 +431,7 @@ public class HalfEdgeDecimaterUtils {
         HalfEdgeFace deletingFaceA = halfEdge.getFace();
         HalfEdgeFace deletingFaceB = null;
 
-        if(twin != null){
+        if (twin != null) {
             deletingFaceB = twin.getFace();
         }
 
@@ -442,7 +442,7 @@ public class HalfEdgeDecimaterUtils {
         int facesACount = facesA.size();
         for (int i = 0; i < facesACount; i++) {
             HalfEdgeFace faceA = facesA.get(i);
-            if(faceA == deletingFaceA || faceA == deletingFaceB){
+            if (faceA == deletingFaceA || faceA == deletingFaceB) {
                 continue;
             }
             Vector3d normalA = faceA.getNormal();
@@ -514,10 +514,10 @@ public class HalfEdgeDecimaterUtils {
 
     public static boolean decideIfCollapseCheckingFacesAdvanced_v2(HalfEdge halfEdge,
                                                                    List<HalfEdge>[] outgoingEdgesByVertexId,
-                                                                Map<HalfEdgeVertex, List<HalfEdgeVertex>> mapVertexToSamePosVertices,
-                                                                double maxDiffAngDeg,
-                                                                double maxAspectRatio,
-                                                                double smallHedgeSize) {
+                                                                   Map<HalfEdgeVertex, List<HalfEdgeVertex>> mapVertexToSamePosVertices,
+                                                                   double maxDiffAngDeg,
+                                                                   double maxAspectRatio,
+                                                                   double smallHedgeSize) {
 
         HalfEdgeVertex deletingVertex = halfEdge.getStartVertex();
         HalfEdgeVertex endVertex = halfEdge.getEndVertex();
@@ -528,7 +528,7 @@ public class HalfEdgeDecimaterUtils {
         HalfEdgeFace deletingFaceA = halfEdge.getFace();
         HalfEdgeFace deletingFaceB = null;
 
-        if(twin != null){
+        if (twin != null) {
             deletingFaceB = twin.getFace();
         }
 
@@ -539,7 +539,7 @@ public class HalfEdgeDecimaterUtils {
         int facesACount = facesA.size();
         for (int i = 0; i < facesACount; i++) {
             HalfEdgeFace faceA = facesA.get(i);
-            if(faceA == deletingFaceA || faceA == deletingFaceB){
+            if (faceA == deletingFaceA || faceA == deletingFaceB) {
                 continue;
             }
             Vector3d normalA = faceA.getNormal();
@@ -715,7 +715,6 @@ public class HalfEdgeDecimaterUtils {
 //                return false;
 //            }
 
-
             Vector3d normalA = faceA.getNormal();
             if (normalA == null) {
                 normalA = HalfEdgeUtils.calculateNormalAsConvex(verticesA, null);
@@ -806,7 +805,7 @@ public class HalfEdgeDecimaterUtils {
     public static void calculateVerticesRoughness(HalfEdgeSurface halfEdgeSurface) {
 
         List<HalfEdgeVertex> vertices = halfEdgeSurface.getVertices();
-        if (vertices == null || vertices.isEmpty()) return;
+        if (vertices == null || vertices.isEmpty()) {return;}
 
         //final double clusterDotThreshold = 0.95; // ~18°
         final double clusterDotThreshold = 0.90; // ~25.84°
@@ -829,7 +828,7 @@ public class HalfEdgeDecimaterUtils {
             int safety = 0;
 
             do {
-                if (edge == null) break;
+                if (edge == null) {break;}
 
                 HalfEdgeFace face = edge.getFace();
                 if (face != null) {
@@ -852,12 +851,12 @@ public class HalfEdgeDecimaterUtils {
                 }
 
                 HalfEdge twin = edge.getTwin();
-                if (twin == null) break;
+                if (twin == null) {break;}
 
                 edge = twin.getNext();
 
                 safety++;
-                if (safety > maxSafety) break;
+                if (safety > maxSafety) {break;}
 
             } while (edge != startEdge);
 
@@ -922,7 +921,7 @@ public class HalfEdgeDecimaterUtils {
             safety = 0;
 
             do {
-                if (edge == null) break;
+                if (edge == null) {break;}
 
                 if (edge.getStatus() != ObjectStatus.DELETED) {
                     double len = edge.getLength();
@@ -932,12 +931,12 @@ public class HalfEdgeDecimaterUtils {
                 }
 
                 HalfEdge twin = edge.getTwin();
-                if (twin == null) break;
+                if (twin == null) {break;}
 
                 edge = twin.getNext();
 
                 safety++;
-                if (safety > maxSafety) break;
+                if (safety > maxSafety) {break;}
 
             } while (edge != startEdge);
 
@@ -958,12 +957,10 @@ public class HalfEdgeDecimaterUtils {
             if (clusterCount <= 2) {
                 // 👉 plano / escalera / esquina
                 roughness = variance * 0.5;
-            }
-            else if (clusterCount <= 4) {
+            } else if (clusterCount <= 4) {
                 // 👉 algo complejo pero estructurado
                 roughness = variance;
-            }
-            else {
+            } else {
                 // 👉 ruido real (césped)
                 roughness = variance * scaleFactor * 1.5;
             }
@@ -977,7 +974,7 @@ public class HalfEdgeDecimaterUtils {
 
     public static void smoothRoughness(HalfEdgeSurface surface, int iterations) {
 
-        if (iterations <= 0) return;
+        if (iterations <= 0) {return;}
 
         final int maxSafety = 100;
 
@@ -987,7 +984,7 @@ public class HalfEdgeDecimaterUtils {
 
             for (HalfEdgeVertex v : surface.getVertices()) {
 
-                if (v.getStatus() == ObjectStatus.DELETED) continue;
+                if (v.getStatus() == ObjectStatus.DELETED) {continue;}
 
                 HalfEdge start = v.getOutingHalfEdge();
                 if (start == null) {
@@ -1010,10 +1007,10 @@ public class HalfEdgeDecimaterUtils {
                 int safety = 0;
 
                 do {
-                    if (edge == null) break;
+                    if (edge == null) {break;}
 
                     HalfEdge twin = edge.getTwin();
-                    if (twin == null) break;
+                    if (twin == null) {break;}
 
                     HalfEdgeVertex v2 = twin.getStartVertex();
 
@@ -1031,7 +1028,7 @@ public class HalfEdgeDecimaterUtils {
                     edge = twin.getNext();
 
                     safety++;
-                    if (safety > maxSafety) break;
+                    if (safety > maxSafety) {break;}
 
                 } while (edge != start);
 
@@ -1052,14 +1049,14 @@ public class HalfEdgeDecimaterUtils {
         List<HalfEdgeVertex> neighbors = new ArrayList<>();
 
         HalfEdge start = v.getOutingHalfEdge();
-        if (start == null) return neighbors;
+        if (start == null) {return neighbors;}
 
         HalfEdge edge = start;
         int safety = 0;
 
         do {
             HalfEdge twin = edge.getTwin();
-            if (twin == null) break;
+            if (twin == null) {break;}
 
             HalfEdgeVertex v2 = twin.getStartVertex();
             if (v2 != null) {
@@ -1069,7 +1066,7 @@ public class HalfEdgeDecimaterUtils {
             edge = twin.getNext();
 
             safety++;
-            if (safety > 100) break;
+            if (safety > 100) {break;}
 
         } while (edge != start);
 
@@ -1083,8 +1080,8 @@ public class HalfEdgeDecimaterUtils {
 
         for (HalfEdgeVertex v : surface.getVertices()) {
 
-            if (visited.contains(v)) continue;
-            if (v.getStatus() == ObjectStatus.DELETED) continue;
+            if (visited.contains(v)) {continue;}
+            if (v.getStatus() == ObjectStatus.DELETED) {continue;}
 
             List<HalfEdgeVertex> region = new ArrayList<>();
             Queue<HalfEdgeVertex> queue = new LinkedList<>();
@@ -1101,8 +1098,8 @@ public class HalfEdgeDecimaterUtils {
 
                 for (HalfEdgeVertex n : getNeighbors(current)) {
 
-                    if (visited.contains(n)) continue;
-                    if (n.getStatus() == ObjectStatus.DELETED) continue;
+                    if (visited.contains(n)) {continue;}
+                    if (n.getStatus() == ObjectStatus.DELETED) {continue;}
 
                     double diff = Math.abs(n.getRoughness() - baseRoughness);
 

@@ -1,8 +1,6 @@
 package com.gaia3d.command;
 
 import com.gaia3d.command.mago.ProcessOptions;
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.io.FilenameUtils;
@@ -146,7 +144,6 @@ public class LoggingConfiguration {
             Files.move(file.toPath(), backup.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
 
-
         return FileAppender.newBuilder()
                 .setName("FileLogger")
                 .withFileName(path).withAppend(true)
@@ -157,7 +154,7 @@ public class LoggingConfiguration {
 
     private static AsyncAppender createAsyncAppender(Appender appender, Configuration config) {
         AppenderRef ref = AppenderRef.createAppenderRef(appender.getName(), null, null);
-        AppenderRef[] refs = new AppenderRef[] {ref};
+        AppenderRef[] refs = new AppenderRef[]{ref};
         return AsyncAppender.newBuilder()
                 .setName("Async" + appender.getName())
                 .setAppenderRefs(refs)

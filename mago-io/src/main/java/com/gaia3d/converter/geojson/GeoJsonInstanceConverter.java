@@ -8,22 +8,21 @@ import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.api.feature.simple.SimpleFeature;
-import org.geotools.api.referencing.FactoryException;
-import org.geotools.api.referencing.operation.TransformException;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.geojson.feature.FeatureJSON;
-import org.joml.Vector3d;
-import org.locationtech.jts.geom.*;
+import org.locationtech.jts.geom.Geometry;
 import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
-import org.locationtech.proj4j.ProjCoordinate;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 /**

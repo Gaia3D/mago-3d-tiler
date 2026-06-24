@@ -10,13 +10,13 @@ import java.util.List;
 @Setter
 @Getter
 public class GaiaTextureScissorData {
-    protected  GaiaRectangle originBoundary;
-    protected  GaiaRectangle currentBoundary;
-    protected  GaiaRectangle batchedBoundary;
-    protected  GaiaRectangle texCoordBoundary;
-    protected  List<HalfEdgeFace> faces;
-    protected  int expandedPixel = 0;
-    protected  GaiaRectangle noExpandedBoundary;
+    protected GaiaRectangle originBoundary;
+    protected GaiaRectangle currentBoundary;
+    protected GaiaRectangle batchedBoundary;
+    protected GaiaRectangle texCoordBoundary;
+    protected List<HalfEdgeFace> faces;
+    protected int expandedPixel = 0;
+    protected GaiaRectangle noExpandedBoundary;
 
     public GaiaRectangle getOriginBoundary() {
         if (originBoundary == null) {

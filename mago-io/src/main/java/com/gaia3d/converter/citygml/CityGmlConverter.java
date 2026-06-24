@@ -1,13 +1,13 @@
 package com.gaia3d.converter.citygml;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.geometry.modifier.DefaultSceneFactory;
+import com.gaia3d.basic.geometry.parametric.GaiaSurfaceModel;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.temp.GaiaSceneTempGroup;
 import com.gaia3d.basic.types.Classification;
-import com.gaia3d.converter.Converter;
-import com.gaia3d.basic.geometry.modifier.DefaultSceneFactory;
 import com.gaia3d.converter.AbstractGeometryConverter;
-import com.gaia3d.basic.geometry.parametric.GaiaSurfaceModel;
+import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.Parametric3DOptions;
 import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
@@ -50,7 +50,10 @@ import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 import org.xmlobjects.builder.ObjectBuildException;
 import org.xmlobjects.gml.adapter.geometry.primitives.AbstractRingPropertyAdapter;
-import org.xmlobjects.gml.model.geometry.*;
+import org.xmlobjects.gml.model.geometry.DirectPosition;
+import org.xmlobjects.gml.model.geometry.DirectPositionList;
+import org.xmlobjects.gml.model.geometry.GeometricPosition;
+import org.xmlobjects.gml.model.geometry.GeometricPositionList;
 import org.xmlobjects.gml.model.geometry.aggregates.MultiSurface;
 import org.xmlobjects.gml.model.geometry.aggregates.MultiSurfaceProperty;
 import org.xmlobjects.gml.model.geometry.complexes.CompositeSolid;

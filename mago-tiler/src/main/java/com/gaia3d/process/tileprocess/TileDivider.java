@@ -83,8 +83,7 @@ public class TileDivider {
 
     private void splitChildren(Node node, int baseDepth, int chunkDepth, File outputDir) throws Exception {
 
-        if (node.getChildren() == null || node.getChildren().isEmpty())
-            return;
+        if (node.getChildren() == null || node.getChildren().isEmpty()) {return;}
 
         List<Node> children = new ArrayList<>(node.getChildren());
 

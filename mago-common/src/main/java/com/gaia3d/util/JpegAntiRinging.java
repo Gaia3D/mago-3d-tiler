@@ -53,7 +53,7 @@ public class JpegAntiRinging {
         BufferedImage sRGB = new BufferedImage(src.getWidth(), src.getHeight(), hasAlpha(src) ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB);
         toSRGB.filter(src, sRGB);
 
-        if (!hasAlpha(sRGB)) return sRGB;
+        if (!hasAlpha(sRGB)) {return sRGB;}
 
         // 알파를 배경색으로 합성하여 INT_RGB로 변환 (JPEG는 알파 없음)
         BufferedImage rgb = new BufferedImage(sRGB.getWidth(), sRGB.getHeight(), BufferedImage.TYPE_INT_RGB);
@@ -73,9 +73,9 @@ public class JpegAntiRinging {
     /** 약한 3x3 가우시안 근사 블러 (σ≈0.6) */
     public static BufferedImage gentlePreBlur3x3(BufferedImage src) {
         float[] k = {
-                1/16f, 2/16f, 1/16f,
-                2/16f, 4/16f, 2/16f,
-                1/16f, 2/16f, 1/16f
+                1 / 16f, 2 / 16f, 1 / 16f,
+                2 / 16f, 4 / 16f, 2 / 16f,
+                1 / 16f, 2 / 16f, 1 / 16f
         };
         ConvolveOp op = new ConvolveOp(new Kernel(3, 3, k), ConvolveOp.EDGE_NO_OP, null);
         return op.filter(src, null);
@@ -92,8 +92,8 @@ public class JpegAntiRinging {
         } else if (targetH <= 0 && targetW > 0) {
             targetH = (int) Math.round(sh * (targetW / (double) sw));
         }
-        if (targetW <= 0 || targetH <= 0) return src;
-        if (targetW == sw && targetH == sh) return src;
+        if (targetW <= 0 || targetH <= 0) {return src;}
+        if (targetW == sw && targetH == sh) {return src;}
 
         Object hint = RenderingHints.VALUE_INTERPOLATION_BICUBIC;
 
@@ -109,7 +109,8 @@ public class JpegAntiRinging {
             int nw = Math.max(targetW, cw / 2);
             int nh = Math.max(targetH, ch / 2);
             cur = scaleOnce(cur, nw, nh, hint);
-            cw = nw; ch = nh;
+            cw = nw;
+            ch = nh;
         }
         if (cw != targetW || ch != targetH) {
             cur = scaleOnce(cur, targetW, targetH, hint);
@@ -131,7 +132,7 @@ public class JpegAntiRinging {
     /** 표준 ImageIO로 JPEG 저장 (quality / progressive) */
     public static void writeJpegImageIO(BufferedImage img, File out, float quality, boolean progressive) throws IOException {
         Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpeg");
-        if (!writers.hasNext()) throw new IOException("No JPEG ImageWriter found");
+        if (!writers.hasNext()) {throw new IOException("No JPEG ImageWriter found");}
         ImageWriter writer = writers.next();
 
         ImageWriteParam param = writer.getDefaultWriteParam();

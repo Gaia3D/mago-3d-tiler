@@ -1,7 +1,7 @@
 package com.gaia3d.basic.magogl.backend;
 
-import com.gaia3d.basic.magogl.MagoRenderEngine;
 import com.gaia3d.basic.magogl.MagoRenderContext;
+import com.gaia3d.basic.magogl.MagoRenderEngine;
 import com.gaia3d.basic.magogl.renderable.MagoRenderableScene;
 
 public final class SoftwareRenderingBackend implements MagoRenderingBackend {

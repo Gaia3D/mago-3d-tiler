@@ -11,9 +11,9 @@ public class MagoRenderableScene {
     private final List<MagoRenderableNode> renderableNodes =
             new ArrayList<>();
 
-    public void deleteObjects(){
-        if(!renderableNodes.isEmpty()){
-            for(MagoRenderableNode node : renderableNodes){
+    public void deleteObjects() {
+        if (!renderableNodes.isEmpty()) {
+            for (MagoRenderableNode node : renderableNodes) {
                 node.deleteObjects();
             }
         }

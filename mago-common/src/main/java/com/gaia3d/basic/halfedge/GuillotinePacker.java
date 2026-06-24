@@ -2,7 +2,6 @@ package com.gaia3d.basic.halfedge;
 
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.model.GaiaTextureScissorData;
-import com.gaia3d.basic.model.GaiaTextureScissorDataFull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,7 +77,6 @@ public class GuillotinePacker {
             freeRectangles.add(newFreeRect);
             bestRect = newFreeRect;
         }
-
 
         // set position to rect
         texScissorData.setBatchedBoundary(new GaiaRectangle(bestRect.getMinX(), bestRect.getMinY(), bestRect.getMinX() + rectWidth, bestRect.getMinY() + rectHeight));

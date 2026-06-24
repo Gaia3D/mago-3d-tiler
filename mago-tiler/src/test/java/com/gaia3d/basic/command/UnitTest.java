@@ -730,7 +730,6 @@ class UnitTest {
         String outputPath = "E:\\data\\mago-server\\output\\SangAm_284_buildings_20260416\\";
         //String outputPath = "E:\\temp\\";
 
-
         String[] args = new String[]{
                 "-i", inputPath,
                 "-inputType", "obj",

@@ -1,12 +1,12 @@
 package com.gaia3d.basic.magogl.maker;
 
-import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.magogl.MagoBuffer;
 import com.gaia3d.basic.magogl.renderable.MagoRenderableMesh;
 import com.gaia3d.basic.magogl.renderable.MagoRenderableNode;
 import com.gaia3d.basic.magogl.renderable.MagoRenderablePrimitive;
 import com.gaia3d.basic.magogl.renderable.MagoRenderableScene;
 import com.gaia3d.basic.magogl.texture.MagoTexture2D;
+import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.TextureType;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;

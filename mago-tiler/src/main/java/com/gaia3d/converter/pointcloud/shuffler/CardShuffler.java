@@ -10,6 +10,7 @@ public class CardShuffler extends Shuffler {
     private static final int RANDOM_SEED = 8291;
     private static final int MIN_CHUNK_BYTES = 512 * 1024 * 1024; // 512MB
     private static final int MAX_CHUNK_BYTES = 2028 * 1024 * 1024; // 2048MB
+
     /*private int processCount = 0;
     private int totalProcessCount = 1;*/
     @Override

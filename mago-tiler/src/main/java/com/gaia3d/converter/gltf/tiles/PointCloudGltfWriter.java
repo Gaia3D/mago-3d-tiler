@@ -14,7 +14,6 @@ import de.javagl.jgltf.model.GltfModel;
 import de.javagl.jgltf.model.GltfModels;
 import de.javagl.jgltf.model.io.GltfModelWriter;
 import de.javagl.jgltf.model.io.v2.GltfAssetV2;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Quaterniond;

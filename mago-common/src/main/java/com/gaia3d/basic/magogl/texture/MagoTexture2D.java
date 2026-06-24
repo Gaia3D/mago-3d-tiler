@@ -6,8 +6,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferInt;
-import java.util.Objects;
 import java.util.Arrays;
+import java.util.Objects;
 
 public final class MagoTexture2D {
 
@@ -287,8 +287,7 @@ public final class MagoTexture2D {
         }
 
         return switch (wrap) {
-            case CLAMP_TO_EDGE ->
-                    Math.max(0.0f, Math.min(1.0f, coordinate));
+            case CLAMP_TO_EDGE -> Math.max(0.0f, Math.min(1.0f, coordinate));
 
             case REPEAT -> coordinate
                     - (float) Math.floor(coordinate);
@@ -333,7 +332,7 @@ public final class MagoTexture2D {
         );
     }
 
-    public void delete(){
+    public void delete() {
         pixels = null;
     }
 }

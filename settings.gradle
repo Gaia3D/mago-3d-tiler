@@ -7,6 +7,3 @@ project(':mago-common').projectDir = new File(settingsDir, './mago-common')
 
 include ':mago-io'
 project(':mago-io').projectDir = new File(settingsDir, './mago-io')
-
-include ':mago-tiler-extension'
-project(':mago-tiler-extension').projectDir = new File(settingsDir, './mago-tiler-extension')

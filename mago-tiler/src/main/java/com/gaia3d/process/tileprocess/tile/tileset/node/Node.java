@@ -118,12 +118,12 @@ public class Node {
         return newBoundingVolume;
     }
 
-    public void cutFastRegionDecimals(){
+    public void cutFastRegionDecimals() {
         this.boundingVolume.cutFastRegionDecimals();
 
         // check children.
-        if(children != null && !children.isEmpty()){
-            for(Node child : children){
+        if (children != null && !children.isEmpty()) {
+            for (Node child : children) {
                 child.cutFastRegionDecimals();
             }
         }

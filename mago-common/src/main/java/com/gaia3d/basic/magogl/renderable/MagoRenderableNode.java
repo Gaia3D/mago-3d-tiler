@@ -121,17 +121,17 @@ public class MagoRenderableNode {
         this.parent = parent;
     }
 
-    public void deleteObjects(){
+    public void deleteObjects() {
         // 1rst, check if exist mesh.
-        if(hasMeshes()){
+        if (hasMeshes()) {
             // delete meshes.
-            for(MagoRenderableMesh mesh : renderableMeshes){
+            for (MagoRenderableMesh mesh : renderableMeshes) {
                 mesh.deleteObjects();
             }
         }
 
-        if(hasChildren()){
-            for(MagoRenderableNode child : children){
+        if (hasChildren()) {
+            for (MagoRenderableNode child : children) {
                 child.deleteObjects();
             }
         }

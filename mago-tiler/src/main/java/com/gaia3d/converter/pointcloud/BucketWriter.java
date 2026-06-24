@@ -62,7 +62,7 @@ public class BucketWriter implements Closeable {
     }
 
     private void flushBuffer(int bucketId, BucketBuffer buffer) throws IOException {
-        if (buffer.offset == 0) return;
+        if (buffer.offset == 0) {return;}
 
         OutputStream out = fileHandlePool.getOutputStream(bucketId); // append mode
         out.write(buffer.buf, 0, buffer.offset);

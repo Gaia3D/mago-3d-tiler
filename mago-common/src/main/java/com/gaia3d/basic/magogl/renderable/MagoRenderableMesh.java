@@ -1,6 +1,5 @@
 package com.gaia3d.basic.magogl.renderable;
 
-import com.gaia3d.basic.model.GaiaMesh;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,8 +12,8 @@ public class MagoRenderableMesh {
     private final List<MagoRenderablePrimitive> renderablePrimitives =
             new ArrayList<>();
 
-    public void deleteObjects(){
-        for(MagoRenderablePrimitive primitive : this.renderablePrimitives){
+    public void deleteObjects() {
+        for (MagoRenderablePrimitive primitive : this.renderablePrimitives) {
             primitive.deleteObjects();
         }
     }

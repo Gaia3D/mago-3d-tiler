@@ -152,7 +152,7 @@ public class TextureAtlasManager {
                                                                      boolean existPngTextures,
                                                                      BufferedImage srcImage,
                                                                      GaiaTexture resultTextureAtlas,
-                                                                     boolean paintUsedPixels){
+                                                                     boolean paintUsedPixels) {
         // now, for each faceGroup, create a scissorData
         // there are 2 types of scissorData :
         // 1- more width than height.
@@ -630,7 +630,6 @@ public class TextureAtlasManager {
     }
 
 
-
     private void paintUsedFacesRedOnAtlas(
             BufferedImage atlasImage,
             List<GaiaTextureScissorData> textureScissorDatas,
@@ -772,7 +771,7 @@ public class TextureAtlasManager {
                 Color fillColor = getDebugColorForGroup(groupIdx, totalGroups);
                 //fillColor = new Color(255,0,0); // solid
                 Color lineColor = fillColor.darker();
-                lineColor = new Color(0,0,0); // solid
+                lineColor = new Color(0, 0, 0); // solid
 
                 // 1. Relleno semitransparente para todas las faces del grupo.
                 float alpha = 0.45f;
@@ -1045,11 +1044,11 @@ public class TextureAtlasManager {
     }
 
     public List<GaiaTextureScissorData> calculateTextureScissorDates_original(List<List<HalfEdgeFace>> mergedWeldedFacesGroups,
-                                                                     int texWidth,
-                                                                     int texHeight,
-                                                                     boolean existPngTextures,
-                                                                     BufferedImage srcImage,
-                                                                     GaiaTexture resultTextureAtlas){
+                                                                              int texWidth,
+                                                                              int texHeight,
+                                                                              boolean existPngTextures,
+                                                                              BufferedImage srcImage,
+                                                                              GaiaTexture resultTextureAtlas) {
         // now, for each faceGroup, create a scissorData
         // there are 2 types of scissorData :
         // 1- more width than height.
@@ -1526,8 +1525,6 @@ public class TextureAtlasManager {
             resultTextureAtlas.setWidth(newWidth);
             resultTextureAtlas.setHeight(newHeight);
         }
-
-
 
         return textureScissorDatas;
     }

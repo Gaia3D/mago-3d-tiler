@@ -42,8 +42,8 @@ public class GaiaWeldedFacesFinder {
 
         @Override
         public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (!(obj instanceof PositionKey)) return false;
+            if (this == obj) {return true;}
+            if (!(obj instanceof PositionKey)) {return false;}
 
             PositionKey other = (PositionKey) obj;
             return x == other.x && y == other.y && z == other.z;
@@ -74,8 +74,8 @@ public class GaiaWeldedFacesFinder {
 
         @Override
         public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (!(obj instanceof EdgeKey)) return false;
+            if (this == obj) {return true;}
+            if (!(obj instanceof EdgeKey)) {return false;}
 
             EdgeKey other = (EdgeKey) obj;
             return a == other.a && b == other.b;

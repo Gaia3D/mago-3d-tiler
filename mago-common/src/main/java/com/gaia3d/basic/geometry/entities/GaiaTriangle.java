@@ -1,7 +1,6 @@
 package com.gaia3d.basic.geometry.entities;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.model.GaiaVertex;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;

@@ -13,7 +13,6 @@ import com.gaia3d.basic.geometry.modifier.topology.GaiaTriangulator;
 import com.gaia3d.basic.geometry.modifier.topology.GaiaWeldOptions;
 import com.gaia3d.basic.geometry.modifier.topology.GaiaWelder;
 import com.gaia3d.basic.geometry.octree.GaiaOctree;
-import com.gaia3d.basic.geometry.octree.GaiaOctreeFaces;
 import com.gaia3d.basic.geometry.octree.HalfEdgeOctreeFaces;
 import com.gaia3d.basic.halfedge.*;
 import com.gaia3d.basic.magogl.MagoDepthGridScaler;
@@ -39,7 +38,6 @@ import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
 import com.gaia3d.render.MagoLeafTileManager;
 import com.gaia3d.render.MagoReTextureByObliqueCamera;
 import com.gaia3d.util.DecimalUtils;
-import com.gaia3d.util.GaiaOctreeUtils;
 import com.gaia3d.util.GlobeUtils;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -442,11 +440,11 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
     }
 
     protected void createNetSurfaceNodesMagoGL(Node rootNode,
-                                             List<TileInfo> tileInfos,
-                                             int nodeDepth,
-                                             int maxDepth,
-                                             DecimateParameters decimateParameters,
-                                             ReMeshParameters reMeshParams) {
+                                               List<TileInfo> tileInfos,
+                                               int nodeDepth,
+                                               int maxDepth,
+                                               DecimateParameters decimateParameters,
+                                               ReMeshParameters reMeshParams) {
         // 1rst, find all tileInfos that intersects with the node
         log.info("Creating netSurface nodes for nodeDepth : " + nodeDepth + " of maxDepth : " + maxDepth);
         List<Node> nodes = new ArrayList<>();
@@ -454,11 +452,11 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 
         List<TileInfo> tileInfosOfNode = new ArrayList<>();
         boolean makeVerticalSkirt = true;
-        if(reMeshParams == null){
+        if (reMeshParams == null) {
             log.error("[ERROR] reMeshParams is null.");
             return;
         }
-        GlobalBoundaryAnchors  globalBoundaryAnchors = reMeshParams.getGlobalBoundaryAnchors();
+        GlobalBoundaryAnchors globalBoundaryAnchors = reMeshParams.getGlobalBoundaryAnchors();
 
         Map<Node, List<TileInfo>> nodeTileInfosMap = new HashMap<>();
         for (TileInfo tileInfo : tileInfos) {
@@ -542,7 +540,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 //                    nodeTMatrix,
 //                    maxScreenSize,
 //                    maxDepthScreenSize);
-
 
             MagoFbo magoFbo = reTexturer.renderTopView(sceneInfos,
                     nodeBBoxLC,
@@ -713,13 +710,13 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             int bandPixels,
             boolean depthInverted
     ) {
-        if (depthValues == null || depthValues.length == 0) return;
-        if (depthValues[0] == null || depthValues[0].length == 0) return;
-        if (nodeBBoxLC == null) return;
-        if (globalBoundaryAnchors == null) return;
-        if (cellGrid == null) return;
-        if (globalBoundaryAnchors.lockedAveragePositions.isEmpty()) return;
-        if (bandPixels <= 0) return;
+        if (depthValues == null || depthValues.length == 0) {return;}
+        if (depthValues[0] == null || depthValues[0].length == 0) {return;}
+        if (nodeBBoxLC == null) {return;}
+        if (globalBoundaryAnchors == null) {return;}
+        if (cellGrid == null) {return;}
+        if (globalBoundaryAnchors.lockedAveragePositions.isEmpty()) {return;}
+        if (bandPixels <= 0) {return;}
 
         float DEPTH_EPSILON =
                 1.0e-6f;
@@ -741,9 +738,9 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         double sizeY = maxY - minY;
         double sizeZ = maxZ - minZ;
 
-        if (Math.abs(sizeX) < 1e-12) return;
-        if (Math.abs(sizeY) < 1e-12) return;
-        if (Math.abs(sizeZ) < 1e-12) return;
+        if (Math.abs(sizeX) < 1e-12) {return;}
+        if (Math.abs(sizeY) < 1e-12) {return;}
+        if (Math.abs(sizeZ) < 1e-12) {return;}
 
         Map<Long, List<Vector3d>> anchorsByXYCell =
                 buildAnchorsByXYCell(globalBoundaryAnchors);
@@ -1048,7 +1045,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 }
 
                 for (Vector3d anchor : anchors) {
-                    if (anchor == null) continue;
+                    if (anchor == null) {continue;}
 
                     double ddx = anchor.x - x;
                     double ddy = anchor.y - y;
@@ -1151,7 +1148,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         int lod = 0;
         List<TileInfo> tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, null);
 
-
         int currDepth = projectMaxDepthIdx - lod;
         Map<Node, List<TileInfo>> nodeTileInfoMap = new HashMap<>();
         cutAndScissorAllLod(tileInfosCopy, root);
@@ -1229,9 +1225,9 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 screenPixelsForMeter = screenPixelsForMeterLod1 / 16.0;
             }
 
-            if(d == 3){
+            if (d == 3) {
                 reMeshParams = reMeshParamsLod2Lod3;
-            }else {
+            } else {
                 reMeshParams = new ReMeshParameters();
             }
 
@@ -1252,7 +1248,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 break;
             }
 
-            if(d == 7){
+            if (d == 7) {
                 reMeshParamsLod7 = reMeshParams;
             }
 
@@ -1335,7 +1331,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                                       int lod,
                                       int nodeDepth,
                                       Node rootNode,
-                                      int maxDepth){
+                                      int maxDepth) {
         log.info("Creating netSurface nodes for nodeDepth : " + nodeDepth + " of maxDepth : " + maxDepth);
         List<Node> nodes = new ArrayList<>();
         List<Node> intersectedNodes = new ArrayList<>();
@@ -1451,7 +1447,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 nodeTMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(nodePosWC);
             }
             GaiaBoundingBox nodeBBoxLC = node.calculateLocalBoundingBox();
-
 
             log.info("nodeCode : " + node.getNodeCode() + " currNodeIdx : " + i + " / " + nodesCount);
             int maxScreenSize = 2048; // better than 512.***
@@ -1971,7 +1966,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         int maxDepth = projectMaxDepthIdx;
         // start with the mas lod possible.
         int lod = 7;
-        if(lod > projectMaxDepthIdx){
+        if (lod > projectMaxDepthIdx) {
             lod = projectMaxDepthIdx;
         }
         for (TileInfo tileInfo : tileInfos) {
@@ -2095,7 +2090,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         List<TileInfo> cutTileInfos = new ArrayList<>();
         List<GaiaAAPlane> planes = new ArrayList<>();
 
-        for(int currLod = lod; currLod >= 0; currLod--) {
+        for (int currLod = lod; currLod >= 0; currLod--) {
             // calculate the AAPlanes to cut.***
             Matrix4d transformMatrix = new Matrix4d();
             GaiaBoundingBox boundingBox = null;
@@ -2276,7 +2271,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         return cutTileInfos;
     }
 
-    protected double calculateAverageBBoxMinSize(List<TileInfo> tileInfos){
+    protected double calculateAverageBBoxMinSize(List<TileInfo> tileInfos) {
         double bboxMinSize = Double.MAX_VALUE;
         double averageBBoxMinSize = 0.0;
         int tileInfosCount = tileInfos.size();
@@ -2298,7 +2293,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         return averageBBoxMinSize / (double) tileInfosCount;
     }
 
-    private void makeContentsForNode(Node node, GaiaScene gaiaScene, int lod, int nodeDepth, int nodeIdx){
+    private void makeContentsForNode(Node node, GaiaScene gaiaScene, int lod, int nodeDepth, int nodeIdx) {
         GaiaAttribute gaiaAttribute = gaiaScene.getAttribute();
         String nodeCode = node.getNodeCode();
         gaiaAttribute.setNodeName(nodeCode);
@@ -2310,11 +2305,11 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         //GL_NEAREST_MIPMAP_LINEAR: 9986, GL_LINEAR_MIPMAP_LINEAR: 9987
 
         List<GaiaMaterial> materials = gaiaScene.getMaterials();
-        if(materials.size() > 1){
+        if (materials.size() > 1) {
             log.warn("Warning : more than 1 material exists in the scene. nodeCode : " + node.getNodeCode() + " materialsCount : " + materials.size());
         }
         int matId = 0;
-        for(GaiaMaterial material : materials){
+        for (GaiaMaterial material : materials) {
             material.setId(matId);
             GaiaSamplers gaiaSampler = material.getSamplers();
             gaiaSampler.setMinFilter(GL_LINEAR);
@@ -2331,7 +2326,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         Path netSetFolderPath = Paths.get(netSetFolderPathString);
 
         // set originalPath if no exist.
-        if(gaiaScene.getOriginalPath() == null){
+        if (gaiaScene.getOriginalPath() == null) {
             Path originalPath = Path.of("noExistOriginalPath");
             gaiaScene.setOriginalPath(originalPath);
         }

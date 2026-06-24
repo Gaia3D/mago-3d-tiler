@@ -30,7 +30,6 @@ public final class MagoRenderablePrimitive {
     private MagoTexture2D diffuseTexture;
 
 
-
     /*
      * One face code per rendered triangle.
      *

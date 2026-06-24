@@ -126,7 +126,7 @@ public class BoundingVolume implements Serializable {
     }
 
     public void cutFastRegionDecimals() {
-        if(this.region == null) return;
+        if (this.region == null) {return;}
         this.region[0] = DecimalUtils.cutFast(this.region[0]);
         this.region[1] = DecimalUtils.cutFast(this.region[1]);
         this.region[2] = DecimalUtils.cutFast(this.region[2]);

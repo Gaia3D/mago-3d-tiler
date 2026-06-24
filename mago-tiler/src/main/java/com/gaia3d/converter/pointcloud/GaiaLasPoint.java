@@ -5,8 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.joml.Vector3d;
 
-import java.io.File;
-import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -27,7 +25,7 @@ public class GaiaLasPoint {
     }
 
     public double[] getPosition() {
-        return new double[] {x, y, z};
+        return new double[]{x, y, z};
     }
 
     public Vector3d getVec3Position() {
@@ -41,15 +39,15 @@ public class GaiaLasPoint {
     }
 
     public byte[] getRgb() {
-        return new byte[] {r, g, b};
+        return new byte[]{r, g, b};
     }
 
     public byte[] getRgba() {
-        return new byte[] {r, g, b, a};
+        return new byte[]{r, g, b, a};
     }
 
     private static final ThreadLocal<ByteBuffer> DIRECT_BUFFER = ThreadLocal.withInitial(() ->
-        ByteBuffer.allocateDirect(32).order(ByteOrder.BIG_ENDIAN)
+            ByteBuffer.allocateDirect(32).order(ByteOrder.BIG_ENDIAN)
     );
 
     // ByteBuffer.allocateDirect(32)

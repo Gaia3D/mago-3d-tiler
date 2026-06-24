@@ -676,7 +676,6 @@ public class TextureCorrectionManager {
             return;
         }
 
-
         double s = clamp(params.idyllicStrength, 0.0, 1.0);
 
         /*

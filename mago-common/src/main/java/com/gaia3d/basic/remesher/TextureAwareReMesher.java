@@ -25,7 +25,7 @@ public class TextureAwareReMesher {
 
         @Override
         public boolean equals(Object obj) {
-            if (!(obj instanceof EdgeKey)) return false;
+            if (!(obj instanceof EdgeKey)) {return false;}
 
             EdgeKey other = (EdgeKey) obj;
 
@@ -40,6 +40,7 @@ public class TextureAwareReMesher {
             return h;
         }
     }
+
     private static class CellClusterKey {
         final Vector3i cell;
 
@@ -49,7 +50,7 @@ public class TextureAwareReMesher {
 
         @Override
         public boolean equals(Object obj) {
-            if (!(obj instanceof CellClusterKey)) return false;
+            if (!(obj instanceof CellClusterKey)) {return false;}
 
             CellClusterKey other = (CellClusterKey) obj;
 
@@ -93,13 +94,13 @@ public class TextureAwareReMesher {
         }
 
         void addPoint(Vector3d p) {
-            if (p.x < min.x) min.x = p.x;
-            if (p.y < min.y) min.y = p.y;
-            if (p.z < min.z) min.z = p.z;
+            if (p.x < min.x) {min.x = p.x;}
+            if (p.y < min.y) {min.y = p.y;}
+            if (p.z < min.z) {min.z = p.z;}
 
-            if (p.x > max.x) max.x = p.x;
-            if (p.y > max.y) max.y = p.y;
-            if (p.z > max.z) max.z = p.z;
+            if (p.x > max.x) {max.x = p.x;}
+            if (p.y > max.y) {max.y = p.y;}
+            if (p.z > max.z) {max.z = p.z;}
         }
 
         double sizeX() {
@@ -130,7 +131,7 @@ public class TextureAwareReMesher {
         List<Integer> positionGroupIds = new ArrayList<>();
 
         void addPositionGroup(int groupId, PositionGroup group) {
-            if (group == null || group.position == null) return;
+            if (group == null || group.position == null) {return;}
 
             sumPos.add(group.position);
             positionGroupIds.add(groupId);
@@ -169,7 +170,7 @@ public class TextureAwareReMesher {
             GaiaFace face = faces.get(fIdx);
             int[] idx = face.getIndices();
 
-            if (idx == null || idx.length < 3) continue;
+            if (idx == null || idx.length < 3) {continue;}
 
             for (int i = 0; i < idx.length; i++) {
                 int a = idx[i];
@@ -189,7 +190,7 @@ public class TextureAwareReMesher {
         }
 
         for (List<Integer> linkedFaces : edgeToFaces.values()) {
-            if (linkedFaces.size() < 2) continue;
+            if (linkedFaces.size() < 2) {continue;}
 
             for (int i = 0; i < linkedFaces.size(); i++) {
                 for (int j = i + 1; j < linkedFaces.size(); j++) {
@@ -206,7 +207,7 @@ public class TextureAwareReMesher {
         int islandId = startIslandId;
 
         for (int i = 0; i < faces.size(); i++) {
-            if (visited[i]) continue;
+            if (visited[i]) {continue;}
 
             Queue<Integer> q = new ArrayDeque<>();
             q.add(i);
@@ -243,10 +244,10 @@ public class TextureAwareReMesher {
                 int islandId = face.getClassifyId();
                 int[] idx = face.getIndices();
 
-                if (idx == null) continue;
+                if (idx == null) {continue;}
 
                 for (int vi : idx) {
-                    if (vi < 0 || vi >= vertexCount) continue;
+                    if (vi < 0 || vi >= vertexCount) {continue;}
 
                     if (vertexIslands[vi] == null) {
                         vertexIslands[vi] = new HashSet<>();
@@ -277,10 +278,10 @@ public class TextureAwareReMesher {
                 int islandId = face.getClassifyId();
                 int[] idx = face.getIndices();
 
-                if (idx == null) continue;
+                if (idx == null) {continue;}
 
                 for (int vi : idx) {
-                    if (vi < 0 || vi >= vertexCount) continue;
+                    if (vi < 0 || vi >= vertexCount) {continue;}
 
                     Map<Integer, Integer> counts =
                             vertexIslandCounts.computeIfAbsent(vi, k -> new HashMap<>());
@@ -326,30 +327,30 @@ public class TextureAwareReMesher {
             double sy = stats.sizeY();
             double sz = stats.sizeZ();
 
-            double[] dims = new double[] { sx, sy, sz };
+            double[] dims = new double[]{sx, sy, sz};
             Arrays.sort(dims);
 
             double d1 = dims[1];
             double d2 = dims[2];
 
-            if (stats.triangleCount < minTriangles) continue;
-            if (stats.areaSum < minArea) continue;
-            if (d2 < cellSize * 0.25) continue;
+            if (stats.triangleCount < minTriangles) {continue;}
+            if (stats.areaSum < minArea) {continue;}
+            if (d2 < cellSize * 0.25) {continue;}
 
             boolean lineLike =
                     d1 < cellSize * 0.10 &&
                             d2 > cellSize * 0.45;
 
-            if (lineLike) continue;
+            if (lineLike) {continue;}
 
             boolean surfaceLike =
                     d1 > cellSize * 0.10 &&
                             d2 > cellSize * 0.30;
 
-            if (!surfaceLike) continue;
+            if (!surfaceLike) {continue;}
 
             double elongation = d2 / Math.max(d1, 1e-9);
-            if (elongation > 18.0) continue;
+            if (elongation > 18.0) {continue;}
 
             stats.remeshable = true;
         }
@@ -357,7 +358,7 @@ public class TextureAwareReMesher {
 
     private static double calculateFaceArea(GaiaFace face, List<GaiaVertex> vertices) {
         int[] idx = face.getIndices();
-        if (idx == null || idx.length < 3) return 0.0;
+        if (idx == null || idx.length < 3) {return 0.0;}
 
         Vector3d p0 = vertices.get(idx[0]).getPosition();
 
@@ -380,7 +381,7 @@ public class TextureAwareReMesher {
         Vector3d center = new Vector3d();
 
         int[] idx = face.getIndices();
-        if (idx == null || idx.length == 0) return center;
+        if (idx == null || idx.length == 0) {return center;}
 
         for (int i : idx) {
             center.add(vertices.get(i).getPosition());
@@ -400,7 +401,7 @@ public class TextureAwareReMesher {
         for (GaiaSurface surface : primitive.getSurfaces()) {
             for (GaiaFace face : surface.getFaces()) {
                 int[] idx = face.getIndices();
-                if (idx == null || idx.length < 3) continue;
+                if (idx == null || idx.length < 3) {continue;}
 
                 Vector3d center = calculateFaceCenter(face, vertices);
                 Vector3i cell = cellGrid.getCellIndex(center);
@@ -437,13 +438,13 @@ public class TextureAwareReMesher {
                 Vector3i cell = entry.getKey();
                 CellStats stats = entry.getValue();
 
-                if (!stats.remeshable) continue;
+                if (!stats.remeshable) {continue;}
 
                 for (int dx = -1; dx <= 1; dx++) {
                     for (int dy = -1; dy <= 1; dy++) {
                         for (int dz = -1; dz <= 1; dz++) {
 
-                            if (dx == 0 && dy == 0 && dz == 0) continue;
+                            if (dx == 0 && dy == 0 && dz == 0) {continue;}
 
                             Vector3i nb = new Vector3i(
                                     cell.x + dx,
@@ -473,7 +474,7 @@ public class TextureAwareReMesher {
             double cellSize
     ) {
         for (CellStats stats : cellStatsMap.values()) {
-            if (!stats.remeshable) continue;
+            if (!stats.remeshable) {continue;}
 
             double sx = stats.sizeX();
             double sy = stats.sizeY();
@@ -585,7 +586,7 @@ public class TextureAwareReMesher {
             for (int fIdx = 0; fIdx < faces.size(); fIdx++) {
                 GaiaFace face = faces.get(fIdx);
                 int[] idx = face.getIndices();
-                if (idx == null || idx.length < 3) continue;
+                if (idx == null || idx.length < 3) {continue;}
 
                 boolean remesh = remeshFaceFlags[sIdx][fIdx];
 
@@ -624,7 +625,7 @@ public class TextureAwareReMesher {
         boolean first = true;
 
         for (GaiaVertex vertex : vertices) {
-            if (vertex == null || vertex.getPosition() == null) continue;
+            if (vertex == null || vertex.getPosition() == null) {continue;}
 
             Vector3i cell = cellGrid.getCellIndex(vertex.getPosition());
 
@@ -633,17 +634,16 @@ public class TextureAwareReMesher {
                 sceneMaxCellIndex.set(cell);
                 first = false;
             } else {
-                if (cell.x < sceneMinCellIndex.x) sceneMinCellIndex.x = cell.x;
-                if (cell.y < sceneMinCellIndex.y) sceneMinCellIndex.y = cell.y;
-                if (cell.z < sceneMinCellIndex.z) sceneMinCellIndex.z = cell.z;
+                if (cell.x < sceneMinCellIndex.x) {sceneMinCellIndex.x = cell.x;}
+                if (cell.y < sceneMinCellIndex.y) {sceneMinCellIndex.y = cell.y;}
+                if (cell.z < sceneMinCellIndex.z) {sceneMinCellIndex.z = cell.z;}
 
-                if (cell.x > sceneMaxCellIndex.x) sceneMaxCellIndex.x = cell.x;
-                if (cell.y > sceneMaxCellIndex.y) sceneMaxCellIndex.y = cell.y;
-                if (cell.z > sceneMaxCellIndex.z) sceneMaxCellIndex.z = cell.z;
+                if (cell.x > sceneMaxCellIndex.x) {sceneMaxCellIndex.x = cell.x;}
+                if (cell.y > sceneMaxCellIndex.y) {sceneMaxCellIndex.y = cell.y;}
+                if (cell.z > sceneMaxCellIndex.z) {sceneMaxCellIndex.z = cell.z;}
             }
         }
     }
-
 
 
     public void reMeshScene(
@@ -655,14 +655,14 @@ public class TextureAwareReMesher {
         GaiaExtractor extractor = new GaiaExtractor();
         List<GaiaPrimitive> primitives = extractor.extractAllPrimitives(gaiaScene);
 
-        if (primitives == null || primitives.isEmpty()) return;
+        if (primitives == null || primitives.isEmpty()) {return;}
 
         GaiaPrimitive primitive = primitives.get(0);
 
         List<GaiaVertex> vertices = primitive.getVertices();
         List<GaiaSurface> surfaces = primitive.getSurfaces();
 
-        if (vertices == null || vertices.isEmpty()) return;
+        if (vertices == null || vertices.isEmpty()) {return;}
 
         CellGrid3D cellGrid = params.getCellGrid();
         double cellSize = cellGrid.getCellSize();
@@ -755,7 +755,7 @@ public class TextureAwareReMesher {
                 GaiaFace face = faces.get(fIdx);
                 int[] idx = face.getIndices();
 
-                if (idx == null) continue;
+                if (idx == null) {continue;}
 
                 for (int vi : idx) {
                     if (vi < 0 || vi >= vertexToPositionGroup.length) {
@@ -763,7 +763,7 @@ public class TextureAwareReMesher {
                     }
 
                     int groupId = vertexToPositionGroup[vi];
-                    if (groupId < 0) continue;
+                    if (groupId < 0) {continue;}
 
                     movableGroup[groupId] = true;
                     positionGroups.get(groupId).movable = true;
@@ -782,7 +782,7 @@ public class TextureAwareReMesher {
         Map<CellClusterKey, MoveCluster> clusterMap = new HashMap<>();
 
         for (int groupId = 0; groupId < positionGroups.size(); groupId++) {
-            if (!movableGroup[groupId]) continue;
+            if (!movableGroup[groupId]) {continue;}
 
             PositionGroup group = positionGroups.get(groupId);
 
@@ -861,10 +861,10 @@ public class TextureAwareReMesher {
                 PositionGroup group = positionGroups.get(groupId);
 
                 for (int vi : group.vertexIndices) {
-                    if (vi < 0 || vi >= vertices.size()) continue;
+                    if (vi < 0 || vi >= vertices.size()) {continue;}
 
                     GaiaVertex vertex = vertices.get(vi);
-                    if (vertex == null) continue;
+                    if (vertex == null) {continue;}
 
                     vertex.setPosition(new Vector3d(avgPosition));
                     movedVertex[vi] = true;
@@ -916,7 +916,7 @@ public class TextureAwareReMesher {
     }
 
     private static boolean isDegenerated(int[] idx) {
-        if (idx == null || idx.length < 3) return true;
+        if (idx == null || idx.length < 3) {return true;}
 
         for (int i = 0; i < idx.length; i++) {
             for (int j = i + 1; j < idx.length; j++) {
@@ -942,10 +942,10 @@ public class TextureAwareReMesher {
         for (GaiaSurface surface : surfaces) {
             for (GaiaFace face : surface.getFaces()) {
                 int[] idx = face.getIndices();
-                if (idx == null || idx.length < 3) continue;
+                if (idx == null || idx.length < 3) {continue;}
 
                 for (int vi : idx) {
-                    if (vi < 0 || vi >= vertices.size()) continue;
+                    if (vi < 0 || vi >= vertices.size()) {continue;}
 
                     vertexToFaces
                             .computeIfAbsent(vi, k -> new ArrayList<>())
@@ -955,13 +955,13 @@ public class TextureAwareReMesher {
         }
 
         for (int vi = 0; vi < vertices.size(); vi++) {
-            if (!movedVertex[vi]) continue;
+            if (!movedVertex[vi]) {continue;}
 
             GaiaVertex vertex = vertices.get(vi);
-            if (vertex == null || vertex.getPosition() == null) continue;
+            if (vertex == null || vertex.getPosition() == null) {continue;}
 
             List<GaiaFace> faces = vertexToFaces.get(vi);
-            if (faces == null || faces.isEmpty()) continue;
+            if (faces == null || faces.isEmpty()) {continue;}
 
             Vector3d newPos = vertex.getPosition();
 
@@ -970,7 +970,7 @@ public class TextureAwareReMesher {
 
             for (GaiaFace face : faces) {
                 int[] idx = face.getIndices();
-                if (idx == null || idx.length != 3) continue;
+                if (idx == null || idx.length != 3) {continue;}
 
                 int i0 = idx[0];
                 int i1 = idx[1];
@@ -995,7 +995,7 @@ public class TextureAwareReMesher {
                         p2
                 );
 
-                if (result == null) continue;
+                if (result == null) {continue;}
 
                 Vector2d uv = interpolateUv(
                         uv0,
@@ -1053,9 +1053,9 @@ public class TextureAwareReMesher {
 
         // Clamping simple para que si cae un poco fuera del triángulo,
         // use el punto más cercano aproximado.
-        if (u < 0.0) u = 0.0;
-        if (v < 0.0) v = 0.0;
-        if (w < 0.0) w = 0.0;
+        if (u < 0.0) {u = 0.0;}
+        if (v < 0.0) {v = 0.0;}
+        if (w < 0.0) {w = 0.0;}
 
         double sum = u + v + w;
         if (sum < 1e-20) {
@@ -1103,7 +1103,7 @@ public class TextureAwareReMesher {
 
         @Override
         public boolean equals(Object obj) {
-            if (!(obj instanceof UvKey)) return false;
+            if (!(obj instanceof UvKey)) {return false;}
             UvKey other = (UvKey) obj;
             return u == other.u && v == other.v;
         }
@@ -1130,7 +1130,7 @@ public class TextureAwareReMesher {
 
         @Override
         public boolean equals(Object obj) {
-            if (!(obj instanceof PositionKey)) return false;
+            if (!(obj instanceof PositionKey)) {return false;}
             PositionKey other = (PositionKey) obj;
             return x == other.x && y == other.y && z == other.z;
         }
@@ -1171,7 +1171,7 @@ public class TextureAwareReMesher {
 
         for (int i = 0; i < vertices.size(); i++) {
             GaiaVertex vertex = vertices.get(i);
-            if (vertex == null || vertex.getPosition() == null) continue;
+            if (vertex == null || vertex.getPosition() == null) {continue;}
 
             PositionKey key = new PositionKey(vertex.getPosition(), epsilon);
 

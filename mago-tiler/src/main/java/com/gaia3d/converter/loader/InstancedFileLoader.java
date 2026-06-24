@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.imagen.Interpolation;
+import org.geotools.api.parameter.GeneralParameterValue;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.Interpolator2D;
 import org.geotools.coverage.processing.Operations;
@@ -48,7 +49,8 @@ public class InstancedFileLoader implements FileLoader {
         try {
             GeoTiffReader reader = new GeoTiffReader(file);
             Interpolation interpolation = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
-            coverage = (GridCoverage2D) Operations.DEFAULT.interpolate(reader.read(null), interpolation);
+            GeneralParameterValue[] params = null;
+            coverage = (GridCoverage2D) Operations.DEFAULT.interpolate(reader.read(params), interpolation);
             reader.dispose();
         } catch (Exception e) {
             log.debug("Failed to load GeoTiff file: {}", file.getAbsolutePath());

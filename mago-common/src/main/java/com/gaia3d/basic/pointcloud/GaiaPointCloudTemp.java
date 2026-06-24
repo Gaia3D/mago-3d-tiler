@@ -236,7 +236,6 @@ public class GaiaPointCloudTemp {
             dataOutputStream.writeDouble(volumeOffset[1]);
             dataOutputStream.writeDouble(volumeOffset[2]);
 
-
             int shuffleBufferSize = 65536 * 8;
             int shuffleCount = loop / shuffleBufferSize;
             int remainder = loop % shuffleBufferSize;

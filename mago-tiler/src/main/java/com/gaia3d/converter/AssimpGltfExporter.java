@@ -1,9 +1,9 @@
 package com.gaia3d.converter;
 
+import com.gaia3d.basic.geometry.modifier.texcoord.FlipYTexCoordinate;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.gltf.GltfWriter;
-import com.gaia3d.basic.geometry.modifier.texcoord.FlipYTexCoordinate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

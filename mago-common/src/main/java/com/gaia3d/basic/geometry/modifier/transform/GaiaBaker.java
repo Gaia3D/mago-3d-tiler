@@ -1,7 +1,9 @@
 package com.gaia3d.basic.geometry.modifier.transform;
 
 import com.gaia3d.basic.geometry.modifier.Modifier;
-import com.gaia3d.basic.model.*;
+import com.gaia3d.basic.model.GaiaNode;
+import com.gaia3d.basic.model.GaiaScene;
+import com.gaia3d.basic.model.GaiaVertex;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix3d;
 import org.joml.Matrix4d;
@@ -20,7 +22,6 @@ public class GaiaBaker extends Modifier {
 
     /**
      * Bakes the transformation of a GaiaScene.
-     *
      * @param scene the GaiaScene to bake
      */
     @Override
@@ -34,7 +35,6 @@ public class GaiaBaker extends Modifier {
 
     /**
      * Bakes the transformation of aGaiaNode.
-     *
      * @param node the GaiaNode to bake
      */
     public void apply(GaiaNode node) {

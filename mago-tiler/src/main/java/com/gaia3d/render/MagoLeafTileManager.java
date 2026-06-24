@@ -26,10 +26,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 @Slf4j
 public class MagoLeafTileManager {
@@ -115,7 +111,7 @@ public class MagoLeafTileManager {
             atlasTextureForIntegralLeafScenes(halfEdgeScenes, resultGaiaScenes, outputPathString, nodeName);
 
             // delete halfEdgeScenes.
-            for(HalfEdgeScene scene : halfEdgeScenes){
+            for (HalfEdgeScene scene : halfEdgeScenes) {
                 scene.deleteObjects();
             }
         } catch (Exception e) {
@@ -126,7 +122,7 @@ public class MagoLeafTileManager {
     private void atlasTextureForIntegralLeafScenes(List<HalfEdgeScene> halfEdgeScenes,
                                                    List<GaiaScene> resultGaiaScenes,
                                                    String outputPathString, String nodeName) {
-        if(halfEdgeScenes == null || halfEdgeScenes.isEmpty()){
+        if (halfEdgeScenes == null || halfEdgeScenes.isEmpty()) {
             log.info("atlasTextureForIntegralLeafScenes: halfEdgeScenes is null or empty.");
             return;
         }
@@ -137,40 +133,40 @@ public class MagoLeafTileManager {
         int scenesCount = halfEdgeScenes.size();
         List<HalfEdgePrimitive> primitives = new ArrayList<>();
         GaiaAttribute gaiaAttribute = null;
-        for(int i=0; i<scenesCount; i++){
+        for (int i = 0; i < scenesCount; i++) {
             HalfEdgeScene scene = halfEdgeScenes.get(i);
-            if(gaiaAttribute == null) {
+            if (gaiaAttribute == null) {
                 // Take the 1rst gaiaAttribute.
                 gaiaAttribute = scene.getAttribute().getCopy();
             }
             primitives.clear();
             primitives = scene.extractPrimitives(primitives);
             int primitivesCount = primitives.size();
-            for(int j=0; j<primitivesCount; j++) {
+            for (int j = 0; j < primitivesCount; j++) {
                 HalfEdgePrimitive primitive = primitives.get(j);
                 int materialId = primitive.getMaterialIndex();
                 GaiaMaterial material = scene.getMaterials().get(materialId);
                 Map<TextureType, List<GaiaTexture>> textures = material.getTextures();
                 List<GaiaTexture> diffuseTextures = textures.get(TextureType.DIFFUSE);
-                if(diffuseTextures == null || diffuseTextures.isEmpty()){
+                if (diffuseTextures == null || diffuseTextures.isEmpty()) {
                     continue;
                 }
                 GaiaTexture diffuseTexture = diffuseTextures.getFirst();
                 BufferedImage bufferedImage = diffuseTexture.getBufferedImage();
-                if(bufferedImage == null){
+                if (bufferedImage == null) {
                     continue;
                 }
                 classificationId += 1; // a classificationId for primitive.
 
                 List<HalfEdgeSurface> surfaces = primitive.getSurfaces();
                 int surfacesCount = surfaces.size();
-                for(int k=0; k<surfacesCount; k++){
+                for (int k = 0; k < surfacesCount; k++) {
                     HalfEdgeSurface surface = surfaces.get(k);
                     List<List<HalfEdgeFace>> weldedFacesGroups = new ArrayList<>();
                     WeldedFacesFinder.getWeldedFacesGroups(surface, weldedFacesGroups);
 
                     int weldedFacesGroupsCount = weldedFacesGroups.size();
-                    for(int l=0; l<weldedFacesGroupsCount; l++) {
+                    for (int l = 0; l < weldedFacesGroupsCount; l++) {
                         List<HalfEdgeFace> weldedFacesGroup = weldedFacesGroups.get(l);
                         GaiaTextureScissorDataFull scissorDataFull = new GaiaTextureScissorDataFull();
                         scissorDataFull.setClassifyId(classificationId);
@@ -178,7 +174,7 @@ public class MagoLeafTileManager {
                         scissorDataFull.takeScissoredImageFromMotherImage(bufferedImage);
                         scissorDataFull.expandScissorImage(scissorExpandPixels);
 
-                        if(scissorDataFull.getCurrentBoundary() == null){
+                        if (scissorDataFull.getCurrentBoundary() == null) {
                             log.error("atlasTextureForIntegralLeafScenes: scissorDataFull.getCurrentBoundary() is null for classificationId: " + classificationId);
                             continue;
                         }
@@ -235,7 +231,7 @@ public class MagoLeafTileManager {
         GaiaExtractor extractor = new GaiaExtractor();
         List<GaiaPrimitive> gaiaPrimitives = extractor.extractAllPrimitives(resultGaiaScene);
         int primitivesCount = gaiaPrimitives.size();
-        for(int i=0; i<primitivesCount; i++){
+        for (int i = 0; i < primitivesCount; i++) {
             GaiaPrimitive primitive = gaiaPrimitives.get(i);
             primitive.setMaterialIndex(0);
         }
@@ -267,7 +263,6 @@ public class MagoLeafTileManager {
         String fileName = nodeName + "_Atlas";
         String extension = ".png";
 
-
         atlasTexture.setPath(fileName + extension);
         atlasTexture.setParentPath(netSetImagesFolderPath.toString());
 
@@ -288,7 +283,7 @@ public class MagoLeafTileManager {
         resultGaiaScenes.add(resultGaiaScene);
 
         // delete scissorDataFullList.
-        for(GaiaTextureScissorDataFull scissorDataFull : scissorDataFullList){
+        for (GaiaTextureScissorDataFull scissorDataFull : scissorDataFullList) {
             scissorDataFull.clear();
         }
     }
