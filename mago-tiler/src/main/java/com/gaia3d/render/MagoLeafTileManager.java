@@ -12,6 +12,7 @@ import com.gaia3d.basic.halfedge.*;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.texture.atlas.TextureAtlasManager;
 import com.gaia3d.basic.types.TextureType;
+import com.gaia3d.util.ImageResizer;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
@@ -270,6 +271,13 @@ public class MagoLeafTileManager {
         atlasTextures = textures.get(TextureType.DIFFUSE);
         GaiaTexture atlasScissoredTexture = atlasTextures.getFirst();
         atlasScissoredTexture.setParentPath(netSetImagesFolderPath.toString());
+
+        // resize the atlas texture if necessary.
+        int lod = 0;
+        ImageResizer imageResizer = new ImageResizer();
+        BufferedImage resized = imageResizer.resizeMultiStepSmart(atlasScissoredTexture.getBufferedImage(), lod);
+        atlasScissoredTexture.getBufferedImage().flush();
+        atlasScissoredTexture.setBufferedImage(resized);
 
         // save the atlas image to disk
         try {
