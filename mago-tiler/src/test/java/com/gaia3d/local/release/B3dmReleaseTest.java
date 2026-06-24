@@ -225,6 +225,8 @@ class B3dmReleaseTest {
         String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "--validationReport",
+                "--verbose"
         };
         MagoTestConfig.execute(args);
     }

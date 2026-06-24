@@ -31,36 +31,38 @@ public class GaiaSceneRepair {
                 || report.getUnreadableExternalResourceCount() > 0
                 || report.getInvalidTexturePathCount() > 0) {
             Path searchDir = sourceParent(report.getSourceFile());
-            log.info("[REPAIR] Repairing textures. missingCount={}, searchDir={}",
+            log.debug("[Repair] Repairing textures. missingCount={}, searchDir={}",
                     report.getMissingExternalResourceCount(), searchDir);
             for (GaiaScene scene : scenes) {
                 if (scene != null) {repairTextures(scene, searchDir);}
             }
         }
 
-        if (report.getInvalidNormalCount() > 0 || report.getSuspiciousNormalCount() > 0) {
-            log.info("[REPAIR] Repairing normals. invalidCount={}, suspiciousCount={}",
-                    report.getInvalidNormalCount(), report.getSuspiciousNormalCount());
-            for (GaiaScene scene : scenes) {
-                if (scene != null) {repairNormalsInNodes(scene.getNodes());}
-            }
-        }
-
         if (report.getInvalidPositionCount() > 0
                 || report.getInvalidVertexCount() > 0
                 || report.getInvalidBatchIdCount() > 0) {
-            log.info("[REPAIR] Repairing geometry. invalidPositions={}, invalidVertices={}, invalidBatchIds={}",
+            log.debug("[Repair] Repairing geometry. invalidPositions={}, invalidVertices={}, invalidBatchIds={}",
                     report.getInvalidPositionCount(), report.getInvalidVertexCount(), report.getInvalidBatchIdCount());
             for (GaiaScene scene : scenes) {
                 if (scene != null) {repairGeometryInNodes(scene.getNodes());}
             }
         }
 
+        // Face repair must run before normal repair: calculateVertexNormals() accumulates face normals,
+        // so degenerate faces (zero-area) produce zero-length accumulated normals → normalize → NaN.
         if (report.getDegenerateTriangleCount() > 0 || report.getInvalidFaceCount() > 0) {
-            log.info("[REPAIR] Removing degenerate/invalid faces. degenerateCount={}, invalidFaceCount={}",
+            log.debug("[Repair] Removing degenerate/invalid faces. degenerateCount={}, invalidFaceCount={}",
                     report.getDegenerateTriangleCount(), report.getInvalidFaceCount());
             for (GaiaScene scene : scenes) {
                 if (scene != null) {repairFacesInNodes(scene.getNodes());}
+            }
+        }
+
+        if (report.getInvalidNormalCount() > 0 || report.getSuspiciousNormalCount() > 0) {
+            log.debug("[Repair] Repairing normals. invalidCount={}, suspiciousCount={}",
+                    report.getInvalidNormalCount(), report.getSuspiciousNormalCount());
+            for (GaiaScene scene : scenes) {
+                if (scene != null) {repairNormalsInNodes(scene.getNodes());}
             }
         }
 
@@ -77,7 +79,7 @@ public class GaiaSceneRepair {
         scenes.removeIf(s -> s == null || isEmptyScene(s));
         int removed = before - scenes.size();
         if (removed > 0) {
-            log.warn("[REPAIR] Pruned {} empty scene(s)", removed);
+            log.debug("[Repair] Pruned {} empty scene(s)", removed);
         }
     }
 
@@ -92,7 +94,7 @@ public class GaiaSceneRepair {
         nodes.removeIf(n -> n == null || isEmptyNode(n));
         int removed = before - nodes.size();
         if (removed > 0) {
-            log.warn("[REPAIR] Pruned {} empty node(s)", removed);
+            log.debug("[Repair] Pruned {} empty node(s)", removed);
         }
     }
 
@@ -154,7 +156,7 @@ public class GaiaSceneRepair {
             if (resolve(texture, searchDir)) {
                 result.add(texture);
             } else {
-                log.warn("[REPAIR] Texture not found anywhere, dropping: {}", texture.getPath());
+                log.warn("[Repair] Texture not found anywhere, dropping: {}", texture.getPath());
             }
         }
         return result;
@@ -178,7 +180,7 @@ public class GaiaSceneRepair {
         // exact match
         Path candidate = searchDir.resolve(filename);
         if (Files.isRegularFile(candidate)) {
-            log.info("[REPAIR] Texture found by name: {} → {}", texture.getPath(), candidate);
+            log.debug("[Repair] Texture found by name: {} → {}", texture.getPath(), candidate);
             texture.setPath(candidate.toString());
             return true;
         }
@@ -186,7 +188,7 @@ public class GaiaSceneRepair {
         // case-insensitive match
         Path found = findCaseInsensitive(searchDir, filename);
         if (found != null) {
-            log.info("[REPAIR] Texture found case-insensitively: {} → {}", texture.getPath(), found);
+            log.debug("[Repair] Texture found case-insensitively: {} → {}", texture.getPath(), found);
             texture.setPath(found.toString());
             return true;
         }
@@ -237,8 +239,32 @@ public class GaiaSceneRepair {
         if (primitive.getVertices() == null) {return;}
         boolean needsRepair = primitive.getVertices().stream().filter(Objects::nonNull).anyMatch(v -> !isValidNormal(v.getNormal()));
         if (needsRepair) {
-            log.info("[REPAIR] Regenerating normals for primitive with {} vertices", primitive.getVertices().size());
+            log.debug("[Repair] Regenerating normals for primitive with {} vertices", primitive.getVertices().size());
             primitive.calculateVertexNormals();
+            fixUnusableNormals(primitive.getVertices());
+        }
+    }
+
+    private void fixUnusableNormals(List<GaiaVertex> vertices) {
+        double eps = GaiaSceneValidator.NORMAL_LENGTH_EPSILON;
+        int fixed = 0;
+        for (GaiaVertex vertex : vertices) {
+            if (vertex == null) {continue;}
+            Vector3d normal = vertex.getNormal();
+            boolean unusable = normal == null
+                    || !Double.isFinite(normal.x()) || !Double.isFinite(normal.y()) || !Double.isFinite(normal.z())
+                    || normal.lengthSquared() < eps * eps;
+            if (unusable) {
+                if (normal == null) {
+                    vertex.setNormal(new Vector3d(0.0, 0.0, 1.0));
+                } else {
+                    normal.set(0.0, 0.0, 1.0);
+                }
+                fixed++;
+            }
+        }
+        if (fixed > 0) {
+            log.debug("[Repair] Set fallback normal (0,0,1) for {} isolated vertex/vertices", fixed);
         }
     }
 
@@ -281,19 +307,19 @@ public class GaiaSceneRepair {
             }
             // Reset non-finite batch IDs
             if (!Float.isFinite(vertex.getBatchId())) {
-                log.debug("[REPAIR] Resetting invalid batchId at vertex[{}]: {}", i, vertex.getBatchId());
+                log.debug("[Repair] Resetting invalid batchId at vertex[{}]: {}", i, vertex.getBatchId());
                 vertex.setBatchId(0.0f);
             }
             // Collect vertices with non-finite positions — cannot fix, will remove referencing faces
             Vector3d pos = vertex.getPosition();
             if (pos == null || !Double.isFinite(pos.x()) || !Double.isFinite(pos.y()) || !Double.isFinite(pos.z())) {
-                log.debug("[REPAIR] Invalid position at vertex[{}]: {}", i, pos);
+                log.debug("[Repair] Invalid position at vertex[{}]: {}", i, pos);
                 invalidIndices.add(i);
             }
         }
 
         if (!invalidIndices.isEmpty()) {
-            log.warn("[REPAIR] Removing faces referencing {} invalid-position vertices", invalidIndices.size());
+            log.debug("[Repair] Removing faces referencing {} invalid-position vertices", invalidIndices.size());
             removeFacesReferencingIndices(primitive, invalidIndices);
         }
     }
@@ -345,7 +371,7 @@ public class GaiaSceneRepair {
         primitive.getSurfaces().removeIf(s -> s == null || s.getFaces() == null || s.getFaces().isEmpty());
 
         if (removed > 0) {
-            log.warn("[REPAIR] Removed {} degenerate/invalid faces from primitive", removed);
+            log.debug("[Repair] Removed {} degenerate/invalid faces from primitive", removed);
         }
     }
 

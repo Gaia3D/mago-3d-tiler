@@ -107,6 +107,31 @@ public class GaiaSceneValidationReport {
                 + ", issues=" + issueCount;
     }
 
+    public String toIssuesSummaryString() {
+        StringBuilder sb = new StringBuilder(sourceFile != null ? sourceFile.getName() : "unknown");
+        sb.append(": issues=").append(issueCount);
+        if (invalidVertexCount > 0)             sb.append(", invalidVertices=").append(invalidVertexCount);
+        if (invalidFaceCount > 0)               sb.append(", invalidFaces=").append(invalidFaceCount);
+        if (invalidIndexCount > 0)              sb.append(", invalidIndices=").append(invalidIndexCount);
+        if (nonTriangleFaceCount > 0)           sb.append(", nonTriangleFaces=").append(nonTriangleFaceCount);
+        if (invalidPositionCount > 0)           sb.append(", invalidPositions=").append(invalidPositionCount);
+        if (invalidNormalCount > 0)             sb.append(", invalidNormals=").append(invalidNormalCount);
+        if (suspiciousNormalCount > 0)          sb.append(", suspiciousNormals=").append(suspiciousNormalCount);
+        if (invalidTexcoordCount > 0)           sb.append(", invalidTexcoords=").append(invalidTexcoordCount);
+        if (invalidColorCount > 0)              sb.append(", invalidColors=").append(invalidColorCount);
+        if (invalidBatchIdCount > 0)            sb.append(", invalidBatchIds=").append(invalidBatchIdCount);
+        if (outOfRangeTexcoordCount > 0)        sb.append(", outOfRangeTexcoords=").append(outOfRangeTexcoordCount);
+        if (degenerateTriangleCount > 0)        sb.append(", degenerateTriangles=").append(degenerateTriangleCount);
+        if (invalidTransformCount > 0)          sb.append(", invalidTransforms=").append(invalidTransformCount);
+        if (invalidMaterialIndexCount > 0)      sb.append(", invalidMaterialIndices=").append(invalidMaterialIndexCount);
+        if (invalidTexturePathCount > 0)        sb.append(", invalidTexturePaths=").append(invalidTexturePathCount);
+        if (missingExternalResourceCount > 0)   sb.append(", missingExternalResources=").append(missingExternalResourceCount);
+        if (unreadableExternalResourceCount > 0) sb.append(", unreadableExternalResources=").append(unreadableExternalResourceCount);
+        if (!sourceFileExists)                  sb.append(", sourceNotFound");
+        else if (!sourceFileReadable)           sb.append(", sourceNotReadable");
+        return sb.toString();
+    }
+
     public String toDetailString() {
         if (details.isEmpty()) {
             return toSummaryString();

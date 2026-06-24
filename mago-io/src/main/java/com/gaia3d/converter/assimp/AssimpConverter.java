@@ -6,8 +6,7 @@ import com.gaia3d.basic.temp.GaiaSceneTempGroup;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.converter.Converter;
-import com.gaia3d.converter.assimp.validation.GaiaSceneValidationReport;
-import com.gaia3d.converter.assimp.validation.GaiaSceneValidator;
+
 import com.gaia3d.util.ImageUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +41,6 @@ public class AssimpConverter implements Converter {
 
     public final int DEFAULT_FLAGS = Assimp.aiProcess_Triangulate | Assimp.aiProcess_JoinIdenticalVertices | Assimp.aiProcess_SortByPType;
     private final AssimpConverterOptions options;
-    private final GaiaSceneValidator sceneGeometryValidator = new GaiaSceneValidator();
 
     public List<GaiaScene> load(String filePath) {
         return load(new File(filePath));
@@ -87,8 +85,6 @@ public class AssimpConverter implements Converter {
 
             gaiaScenes.add(gaiaScene);
         }
-        validateScenes(file, gaiaScenes);
-
         Assimp.aiReleaseImport(aiScene);
         return gaiaScenes;
     }
@@ -99,15 +95,6 @@ public class AssimpConverter implements Converter {
             flags |= Assimp.aiProcess_CalcTangentSpace;
         }
         return flags;
-    }
-
-    private void validateScenes(File file, List<GaiaScene> gaiaScenes) {
-        GaiaSceneValidationReport report = sceneGeometryValidator.validate(file, gaiaScenes);
-        if (report.hasIssues()) {
-            log.warn("[WARN] Converted scene geometry validation failed. {}", report.toDetailString());
-        } else if (log.isDebugEnabled()) {
-            log.debug("Converted scene geometry validation passed. {}", report.toSummaryString());
-        }
     }
 
     @Override
