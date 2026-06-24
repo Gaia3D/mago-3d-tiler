@@ -48,5 +48,11 @@ public final class MagoTexturedFragmentShader
          * textura * color de vértice
          */
         output.color.mul(input.color);
+
+        if (output.color.w < uniforms.alphaCutoff) {
+            output.discard = true;
+        } else if (output.color.w < uniforms.minimumAlpha) {
+            output.color.w = uniforms.minimumAlpha;
+        }
     }
 }

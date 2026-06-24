@@ -10,8 +10,6 @@ import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.model.GaiaSurface;
 import com.gaia3d.basic.model.GaiaVertex;
 import com.gaia3d.basic.remesher.GaiaWeldedFacesFinder;
-import com.gaia3d.renderer.engine.dataStructure.CameraDirectionCandidate;
-import com.gaia3d.renderer.engine.dataStructure.FaceVisibilityData;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;

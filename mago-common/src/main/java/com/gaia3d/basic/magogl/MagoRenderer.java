@@ -787,7 +787,8 @@ public final class MagoRenderer {
                     colorBuffer[pixelIndex] =
                             blendSourceOver(
                                     sourceColor,
-                                    colorBuffer[pixelIndex]
+                                    colorBuffer[pixelIndex],
+                                    context.isSeparateAlphaBlend()
                             );
                 } else {
                     colorBuffer[pixelIndex] =
@@ -934,7 +935,8 @@ public final class MagoRenderer {
 
     private static int blendSourceOver(
             int source,
-            int destination
+            int destination,
+            boolean separateAlphaBlend
     ) {
         int sourceAlpha =
                 (source >>> 24) & 0xFF;
@@ -999,11 +1001,13 @@ public final class MagoRenderer {
          * Same blend factors applied to alpha:
          * srcA * srcA + dstA * (1 - srcA).
          */
-        int outputAlpha =
-                (
+        int outputAlpha = separateAlphaBlend
+                ? sourceAlpha + (
+                        destinationAlpha * inverseSourceAlpha + 127
+                ) / 255
+                : (
                         sourceAlpha * sourceAlpha
-                                + destinationAlpha
-                                * inverseSourceAlpha
+                                + destinationAlpha * inverseSourceAlpha
                                 + 127
                 ) / 255;
 

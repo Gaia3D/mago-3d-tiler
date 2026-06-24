@@ -34,4 +34,7 @@ public final class MagoUniforms {
      * mantén esta convención.
      */
     public boolean invertTextureV = false;
+
+    public float alphaCutoff = 0.0f;
+    public float minimumAlpha = 0.0f;
 }

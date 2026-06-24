@@ -17,7 +17,9 @@ import com.gaia3d.basic.remesher.information.GaiaStatistics;
 import com.gaia3d.basic.magogl.MagoFbo;
 import com.gaia3d.basic.magogl.MagoPolygonMode;
 import com.gaia3d.basic.magogl.MagoRenderContext;
-import com.gaia3d.basic.magogl.MagoRenderEngine;
+import com.gaia3d.basic.magogl.backend.MagoRenderingBackend;
+import com.gaia3d.basic.magogl.backend.MagoRenderingSession;
+import com.gaia3d.basic.magogl.backend.SoftwareRenderingBackend;
 import com.gaia3d.basic.magogl.maker.MagoRenderableMaker;
 import com.gaia3d.basic.magogl.renderable.MagoRenderableScene;
 import com.gaia3d.basic.magogl.shader.program.MagoShaderProgram;
@@ -52,7 +54,7 @@ import static com.gaia3d.basic.magogl.MagoRenderEngine.toArgb;
 @Setter
 
 public class MagoReTextureByObliqueCamera {
-    //private MagoRenderEngine engine;
+    private final MagoRenderingBackend renderingBackend;
     private CameraDirectionType[] renderDirections = {
             CameraDirectionType.ZNEG,
             CameraDirectionType.XPOS_ZNEG,
@@ -68,7 +70,14 @@ public class MagoReTextureByObliqueCamera {
     public static final int BACKGROUND_FACE_CODE =
             0xFFFFFFFF;
     public MagoReTextureByObliqueCamera() {
-        //this.engine = new MagoRenderEngine();
+        this(new SoftwareRenderingBackend());
+    }
+
+    public MagoReTextureByObliqueCamera(MagoRenderingBackend renderingBackend) {
+        this.renderingBackend = Objects.requireNonNull(
+                renderingBackend,
+                "renderingBackend must not be null"
+        );
     }
 
     public void integralReMeshByObliqueCameraV2(List<SceneInfo> sceneInfos,
@@ -247,6 +256,8 @@ public class MagoReTextureByObliqueCamera {
         MagoRenderableMaker magoRenderableMaker = new MagoRenderableMaker();
 
         // PASADA 2: remeshear mesh por mesh
+        MagoRenderingSession renderingSession = renderingBackend.openSession();
+        try {
         for (int i = 0; i < scenesCount; i++) {
             // load and render, one by one
             SceneInfo sceneInfo = sceneInfos.get(i);
@@ -416,7 +427,8 @@ public class MagoReTextureByObliqueCamera {
                         fboSet,
                         faceCodeFboSet,
                         mapCameraDirectionTypeModelViewMatrix,
-                        mapCameraDirectionTypeProjection);
+                        mapCameraDirectionTypeProjection,
+                        renderingSession);
                 // end of making oblique camera textures
 
                 if(magoRenderableScene != null) {
@@ -452,6 +464,11 @@ public class MagoReTextureByObliqueCamera {
             if (counter > 20) {
                 counter = 0;
             }
+        }
+
+        finishRenderingSession(renderingSession, fboSet, faceCodeFboSet);
+        } finally {
+            renderingSession.close();
         }
 
         // Test save 9 camera rendered.*************************
@@ -615,6 +632,8 @@ public class MagoReTextureByObliqueCamera {
         GaiaTriangulator triangulator = new GaiaTriangulator();
 
 
+        MagoRenderingSession renderingSession = renderingBackend.openSession();
+        try {
         for (int i = 0; i < scenesCount; i++) {
             // load and render, one by one
             SceneInfo sceneInfo = sceneInfos.get(i);
@@ -789,7 +808,8 @@ public class MagoReTextureByObliqueCamera {
                         fboSet,
                         faceCodeFboSet,
                         mapCameraDirectionTypeModelViewMatrix,
-                        mapCameraDirectionTypeProjection);
+                        mapCameraDirectionTypeProjection,
+                        renderingSession);
 
                 if(magoRenderableScene != null) {
                     magoRenderableScene.deleteObjects();
@@ -827,6 +847,11 @@ public class MagoReTextureByObliqueCamera {
             if (counter > 20) {
                 counter = 0;
             }
+        }
+
+        finishRenderingSession(renderingSession, fboSet, faceCodeFboSet);
+        } finally {
+            renderingSession.close();
         }
 
         // Test save 9 camera rendered.*************************
@@ -993,9 +1018,6 @@ public class MagoReTextureByObliqueCamera {
             );
         }
 
-        MagoRenderEngine magoRenderEngine =
-                new MagoRenderEngine();
-
         MagoShaderProgram shaderProgram =
                 new MagoShaderProgram(
                         "texturedShader",
@@ -1040,6 +1062,8 @@ public class MagoReTextureByObliqueCamera {
         // render the scenes
         int scenesCount = sceneInfos.size();
         int counter = 0;
+        MagoRenderingSession renderingSession = renderingBackend.openSession();
+        try {
         for (int i = 0; i < scenesCount; i++) {
             // load and render, one by one
             SceneInfo sceneInfo = sceneInfos.get(i);
@@ -1081,7 +1105,7 @@ public class MagoReTextureByObliqueCamera {
                         "renderableScene must not be null"
                 );
 
-                magoRenderEngine.renderIntoFbo(
+                renderingSession.renderIntoFbo(
                         renderableScene,
                         renderContext
                 );
@@ -1102,6 +1126,11 @@ public class MagoReTextureByObliqueCamera {
             if (counter > 20) {
                 counter = 0;
             }
+        }
+
+        renderingSession.readback();
+        } finally {
+            renderingSession.close();
         }
 
 //        String outputPathString = "D:\\temp";
@@ -1632,14 +1661,57 @@ public class MagoReTextureByObliqueCamera {
 
 
 
-    public void  makeIntegralBoxTexturesByObliqueCamera9Directions(MagoRenderableScene magoRenderableScene,
+    private void finishRenderingSession(
+            MagoRenderingSession renderingSession,
+            MagoFboSet albedoFbos,
+            MagoFboSet faceCodeFbos
+    ) {
+        renderingSession.readback();
+        logComparison(renderingSession, albedoFbos, "albedo");
+        logComparison(renderingSession, faceCodeFbos, "face-code");
+    }
+
+    private void logComparison(
+            MagoRenderingSession renderingSession,
+            MagoFboSet canonicalFbos,
+            String passName
+    ) {
+        for (CameraDirectionType direction : renderDirections) {
+            MagoFbo canonical = canonicalFbos.get(direction);
+            MagoFbo candidate = renderingSession.getComparisonFbo(canonical);
+            if (candidate == null) {
+                continue;
+            }
+
+            int[] expected = canonical.getColorBuffer();
+            int[] actual = candidate.getColorBuffer();
+            int different = 0;
+            for (int i = 0; i < expected.length; i++) {
+                if (expected[i] != actual[i]) {
+                    different++;
+                }
+            }
+            double mismatchPercent = expected.length == 0
+                    ? 0.0
+                    : different * 100.0 / expected.length;
+            log.info(
+                    "Render comparison [{}:{}] mismatched pixels: {}/{} ({}%)",
+                    passName,
+                    direction,
+                    different,
+                    expected.length,
+                    String.format(Locale.ROOT, "%.4f", mismatchPercent)
+            );
+        }
+    }
+
+    public void makeIntegralBoxTexturesByObliqueCamera9Directions(MagoRenderableScene magoRenderableScene,
                                                                          MagoRenderableScene magoDecimatedRenderableScene,
                                                                          MagoFboSet fboSet,
                                                                          MagoFboSet faceCodeFboSet,
                                                                          Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix,
-                                                                    Map<CameraDirectionType, Projection> mapCameraDirectionTypeProjection) {
-        MagoRenderEngine magoRenderEngine =
-                new MagoRenderEngine();
+                                                                     Map<CameraDirectionType, Projection> mapCameraDirectionTypeProjection,
+                                                                     MagoRenderingSession renderingSession) {
 
         MagoShaderProgram shaderProgram =
                 new MagoShaderProgram(
@@ -1673,7 +1745,7 @@ public class MagoReTextureByObliqueCamera {
                     mapCameraDirectionTypeModelViewMatrix,
                     mapCameraDirectionTypeProjection,
                     fboSet,
-                    magoRenderEngine,
+                    renderingSession,
                     renderContext
             );
         }
@@ -1704,7 +1776,7 @@ public class MagoReTextureByObliqueCamera {
                     mapCameraDirectionTypeModelViewMatrix,
                     mapCameraDirectionTypeProjection,
                     faceCodeFboSet,
-                    magoRenderEngine,
+                    renderingSession,
                     renderContext
             );
         }
@@ -1847,7 +1919,7 @@ public class MagoReTextureByObliqueCamera {
             Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix,
             Map<CameraDirectionType, Projection> mapCameraDirectionTypeProjection,
             MagoFboSet magoFboSet,
-            MagoRenderEngine magoRenderEngine,
+            MagoRenderingSession renderingSession,
             MagoRenderContext renderContext
     ) {
         Objects.requireNonNull(
@@ -1902,7 +1974,7 @@ public class MagoReTextureByObliqueCamera {
                 0xFF000000
         );
 
-        magoRenderEngine.renderIntoFbo(
+        renderingSession.renderIntoFbo(
                 renderableScene,
                 renderContext
         );
@@ -1914,7 +1986,7 @@ public class MagoReTextureByObliqueCamera {
             Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix,
             Map<CameraDirectionType, Projection> mapCameraDirectionTypeProjection,
             MagoFboSet magoFboSet,
-            MagoRenderEngine magoRenderEngine,
+            MagoRenderingSession renderingSession,
             MagoRenderContext renderContext
     ) {
         Objects.requireNonNull(
@@ -1969,7 +2041,7 @@ public class MagoReTextureByObliqueCamera {
                 0xFF000000
         );
 
-        magoRenderEngine.renderIntoFbo(
+        renderingSession.renderIntoFbo(
                 renderableScene,
                 renderContext
         );

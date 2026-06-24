@@ -3,7 +3,6 @@ package com.gaia3d.process.tileprocess.tile;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gaia3d.TilerExtensionModule;
 import com.gaia3d.basic.exception.TileProcessingException;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.exchangable.SceneInfo;
@@ -454,7 +453,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         List<Node> intersectedNodes = new ArrayList<>();
 
         List<TileInfo> tileInfosOfNode = new ArrayList<>();
-        //TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
         boolean makeVerticalSkirt = true;
         if(reMeshParams == null){
             log.error("[ERROR] reMeshParams is null.");

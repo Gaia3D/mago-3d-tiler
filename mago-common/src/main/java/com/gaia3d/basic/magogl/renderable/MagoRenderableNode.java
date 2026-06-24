@@ -1,7 +1,6 @@
 package com.gaia3d.basic.magogl.renderable;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.model.GaiaNode;
 import lombok.Getter;
 import org.joml.Matrix4d;
 
@@ -13,8 +12,6 @@ import java.util.Objects;
 public class MagoRenderableNode {
 
     private String name = "";
-    private GaiaNode originalGaiaNode;
-
     private MagoRenderableNode parent;
 
     private final List<MagoRenderableMesh> renderableMeshes =
@@ -39,10 +36,6 @@ public class MagoRenderableNode {
 
     public void setName(String name) {
         this.name = name != null ? name : "";
-    }
-
-    public void setOriginalGaiaNode(GaiaNode originalGaiaNode) {
-        this.originalGaiaNode = originalGaiaNode;
     }
 
     public void setGaiaBoundingBox(GaiaBoundingBox gaiaBoundingBox) {

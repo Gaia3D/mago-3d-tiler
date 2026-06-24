@@ -60,10 +60,6 @@ public final class MagoRenderableMaker {
 
         List<GaiaMaterial> sourceMaterials = gaiaScene.getMaterials();
 
-        if (sourceMaterials != null) {
-            result.getMaterials().addAll(sourceMaterials);
-        }
-
         List<GaiaNode> rootNodes = gaiaScene.getNodes();
 
         if (rootNodes == null || rootNodes.isEmpty()) {
@@ -80,7 +76,7 @@ public final class MagoRenderableMaker {
             MagoRenderableNode renderableNode = makeNode(
                     gaiaNode,
                     identity,
-                    result.getMaterials()
+                    sourceMaterials
             );
 
             result.getRenderableNodes().add(renderableNode);
@@ -98,7 +94,6 @@ public final class MagoRenderableMaker {
     ) {
         MagoRenderableNode result = new MagoRenderableNode();
 
-        result.setOriginalGaiaNode(gaiaNode);
         result.setName(gaiaNode.getName());
 
         Matrix4d localMatrix = gaiaNode.getTransformMatrix();
@@ -291,7 +286,6 @@ public final class MagoRenderableMaker {
                 colorsBuffer,
                 vertexCount,
                 indexCount,
-                material,
                 diffuseTexture,
                 faceCodes
         );

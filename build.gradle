@@ -86,7 +86,6 @@ project(':mago-tiler') {
     dependencies {
         implementation project(':mago-common')
         implementation project(':mago-io')
-        implementation project(':mago-tiler-extension')
     }
 }
 

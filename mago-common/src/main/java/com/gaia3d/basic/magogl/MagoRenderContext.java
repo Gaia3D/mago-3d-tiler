@@ -26,6 +26,7 @@ public final class MagoRenderContext {
     private boolean depthTestEnabled = true;
     private boolean cullFaceEnabled = true;
     private boolean blendEnabled = false;
+    private boolean separateAlphaBlend = false;
 
     private MagoPolygonMode polygonMode =
             MagoPolygonMode.FILL;

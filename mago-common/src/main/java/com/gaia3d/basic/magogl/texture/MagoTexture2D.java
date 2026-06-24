@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferInt;
 import java.util.Objects;
+import java.util.Arrays;
 
 public final class MagoTexture2D {
 
@@ -88,6 +89,13 @@ public final class MagoTexture2D {
 
     public int getHeight() {
         return height;
+    }
+
+    public int[] getPixelsCopy() {
+        if (pixels == null) {
+            throw new IllegalStateException("MagoTexture2D has already been deleted.");
+        }
+        return Arrays.copyOf(pixels, pixels.length);
     }
 
     public void sampleNearest(
