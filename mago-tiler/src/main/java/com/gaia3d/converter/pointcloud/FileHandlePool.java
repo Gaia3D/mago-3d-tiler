@@ -17,21 +17,6 @@ public class FileHandlePool implements Closeable {
     private final Map<Integer, Handle> handles = new HashMap<>();
     private final LinkedHashMap<Integer, Handle> openHandles;
 
-    private static class Handle {
-        final int bucketId;
-        final Path path;
-        OutputStream out;
-
-        Handle(int bucketId, Path path) {
-            this.bucketId = bucketId;
-            this.path = path;
-        }
-
-        boolean isOpen() {
-            return out != null;
-        }
-    }
-
     public FileHandlePool(Path rootDir, int maxOpenFiles) throws IOException {
         this(rootDir, maxOpenFiles, 4 * 1024 * 1024); // default 4MB buffer
     }
@@ -131,6 +116,21 @@ public class FileHandlePool implements Closeable {
 
         if (first != null) {
             throw first;
+        }
+    }
+
+    private static class Handle {
+        final int bucketId;
+        final Path path;
+        OutputStream out;
+
+        Handle(int bucketId, Path path) {
+            this.bucketId = bucketId;
+            this.path = path;
+        }
+
+        boolean isOpen() {
+            return out != null;
         }
     }
 }

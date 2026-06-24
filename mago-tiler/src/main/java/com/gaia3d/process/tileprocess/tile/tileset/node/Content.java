@@ -8,9 +8,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Content {
-    private String uri = null;
     BoundingVolume boundingVolume;
-
+    private String uri = null;
     @JsonIgnore
     private ContentInfo contentInfo = null;
 }

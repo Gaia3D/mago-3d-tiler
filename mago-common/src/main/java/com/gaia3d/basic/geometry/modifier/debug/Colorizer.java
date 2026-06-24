@@ -10,8 +10,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class Colorizer {
 
-    private int faceIndex = 0;
     private final ColorizeType colorizeType;
+    private int faceIndex = 0;
 
     public void colorize(GaiaScene scene) {
         List<GaiaNode> nodes = scene.getNodes();

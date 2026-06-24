@@ -38,6 +38,50 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
     private final float POINT_EXPANSION_FACTOR = 3.0f;
     private GaiaBoundingBox globalFitBoundingBox = null;
 
+    private static GaiaBoundingBox toCube(GaiaBoundingBox box) {
+        // degree with height
+        Vector3d min = box.getMinPosition();
+        Vector3d max = box.getMaxPosition();
+        Vector3d center = box.getFloorCenter();
+
+        // degree -> world coordinate
+        Vector3d minPosition = GlobeUtils.geographicToCartesianWgs84(min);
+        Vector3d maxPosition = GlobeUtils.geographicToCartesianWgs84(max);
+        Vector3d centerCartesian = GlobeUtils.geographicToCartesianWgs84(center);
+        Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerCartesian);
+        Matrix4d transformMatrixInv = new Matrix4d(transformMatrix).invert();
+
+        minPosition = transformMatrixInv.transformPosition(minPosition, new Vector3d());
+        maxPosition = transformMatrixInv.transformPosition(maxPosition, new Vector3d());
+
+        double deltaX = Math.abs(maxPosition.x - minPosition.x);
+        double deltaY = Math.abs(maxPosition.y - minPosition.y);
+        double deltaZ = Math.abs(maxPosition.z - minPosition.z);
+
+        double maxDelta = Math.max(deltaX, Math.max(deltaY, deltaZ));
+        double halfSize = maxDelta / 2.0;
+
+        double xOffset = maxDelta - deltaX;
+        double yOffset = maxDelta - deltaY;
+        double zOffset = maxDelta - deltaZ;
+
+        Vector3d newMin = new Vector3d(minPosition.x, minPosition.y, minPosition.z);
+        Vector3d newMax = new Vector3d(maxPosition.x + xOffset, maxPosition.y + yOffset, maxPosition.z + zOffset);
+
+        box = new GaiaBoundingBox();
+        // world coordinate -> degree
+        Vector3d transformedMin = transformMatrix.transformPosition(newMin);
+        Vector3d transformedMax = transformMatrix.transformPosition(newMax);
+
+        Vector3d cubeLonLatMin = GlobeUtils.cartesianToGeographicWgs84(transformedMin);
+        Vector3d cubeLonLatMax = GlobeUtils.cartesianToGeographicWgs84(transformedMax);
+
+        box.addPoint(cubeLonLatMin);
+        box.addPoint(cubeLonLatMax);
+
+        return box;
+    }
+
     @Override
     public Tileset run(List<TileInfo> tileInfos) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
@@ -477,6 +521,14 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         return childNode;
     }
 
+    /*private GaiaBoundingBox calcRealFitBoundingBox(GaiaPointCloud pointCloud) {
+        GaiaBoundingBox fitBoundingBox = new GaiaBoundingBox();
+        pointCloud.getLasPoints().forEach(point -> {
+            fitBoundingBox.addPoint(point.getPosition());
+        });
+        return fitBoundingBox;
+    }*/
+
     private double calcDimensionRatio(GaiaBoundingBox fitBoundingBox, GaiaBoundingBox cubeBoundingBox) {
         Vector3d fitVolumeSize = fitBoundingBox.getSize();
         if (fitVolumeSize.x == 0 && fitVolumeSize.y == 0 && fitVolumeSize.z == 0) {
@@ -486,60 +538,8 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         return (fitVolumeSize.x * fitVolumeSize.y) / (cubeVolumeSize.x * cubeVolumeSize.y);
     }
 
-    /*private GaiaBoundingBox calcRealFitBoundingBox(GaiaPointCloud pointCloud) {
-        GaiaBoundingBox fitBoundingBox = new GaiaBoundingBox();
-        pointCloud.getLasPoints().forEach(point -> {
-            fitBoundingBox.addPoint(point.getPosition());
-        });
-        return fitBoundingBox;
-    }*/
-
     private GaiaBoundingBox calcFitBoundingBox(GaiaBoundingBox cubeBoundingBox) {
         return globalFitBoundingBox.createIntersection(cubeBoundingBox);
-    }
-
-    private static GaiaBoundingBox toCube(GaiaBoundingBox box) {
-        // degree with height
-        Vector3d min = box.getMinPosition();
-        Vector3d max = box.getMaxPosition();
-        Vector3d center = box.getFloorCenter();
-
-        // degree -> world coordinate
-        Vector3d minPosition = GlobeUtils.geographicToCartesianWgs84(min);
-        Vector3d maxPosition = GlobeUtils.geographicToCartesianWgs84(max);
-        Vector3d centerCartesian = GlobeUtils.geographicToCartesianWgs84(center);
-        Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerCartesian);
-        Matrix4d transformMatrixInv = new Matrix4d(transformMatrix).invert();
-
-        minPosition = transformMatrixInv.transformPosition(minPosition, new Vector3d());
-        maxPosition = transformMatrixInv.transformPosition(maxPosition, new Vector3d());
-
-        double deltaX = Math.abs(maxPosition.x - minPosition.x);
-        double deltaY = Math.abs(maxPosition.y - minPosition.y);
-        double deltaZ = Math.abs(maxPosition.z - minPosition.z);
-
-        double maxDelta = Math.max(deltaX, Math.max(deltaY, deltaZ));
-        double halfSize = maxDelta / 2.0;
-
-        double xOffset = maxDelta - deltaX;
-        double yOffset = maxDelta - deltaY;
-        double zOffset = maxDelta - deltaZ;
-
-        Vector3d newMin = new Vector3d(minPosition.x, minPosition.y, minPosition.z);
-        Vector3d newMax = new Vector3d(maxPosition.x + xOffset, maxPosition.y + yOffset, maxPosition.z + zOffset);
-
-        box = new GaiaBoundingBox();
-        // world coordinate -> degree
-        Vector3d transformedMin = transformMatrix.transformPosition(newMin);
-        Vector3d transformedMax = transformMatrix.transformPosition(newMax);
-
-        Vector3d cubeLonLatMin = GlobeUtils.cartesianToGeographicWgs84(transformedMin);
-        Vector3d cubeLonLatMax = GlobeUtils.cartesianToGeographicWgs84(transformedMax);
-
-        box.addPoint(cubeLonLatMin);
-        box.addPoint(cubeLonLatMax);
-
-        return box;
     }
 
     private void minimizeAllPointCloud(int index, int maximumIndex, List<GaiaPointCloud> allPointClouds) {

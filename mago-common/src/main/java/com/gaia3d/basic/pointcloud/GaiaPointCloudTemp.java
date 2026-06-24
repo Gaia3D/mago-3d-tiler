@@ -26,10 +26,9 @@ public class GaiaPointCloudTemp {
     private final int RANDOM_SEED = 42;
     /* Header Total Size 52 byte */
     private final short HEADER_SIZE = 52; // 2 (Version) + 2 (Block Size) + 24 (Quantized Volume Scale) + 24 (Quantized Volume Offset)
-    private short blockSize = 20; // 12 (FLOAT XYZ) + 3 (RGB) + 1 (Padding) + 4 (intensity + classification)
     private final double[] quantizedVolumeScale = new double[3];
     private final double[] quantizedVolumeOffset = new double[3];
-
+    private short blockSize = 20; // 12 (FLOAT XYZ) + 3 (RGB) + 1 (Padding) + 4 (intensity + classification)
     private File tempFile;
     private DataOutputStream outputStream;
     private DataInputStream inputStream;

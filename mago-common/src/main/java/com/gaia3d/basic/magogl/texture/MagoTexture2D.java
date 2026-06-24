@@ -82,6 +82,127 @@ public final class MagoTexture2D {
         );
     }
 
+    private static BufferedImage resizeIfNecessary(
+            BufferedImage source,
+            int maxSize
+    ) {
+        int sourceWidth = source.getWidth();
+        int sourceHeight = source.getHeight();
+
+        int largestDimension =
+                Math.max(
+                        sourceWidth,
+                        sourceHeight
+                );
+
+        if (largestDimension <= maxSize) {
+            return source;
+        }
+
+        double scale =
+                (double) maxSize
+                        / largestDimension;
+
+        int targetWidth =
+                Math.max(
+                        1,
+                        (int) Math.round(
+                                sourceWidth * scale
+                        )
+                );
+
+        int targetHeight =
+                Math.max(
+                        1,
+                        (int) Math.round(
+                                sourceHeight * scale
+                        )
+                );
+
+        BufferedImage resized =
+                new BufferedImage(
+                        targetWidth,
+                        targetHeight,
+                        BufferedImage.TYPE_INT_ARGB
+                );
+
+        Graphics2D graphics =
+                resized.createGraphics();
+
+        try {
+            graphics.setRenderingHint(
+                    RenderingHints.KEY_INTERPOLATION,
+                    RenderingHints.VALUE_INTERPOLATION_BILINEAR
+            );
+
+            graphics.drawImage(
+                    source,
+                    0,
+                    0,
+                    targetWidth,
+                    targetHeight,
+                    null
+            );
+        } finally {
+            graphics.dispose();
+        }
+
+        return resized;
+    }
+
+    private static float wrapCoordinate(
+            float coordinate,
+            MagoTextureWrap wrap
+    ) {
+        if (!Float.isFinite(coordinate)) {
+            return 0.0f;
+        }
+
+        return switch (wrap) {
+            case CLAMP_TO_EDGE -> Math.max(0.0f, Math.min(1.0f, coordinate));
+
+            case REPEAT -> coordinate
+                    - (float) Math.floor(coordinate);
+        };
+    }
+
+    private static int wrapTexelIndex(
+            int index,
+            int size,
+            MagoTextureWrap wrap
+    ) {
+        return switch (wrap) {
+            case CLAMP_TO_EDGE -> clamp(index, 0, size - 1);
+
+            case REPEAT -> {
+                int mod = index % size;
+                if (mod < 0) {
+                    mod += size;
+                }
+                yield mod;
+            }
+        };
+    }
+
+    private static int clamp(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    private static float lerp(float a, float b, float t) {
+        return a + (b - a) * t;
+    }
+
+    private static void unpackArgb(
+            int argb,
+            Vector4f result
+    ) {
+        result.set(
+                ((argb >>> 16) & 0xFF) / 255.0f,
+                ((argb >>> 8) & 0xFF) / 255.0f,
+                (argb & 0xFF) / 255.0f,
+                ((argb >>> 24) & 0xFF) / 255.0f
+        );
+    }
 
     public int getWidth() {
         return width;
@@ -209,129 +330,6 @@ public final class MagoTexture2D {
                 lerp(a0, a1, ty)
         );
     }
-
-    private static BufferedImage resizeIfNecessary(
-            BufferedImage source,
-            int maxSize
-    ) {
-        int sourceWidth = source.getWidth();
-        int sourceHeight = source.getHeight();
-
-        int largestDimension =
-                Math.max(
-                        sourceWidth,
-                        sourceHeight
-                );
-
-        if (largestDimension <= maxSize) {
-            return source;
-        }
-
-        double scale =
-                (double) maxSize
-                        / largestDimension;
-
-        int targetWidth =
-                Math.max(
-                        1,
-                        (int) Math.round(
-                                sourceWidth * scale
-                        )
-                );
-
-        int targetHeight =
-                Math.max(
-                        1,
-                        (int) Math.round(
-                                sourceHeight * scale
-                        )
-                );
-
-        BufferedImage resized =
-                new BufferedImage(
-                        targetWidth,
-                        targetHeight,
-                        BufferedImage.TYPE_INT_ARGB
-                );
-
-        Graphics2D graphics =
-                resized.createGraphics();
-
-        try {
-            graphics.setRenderingHint(
-                    RenderingHints.KEY_INTERPOLATION,
-                    RenderingHints.VALUE_INTERPOLATION_BILINEAR
-            );
-
-            graphics.drawImage(
-                    source,
-                    0,
-                    0,
-                    targetWidth,
-                    targetHeight,
-                    null
-            );
-        } finally {
-            graphics.dispose();
-        }
-
-        return resized;
-    }
-
-    private static float wrapCoordinate(
-            float coordinate,
-            MagoTextureWrap wrap
-    ) {
-        if (!Float.isFinite(coordinate)) {
-            return 0.0f;
-        }
-
-        return switch (wrap) {
-            case CLAMP_TO_EDGE -> Math.max(0.0f, Math.min(1.0f, coordinate));
-
-            case REPEAT -> coordinate
-                    - (float) Math.floor(coordinate);
-        };
-    }
-
-    private static int wrapTexelIndex(
-            int index,
-            int size,
-            MagoTextureWrap wrap
-    ) {
-        return switch (wrap) {
-            case CLAMP_TO_EDGE -> clamp(index, 0, size - 1);
-
-            case REPEAT -> {
-                int mod = index % size;
-                if (mod < 0) {
-                    mod += size;
-                }
-                yield mod;
-            }
-        };
-    }
-
-    private static int clamp(int value, int min, int max) {
-        return Math.max(min, Math.min(max, value));
-    }
-
-    private static float lerp(float a, float b, float t) {
-        return a + (b - a) * t;
-    }
-
-    private static void unpackArgb(
-            int argb,
-            Vector4f result
-    ) {
-        result.set(
-                ((argb >>> 16) & 0xFF) / 255.0f,
-                ((argb >>> 8) & 0xFF) / 255.0f,
-                (argb & 0xFF) / 255.0f,
-                ((argb >>> 24) & 0xFF) / 255.0f
-        );
-    }
-
     public void delete() {
         pixels = null;
     }

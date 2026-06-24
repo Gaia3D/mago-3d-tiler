@@ -484,37 +484,6 @@ public class GaiaFrontierFinder {
 
         return max + 1;
     }
-
-    public boolean[] findBoundaryVertices(
-            List<GaiaVertex> vertices,
-            List<GaiaFace> faces,
-            double tolerance,
-            int[] weldedIndices
-    ) {
-        if (vertices == null || vertices.isEmpty()) {
-            return new boolean[0];
-        }
-
-        if (faces == null || faces.isEmpty()) {
-            return new boolean[vertices.size()];
-        }
-
-        //int[] weldedIndices =
-        buildWeldedVertexIndices_LowMemory(vertices, faces, tolerance, weldedIndices);
-
-        int weldedVertexCount =
-                getWeldedVertexCount(weldedIndices);
-
-        boolean[] weldedBoundary =
-                buildWeldedBoundaryVertexFlags_SortEdges(
-                        faces,
-                        weldedIndices,
-                        weldedVertexCount
-                );
-
-        return buildOriginalBoundaryVertexFlags(weldedIndices, weldedBoundary);
-    }
-
     private static void fillOriginalBoundaryVertexFlags(
             int[] weldedIndices,
             boolean[] weldedBoundary,
@@ -699,5 +668,35 @@ public class GaiaFrontierFinder {
         }
 
         return weldedBoundary;
+    }
+
+    public boolean[] findBoundaryVertices(
+            List<GaiaVertex> vertices,
+            List<GaiaFace> faces,
+            double tolerance,
+            int[] weldedIndices
+    ) {
+        if (vertices == null || vertices.isEmpty()) {
+            return new boolean[0];
+        }
+
+        if (faces == null || faces.isEmpty()) {
+            return new boolean[vertices.size()];
+        }
+
+        //int[] weldedIndices =
+        buildWeldedVertexIndices_LowMemory(vertices, faces, tolerance, weldedIndices);
+
+        int weldedVertexCount =
+                getWeldedVertexCount(weldedIndices);
+
+        boolean[] weldedBoundary =
+                buildWeldedBoundaryVertexFlags_SortEdges(
+                        faces,
+                        weldedIndices,
+                        weldedVertexCount
+                );
+
+        return buildOriginalBoundaryVertexFlags(weldedIndices, weldedBoundary);
     }
 }

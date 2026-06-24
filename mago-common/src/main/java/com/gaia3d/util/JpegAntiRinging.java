@@ -17,16 +17,6 @@ import java.util.Iterator;
 
 public class JpegAntiRinging {
 
-    public static class Options {
-        public float quality = 0.90f;          // 0.0~1.0 (권장: 0.85~0.92)
-        public boolean progressive = true;     // Progressive JPEG
-        public boolean preBlur = true;         // 다운스케일 전 약한 블러
-        public boolean multistepDownscale = true; // 멀티스텝 축소
-        public int targetWidth = -1;           // 축소 목표(비율 유지하려면 하나만 지정)
-        public int targetHeight = -1;
-        public Color backgroundForAlpha = Color.WHITE; // 알파 제거 시 배경색
-    }
-
     /** 메인 진입: BufferedImage -> (전처리/리사이즈) -> JPEG 파일 저장 */
     public static void writeAntiRingingJPEG(BufferedImage src, File out, Options opt) throws IOException {
         // 1) sRGB 강제 + 알파 제거(TYPE_INT_RGB)로 변환 (가끔 생기는 테두리/가마 현상 예방)
@@ -158,5 +148,15 @@ public class JpegAntiRinging {
         opt.preBlur = true;
         opt.multistepDownscale = true;
         writeAntiRingingJPEG(src, new File("out.jpg"), opt);
+    }
+
+    public static class Options {
+        public float quality = 0.90f;          // 0.0~1.0 (권장: 0.85~0.92)
+        public boolean progressive = true;     // Progressive JPEG
+        public boolean preBlur = true;         // 다운스케일 전 약한 블러
+        public boolean multistepDownscale = true; // 멀티스텝 축소
+        public int targetWidth = -1;           // 축소 목표(비율 유지하려면 하나만 지정)
+        public int targetHeight = -1;
+        public Color backgroundForAlpha = Color.WHITE; // 알파 제거 시 배경색
     }
 }

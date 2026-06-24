@@ -34,10 +34,10 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class ForestInstanceTiler extends DefaultTiler implements Tiler {
 
-    private GlobalOptions globalOptions = GlobalOptions.getInstance();
     private final double maximumGeometricError = 128;
-    private double instanceGeometricError = 1.0;
     private final double maximumDistance = 1000.0; // 250m
+    private GlobalOptions globalOptions = GlobalOptions.getInstance();
+    private double instanceGeometricError = 1.0;
 
     @Override
     public Tileset run(List<TileInfo> tileInfos) {

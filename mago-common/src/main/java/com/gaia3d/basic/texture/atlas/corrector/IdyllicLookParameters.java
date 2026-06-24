@@ -40,25 +40,6 @@ public class IdyllicLookParameters {
         return new IdyllicLookParameters();
     }
 
-
-    @Override
-    public String toString() {
-        return "IdyllicLookParameters{" +
-                "idyllicLookEnabled=" + idyllicLookEnabled +
-                ", idyllicStrength=" + idyllicStrength +
-                ", warmBoost=" + warmBoost +
-                ", saturationBoost=" + saturationBoost +
-                ", contrastBoost=" + contrastBoost +
-                ", dehazeBoost=" + dehazeBoost +
-                ", midtoneLift=" + midtoneLift +
-                ", highlightSoftness=" + highlightSoftness +
-                ", greenBoost=" + greenBoost +
-                ", greenLift=" + greenLift +
-                ", skyBlueBoost=" + skyBlueBoost +
-                ", shadowSoftness=" + shadowSoftness +
-                '}';
-    }
-
     public static IdyllicLookParameters ultraFreshLushGreenIdyllicLook() {
         IdyllicLookParameters params = new IdyllicLookParameters();
 
@@ -77,5 +58,23 @@ public class IdyllicLookParameters {
         params.shadowSoftness = 0.045;
 
         return params;
+    }
+
+    @Override
+    public String toString() {
+        return "IdyllicLookParameters{" +
+                "idyllicLookEnabled=" + idyllicLookEnabled +
+                ", idyllicStrength=" + idyllicStrength +
+                ", warmBoost=" + warmBoost +
+                ", saturationBoost=" + saturationBoost +
+                ", contrastBoost=" + contrastBoost +
+                ", dehazeBoost=" + dehazeBoost +
+                ", midtoneLift=" + midtoneLift +
+                ", highlightSoftness=" + highlightSoftness +
+                ", greenBoost=" + greenBoost +
+                ", greenLift=" + greenLift +
+                ", skyBlueBoost=" + skyBlueBoost +
+                ", shadowSoftness=" + shadowSoftness +
+                '}';
     }
 }

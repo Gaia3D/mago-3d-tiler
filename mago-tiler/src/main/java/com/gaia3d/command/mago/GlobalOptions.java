@@ -484,13 +484,6 @@ public class GlobalOptions {
         }
     }
 
-    public long getProcessTimeMillis() {
-        long endTimeMillis = System.currentTimeMillis();
-        long processTimeMillis = endTimeMillis - startTimeMillis;
-        this.endTimeMillis = endTimeMillis;
-        return processTimeMillis;
-    }
-
     protected static void printDebugOptions() {
         log.info("Java Version Info: {}", instance.javaVersionInfo);
         log.info("Program Info: {}", instance.programInfo);
@@ -564,5 +557,12 @@ public class GlobalOptions {
         log.info("Minimum Height: {}", instance.minimumHeight);
         log.info("Skirt Height: {}", instance.skirtHeight);
         Mago3DTilerMain.drawLine();
+    }
+
+    public long getProcessTimeMillis() {
+        long endTimeMillis = System.currentTimeMillis();
+        long processTimeMillis = endTimeMillis - startTimeMillis;
+        this.endTimeMillis = endTimeMillis;
+        return processTimeMillis;
     }
 }

@@ -48,6 +48,29 @@ public final class ComparingRenderingBackend implements MagoRenderingBackend {
             this.software = software;
         }
 
+        private static MagoFbo copyOf(MagoFbo source, String prefix) {
+            MagoFbo copy = new MagoFbo(
+                    prefix + source.getName(),
+                    source.getWidth(),
+                    source.getHeight()
+            );
+            System.arraycopy(
+                    source.getColorBuffer(), 0,
+                    copy.getColorBuffer(), 0,
+                    source.getColorBuffer().length
+            );
+            System.arraycopy(
+                    source.getDepthBuffer(), 0,
+                    copy.getDepthBuffer(), 0,
+                    source.getDepthBuffer().length
+            );
+            return copy;
+        }
+
+        private static String nanosToMillis(long nanos) {
+            return String.format(java.util.Locale.ROOT, "%.3f", nanos / 1_000_000.0);
+        }
+
         @Override
         public void renderIntoFbo(
                 MagoRenderableScene scene,
@@ -116,29 +139,6 @@ public final class ComparingRenderingBackend implements MagoRenderingBackend {
             } finally {
                 software.close();
             }
-        }
-
-        private static MagoFbo copyOf(MagoFbo source, String prefix) {
-            MagoFbo copy = new MagoFbo(
-                    prefix + source.getName(),
-                    source.getWidth(),
-                    source.getHeight()
-            );
-            System.arraycopy(
-                    source.getColorBuffer(), 0,
-                    copy.getColorBuffer(), 0,
-                    source.getColorBuffer().length
-            );
-            System.arraycopy(
-                    source.getDepthBuffer(), 0,
-                    copy.getDepthBuffer(), 0,
-                    source.getDepthBuffer().length
-            );
-            return copy;
-        }
-
-        private static String nanosToMillis(long nanos) {
-            return String.format(java.util.Locale.ROOT, "%.3f", nanos / 1_000_000.0);
         }
     }
 }

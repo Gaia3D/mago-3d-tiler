@@ -9,6 +9,31 @@ public final class MagoRenderEngine {
 
     private final MagoRenderer renderer = new MagoRenderer();
 
+    public static int toArgb(Vector4f color) {
+        int red = floatToByte(color.x);
+        int green = floatToByte(color.y);
+        int blue = floatToByte(color.z);
+        int alpha = floatToByte(color.w);
+
+        return (alpha << 24)
+                | (red << 16)
+                | (green << 8)
+                | blue;
+    }
+
+    private static int floatToByte(float value) {
+        if (!Float.isFinite(value)) {
+            return 0;
+        }
+
+        float clamped = Math.max(
+                0.0f,
+                Math.min(1.0f, value)
+        );
+
+        return Math.round(clamped * 255.0f);
+    }
+
     public void renderIntoFbo(
             MagoRenderableScene scene,
             MagoRenderContext context
@@ -37,30 +62,5 @@ public final class MagoRenderEngine {
                 scene,
                 context
         );
-    }
-
-    public static int toArgb(Vector4f color) {
-        int red = floatToByte(color.x);
-        int green = floatToByte(color.y);
-        int blue = floatToByte(color.z);
-        int alpha = floatToByte(color.w);
-
-        return (alpha << 24)
-                | (red << 16)
-                | (green << 8)
-                | blue;
-    }
-
-    private static int floatToByte(float value) {
-        if (!Float.isFinite(value)) {
-            return 0;
-        }
-
-        float clamped = Math.max(
-                0.0f,
-                Math.min(1.0f, value)
-        );
-
-        return Math.round(clamped * 255.0f);
     }
 }

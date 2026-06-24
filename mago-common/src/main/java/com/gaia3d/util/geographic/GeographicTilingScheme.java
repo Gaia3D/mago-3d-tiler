@@ -15,6 +15,12 @@ public class GeographicTilingScheme {
     public static final double LON_RANGE = MAX_LONGITUDE - MIN_LONGITUDE; // 360
     public static final double LAT_RANGE = MAX_LATITUDE - MIN_LATITUDE;   // 180
 
+    private static double clamp(double value, double min, double max) {
+        if (value < min) {return min;}
+        if (value > max) {return max;}
+        return value;
+    }
+
     public Vector3d cartesianToGeographic(Vector3d cartesian) {
         double x = cartesian.x;
         double y = cartesian.y;
@@ -112,11 +118,5 @@ public class GeographicTilingScheme {
      */
     public int getNumberOfYTilesAtLevel(int level) {
         return 1 << level;
-    }
-
-    private static double clamp(double value, double min, double max) {
-        if (value < min) {return min;}
-        if (value > max) {return max;}
-        return value;
     }
 }

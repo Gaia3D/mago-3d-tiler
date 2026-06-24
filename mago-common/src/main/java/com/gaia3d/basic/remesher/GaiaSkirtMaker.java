@@ -10,14 +10,6 @@ import java.util.*;
 @Slf4j
 public class GaiaSkirtMaker {
 
-    private enum BoundarySide {
-        NONE,
-        MIN_X,
-        MAX_X,
-        MIN_Y,
-        MAX_Y
-    }
-
     public int addSkirtsToScene(
             GaiaScene scene,
             GaiaBoundingBox nodeBBox,
@@ -613,5 +605,13 @@ public class GaiaSkirtMaker {
         }
 
         return a.getPosition().distance(b.getPosition()) <= maxDistance;
+    }
+
+    private enum BoundarySide {
+        NONE,
+        MIN_X,
+        MAX_X,
+        MIN_Y,
+        MAX_Y
     }
 }

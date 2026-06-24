@@ -42,6 +42,15 @@ public final class MagoFbo {
         allocateBuffers();
     }
 
+    private static void validateDimensions(int width, int height) {
+        if (width <= 0 || height <= 0) {
+            throw new IllegalArgumentException(
+                    "Framebuffer dimensions must be greater than zero: "
+                            + width + "x" + height
+            );
+        }
+    }
+
     private void allocateBuffers() {
         int pixelCount = Math.multiplyExact(width, height);
 
@@ -198,15 +207,6 @@ public final class MagoFbo {
         if (colorBuffer == null || depthBuffer == null) {
             throw new IllegalStateException(
                     "MagoFbo has already been cleaned up: " + name
-            );
-        }
-    }
-
-    private static void validateDimensions(int width, int height) {
-        if (width <= 0 || height <= 0) {
-            throw new IllegalArgumentException(
-                    "Framebuffer dimensions must be greater than zero: "
-                            + width + "x" + height
             );
         }
     }

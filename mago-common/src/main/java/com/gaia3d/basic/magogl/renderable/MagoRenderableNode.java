@@ -10,28 +10,22 @@ import java.util.Objects;
 
 @Getter
 public class MagoRenderableNode {
-
-    private String name = "";
-    private MagoRenderableNode parent;
-
     private final List<MagoRenderableMesh> renderableMeshes =
             new ArrayList<>();
-
     private final List<MagoRenderableNode> children =
             new ArrayList<>();
-
     /**
      * Local transformation relative to the parent node.
      */
     private final Matrix4d transformMatrix =
             new Matrix4d();
-
     /**
      * Accumulated transformation relative to the scene root.
      */
     private final Matrix4d preMultipliedTransformMatrix =
             new Matrix4d();
-
+    private String name = "";
+    private MagoRenderableNode parent;
     private GaiaBoundingBox gaiaBoundingBox;
 
     public void setName(String name) {

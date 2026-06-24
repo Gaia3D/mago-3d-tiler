@@ -23,10 +23,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class Node {
 
-    public enum RefineType {
-        ADD, REPLACE,
-    }
-
     @JsonIgnore
     private String nodeCode;
     @JsonIgnore
@@ -39,7 +35,6 @@ public class Node {
     private GaiaBoundingBox boundingBox;
     @JsonIgnore
     private int depth;
-
     private BoundingVolume boundingVolume;
     private RefineType refine = RefineType.ADD;
     @JsonInclude(JsonInclude.Include.USE_DEFAULTS)
@@ -128,7 +123,6 @@ public class Node {
             }
         }
     }
-
 
     public void deleteNoContentNodes() {
         if (children == null) {
@@ -674,5 +668,9 @@ public class Node {
             }
         }
         return maxDepth;
+    }
+
+    public enum RefineType {
+        ADD, REPLACE,
     }
 }

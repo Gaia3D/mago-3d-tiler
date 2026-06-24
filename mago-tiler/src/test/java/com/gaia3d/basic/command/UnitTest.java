@@ -709,7 +709,7 @@ class UnitTest {
     void SangAm() {
         // someTiles
         String inputPath = "F:\\disk_E\\data\\mago3dtiler_TESTDATA\\SangAm_JoGoNi\\Production_2\\L22_4_buildings\\";
-        String outputPath = "D:\\data\\mago-server\\output\\SangAm_L22_4_buildings_20260624_OS\\";
+        String outputPath = "D:\\data\\mago-server\\output\\SangAm_L22_4_buildings_20260624_OS_2\\";
 
         String[] args = new String[]{
                 "-i", inputPath,
