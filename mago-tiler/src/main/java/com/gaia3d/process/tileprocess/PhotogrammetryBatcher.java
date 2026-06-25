@@ -8,6 +8,7 @@ import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
+import com.gaia3d.converter.gltf.GltfWriterOptions;
 import com.gaia3d.converter.gltf.tiles.BatchedModelGltfWriter;
 import com.gaia3d.io.LittleEndianDataOutputStream;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTableMap;
@@ -37,7 +38,22 @@ public class PhotogrammetryBatcher {
     private static final int VERSION = 1;
 
     public PhotogrammetryBatcher() {
-        this.gltfWriter = new BatchedModelGltfWriter();
+        GltfWriterOptions gltfOptions = GltfWriterOptions.builder()
+                .build();
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        if ("1.0".equals(globalOptions.getTilesVersion())) {
+            gltfOptions.setUriImage(true);
+        }
+        if (globalOptions.isUseQuantization()) {
+            gltfOptions.setUseQuantization(true);
+        }
+        if (globalOptions.isPhotogrammetry()) {
+            gltfOptions.setForceJpeg(true);
+            gltfOptions.setUseQuantization(true);
+            gltfOptions.setUseShortTexCoord(true);
+            gltfOptions.setUseByteNormal(true);
+        }
+        gltfWriter = new BatchedModelGltfWriter(gltfOptions);
     }
 
     public ContentInfo runV2(ContentInfo contentInfo, GaiaScene scene) {
@@ -122,7 +138,12 @@ public class PhotogrammetryBatcher {
             scene.deleteNormals();
         }
 
-        this.gltfWriter.writeGlb(scene, glbOutputFile, featureTable, batchTableMap);
+//        gltfOptions.setForceJpeg(true);
+//        gltfOptions.setUseQuantization(true);
+//        gltfOptions.setUseShortTexCoord(true);
+//        gltfOptions.setUseByteNormal(true);
+
+        gltfWriter.writeGlb(scene, glbOutputFile, featureTable, batchTableMap);
         return contentInfo;
     }
 
