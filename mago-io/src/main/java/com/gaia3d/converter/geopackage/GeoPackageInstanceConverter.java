@@ -130,7 +130,11 @@ public class GeoPackageInstanceConverter implements AttributeReader {
                             SimpleFeature feature = simpleFeatureReader.next();
                             Geometry geom = (Geometry) feature.getDefaultGeometry();
 
-                            double heading = getNumberAttribute(feature, headingColumnName, parametricOptions.getDefaultHeading());
+                            double defaultHeading = parametricOptions.getDefaultHeading();
+                            if (parametricOptions.isRandomHeading()) {
+                                defaultHeading = Math.random() * 360.0;
+                            }
+                            double heading = getNumberAttribute(feature, headingColumnName, defaultHeading);
                             double altitude = getNumberAttribute(feature, altitudeColumnName, parametricOptions.getAbsoluteAltitudeValue());
                             double scale = getNumberAttribute(feature, scaleColumnName, parametricOptions.getDefaultScale());
                             double density = getNumberAttribute(feature, densityColumnName, parametricOptions.getDefaultDensity());

@@ -29,6 +29,7 @@ public class Parametric3DOptions {
     private double defaultScale;
     private double defaultDensity;
     private double defaultHeading;
+    private boolean randomHeading;
 
     private CoordinateReferenceSystem sourceCrs;
     private CoordinateReferenceSystem targetCrs;
