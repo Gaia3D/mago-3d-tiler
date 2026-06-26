@@ -105,6 +105,7 @@ public class InstancedProcessFlow implements ProcessFlow {
                 .diameterColumnName(globalOptions.getDiameterColumn())
                 .scaleColumnName(globalOptions.getScaleColumn())
                 .densityColumnName(globalOptions.getDensityColumn())
+                .randomHeading(false)
                 .headingColumnName(globalOptions.getHeadingColumn())
                 .absoluteAltitudeValue(globalOptions.getAbsoluteAltitude())
                 .minimumHeightValue(globalOptions.getMinimumHeight())
@@ -116,6 +117,10 @@ public class InstancedProcessFlow implements ProcessFlow {
                 .defaultScale(GlobalConstants.DEFAULT_SCALE)
                 .defaultHeading(GlobalConstants.DEFAULT_HEADING)
                 .build();
+
+        if (isForest) {
+            vectorOptions.setRandomHeading(true);
+        }
 
         AttributeReader reader = null;
         if (formatType == FormatType.SHP) {

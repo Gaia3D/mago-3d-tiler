@@ -943,7 +943,6 @@ public class MagoReTextureByObliqueCamera {
         if (!resultAtlasTextures.isEmpty()) {
             resultHalfEdgeScenes.add(halfEdgeSceneMaster);
         }
-
     }
 
     public MagoFbo renderTopView(List<SceneInfo> sceneInfos,
@@ -1489,6 +1488,7 @@ public class MagoReTextureByObliqueCamera {
             log.info("atlasScissoredTexture.getBufferedImage() is null.");
             return;
         }
+
         // resize the atlas texture if necessary.
         BufferedImage atlasBufferedImage = atlasScissoredTexture.getBufferedImage();
         if(atlasBufferedImage.getWidth() > 1024 || atlasBufferedImage.getHeight() > 1024) {

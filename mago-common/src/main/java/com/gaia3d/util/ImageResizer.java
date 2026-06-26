@@ -38,17 +38,12 @@ public class ImageResizer {
         int widthPowerOf2 = ImageUtils.getNearestPowerOfTwo(width);
         int heightPowerOf2 = ImageUtils.getNearestPowerOfTwo(height);
 
-        int limitSize = 1024;
-        if(lod > 0){
-            limitSize = 512;
+        if(widthPowerOf2 > 1024){
+            widthPowerOf2  = 1024;
         }
 
-        if(widthPowerOf2 > limitSize){
-            widthPowerOf2  = limitSize;
-        }
-
-        if(heightPowerOf2 > limitSize){
-            heightPowerOf2 = limitSize;
+        if(heightPowerOf2 > 1024){
+            heightPowerOf2 = 1024;
         }
 
         return resizeMultiStepSmart(original, widthPowerOf2, heightPowerOf2);
