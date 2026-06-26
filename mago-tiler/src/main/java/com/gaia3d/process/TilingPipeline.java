@@ -1,7 +1,6 @@
 package com.gaia3d.process;
 
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.assimp.validation.GaiaSceneValidationReportCollector;
 import com.gaia3d.converter.loader.FileLoader;
 import com.gaia3d.process.postprocess.PostProcess;
 import com.gaia3d.process.preprocess.PreProcess;
@@ -64,10 +63,6 @@ public class TilingPipeline implements Pipeline {
             executeTilingProcess();
             /* Post-process */
             executePostProcesses();
-            /* Write validation summary if requested */
-            if (globalOptions.isValidationReport()) {
-                writeValidationSummary();
-            }
             /* Delete temp files */
             deleteTemp();
         } catch (InterruptedException e) {
@@ -225,17 +220,6 @@ public class TilingPipeline implements Pipeline {
             } catch (IOException moveException) {
                 throw new RuntimeException("Failed to move existing temp directory: " + tempFile.getAbsolutePath(), moveException);
             }
-        }
-    }
-
-    private void writeValidationSummary() {
-        GaiaSceneValidationReportCollector collector = GaiaSceneValidationReportCollector.getInstance();
-        try {
-            collector.writeSummary(new File(globalOptions.getOutputPath()));
-        } catch (IOException e) {
-            log.error("[ERROR][Validation] Failed to write validation summary: {}", e.getMessage());
-        } finally {
-            collector.reset();
         }
     }
 

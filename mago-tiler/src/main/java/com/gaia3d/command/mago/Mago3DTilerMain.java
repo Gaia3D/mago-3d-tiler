@@ -30,7 +30,6 @@ public class Mago3DTilerMain {
             boolean isQuiet = command.hasOption(ProcessOptions.QUIET.getLongName());
             boolean hasLogPath = command.hasOption(ProcessOptions.LOG_PATH.getLongName());
             boolean isDebug = command.hasOption(ProcessOptions.DEBUG.getLongName());
-            boolean isVerbose = command.hasOption(ProcessOptions.VERBOSE.getLongName());
             boolean isMerge = command.hasOption(ProcessOptions.MERGE.getLongName());
 
             // Logging configuration
@@ -41,12 +40,6 @@ public class Mago3DTilerMain {
                 LoggingConfiguration.initConsoleLogger("[%p][%d{HH:mm:ss}][%C{2}(%M:%L)]::%message%n");
                 if (hasLogPath) {
                     LoggingConfiguration.initFileLogger("[%p][%d{HH:mm:ss}][%C{2}(%M:%L)]::%message%n", command.getOptionValue(ProcessOptions.LOG_PATH.getLongName()));
-                }
-                LoggingConfiguration.setLevel(Level.DEBUG);
-            } else if (isVerbose) {
-                LoggingConfiguration.initConsoleLogger();
-                if (hasLogPath) {
-                    LoggingConfiguration.initFileLogger(null, command.getOptionValue(ProcessOptions.LOG_PATH.getLongName()));
                 }
                 LoggingConfiguration.setLevel(Level.DEBUG);
             } else {

@@ -126,9 +126,6 @@ public class GlobalOptions {
     private boolean isLeaveTemp = false;
     private byte multiThreadCount = 3;
 
-    /* 4.2 Validation Report */
-    private boolean validationReport = false;
-
     private GlobalOptions() {
         // Private constructor for singleton
     }
@@ -403,7 +400,6 @@ public class GlobalOptions {
         }
 
         instance.setDebug(command.hasOption(ProcessOptions.DEBUG.getLongName()));
-        instance.setValidationReport(command.hasOption(ProcessOptions.VALIDATION_REPORT.getLongName()));
         boolean isRefineAdd = false;
         if (command.hasOption(ProcessOptions.REFINE_ADD.getLongName())) {
             isRefineAdd = true;

@@ -25,11 +25,6 @@ dependencies {
     implementation "org.citygml4j:citygml4j-cityjson:3.0.0"
     implementation "com.github.mreutegg:laszip4j:0.17"
     implementation files("libs/Indoor4J.jar")
-
-    testRuntimeOnly "org.lwjgl:lwjgl:${lwjglVersion}:natives-windows"
-    testRuntimeOnly "org.lwjgl:lwjgl-assimp:${lwjglVersion}:natives-windows"
-    testRuntimeOnly "org.lwjgl:lwjgl:${lwjglVersion}:natives-linux"
-    testRuntimeOnly "org.lwjgl:lwjgl-assimp:${lwjglVersion}:natives-linux"
 }
 
 publishing {

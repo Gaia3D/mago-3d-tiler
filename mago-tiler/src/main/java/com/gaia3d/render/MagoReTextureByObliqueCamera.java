@@ -550,7 +550,7 @@ public class MagoReTextureByObliqueCamera {
                 mapCameraDirectionTypeModelViewMatrix,
                 resultAtlasTextures,
                 mapClassificationCamDirTypeFacesList,
-                outputPathString, nodeName);
+                outputPathString, nodeName, lod);
         // end of atlas texture*************************************************************************************
 
         // check if atlasTexture is made.
@@ -937,12 +937,13 @@ public class MagoReTextureByObliqueCamera {
                 mapCameraDirectionTypeModelViewMatrix,
                 resultAtlasTextures,
                 mapClassificationCamDirTypeFacesList,
-                outputPathString, nodeName);
+                outputPathString, nodeName, lod);
 
         // check if atlasTexture is made.
         if (!resultAtlasTextures.isEmpty()) {
             resultHalfEdgeScenes.add(halfEdgeSceneMaster);
         }
+
     }
 
     public MagoFbo renderTopView(List<SceneInfo> sceneInfos,
@@ -1241,7 +1242,7 @@ public class MagoReTextureByObliqueCamera {
                                                           List<GaiaTexture> resultAtlasTextures,
                                                           Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapClassificationCamDirTypeFacesList,
                                                           String outputPathString,
-                                                          String nodeName) {
+                                                          String nodeName, int lod) {
         List<HalfEdgeSurface> surfaces = halfEdgeSceneMaster.extractSurfaces(null);
 
         TextureAtlasManager texAtlasManager = new TextureAtlasManager();
@@ -1488,13 +1489,14 @@ public class MagoReTextureByObliqueCamera {
             log.info("atlasScissoredTexture.getBufferedImage() is null.");
             return;
         }
-
         // resize the atlas texture if necessary.
-        int lod = 1; // resizer distingis lod 0 or greater than 0, so lod = 1 for resizing is correct.
-        ImageResizer imageResizer = new ImageResizer();
-        BufferedImage resized = imageResizer.resizeMultiStepSmart(atlasScissoredTexture.getBufferedImage(), lod);
-        atlasScissoredTexture.getBufferedImage().flush();
-        atlasScissoredTexture.setBufferedImage(resized);
+        BufferedImage atlasBufferedImage = atlasScissoredTexture.getBufferedImage();
+        if(atlasBufferedImage.getWidth() > 1024 || atlasBufferedImage.getHeight() > 1024) {
+            ImageResizer imageResizer = new ImageResizer();
+            BufferedImage resized = imageResizer.resizeMultiStepSmart(atlasBufferedImage, lod);
+            atlasBufferedImage.flush();
+            atlasScissoredTexture.setBufferedImage(resized);
+        }
 
         resultAtlasTextures.add(atlasScissoredTexture);
 

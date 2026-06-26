@@ -27,7 +27,10 @@ public class GlobalConstants {
     public static final float DEFAULT_POINT_RATIO = 100;
     public static final float POINTSCLOUD_HORIZONTAL_GRID = 500.0f; // in meters
     public static final float POINTSCLOUD_VERTICAL_GRID = 500.0f; // in meters
+    public static final float POINTSCLOUD_HORIZONTAL_ARC = (1.0f / 60.0f / 60.0f) * 20.0f;
+    public static final float POINTSCLOUD_VERTICAL_ARC = (1.0f / 60.0f / 60.0f) * 20.0f;
     public static final String DEFAULT_SOURCE_CRS_CODE = "3857";
+    // The default target CRS is WGS 84 / ECEF (EPSG:4978)
     public static final String DEFAULT_TARGET_CRS_CODE = "4978";
     public static final CoordinateReferenceSystem DEFAULT_SOURCE_CRS = new CRSFactory().createFromName("EPSG:" + DEFAULT_SOURCE_CRS_CODE);
     public static final CoordinateReferenceSystem DEFAULT_TARGET_CRS = new CRSFactory().createFromName("EPSG:" + DEFAULT_TARGET_CRS_CODE);

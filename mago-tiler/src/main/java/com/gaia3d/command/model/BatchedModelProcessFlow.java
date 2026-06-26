@@ -96,6 +96,7 @@ public class BatchedModelProcessFlow implements ProcessFlow {
     }
 
     private Converter getConverter(FormatType formatType) {
+
         Parametric3DOptions vectorOptions = Parametric3DOptions.builder()
                 .attributeFilters(globalOptions.getAttributeFilters())
                 .sourceCrs(globalOptions.getSourceCrs())
@@ -106,7 +107,6 @@ public class BatchedModelProcessFlow implements ProcessFlow {
                 .scaleColumnName(globalOptions.getScaleColumn())
                 .densityColumnName(globalOptions.getDensityColumn())
                 .headingColumnName(globalOptions.getHeadingColumn())
-                .randomHeading(false)
                 .absoluteAltitudeValue(globalOptions.getAbsoluteAltitude())
                 .minimumHeightValue(globalOptions.getMinimumHeight())
                 .skirtHeight(globalOptions.getSkirtHeight())

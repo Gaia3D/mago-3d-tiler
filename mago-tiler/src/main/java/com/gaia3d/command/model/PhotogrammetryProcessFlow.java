@@ -10,7 +10,11 @@ import com.gaia3d.converter.kml.FastKmlReader;
 import com.gaia3d.converter.loader.BatchedFileLoader;
 import com.gaia3d.converter.parametric.ExtrusionTempGenerator;
 import com.gaia3d.process.TilingPipeline;
+import com.gaia3d.process.postprocess.GaiaMaximizer;
+import com.gaia3d.process.postprocess.GaiaRelocator;
 import com.gaia3d.process.postprocess.PostProcess;
+import com.gaia3d.process.postprocess.batch.Batched3DModel;
+import com.gaia3d.process.postprocess.batch.Batched3DModelV2;
 import com.gaia3d.process.preprocess.*;
 import com.gaia3d.process.tileprocess.Pipeline;
 import com.gaia3d.process.tileprocess.TilingProcess;
@@ -66,6 +70,15 @@ public class PhotogrammetryProcessFlow implements ProcessFlow {
         List<PostProcess> postProcessors = new ArrayList<>();
 
         // In photogrammetry there are no post-processes.
+//        postProcessors.add(new GaiaMaximizer());
+//        postProcessors.add(new GaiaRelocator());
+//        if (globalOptions.getTilesVersion()
+//                .equals("1.0")) {
+//            postProcessors.add(new Batched3DModel());
+//        } else {
+//            postProcessors.add(new Batched3DModelV2());
+//        }
+
         Pipeline processPipeline = new TilingPipeline(preProcessors, tilingProcess, postProcessors);
         processPipeline.process(fileLoader);
     }

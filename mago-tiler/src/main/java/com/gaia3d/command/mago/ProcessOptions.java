@@ -104,12 +104,6 @@ public enum ProcessOptions {
     //VOXEL_LOD("voxelLod", "vl", false, false, "[Experimental] Voxel Level Of Detail setting for i3dm"),
     //ZERO_ORIGIN("zeroOrigin", "zo", false, false, "[Experimental] fix 3d root transformed matrix origin to zero point."),
 
-    /* Validation Options */
-    VALIDATION_REPORT("validationReport", "vr", false, false, "[Validation] Save per-file validation JSON reports to the temp directory and write a batch summary to the output directory."),
-
-    /* Verbose Options */
-    VERBOSE("verbose", "v", false, false, "[Verbose] Show debug-level logs without changing the log format or disabling async logging."),
-
     /* Debug Options */
     DEBUG("debug", "d", false, false, "[DEBUG] More detailed log output and stops on Multi-Thread bugs.");
 

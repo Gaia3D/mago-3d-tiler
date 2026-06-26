@@ -40,7 +40,6 @@ import com.gaia3d.render.MagoLeafTileManager;
 import com.gaia3d.render.MagoReTextureByObliqueCamera;
 import com.gaia3d.util.DecimalUtils;
 import com.gaia3d.util.GlobeUtils;
-import com.gaia3d.util.ImageResizer;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
@@ -2230,8 +2229,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             gaiaSampler.setWrapT(GL_CLAMP_TO_EDGE);
             matId++;
         }
-
-
 
         String outputPathString = globalOptions.getOutputPath();
         String nodeName = "node_L_" + nodeDepth + "_" + nodeIdx;
