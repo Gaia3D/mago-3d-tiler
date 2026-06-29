@@ -1,5 +1,6 @@
 package com.gaia3d.basic.halfedge;
 
+import com.gaia3d.basic.remesher.PlaneHEdgeIntersectionType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -212,242 +213,377 @@ public class HalfEdge implements Serializable {
         return face1.isApplauseFace(face2);
     }
 
-    public boolean getIntersectionByPlane(PlaneType planeType, Vector3d planePosition, HalfEdgeVertex resultIntesectionVertex, double error) {
-        // for OBLIQUE planes, override this method.
-        boolean intersection = false;
-
+    public PlaneHEdgeIntersectionType getIntersectionByPlane(
+            PlaneType planeType,
+            Vector3d planePosition,
+            HalfEdgeVertex resultIntersectionVertex,
+            double error
+    ) {
         if (planeType == PlaneType.XY) {
-            intersection = getIntersectionByPlaneXY(planePosition, resultIntesectionVertex, error);
-        } else if (planeType == PlaneType.YZ) {
-            intersection = getIntersectionByPlaneYZ(planePosition, resultIntesectionVertex, error);
-        } else if (planeType == PlaneType.XZ) {
-            intersection = getIntersectionByPlaneXZ(planePosition, resultIntesectionVertex, error);
+            return getIntersectionByPlaneXY(
+                    planePosition,
+                    resultIntersectionVertex,
+                    error
+            );
         }
 
-        return intersection;
+        if (planeType == PlaneType.XZ) {
+            return getIntersectionByPlaneXZ(
+                    planePosition,
+                    resultIntersectionVertex,
+                    error
+            );
+        }
+
+        if (planeType == PlaneType.YZ) {
+            return getIntersectionByPlaneYZ(
+                    planePosition,
+                    resultIntersectionVertex,
+                    error
+            );
+        }
+
+        return PlaneHEdgeIntersectionType.NONE;
     }
 
-    private boolean getIntersectionByPlaneXY(Vector3d planePosition, HalfEdgeVertex resultIntesectionVertex, double error) {
-        // check if the startPoint or endPoint touches the plane
+    private PlaneHEdgeIntersectionType getIntersectionByPlaneXY(
+            Vector3d planePosition,
+            HalfEdgeVertex resultIntersectionVertex,
+            double error
+    ) {
         HalfEdgeVertex startVertex = this.startVertex;
         HalfEdgeVertex endVertex = this.getEndVertex();
-        Vector3d startVertexPosition = startVertex.getPosition();
-        Vector3d endVertexPosition = endVertex.getPosition();
-        Vector3d resultIntersectionPoint = new Vector3d();
 
-        if (Math.abs(startVertexPosition.z - planePosition.z) < error) {
-            return false;
-        } else if (Math.abs(endVertexPosition.z - planePosition.z) < error) {
-            return false;
+        if (startVertex == null || endVertex == null) {
+            return PlaneHEdgeIntersectionType.NONE;
         }
 
-        // check if the startPoint and the endPoint are on the same side of the plane
-        if ((startVertexPosition.z - planePosition.z) * (endVertexPosition.z - planePosition.z) > 0) {
-            return false;
+        Vector3d startPosition = startVertex.getPosition();
+        Vector3d endPosition = endVertex.getPosition();
+
+        if (startPosition == null || endPosition == null) {
+            return PlaneHEdgeIntersectionType.NONE;
         }
 
-        if (Math.abs(startVertexPosition.z - endVertexPosition.z) < error) {
-            return false;
+        double startDistance =
+                startPosition.z - planePosition.z;
+
+        double endDistance =
+                endPosition.z - planePosition.z;
+
+        boolean startCoincident =
+                Math.abs(startDistance) < error;
+
+        boolean endCoincident =
+                Math.abs(endDistance) < error;
+
+        /*
+         * Comprobar primero el caso coplanar.
+         */
+        if (startCoincident && endCoincident) {
+            return PlaneHEdgeIntersectionType.COPLANAR_EDGE;
         }
 
-        // calculate the intersection point
-        double t = (planePosition.z - startVertexPosition.z) / (endVertexPosition.z - startVertexPosition.z);
-        resultIntersectionPoint.set(startVertexPosition.x + t * (endVertexPosition.x - startVertexPosition.x), startVertexPosition.y + t * (endVertexPosition.y - startVertexPosition.y), planePosition.z);
-
-        // check if the intersection point is in the range of the halfEdge
-        // check z
-        double z = resultIntersectionPoint.z;
-        double minZ = Math.min(startVertex.getPosition().z, getEndVertex().getPosition().z);
-        double maxZ = Math.max(startVertex.getPosition().z, getEndVertex().getPosition().z);
-        if (z < minZ + error || z > maxZ - error) {
-            return false;
+        if (startCoincident) {
+            return PlaneHEdgeIntersectionType.START_VERTEX;
         }
 
-        resultIntesectionVertex.setPosition(resultIntersectionPoint);
-
-        // calculate the intersection normal
-        if (startVertex.getNormal() != null && endVertex.getNormal() != null) {
-            Vector3d resultIntersectionNormal = new Vector3d();
-            Vector3d startVertexNormal = startVertex.getNormal();
-            Vector3d endVertexNormal = endVertex.getNormal();
-            resultIntersectionNormal.set(startVertexNormal.x + t * (endVertexNormal.x - startVertexNormal.x), startVertexNormal.y + t * (endVertexNormal.y - startVertexNormal.y), startVertexNormal.z + t * (endVertexNormal.z - startVertexNormal.z));
-
-            resultIntesectionVertex.setNormal(resultIntersectionNormal);
+        if (endCoincident) {
+            return PlaneHEdgeIntersectionType.END_VERTEX;
         }
 
-        // calculate the intersection texCoord
-        if (startVertex.getTexcoords() != null && endVertex.getTexcoords() != null) {
-            Vector2d resultIntersectionTexCoord = new Vector2d();
-            Vector2d startVertexTexCoord = startVertex.getTexcoords();
-            Vector2d endVertexTexCoord = endVertex.getTexcoords();
-            resultIntersectionTexCoord.set(startVertexTexCoord.x + t * (endVertexTexCoord.x - startVertexTexCoord.x), startVertexTexCoord.y + t * (endVertexTexCoord.y - startVertexTexCoord.y));
-
-            resultIntesectionVertex.setTexcoords(resultIntersectionTexCoord);
+        /*
+         * Ambos vértices están estrictamente en el mismo lado.
+         */
+        if (startDistance * endDistance > 0.0) {
+            return PlaneHEdgeIntersectionType.NONE;
         }
 
-        // calculate the intersection color
-        if (startVertex.getColor() != null && endVertex.getColor() != null) {
-            byte[] startVertexColor = startVertex.getColor();
-            byte[] endVertexColor = endVertex.getColor();
-            byte[] resultIntersectionColor = new byte[4];
-            for (int i = 0; i < 4; i++) {
-                resultIntersectionColor[i] = (byte) (startVertexColor[i] + t * (endVertexColor[i] - startVertexColor[i]));
-            }
-
-            resultIntesectionVertex.setColor(resultIntersectionColor);
+        /*
+         * Protección equivalente a la implementación antigua.
+         */
+        if (Math.abs(
+                startPosition.z - endPosition.z
+        ) < error) {
+            return PlaneHEdgeIntersectionType.NONE;
         }
 
-        return true;
+        double t =
+                (planePosition.z - startPosition.z)
+                        / (endPosition.z - startPosition.z);
+
+        if (t <= 0.0 || t >= 1.0) {
+            return PlaneHEdgeIntersectionType.NONE;
+        }
+
+        Vector3d intersectionPosition =
+                new Vector3d(
+                        startPosition.x
+                                + t * (endPosition.x - startPosition.x),
+
+                        startPosition.y
+                                + t * (endPosition.y - startPosition.y),
+
+                        planePosition.z
+                );
+
+        resultIntersectionVertex.setPosition(
+                intersectionPosition
+        );
+
+        interpolateVertexAttributes(
+                startVertex,
+                endVertex,
+                resultIntersectionVertex,
+                t
+        );
+
+        return PlaneHEdgeIntersectionType.INNER_INTERSECTION;
     }
 
-    private boolean getIntersectionByPlaneYZ(Vector3d planePosition, HalfEdgeVertex resultIntesectionVertex, double error) {
-        // check if the startPoint or endPoint touches the plane
+    private PlaneHEdgeIntersectionType getIntersectionByPlaneXZ(
+            Vector3d planePosition,
+            HalfEdgeVertex resultIntersectionVertex,
+            double error
+    ) {
         HalfEdgeVertex startVertex = this.startVertex;
         HalfEdgeVertex endVertex = this.getEndVertex();
-        Vector3d startVertexPosition = startVertex.getPosition();
-        Vector3d endVertexPosition = endVertex.getPosition();
-        Vector3d resultIntersectionPoint = new Vector3d();
 
-        if (Math.abs(startVertexPosition.x - planePosition.x) < error) {
-            return false;
-        } else if (Math.abs(endVertexPosition.x - planePosition.x) < error) {
-            return false;
+        if (startVertex == null || endVertex == null) {
+            return PlaneHEdgeIntersectionType.NONE;
         }
 
-        // check if the startPoint and the endPoint are on the same side of the plane
-        if ((startVertexPosition.x - planePosition.x) * (endVertexPosition.x - planePosition.x) > 0) {
-            return false;
+        Vector3d startPosition = startVertex.getPosition();
+        Vector3d endPosition = endVertex.getPosition();
+
+        if (startPosition == null || endPosition == null) {
+            return PlaneHEdgeIntersectionType.NONE;
         }
 
-        // check if the halfEdge is parallel to the plane
-        if (Math.abs(startVertexPosition.x - endVertexPosition.x) < error) {
-            return false;
+        double startDistance =
+                startPosition.y - planePosition.y;
+
+        double endDistance =
+                endPosition.y - planePosition.y;
+
+        boolean startCoincident =
+                Math.abs(startDistance) < error;
+
+        boolean endCoincident =
+                Math.abs(endDistance) < error;
+
+        if (startCoincident && endCoincident) {
+            return PlaneHEdgeIntersectionType.COPLANAR_EDGE;
         }
 
-        // calculate the intersection point
-        double t = (planePosition.x - startVertexPosition.x) / (endVertexPosition.x - startVertexPosition.x);
-        resultIntersectionPoint.set(planePosition.x, startVertexPosition.y + t * (endVertexPosition.y - startVertexPosition.y), startVertexPosition.z + t * (endVertexPosition.z - startVertexPosition.z));
-
-        // t represents
-
-        // check if the intersection point is in the range of the halfEdge
-        // check x
-        double x = resultIntersectionPoint.x;
-        double minX = Math.min(startVertex.getPosition().x, getEndVertex().getPosition().x);
-        double maxX = Math.max(startVertex.getPosition().x, getEndVertex().getPosition().x);
-        if (x < minX + error || x > maxX - error) {
-            return false;
+        if (startCoincident) {
+            return PlaneHEdgeIntersectionType.START_VERTEX;
         }
 
-        resultIntesectionVertex.setPosition(resultIntersectionPoint);
-
-        // calculate the intersection normal
-        if (startVertex.getNormal() != null && endVertex.getNormal() != null) {
-            Vector3d resultIntersectionNormal = new Vector3d();
-            Vector3d startVertexNormal = startVertex.getNormal();
-            Vector3d endVertexNormal = endVertex.getNormal();
-            resultIntersectionNormal.set(startVertexNormal.x + t * (endVertexNormal.x - startVertexNormal.x), startVertexNormal.y + t * (endVertexNormal.y - startVertexNormal.y), startVertexNormal.z + t * (endVertexNormal.z - startVertexNormal.z));
-
-            resultIntesectionVertex.setNormal(resultIntersectionNormal);
+        if (endCoincident) {
+            return PlaneHEdgeIntersectionType.END_VERTEX;
         }
 
-        // calculate the intersection texCoord
-        if (startVertex.getTexcoords() != null && endVertex.getTexcoords() != null) {
-            Vector2d resultIntersectionTexCoord = new Vector2d();
-            Vector2d startVertexTexCoord = startVertex.getTexcoords();
-            Vector2d endVertexTexCoord = endVertex.getTexcoords();
-            resultIntersectionTexCoord.set(startVertexTexCoord.x + t * (endVertexTexCoord.x - startVertexTexCoord.x), startVertexTexCoord.y + t * (endVertexTexCoord.y - startVertexTexCoord.y));
-
-            resultIntesectionVertex.setTexcoords(resultIntersectionTexCoord);
+        if (startDistance * endDistance > 0.0) {
+            return PlaneHEdgeIntersectionType.NONE;
         }
 
-        // calculate the intersection color
-        if (startVertex.getColor() != null && endVertex.getColor() != null) {
-            byte[] startVertexColor = startVertex.getColor();
-            byte[] endVertexColor = endVertex.getColor();
-            byte[] resultIntersectionColor = new byte[4];
-            for (int i = 0; i < 4; i++) {
-                resultIntersectionColor[i] = (byte) (startVertexColor[i] + t * (endVertexColor[i] - startVertexColor[i]));
-            }
-
-            resultIntesectionVertex.setColor(resultIntersectionColor);
+        if (Math.abs(
+                startPosition.y - endPosition.y
+        ) < error) {
+            return PlaneHEdgeIntersectionType.NONE;
         }
 
-        return true;
+        double t =
+                (planePosition.y - startPosition.y)
+                        / (endPosition.y - startPosition.y);
+
+        if (t <= 0.0 || t >= 1.0) {
+            return PlaneHEdgeIntersectionType.NONE;
+        }
+
+        Vector3d intersectionPosition =
+                new Vector3d(
+                        startPosition.x
+                                + t * (endPosition.x - startPosition.x),
+
+                        planePosition.y,
+
+                        startPosition.z
+                                + t * (endPosition.z - startPosition.z)
+                );
+
+        resultIntersectionVertex.setPosition(
+                intersectionPosition
+        );
+
+        interpolateVertexAttributes(
+                startVertex,
+                endVertex,
+                resultIntersectionVertex,
+                t
+        );
+
+        return PlaneHEdgeIntersectionType.INNER_INTERSECTION;
     }
 
-    private boolean getIntersectionByPlaneXZ(Vector3d planePosition, HalfEdgeVertex resultIntesectionVertex, double error) {
-        // check if the startPoint or endPoint touches the plane
+    private PlaneHEdgeIntersectionType getIntersectionByPlaneYZ(
+            Vector3d planePosition,
+            HalfEdgeVertex resultIntersectionVertex,
+            double error
+    ) {
         HalfEdgeVertex startVertex = this.startVertex;
         HalfEdgeVertex endVertex = this.getEndVertex();
-        Vector3d startVertexPosition = startVertex.getPosition();
-        Vector3d endVertexPosition = endVertex.getPosition();
-        Vector3d resultIntersectionPoint = new Vector3d();
 
-        if (Math.abs(startVertexPosition.y - planePosition.y) < error) {
-            return false;
-        } else if (Math.abs(endVertexPosition.y - planePosition.y) < error) {
-            return false;
+        if (startVertex == null || endVertex == null) {
+            return PlaneHEdgeIntersectionType.NONE;
         }
 
-        // check if the startPoint and the endPoint are on the same side of the plane
-        if ((startVertexPosition.y - planePosition.y) * (endVertexPosition.y - planePosition.y) > 0) {
-            return false;
+        Vector3d startPosition = startVertex.getPosition();
+        Vector3d endPosition = endVertex.getPosition();
+
+        if (startPosition == null || endPosition == null) {
+            return PlaneHEdgeIntersectionType.NONE;
         }
 
-//        // check if the halfEdge is parallel to the plane
-        if (Math.abs(startVertexPosition.y - endVertexPosition.y) < error) {
-            return false;
+        double startDistance =
+                startPosition.x - planePosition.x;
+
+        double endDistance =
+                endPosition.x - planePosition.x;
+
+        boolean startCoincident =
+                Math.abs(startDistance) < error;
+
+        boolean endCoincident =
+                Math.abs(endDistance) < error;
+
+        if (startCoincident && endCoincident) {
+            return PlaneHEdgeIntersectionType.COPLANAR_EDGE;
         }
 
-        // calculate the intersection point
-        double t = (planePosition.y - startVertexPosition.y) / (endVertexPosition.y - startVertexPosition.y);
-        resultIntersectionPoint.set(startVertexPosition.x + t * (endVertexPosition.x - startVertexPosition.x), planePosition.y, startVertexPosition.z + t * (endVertexPosition.z - startVertexPosition.z));
-
-        // check if the intersection point is in the range of the halfEdge
-        // check y
-        double y = resultIntersectionPoint.y;
-        double minY = Math.min(startVertex.getPosition().y, getEndVertex().getPosition().y);
-        double maxY = Math.max(startVertex.getPosition().y, getEndVertex().getPosition().y);
-        if (y < minY + error || y > maxY - error) {
-            return false;
+        if (startCoincident) {
+            return PlaneHEdgeIntersectionType.START_VERTEX;
         }
 
-        resultIntesectionVertex.setPosition(resultIntersectionPoint);
-
-        // calculate the intersection normal
-        if (startVertex.getNormal() != null && endVertex.getNormal() != null) {
-            Vector3d resultIntersectionNormal = new Vector3d();
-            Vector3d startVertexNormal = startVertex.getNormal();
-            Vector3d endVertexNormal = endVertex.getNormal();
-            resultIntersectionNormal.set(startVertexNormal.x + t * (endVertexNormal.x - startVertexNormal.x), startVertexNormal.y + t * (endVertexNormal.y - startVertexNormal.y), startVertexNormal.z + t * (endVertexNormal.z - startVertexNormal.z));
-
-            resultIntesectionVertex.setNormal(resultIntersectionNormal);
+        if (endCoincident) {
+            return PlaneHEdgeIntersectionType.END_VERTEX;
         }
 
-        // calculate the intersection texCoord
-        if (startVertex.getTexcoords() != null && endVertex.getTexcoords() != null) {
-            Vector2d resultIntersectionTexCoord = new Vector2d();
-            Vector2d startVertexTexCoord = startVertex.getTexcoords();
-            Vector2d endVertexTexCoord = endVertex.getTexcoords();
-            resultIntersectionTexCoord.set(startVertexTexCoord.x + t * (endVertexTexCoord.x - startVertexTexCoord.x), startVertexTexCoord.y + t * (endVertexTexCoord.y - startVertexTexCoord.y));
-
-            resultIntesectionVertex.setTexcoords(resultIntersectionTexCoord);
+        if (startDistance * endDistance > 0.0) {
+            return PlaneHEdgeIntersectionType.NONE;
         }
 
-        // calculate the intersection color
-        if (startVertex.getColor() != null && endVertex.getColor() != null) {
-            byte[] startVertexColor = startVertex.getColor();
-            byte[] endVertexColor = endVertex.getColor();
-            byte[] resultIntersectionColor = new byte[4];
+        if (Math.abs(
+                startPosition.x - endPosition.x
+        ) < error) {
+            return PlaneHEdgeIntersectionType.NONE;
+        }
+
+        double t =
+                (planePosition.x - startPosition.x)
+                        / (endPosition.x - startPosition.x);
+
+        if (t <= 0.0 || t >= 1.0) {
+            return PlaneHEdgeIntersectionType.NONE;
+        }
+
+        Vector3d intersectionPosition =
+                new Vector3d(
+                        planePosition.x,
+
+                        startPosition.y
+                                + t * (endPosition.y - startPosition.y),
+
+                        startPosition.z
+                                + t * (endPosition.z - startPosition.z)
+                );
+
+        resultIntersectionVertex.setPosition(
+                intersectionPosition
+        );
+
+        interpolateVertexAttributes(
+                startVertex,
+                endVertex,
+                resultIntersectionVertex,
+                t
+        );
+
+        return PlaneHEdgeIntersectionType.INNER_INTERSECTION;
+    }
+
+    private static void interpolateVertexAttributes(
+            HalfEdgeVertex startVertex,
+            HalfEdgeVertex endVertex,
+            HalfEdgeVertex resultVertex,
+            double t
+    ) {
+        Vector3d startNormal = startVertex.getNormal();
+        Vector3d endNormal = endVertex.getNormal();
+
+        if (startNormal != null && endNormal != null) {
+            Vector3d resultNormal =
+                    new Vector3d(
+                            startNormal.x
+                                    + t * (endNormal.x - startNormal.x),
+
+                            startNormal.y
+                                    + t * (endNormal.y - startNormal.y),
+
+                            startNormal.z
+                                    + t * (endNormal.z - startNormal.z)
+                    );
+
+            resultVertex.setNormal(resultNormal);
+        }
+
+        Vector2d startTexCoord =
+                startVertex.getTexcoords();
+
+        Vector2d endTexCoord =
+                endVertex.getTexcoords();
+
+        if (startTexCoord != null && endTexCoord != null) {
+            Vector2d resultTexCoord =
+                    new Vector2d(
+                            startTexCoord.x
+                                    + t * (endTexCoord.x - startTexCoord.x),
+
+                            startTexCoord.y
+                                    + t * (endTexCoord.y - startTexCoord.y)
+                    );
+
+            resultVertex.setTexcoords(resultTexCoord);
+        }
+
+        byte[] startColor =
+                startVertex.getColor();
+
+        byte[] endColor =
+                endVertex.getColor();
+
+        if (startColor != null
+                && endColor != null
+                && startColor.length >= 4
+                && endColor.length >= 4) {
+
+            byte[] resultColor =
+                    new byte[4];
+
             for (int i = 0; i < 4; i++) {
-                resultIntersectionColor[i] = (byte) (startVertexColor[i] + t * (endVertexColor[i] - startVertexColor[i]));
+                resultColor[i] =
+                        (byte) (
+                                startColor[i]
+                                        + t * (
+                                        endColor[i]
+                                                - startColor[i]
+                                )
+                        );
             }
 
-            resultIntesectionVertex.setColor(resultIntersectionColor);
+            resultVertex.setColor(resultColor);
         }
-
-        return true;
     }
 
     public boolean intersectsPlane(PlaneType planeType, Vector3d planePosition, double error) {

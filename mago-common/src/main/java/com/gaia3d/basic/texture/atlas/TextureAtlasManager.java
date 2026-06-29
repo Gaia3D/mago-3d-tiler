@@ -802,7 +802,7 @@ public class TextureAtlasManager {
 
         // make the atlas texture.**************************************************************************************
         int imageType = existPngTextures ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
-        log.info("[Tile][Photogrammetry][Atlas] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
+        log.debug("[Tile][Photogrammetry][Atlas] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
         resultTextureAtlas.createImage(maxWidth, maxHeight, imageType);
 
         // Fill atlas background with known color
@@ -1711,7 +1711,7 @@ public class TextureAtlasManager {
 
         // make the atlas texture.**************************************************************************************
         int imageType = existPngTextures ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
-        log.info("[Tile][Photogrammetry][Atlas] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
+        log.debug("[Tile][Photogrammetry][Atlas] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
         resultTextureAtlas.createImage(maxWidth, maxHeight, imageType);
 
         // Fill atlas background with known color
@@ -2371,7 +2371,7 @@ public class TextureAtlasManager {
         }
 
         GaiaTexture textureAtlas = new GaiaTexture();
-        log.info("[Tile][Photogrammetry][makeAtlasTexture] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
+        log.debug("[Tile][Photogrammetry][makeAtlasTexture] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
         textureAtlas.createImage(maxWidth, maxHeight, imageType);
 
         // draw the images into textureAtlas
@@ -2427,7 +2427,7 @@ public class TextureAtlasManager {
         }
 
         GaiaTexture textureAtlas = new GaiaTexture();
-        log.info("[Tile][Photogrammetry][makeAtlasTexture] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
+        log.debug("[Tile][Photogrammetry][makeAtlasTexture] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
         textureAtlas.createImage(maxWidth, maxHeight, imageType);
 
         // draw the images into textureAtlas

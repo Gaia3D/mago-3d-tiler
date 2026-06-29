@@ -3,6 +3,7 @@ package com.gaia3d.basic.halfedge;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.model.*;
+import com.gaia3d.basic.remesher.PlaneHEdgeIntersectionType;
 import com.gaia3d.basic.texture.atlas.TextureAtlasManager;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.TextureType;
@@ -521,76 +522,24 @@ public class HalfEdgeSurface implements Serializable {
     }
 
     public void cutByPlane(PlaneType planeType, Vector3d planePosition, double error) {
-        if (planeType == PlaneType.XY) {
-            cutByPlaneXY(planePosition, error);
-        } else if (planeType == PlaneType.XZ) {
-            cutByPlaneXZ(planePosition, error);
-        } else if (planeType == PlaneType.YZ) {
-            cutByPlaneYZ(planePosition, error);
+        // find halfEdges that are cut by the plane
+        int hedgesCutCount = 0;
+        int hedgesCount = halfEdges.size();
+        for (int i = 0; i < hedgesCount; i++) {
+            HalfEdge hedge = halfEdges.get(i);
+            if (hedge.getStatus() == ObjectStatus.DELETED) {
+                continue;
+            }
+
+            HalfEdgeVertex intersectionVertex = new HalfEdgeVertex();
+            if (hedge.getIntersectionByPlane(planeType, planePosition, intersectionVertex, error) == PlaneHEdgeIntersectionType.INNER_INTERSECTION) {
+                splitHalfEdge(hedge, intersectionVertex);
+                hedgesCount = halfEdges.size();
+                hedgesCutCount++;
+            }
         }
 
         removeDeletedObjects();
-    }
-
-    private void cutByPlaneXY(Vector3d planePosition, double error) {
-        // find halfEdges that are cut by the plane
-        int hedgesCutCount = 0;
-        int hedgesCount = halfEdges.size();
-        for (int i = 0; i < hedgesCount; i++) {
-            HalfEdge hedge = halfEdges.get(i);
-            if (hedge.getStatus() == ObjectStatus.DELETED) {
-                continue;
-            }
-
-            HalfEdgeVertex intersectionVertex = new HalfEdgeVertex();
-            if (hedge.getIntersectionByPlane(PlaneType.XY, planePosition, intersectionVertex, error)) {
-                splitHalfEdge(hedge, intersectionVertex);
-                hedgesCount = halfEdges.size();
-                hedgesCutCount++;
-            }
-
-        }
-        log.info("[Tile][Photogrammetry][cut][cutByPlaneXY] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount);
-    }
-
-    private void cutByPlaneXZ(Vector3d planePosition, double error) {
-        // find halfEdges that are cut by the plane
-        int hedgesCount = halfEdges.size();
-        int hedgesCutCount = 0;
-        for (int i = 0; i < hedgesCount; i++) {
-            HalfEdge hedge = halfEdges.get(i);
-            if (hedge.getStatus() == ObjectStatus.DELETED) {
-                continue;
-            }
-
-            HalfEdgeVertex intersectionVertex = new HalfEdgeVertex();
-            if (hedge.getIntersectionByPlane(PlaneType.XZ, planePosition, intersectionVertex, error)) {
-                splitHalfEdge(hedge, intersectionVertex);
-                hedgesCount = halfEdges.size();
-                hedgesCutCount++;
-            }
-        }
-        log.info("[Tile][Photogrammetry][cut][cutByPlaneXZ] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount);
-    }
-
-    private void cutByPlaneYZ(Vector3d planePosition, double error) {
-        // find halfEdges that are cut by the plane
-        int hedgesCount = halfEdges.size();
-        int hedgesCutCount = 0;
-        for (int i = 0; i < hedgesCount; i++) {
-            HalfEdge hedge = halfEdges.get(i);
-            if (hedge.getStatus() == ObjectStatus.DELETED) {
-                continue;
-            }
-
-            HalfEdgeVertex intersectionVertex = new HalfEdgeVertex();
-            if (hedge.getIntersectionByPlane(PlaneType.YZ, planePosition, intersectionVertex, error)) {
-                splitHalfEdge(hedge, intersectionVertex);
-                hedgesCount = halfEdges.size();
-                hedgesCutCount++;
-            }
-        }
-        log.info("[Tile][Photogrammetry][cut][cutByPlaneYZ] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount);
     }
 
     public boolean checkHalfEdgesFaces() {

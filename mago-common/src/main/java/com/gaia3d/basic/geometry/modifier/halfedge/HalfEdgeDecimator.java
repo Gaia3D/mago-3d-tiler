@@ -337,7 +337,7 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
                 hedgesCollapsedInIteration += hedgesCollapsedCount;
             }
 
-            log.info("Total edges collapsed: " + hedgesCollapsedInIteration + " iteration: " + iteration);
+            log.debug("Total edges collapsed: " + hedgesCollapsedInIteration + " iteration: " + iteration);
 
             // delete objects that status is DELETED
             log.debug("Finished Iteration: " + iteration);

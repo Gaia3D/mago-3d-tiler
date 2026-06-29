@@ -35,15 +35,21 @@ public class ImageResizer {
             BufferedImage original, int lod){
         int width = original.getWidth();
         int height = original.getHeight();
+
+        int limiSize = 1024;
+        if(lod > 0){
+            limiSize = 512;
+        }
+
         int widthPowerOf2 = ImageUtils.getNearestPowerOfTwo(width);
         int heightPowerOf2 = ImageUtils.getNearestPowerOfTwo(height);
 
-        if(widthPowerOf2 > 1024){
-            widthPowerOf2  = 1024;
+        if(widthPowerOf2 > limiSize){
+            widthPowerOf2  = limiSize;
         }
 
-        if(heightPowerOf2 > 1024){
-            heightPowerOf2 = 1024;
+        if(heightPowerOf2 > limiSize){
+            heightPowerOf2 = limiSize;
         }
 
         return resizeMultiStepSmart(original, widthPowerOf2, heightPowerOf2);
