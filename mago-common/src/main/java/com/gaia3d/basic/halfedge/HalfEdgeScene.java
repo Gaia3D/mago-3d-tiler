@@ -119,35 +119,78 @@ public class HalfEdgeScene implements Serializable {
         }
     }
 
-    public boolean cutByPlane(PlaneType planeType, Vector3d planePosition, double error) {
-        // 1rst check if the plane intersects the bbox
+    public boolean cutByPlane(
+            PlaneType planeType,
+            Vector3d planePosition,
+            double error,
+            PlaneCutResult result
+    ) {
+        if (result == null) {
+            throw new IllegalArgumentException(
+                    "PlaneCutResult must not be null"
+            );
+        }
+
         GaiaBoundingBox bbox = getBoundingBox();
 
         if (bbox == null) {
             return false;
         }
 
+        /*
+         * Incluimos el error para no descartar tangencias que estén
+         * ligeramente fuera debido a precisión numérica.
+         */
         if (planeType == PlaneType.XZ) {
-            if (planePosition.y < bbox.getMinY() || planePosition.y > bbox.getMaxY()) {
+            if (planePosition.y < bbox.getMinY() - error
+                    || planePosition.y > bbox.getMaxY() + error) {
                 return false;
             }
+
         } else if (planeType == PlaneType.YZ) {
-            if (planePosition.x < bbox.getMinX() || planePosition.x > bbox.getMaxX()) {
+            if (planePosition.x < bbox.getMinX() - error
+                    || planePosition.x > bbox.getMaxX() + error) {
                 return false;
             }
+
         } else if (planeType == PlaneType.XY) {
-            if (planePosition.z < bbox.getMinZ() || planePosition.z > bbox.getMaxZ()) {
+            if (planePosition.z < bbox.getMinZ() - error
+                    || planePosition.z > bbox.getMaxZ() + error) {
                 return false;
             }
+
+        } else {
+            return false;
         }
 
+        int cutCountBefore =
+                result.getHalfEdgesCutCount();
+
         for (HalfEdgeNode node : nodes) {
-            node.cutByPlane(planeType, planePosition, error);
+            if (node == null) {
+                continue;
+            }
+
+            PlaneCutResult currentResult =
+                    node.cutByPlane(
+                            planeType,
+                            planePosition,
+                            error
+                    );
+
+            result.add(currentResult);
         }
 
         removeDeletedObjects();
 
-        return true;
+        int cutCountAfter =
+                result.getHalfEdgesCutCount();
+
+        /*
+         * True únicamente cuando este plano ha provocado
+         * al menos un split real.
+         */
+        return cutCountAfter > cutCountBefore;
     }
 
     public void getIntersectedFacesByPlane(PlaneType planeType, Vector3d planePosition, List<HalfEdgeFace> resultFaces, double error) {

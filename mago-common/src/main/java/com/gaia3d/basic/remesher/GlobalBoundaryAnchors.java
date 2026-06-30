@@ -3,6 +3,7 @@ package com.gaia3d.basic.remesher;
 import org.joml.Vector3d;
 import org.joml.Vector3i;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,7 +44,40 @@ public class GlobalBoundaryAnchors {
         }
     }
 
+    public int size() {
+        return lockedAveragePositions.size();
+    }
+
+    public boolean isEmpty() {
+        return lockedAveragePositions.isEmpty();
+    }
+
+    public Map<Vector3i, Vector3d>
+    getLockedAveragePositions() {
+        return Collections.unmodifiableMap(
+                lockedAveragePositions
+        );
+    }
+
     public void clear() {
         lockedAveragePositions.clear();
+    }
+
+    /*
+     * Solo debe llamarse durante la construcción.
+     * Después, GlobalBoundaryAnchors será de solo lectura.
+     */
+    void putLockedAverage(
+            Vector3i cellIndex,
+            Vector3d average
+    ) {
+        if (cellIndex == null || average == null) {
+            return;
+        }
+
+        lockedAveragePositions.put(
+                new Vector3i(cellIndex),
+                new Vector3d(average)
+        );
     }
 }

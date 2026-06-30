@@ -880,31 +880,31 @@ public class MagoReTextureByObliqueCamera {
 //        );
         // End test.------------------------------------------------------
 
-        // Finish LOD2 -> LOD3 transition anchors.***************************************
-        if (lod == 2 && reMeshParams != null) {
-            TileBoundaryAnchors lodTransitionTileAnchors =
-                    reMeshParams.getTileBoundaryAnchors();
-
-            GlobalBoundaryAnchors globalBoundaryAnchors =
-                    reMeshParams.getGlobalBoundaryAnchors();
-
-            if (lodTransitionTileAnchors != null && globalBoundaryAnchors != null) {
-                ReMesherVertexClusterV2.finishTileBoundaryAnchors(lodTransitionTileAnchors);
-
-                globalBoundaryAnchors.addMissingFromTileAnchors(lodTransitionTileAnchors);
-
-                log.debug("LOD2 -> LOD3 transition tile anchors cells = {}",
-                        lodTransitionTileAnchors.frontierAveragePositions.size());
-
-                log.debug("LOD2 -> LOD3 globalBoundaryAnchors locked cells = {}",
-                        globalBoundaryAnchors.lockedAveragePositions.size());
-
-                // Importante:
-                // TileBoundaryAnchors es temporal. Los anchors útiles ya quedaron bloqueados en global.
-                lodTransitionTileAnchors.clear();
-            }
-        }
-        // End LOD2 -> LOD3 transition anchors.------------------------------------------
+//        // Finish LOD2 -> LOD3 transition anchors.***************************************
+//        if (lod == 2 && reMeshParams != null) {
+//            TileBoundaryAnchors lodTransitionTileAnchors =
+//                    reMeshParams.getTileBoundaryAnchors();
+//
+//            GlobalBoundaryAnchors globalBoundaryAnchors =
+//                    reMeshParams.getGlobalBoundaryAnchors();
+//
+//            if (lodTransitionTileAnchors != null && globalBoundaryAnchors != null) {
+//                ReMesherVertexClusterV2.finishTileBoundaryAnchors(lodTransitionTileAnchors);
+//
+//                globalBoundaryAnchors.addMissingFromTileAnchors(lodTransitionTileAnchors);
+//
+//                log.debug("LOD2 -> LOD3 transition tile anchors cells = {}",
+//                        lodTransitionTileAnchors.frontierAveragePositions.size());
+//
+//                log.debug("LOD2 -> LOD3 globalBoundaryAnchors locked cells = {}",
+//                        globalBoundaryAnchors.lockedAveragePositions.size());
+//
+//                // Importante:
+//                // TileBoundaryAnchors es temporal. Los anchors útiles ya quedaron bloqueados en global.
+//                lodTransitionTileAnchors.clear();
+//            }
+//        }
+//        // End LOD2 -> LOD3 transition anchors.------------------------------------------
 
         // Join all surfaces and weld vertices of the gaiaSceneMaster.
         gaiaSceneMaster.joinAllSurfaces();

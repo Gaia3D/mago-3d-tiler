@@ -29,6 +29,7 @@ import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.process.tileprocess.PhotogrammetryBatcher;
 import com.gaia3d.process.tileprocess.Tiler;
+import com.gaia3d.process.tileprocess.multithread.CutAndScissorMT;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
 import com.gaia3d.process.tileprocess.tile.tileset.TilesetV2;
 import com.gaia3d.process.tileprocess.tile.tileset.asset.AssetV1;
@@ -1274,6 +1275,53 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         return tileset;
     }
 
+    protected boolean configureBoundaryAnchors(
+            ReMeshParameters reMeshParameters,
+            int anchorLod,
+            Map<Integer, CutAndScissorMT.LodBoundaryAnchors>
+                    boundaryAnchorsByLod
+    ) {
+        if (reMeshParameters == null
+                || boundaryAnchorsByLod == null) {
+            return false;
+        }
+
+        CutAndScissorMT.LodBoundaryAnchors lodAnchors =
+                boundaryAnchorsByLod.get(anchorLod);
+
+        if (lodAnchors == null
+                || lodAnchors.cellGrid() == null
+                || lodAnchors.globalBoundaryAnchors() == null) {
+
+            log.warn(
+                    "Boundary anchors not available for LOD {}",
+                    anchorLod
+            );
+
+            reMeshParameters.setCellGrid(null);
+            reMeshParameters.setGlobalBoundaryAnchors(null);
+
+            return false;
+        }
+
+        reMeshParameters.setCellGrid(
+                lodAnchors.cellGrid()
+        );
+
+        reMeshParameters.setGlobalBoundaryAnchors(
+                lodAnchors.globalBoundaryAnchors()
+        );
+
+        log.info(
+                "Boundary anchors configured. "
+                        + "LOD={}, anchors={}",
+                anchorLod,
+                lodAnchors.globalBoundaryAnchors().size()
+        );
+
+        return true;
+    }
+
     public boolean integralLeafScenes(List<TileInfo> tileInfos,
                                       int lod,
                                       int nodeDepth,
@@ -2020,9 +2068,10 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             double error = 1e-4;
             int planesCount = planes.size();
             boolean cut = false;
+            PlaneCutResult planeCutResult = new PlaneCutResult();
             for (int i = 0; i < planesCount; i++) {
                 GaiaAAPlane plane = planes.get(i);
-                if (halfEdgeScene.cutByPlane(plane.getPlaneType(), plane.getPoint(), error)) {
+                if (halfEdgeScene.cutByPlane(plane.getPlaneType(), plane.getPoint(), error, planeCutResult)) {
                     cut = true;
                 }
             }

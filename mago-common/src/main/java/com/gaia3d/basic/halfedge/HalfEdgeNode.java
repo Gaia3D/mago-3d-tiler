@@ -72,13 +72,18 @@ public class HalfEdgeNode implements Serializable {
         transformMatrix.identity();
     }
 
-    public void cutByPlane(PlaneType planeType, Vector3d planePosition, double error) {
+    public PlaneCutResult cutByPlane(PlaneType planeType, Vector3d planePosition, double error) {
+        PlaneCutResult total = new PlaneCutResult();
         for (HalfEdgeMesh mesh : meshes) {
-            mesh.cutByPlane(planeType, planePosition, error);
+            PlaneCutResult currentResult = mesh.cutByPlane(planeType, planePosition, error);
+            total.add(currentResult);
         }
         for (HalfEdgeNode child : children) {
-            child.cutByPlane(planeType, planePosition, error);
+            PlaneCutResult currentResult = child.cutByPlane(planeType, planePosition, error);
+            total.add(currentResult);
         }
+
+        return total;
     }
 
     public void removeDeletedObjects() {

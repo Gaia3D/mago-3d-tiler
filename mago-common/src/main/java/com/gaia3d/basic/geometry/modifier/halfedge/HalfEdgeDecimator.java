@@ -86,7 +86,6 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
         int iteration = 0;
 
         Map<HalfEdge, Vector3d> mapHalfEdgeToInitialDirection = new HashMap<>();
-        //Map<HalfEdgeVertex, List<HalfEdge>> vertexAllOutingEdgesMap = new HashMap<>();
         Map<HalfEdgeFace, List<HalfEdge>> mapFaceToHalfEdges = new HashMap<>();
         Map<HalfEdgeVertex, List<HalfEdgeVertex>> mapVertexToSamePosVertices = new HashMap<>();
 
@@ -1002,13 +1001,11 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
         int endVertexClassifyId = endVertex.getClassifyId();
         boolean isCollapsed = false;
 
-        //List<HalfEdge> outingEdgesOfEndVertex = vertexAllOutingEdgesMap.get(endVertex);
         List<HalfEdge> outingEdgesOfEndVertex = outgoingEdgesByVertexId[endVertex.getId()];
         List<HalfEdgeVertex> listVertexSamePosition = mapVertexToSamePosVertices.get(startVertex);
         int samePositionVerticesCount = listVertexSamePosition.size();
         for (int i = 0; i < samePositionVerticesCount; i++) {
             HalfEdgeVertex vertex = listVertexSamePosition.get(i);
-            //List<HalfEdge> outingEdgesOfVertex = vertexAllOutingEdgesMap.get(vertex);
             List<HalfEdge> outingEdgesOfVertex = outgoingEdgesByVertexId[vertex.getId()];
             int outingEdgesOfVertexCount = outingEdgesOfVertex.size();
 
@@ -1032,7 +1029,6 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
                         if (endVertex2ClassifyId == startVertex2ClassifyId) {
                             outingEdge.setStartVertex(endVertex2);
                             outingEdge.setClassifyId(1);
-                            //List<HalfEdge> outingEdgesOfEndVertex2 = vertexAllOutingEdgesMap.get(endVertex2);
                             List<HalfEdge> outingEdgesOfEndVertex2 = outgoingEdgesByVertexId[endVertex2.getId()];
                             outingEdgesOfEndVertex2.add(outingEdge);
                             isCollapsed = true;

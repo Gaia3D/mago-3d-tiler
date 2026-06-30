@@ -432,14 +432,14 @@ public class TextureAtlasManager {
     public void doAtlasTextureProcessByScissorDates(List<GaiaTextureScissorData> textureScissorDates) {
         // here calculates the batchedBoundaries of each textureScissorData
         int textureScissorDatasCount = textureScissorDates.size();
-        log.info("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : textureScissorDatasCount = " + textureScissorDatasCount);
+        log.debug("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : textureScissorDatasCount = " + textureScissorDatasCount);
 
         GuillotinePacker guillotinePacker = new GuillotinePacker();
 
         for (int i = 0; i < textureScissorDatasCount; i++) {
             GaiaTextureScissorData textureScissorData = textureScissorDates.get(i);
             if (!guillotinePacker.insert(textureScissorData)) {
-                log.info("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : guillotinePacker.insert() failed.");
+                log.debug("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : guillotinePacker.insert() failed.");
             }
         }
     }
@@ -449,7 +449,7 @@ public class TextureAtlasManager {
     ) {
         int textureScissorDatasCount = textureScissorDatesFull.size();
 
-        log.info("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : textureScissorDatasCount = "
+        log.debug("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : textureScissorDatasCount = "
                 + textureScissorDatasCount);
 
         List<GaiaTextureScissorDataFull> sortedScissors =
@@ -461,7 +461,7 @@ public class TextureAtlasManager {
             GaiaTextureScissorDataFull textureScissorData = sortedScissors.get(i);
 
             if (!guillotinePacker.insert(textureScissorData)) {
-                log.info("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : guillotinePacker.insert() failed.");
+                log.debug("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : guillotinePacker.insert() failed.");
             }
         }
     }

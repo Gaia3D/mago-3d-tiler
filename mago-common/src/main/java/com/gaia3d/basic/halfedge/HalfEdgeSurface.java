@@ -521,8 +521,440 @@ public class HalfEdgeSurface implements Serializable {
         return boundingBox;
     }
 
-    public void cutByPlane(PlaneType planeType, Vector3d planePosition, double error) {
+    private static double getSignedDistanceToPlane(
+            Vector3d position,
+            PlaneType planeType,
+            Vector3d planePosition
+    ) {
+        return switch (planeType) {
+            case UNKNOWN -> -100000.0;
+            case XY ->
+                    position.z - planePosition.z;
+
+            case XZ ->
+                    position.y - planePosition.y;
+
+            case YZ ->
+                    position.x - planePosition.x;
+            case OBLIQUE -> -100000.0;
+            case XYNEG -> -100000.0;
+            case YZNEG -> -100000.0;
+            case XZNEG -> -100000.0;
+        };
+    }
+
+    private boolean isRealTangentVertex(
+            HalfEdgeVertex vertex,
+            PlaneType planeType,
+            Vector3d planePosition,
+            double error,
+            MapVertexAllFacesIndices mapVertexAllFacesIndices,
+            Map<HalfEdgeVertex, Integer> vertexIndexMap
+    ) {
+        if (vertex == null
+                || vertex.getStatus() == ObjectStatus.DELETED
+                || vertex.getPosition() == null) {
+            return false;
+        }
+
+        Integer vertexIndexObject =
+                vertexIndexMap.get(vertex);
+
+        if (vertexIndexObject == null) {
+            return false;
+        }
+
+        int vertexIndex =
+                vertexIndexObject;
+
+        if (vertexIndex < 0
+                || vertexIndex >= mapVertexAllFacesIndices.getVertexCount()) {
+            return false;
+        }
+
+        boolean hasPositiveSide = false;
+        boolean hasNegativeSide = false;
+
+        int start =
+                mapVertexAllFacesIndices.getStart(vertexIndex);
+
+        int end =
+                mapVertexAllFacesIndices.getEnd(vertexIndex);
+
+        List<HalfEdgeVertex> faceVertices =
+                new ArrayList<>(4);
+
+        for (int i = start; i < end; i++) {
+            int faceIndex =
+                    mapVertexAllFacesIndices.getFaceIndex(i);
+
+            if (faceIndex < 0
+                    || faceIndex >= faces.size()) {
+                continue;
+            }
+
+            HalfEdgeFace face =
+                    faces.get(faceIndex);
+
+            if (face == null
+                    || face.getStatus() == ObjectStatus.DELETED) {
+                continue;
+            }
+
+            faceVertices.clear();
+            face.getVertices(faceVertices);
+
+            for (HalfEdgeVertex faceVertex : faceVertices) {
+                if (faceVertex == null
+                        || faceVertex == vertex
+                        || faceVertex.getPosition() == null) {
+                    continue;
+                }
+
+                double distance =
+                        getSignedDistanceToPlane(
+                                faceVertex.getPosition(),
+                                planeType,
+                                planePosition
+                        );
+
+                if (distance > error) {
+                    hasPositiveSide = true;
+                } else if (distance < -error) {
+                    hasNegativeSide = true;
+                }
+
+                /*
+                 * En cuanto encontramos geometría en ambos lados,
+                 * el vértice es una tangencia de corte real.
+                 */
+                if (hasPositiveSide && hasNegativeSide) {
+                    return true;
+                }
+            }
+        }
+
+        /*
+         * Toda la geometría incidente está en un único lado
+         * o es completamente coplanar.
+         */
+        return false;
+    }
+
+    public PlaneCutResult cutByPlane(
+            PlaneType planeType,
+            Vector3d planePosition,
+            double error
+    ) {
+        Set<HalfEdgeVertex> tangentCandidates =
+                Collections.newSetFromMap(
+                        new IdentityHashMap<>()
+                );
+
+        Set<HalfEdgeVertex> coplanarCandidates =
+                Collections.newSetFromMap(
+                        new IdentityHashMap<>()
+                );
+
+        Set<HalfEdgeVertex> cuttingVertices =
+                Collections.newSetFromMap(
+                        new IdentityHashMap<>()
+                );
+
+        /*
+         * Primera pasada:
+         *
+         * Recogemos tangentes y coplanares sobre la topología
+         * existente antes de empezar a modificarla.
+         */
+        int originalHalfEdgesCount = halfEdges.size();
+
+        for (int i = 0; i < originalHalfEdgesCount; i++) {
+            HalfEdge halfEdge = halfEdges.get(i);
+
+            if (halfEdge == null
+                    || halfEdge.getStatus() == ObjectStatus.DELETED) {
+                continue;
+            }
+
+            HalfEdgeVertex dummyIntersectionVertex =
+                    new HalfEdgeVertex();
+
+            PlaneHEdgeIntersectionType type =
+                    halfEdge.getIntersectionByPlane(
+                            planeType,
+                            planePosition,
+                            dummyIntersectionVertex,
+                            error
+                    );
+
+            switch (type) {
+                case START_VERTEX -> {
+                    HalfEdgeVertex vertex =
+                            halfEdge.getStartVertex();
+
+                    if (vertex != null) {
+                        tangentCandidates.add(vertex);
+                    }
+                }
+
+                case END_VERTEX -> {
+                    HalfEdgeVertex vertex =
+                            halfEdge.getEndVertex();
+
+                    if (vertex != null) {
+                        tangentCandidates.add(vertex);
+                    }
+                }
+
+                case COPLANAR_EDGE -> {
+                    HalfEdgeVertex startVertex =
+                            halfEdge.getStartVertex();
+
+                    HalfEdgeVertex endVertex =
+                            halfEdge.getEndVertex();
+
+                    if (startVertex != null) {
+                        coplanarCandidates.add(startVertex);
+                    }
+
+                    if (endVertex != null) {
+                        coplanarCandidates.add(endVertex);
+                    }
+                }
+
+                case NONE, INNER_INTERSECTION -> {
+                    // No se hace nada en esta primera pasada.
+                }
+            }
+        }
+
+        /*
+         * Segunda pasada:
+         *
+         * Conservamos la lógica de cutting que ya has probado
+         * y que produce correctamente los meshes.
+         */
+        int halfEdgesCutCount = 0;
+        int halfEdgesCount = halfEdges.size();
+
+        for (int i = 0; i < halfEdgesCount; i++) {
+            HalfEdge halfEdge = halfEdges.get(i);
+
+            if (halfEdge == null
+                    || halfEdge.getStatus() == ObjectStatus.DELETED) {
+                continue;
+            }
+
+            HalfEdgeVertex intersectionVertex =
+                    new HalfEdgeVertex();
+
+            PlaneHEdgeIntersectionType type =
+                    halfEdge.getIntersectionByPlane(
+                            planeType,
+                            planePosition,
+                            intersectionVertex,
+                            error
+                    );
+
+            if (type
+                    != PlaneHEdgeIntersectionType.INNER_INTERSECTION) {
+                continue;
+            }
+
+            splitHalfEdge(
+                    halfEdge,
+                    intersectionVertex
+            );
+
+            cuttingVertices.add(
+                    intersectionVertex
+            );
+
+            halfEdgesCount = halfEdges.size();
+            halfEdgesCutCount++;
+        }
+
+        /*
+         * Limpiamos antes de construir el mapa, para que los índices
+         * correspondan con la topología final.
+         */
+        removeDeletedObjects();
+
+        MapVertexAllFacesIndices mapVertexAllFacesIndices =
+                HalfEdgeUtils.getMapVertexAllFacesIndices(this);
+
+        Map<HalfEdgeVertex, Integer> vertexIndexMap =
+                new IdentityHashMap<>();
+
+        for (int i = 0; i < vertices.size(); i++) {
+            HalfEdgeVertex vertex = vertices.get(i);
+
+            if (vertex != null) {
+                vertexIndexMap.put(vertex, i);
+            }
+        }
+
+
+        Set<HalfEdgeVertex> acceptedTangentSet =
+                Collections.newSetFromMap(
+                        new IdentityHashMap<>()
+                );
+
+        for (HalfEdgeVertex candidate : tangentCandidates) {
+            if (isRealTangentVertex(
+                    candidate,
+                    planeType,
+                    planePosition,
+                    error,
+                    mapVertexAllFacesIndices,
+                    vertexIndexMap
+            )) {
+                acceptedTangentSet.add(candidate);
+            }
+        }
+
+        /*
+         * Prioridad:
+         * cutting > tangent > coplanar.
+         */
+        coplanarCandidates.removeAll(
+                acceptedTangentSet
+        );
+
+        coplanarCandidates.removeAll(
+                cuttingVertices
+        );
+
+        log.info(
+                "[Tile][Photogrammetry][cut][{}] "
+                        + "halfEdges={}, cutVertices={}, "
+                        + "tangentCandidates={}, acceptedTangents={}, "
+                        + "coplanarCandidates={}",
+                planeType,
+                halfEdges.size(),
+                cuttingVertices.size(),
+                tangentCandidates.size(),
+                acceptedTangentSet.size(),
+                coplanarCandidates.size()
+        );
+
+        List<PlaneCutPoint> cuttingPoints =
+                copyExistingPoints(
+                        cuttingVertices,
+                        vertexIndexMap,
+                        planeType,
+                        planePosition
+                );
+
+        List<PlaneCutPoint> acceptedTangentPoints =
+                copyExistingPoints(
+                        acceptedTangentSet,
+                        vertexIndexMap,
+                        planeType,
+                        planePosition
+                );
+
+        List<PlaneCutPoint> coplanarPoints =
+                copyExistingPoints(
+                        coplanarCandidates,
+                        vertexIndexMap,
+                        planeType,
+                        planePosition
+                );
+
+        return new PlaneCutResult(
+                cuttingPoints,
+                acceptedTangentPoints,
+                coplanarPoints,
+                halfEdgesCutCount
+        );
+    }
+
+    private static List<PlaneCutPoint> copyExistingPoints(
+            Collection<HalfEdgeVertex> source,
+            Map<HalfEdgeVertex, Integer> vertexIndexMap,
+            PlaneType planeType,
+            Vector3d planePosition
+    ) {
+        List<PlaneCutPoint> result =
+                new ArrayList<>(source.size());
+
+        for (HalfEdgeVertex vertex : source) {
+            if (vertex == null
+                    || vertex.getStatus() == ObjectStatus.DELETED
+                    || vertex.getPosition() == null
+                    || !vertexIndexMap.containsKey(vertex)) {
+                continue;
+            }
+
+            PlaneCutPoint point =
+                    copyAndSnapToPlane(
+                            vertex,
+                            planeType,
+                            planePosition
+                    );
+
+            if (point != null) {
+                result.add(point);
+            }
+        }
+
+        return result;
+    }
+
+    private static PlaneCutPoint copyAndSnapToPlane(
+            HalfEdgeVertex vertex,
+            PlaneType planeType,
+            Vector3d planePosition
+    ) {
+        if (vertex == null
+                || vertex.getPosition() == null
+                || planeType == null
+                || planePosition == null) {
+            return null;
+        }
+
+        Vector3d position =
+                vertex.getPosition();
+
+        double px = position.x;
+        double py = position.y;
+        double pz = position.z;
+
+        if (planeType == PlaneType.XY
+                || planeType == PlaneType.XYNEG) {
+
+            pz = planePosition.z;
+
+        } else if (planeType == PlaneType.XZ
+                || planeType == PlaneType.XZNEG) {
+
+            py = planePosition.y;
+
+        } else if (planeType == PlaneType.YZ
+                || planeType == PlaneType.YZNEG) {
+
+            px = planePosition.x;
+
+        } else {
+            return null;
+        }
+
+        return new PlaneCutPoint(
+                px,
+                py,
+                pz,
+                planeType
+        );
+    }
+
+    public void cutByPlane_original(PlaneType planeType, Vector3d planePosition, double error) {
         // find halfEdges that are cut by the plane
+        List<HalfEdgeVertex> cuttingVertices = new ArrayList<HalfEdgeVertex>();
+        List<HalfEdgeVertex> tangentCandidates = new ArrayList<HalfEdgeVertex>();
+        List<HalfEdgeVertex> coplanarCandidates = new ArrayList<HalfEdgeVertex>();
+
         int hedgesCutCount = 0;
         int hedgesCount = halfEdges.size();
         for (int i = 0; i < hedgesCount; i++) {
@@ -532,12 +964,25 @@ public class HalfEdgeSurface implements Serializable {
             }
 
             HalfEdgeVertex intersectionVertex = new HalfEdgeVertex();
-            if (hedge.getIntersectionByPlane(planeType, planePosition, intersectionVertex, error) == PlaneHEdgeIntersectionType.INNER_INTERSECTION) {
+            PlaneHEdgeIntersectionType planeIntersectionType = hedge.getIntersectionByPlane(planeType, planePosition, intersectionVertex, error);
+            if (planeIntersectionType == PlaneHEdgeIntersectionType.INNER_INTERSECTION) {
                 splitHalfEdge(hedge, intersectionVertex);
                 hedgesCount = halfEdges.size();
                 hedgesCutCount++;
+            } else if (planeIntersectionType == PlaneHEdgeIntersectionType.START_VERTEX) {
+                tangentCandidates.add(hedge.getStartVertex());
+            }else if (planeIntersectionType == PlaneHEdgeIntersectionType.END_VERTEX) {
+                tangentCandidates.add(hedge.getEndVertex());
+            } else if (planeIntersectionType == PlaneHEdgeIntersectionType.COPLANAR_EDGE) {
+                coplanarCandidates.add(hedge.getStartVertex());
+                coplanarCandidates.add(hedge.getEndVertex());
             }
         }
+
+        MapVertexAllFacesIndices mapVertexAllFacesIndices = HalfEdgeUtils.getMapVertexAllFacesIndices(this);
+        
+        // with mapVertexAllFacesIndices, determine if a vertex is tangent.
+
 
         removeDeletedObjects();
     }
