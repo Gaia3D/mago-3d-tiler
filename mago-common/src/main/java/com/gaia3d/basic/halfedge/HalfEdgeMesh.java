@@ -32,10 +32,14 @@ public class HalfEdgeMesh implements Serializable {
         }
     }
 
-    public void cutByPlane(PlaneType planeType, Vector3d planePosition, double error) {
+    public PlaneCutResult cutByPlane(PlaneType planeType, Vector3d planePosition, double error) {
+        PlaneCutResult total = new PlaneCutResult();
         for (HalfEdgePrimitive primitive : primitives) {
-            primitive.cutByPlane(planeType, planePosition, error);
+            PlaneCutResult currentResult = primitive.cutByPlane(planeType, planePosition, error);
+            total.add(currentResult);
         }
+
+        return total;
     }
 
     public void removeDeletedObjects() {

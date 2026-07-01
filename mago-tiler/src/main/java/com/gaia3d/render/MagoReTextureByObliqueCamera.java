@@ -172,21 +172,6 @@ public class MagoReTextureByObliqueCamera {
         Vector3i nodeMinCellIndex = new Vector3i(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
         Vector3i nodeMaxCellIndex = new Vector3i(Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE);
 
-        // PASADA 1: acumular fronteras de todos los meshes del tile
-        TileBoundaryAnchors tileBoundaryAnchors = reMeshParams.getTileBoundaryAnchors();
-        if (tileBoundaryAnchors == null) {
-            tileBoundaryAnchors = new TileBoundaryAnchors();
-            reMeshParams.setTileBoundaryAnchors(tileBoundaryAnchors);
-        } else {
-            tileBoundaryAnchors.clear();
-        }
-
-        GlobalBoundaryAnchors globalBoundaryAnchors = reMeshParams.getGlobalBoundaryAnchors();
-        if (globalBoundaryAnchors == null) {
-            globalBoundaryAnchors = new GlobalBoundaryAnchors();
-            reMeshParams.setGlobalBoundaryAnchors(globalBoundaryAnchors);
-        }
-
         GaiaWeldOptions weldOptions = GaiaWeldOptions.builder()
                 .error(weldError)
                 .checkTexCoord(false)
@@ -196,80 +181,12 @@ public class MagoReTextureByObliqueCamera {
                 .build();
 
         GaiaTriangulator triangulator = new GaiaTriangulator();
-
-        for (int i = 0; i < scenesCount; i++) {
-            // load and render, one by one
-            SceneInfo sceneInfo = sceneInfos.get(i);
-            String scenePath = sceneInfo.getScenePath();
-            Matrix4d sceneTMat = sceneInfo.getTransformMatrix();
-
-            // must find the local position of the scene rel to node
-            Vector3d scenePosWC = new Vector3d(sceneTMat.m30(), sceneTMat.m31(), sceneTMat.m32());
-            Vector3d scenePosLC = nodeMatrixInv.transformPosition(scenePosWC, new Vector3d());
-
-            // calculate the local sceneTMat
-            Matrix4d sceneTMatLC = new Matrix4d();
-            sceneTMatLC.identity();
-            sceneTMatLC.m30(scenePosLC.x);
-            sceneTMatLC.m31(scenePosLC.y);
-            sceneTMatLC.m32(scenePosLC.z);
-
-            // load the set file
-            GaiaSet gaiaSet = null;
-            GaiaScene gaiaScene = null;
-            Path path = Paths.get(scenePath);
-            try {
-                gaiaSet = GaiaSet.readFile(path);
-                gaiaScene = new GaiaScene(gaiaSet);
-            } catch (Exception e) {
-                log.error("[ERROR] reading the file: ", e);
-            }
-
-            if (gaiaScene == null) {
-                // throw error
-                throw new RuntimeException("[ERROR] integralReMeshByObliqueCamera : GaiaScene is null");
-            }
-
-            // reMesh the scene.****************************************************************************************
-            // The "scenePositionRelToCellGrid" is the relative position of the scene respect the center of RootNode (Depth = 0). All scenes must be synchronized to the RootNode.
-            Vector3d scenePositionRelToCellGrid = sceneInfo.getScenePosLC(); // relative position of the scene respect the center of RootNode (Depth = 0).
-
-            triangulator.apply(gaiaScene);
-            GaiaBaker baker = new GaiaBaker();
-            baker.apply(gaiaScene);
-            gaiaScene.joinAllSurfaces();
-
-            GaiaWelder weld = new GaiaWelder(weldOptions);
-            weld.apply(gaiaScene);
-
-            GaiaSceneCleaner cleaner = new GaiaSceneCleaner();
-            cleaner.apply(gaiaScene);
-            //List<GaiaMaterial> materials = gaiaScene.getMaterials();
-
-            translateScene(gaiaScene, scenePositionRelToCellGrid); // translate the scene to the cell grid position
-
-            ReMesherVertexClusterV2.accumulateTileBoundaryAnchorsFromScene(
-                    gaiaScene,
-                    reMeshParams,
-                    tileBoundaryAnchors,
-                    globalBoundaryAnchors,
-                    i
-            );
-
-            gaiaScene.clear();
-            gaiaSet.clear();
-        }
-
-        ReMesherVertexClusterV2.finishTileBoundaryAnchors(tileBoundaryAnchors);
-
-        // Bloquea esos anchors para tiles siguientes.
-        globalBoundaryAnchors.addMissingFromTileAnchors(tileBoundaryAnchors);
         GaiaSceneCleaner cleaner = new GaiaSceneCleaner();
         GaiaWelder weld = new GaiaWelder(weldOptions);
 
         MagoRenderableMaker magoRenderableMaker = new MagoRenderableMaker();
 
-        // PASADA 2: remeshear mesh por mesh
+        // remesh each mesh
         MagoRenderingSession renderingSession = renderingBackend.openSession();
         try {
             for (int i = 0; i < scenesCount; i++) {
@@ -374,8 +291,6 @@ public class MagoReTextureByObliqueCamera {
                 ReMesherVertexClusterV2.reMeshScene(
                         gaiaScene,
                         reMeshParams,
-                        tileBoundaryAnchors,
-                        globalBoundaryAnchors,
                         sceneMinCellIndex,
                         sceneMaxCellIndex
                 );
@@ -550,7 +465,7 @@ public class MagoReTextureByObliqueCamera {
                 mapCameraDirectionTypeModelViewMatrix,
                 resultAtlasTextures,
                 mapClassificationCamDirTypeFacesList,
-                outputPathString, nodeName);
+                outputPathString, nodeName, lod);
         // end of atlas texture*************************************************************************************
 
         // check if atlasTexture is made.
@@ -833,7 +748,7 @@ public class MagoReTextureByObliqueCamera {
                 }
 
                 // Calculate globalBoundaryAnchors.*********************************************************************
-                calculateGlobalBoundaryAnchors(gaiaScene, reMeshParams, scenePositionRelToCellGrid, i);
+                //calculateGlobalBoundaryAnchors(gaiaScene, reMeshParams, scenePositionRelToCellGrid, i);
                 // End calculating globalBoundaryAnchors.---------------------------------------------------------------
 
                 if (gaiaSceneMaster == null) {
@@ -880,31 +795,31 @@ public class MagoReTextureByObliqueCamera {
 //        );
         // End test.------------------------------------------------------
 
-        // Finish LOD2 -> LOD3 transition anchors.***************************************
-        if (lod == 2 && reMeshParams != null) {
-            TileBoundaryAnchors lodTransitionTileAnchors =
-                    reMeshParams.getTileBoundaryAnchors();
-
-            GlobalBoundaryAnchors globalBoundaryAnchors =
-                    reMeshParams.getGlobalBoundaryAnchors();
-
-            if (lodTransitionTileAnchors != null && globalBoundaryAnchors != null) {
-                ReMesherVertexClusterV2.finishTileBoundaryAnchors(lodTransitionTileAnchors);
-
-                globalBoundaryAnchors.addMissingFromTileAnchors(lodTransitionTileAnchors);
-
-                log.debug("LOD2 -> LOD3 transition tile anchors cells = {}",
-                        lodTransitionTileAnchors.frontierAveragePositions.size());
-
-                log.debug("LOD2 -> LOD3 globalBoundaryAnchors locked cells = {}",
-                        globalBoundaryAnchors.lockedAveragePositions.size());
-
-                // Importante:
-                // TileBoundaryAnchors es temporal. Los anchors útiles ya quedaron bloqueados en global.
-                lodTransitionTileAnchors.clear();
-            }
-        }
-        // End LOD2 -> LOD3 transition anchors.------------------------------------------
+//        // Finish LOD2 -> LOD3 transition anchors.***************************************
+//        if (lod == 2 && reMeshParams != null) {
+//            TileBoundaryAnchors lodTransitionTileAnchors =
+//                    reMeshParams.getTileBoundaryAnchors();
+//
+//            GlobalBoundaryAnchors globalBoundaryAnchors =
+//                    reMeshParams.getGlobalBoundaryAnchors();
+//
+//            if (lodTransitionTileAnchors != null && globalBoundaryAnchors != null) {
+//                ReMesherVertexClusterV2.finishTileBoundaryAnchors(lodTransitionTileAnchors);
+//
+//                globalBoundaryAnchors.addMissingFromTileAnchors(lodTransitionTileAnchors);
+//
+//                log.debug("LOD2 -> LOD3 transition tile anchors cells = {}",
+//                        lodTransitionTileAnchors.frontierAveragePositions.size());
+//
+//                log.debug("LOD2 -> LOD3 globalBoundaryAnchors locked cells = {}",
+//                        globalBoundaryAnchors.lockedAveragePositions.size());
+//
+//                // Importante:
+//                // TileBoundaryAnchors es temporal. Los anchors útiles ya quedaron bloqueados en global.
+//                lodTransitionTileAnchors.clear();
+//            }
+//        }
+//        // End LOD2 -> LOD3 transition anchors.------------------------------------------
 
         // Join all surfaces and weld vertices of the gaiaSceneMaster.
         gaiaSceneMaster.joinAllSurfaces();
@@ -937,7 +852,7 @@ public class MagoReTextureByObliqueCamera {
                 mapCameraDirectionTypeModelViewMatrix,
                 resultAtlasTextures,
                 mapClassificationCamDirTypeFacesList,
-                outputPathString, nodeName);
+                outputPathString, nodeName, lod);
 
         // check if atlasTexture is made.
         if (!resultAtlasTextures.isEmpty()) {
@@ -1241,7 +1156,7 @@ public class MagoReTextureByObliqueCamera {
                                                           List<GaiaTexture> resultAtlasTextures,
                                                           Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapClassificationCamDirTypeFacesList,
                                                           String outputPathString,
-                                                          String nodeName) {
+                                                          String nodeName, int lod) {
         List<HalfEdgeSurface> surfaces = halfEdgeSceneMaster.extractSurfaces(null);
 
         TextureAtlasManager texAtlasManager = new TextureAtlasManager();
@@ -1490,11 +1405,13 @@ public class MagoReTextureByObliqueCamera {
         }
 
         // resize the atlas texture if necessary.
-        int lod = 1; // resizer distingis lod 0 or greater than 0, so lod = 1 for resizing is correct.
-        ImageResizer imageResizer = new ImageResizer();
-        BufferedImage resized = imageResizer.resizeMultiStepSmart(atlasScissoredTexture.getBufferedImage(), lod);
-        atlasScissoredTexture.getBufferedImage().flush();
-        atlasScissoredTexture.setBufferedImage(resized);
+        BufferedImage atlasBufferedImage = atlasScissoredTexture.getBufferedImage();
+        if(atlasBufferedImage.getWidth() > 1024 || atlasBufferedImage.getHeight() > 1024) {
+            ImageResizer imageResizer = new ImageResizer();
+            BufferedImage resized = imageResizer.resizeMultiStepSmart(atlasBufferedImage, lod);
+            atlasBufferedImage.flush();
+            atlasScissoredTexture.setBufferedImage(resized);
+        }
 
         resultAtlasTextures.add(atlasScissoredTexture);
 

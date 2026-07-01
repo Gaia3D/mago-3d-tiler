@@ -275,9 +275,12 @@ public class MagoLeafTileManager {
         // resize the atlas texture if necessary.
         int lod = 0;
         ImageResizer imageResizer = new ImageResizer();
-        BufferedImage resized = imageResizer.resizeMultiStepSmart(atlasScissoredTexture.getBufferedImage(), lod);
-        atlasScissoredTexture.getBufferedImage().flush();
-        atlasScissoredTexture.setBufferedImage(resized);
+        BufferedImage atlasBufferedImage = atlasScissoredTexture.getBufferedImage();
+        if(atlasBufferedImage.getWidth() > 1024 || atlasBufferedImage.getHeight() > 1024) {
+            BufferedImage resized = imageResizer.resizeMultiStepSmart(atlasBufferedImage, lod);
+            atlasBufferedImage.flush();
+            atlasScissoredTexture.setBufferedImage(resized);
+        }
 
         // save the atlas image to disk
         try {

@@ -215,7 +215,8 @@ public class HalfEdgeDecimatorSmallTriangles extends HalfEdgeModifier {
             surface.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
         }
 
-        log.debug("*** TOTAL HALFEDGES DELETED = " + hedgesCollapsedCount);
+        //log.debug("*** TOTAL HALFEDGES DELETED = " + hedgesCollapsedCount);
+        log.info("Total edges collapsed: " + hedgesCollapsedCount);
 
         int finalFacesCount = faces.size();
         int finalHalfEdgesCount = halfEdges.size();
@@ -264,6 +265,7 @@ public class HalfEdgeDecimatorSmallTriangles extends HalfEdgeModifier {
         int maxIterations = decimateParameters.getIterationsCount();
         maxIterations = 5; // test.
         int iteration = 0;
+        int totalHedgesCollapsed = 0;
         while (!finished && iteration < maxIterations) {
             log.debug("Decimate Iteration: " + iteration);
             // make octree.***********
@@ -330,7 +332,8 @@ public class HalfEdgeDecimatorSmallTriangles extends HalfEdgeModifier {
             log.debug("Welding vertices");
             surface.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
 
-            log.info("Total edges collapsed: " + hedgesCollapsedInIteration + " iteration: " + iteration);
+            log.debug("Total edges collapsed: " + hedgesCollapsedInIteration + " iteration: " + iteration);
+            totalHedgesCollapsed += hedgesCollapsedInIteration;
 
             if (hedgesCollapsedInIteration == 0) {
                 finished = true;
@@ -338,6 +341,8 @@ public class HalfEdgeDecimatorSmallTriangles extends HalfEdgeModifier {
 
             iteration++;
         }
+
+        log.info("Total edges collapsed: " + totalHedgesCollapsed);
 
     }
 

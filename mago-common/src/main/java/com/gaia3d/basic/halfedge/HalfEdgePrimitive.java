@@ -59,12 +59,15 @@ public class HalfEdgePrimitive implements Serializable {
         }
     }
 
-    public void cutByPlane(PlaneType planeType, Vector3d planePosition, double error) {
+    public PlaneCutResult cutByPlane(PlaneType planeType, Vector3d planePosition, double error) {
+        PlaneCutResult total = new PlaneCutResult();
         for (HalfEdgeSurface surface : surfaces) {
-            surface.cutByPlane(planeType, planePosition, error);
+            PlaneCutResult currentResult = surface.cutByPlane(planeType, planePosition, error);
+            total.add(currentResult);
         }
 
         vertices.clear();
+        return total;
     }
 
     public GaiaBoundingBox calculateBoundingBox(GaiaBoundingBox resultBBox) {

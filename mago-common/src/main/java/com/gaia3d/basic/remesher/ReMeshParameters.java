@@ -40,4 +40,82 @@ public class ReMeshParameters {
         }
         log.debug("Deleted {} cell average positions inside the box.", cnt);
     }
+
+    public ReMeshParameters copyForWorker() {
+        ReMeshParameters copy =
+                new ReMeshParameters();
+
+        /*
+         * Compartidos como estructuras inmutables
+         * o estrictamente de solo lectura.
+         */
+        copy.cellGrid =
+                this.cellGrid;
+
+        copy.globalBoundaryAnchors =
+                this.globalBoundaryAnchors;
+
+        /*
+         * Estado mutable privado del worker.
+         */
+        copy.cellAveragePositions =
+                copyCellAveragePositions(
+                        this.cellAveragePositions
+                );
+
+        copy.scenePositionRelToCellGrid =
+                this.scenePositionRelToCellGrid == null
+                        ? null
+                        : new Vector3d(
+                        this.scenePositionRelToCellGrid
+                );
+
+        copy.angleDeg =
+                this.angleDeg;
+
+        copy.texturePixelsForMeter =
+                this.texturePixelsForMeter;
+
+        /*
+         * TileBoundaryAnchors pertenecía al antiguo cálculo
+         * de anchors. Lo normal ahora sería no copiarlo.
+         */
+        copy.tileBoundaryAnchors =
+                null;
+
+        return copy;
+    }
+
+    private static Map<Vector3i, Vector3d>
+    copyCellAveragePositions(
+            Map<Vector3i, Vector3d> source
+    ) {
+        Map<Vector3i, Vector3d> result =
+                new HashMap<>();
+
+        if (source == null || source.isEmpty()) {
+            return result;
+        }
+
+        for (Map.Entry<Vector3i, Vector3d> entry
+                : source.entrySet()) {
+
+            Vector3i key =
+                    entry.getKey();
+
+            Vector3d value =
+                    entry.getValue();
+
+            if (key == null || value == null) {
+                continue;
+            }
+
+            result.put(
+                    new Vector3i(key),
+                    new Vector3d(value)
+            );
+        }
+
+        return result;
+    }
 }

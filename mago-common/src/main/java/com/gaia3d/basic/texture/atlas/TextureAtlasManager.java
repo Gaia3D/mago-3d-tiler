@@ -432,14 +432,14 @@ public class TextureAtlasManager {
     public void doAtlasTextureProcessByScissorDates(List<GaiaTextureScissorData> textureScissorDates) {
         // here calculates the batchedBoundaries of each textureScissorData
         int textureScissorDatasCount = textureScissorDates.size();
-        log.info("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : textureScissorDatasCount = " + textureScissorDatasCount);
+        log.debug("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : textureScissorDatasCount = " + textureScissorDatasCount);
 
         GuillotinePacker guillotinePacker = new GuillotinePacker();
 
         for (int i = 0; i < textureScissorDatasCount; i++) {
             GaiaTextureScissorData textureScissorData = textureScissorDates.get(i);
             if (!guillotinePacker.insert(textureScissorData)) {
-                log.info("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : guillotinePacker.insert() failed.");
+                log.debug("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : guillotinePacker.insert() failed.");
             }
         }
     }
@@ -449,7 +449,7 @@ public class TextureAtlasManager {
     ) {
         int textureScissorDatasCount = textureScissorDatesFull.size();
 
-        log.info("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : textureScissorDatasCount = "
+        log.debug("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : textureScissorDatasCount = "
                 + textureScissorDatasCount);
 
         List<GaiaTextureScissorDataFull> sortedScissors =
@@ -461,7 +461,7 @@ public class TextureAtlasManager {
             GaiaTextureScissorDataFull textureScissorData = sortedScissors.get(i);
 
             if (!guillotinePacker.insert(textureScissorData)) {
-                log.info("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : guillotinePacker.insert() failed.");
+                log.debug("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : guillotinePacker.insert() failed.");
             }
         }
     }
@@ -706,7 +706,7 @@ public class TextureAtlasManager {
         double diffPercent = (atlasArea - originalArea) / originalArea * 100.0;
         log.debug("scissorProcess : diffPercent ( % ) = " + (int) diffPercent + " %");
         if (atlasArea > originalArea) {
-            log.warn("[WARN] HalfEdgeSurface.scissorTextures() : Atlas area is bigger than original area. diffPercent = " + (int) diffPercent + " %");
+            log.debug("[WARN] HalfEdgeSurface.scissorTextures() : Atlas area is bigger than original area. diffPercent = " + (int) diffPercent + " %");
         }
 
         visitedVertexMap.clear();
@@ -802,7 +802,7 @@ public class TextureAtlasManager {
 
         // make the atlas texture.**************************************************************************************
         int imageType = existPngTextures ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
-        log.info("[Tile][Photogrammetry][Atlas] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
+        log.debug("[Tile][Photogrammetry][Atlas] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
         resultTextureAtlas.createImage(maxWidth, maxHeight, imageType);
 
         // Fill atlas background with known color
@@ -1601,7 +1601,7 @@ public class TextureAtlasManager {
         double diffPercent = (atlasArea - originalArea) / originalArea * 100.0;
         log.debug("scissorProcess : diffPercent ( % ) = " + (int) diffPercent + " %");
         if (atlasArea > originalArea) {
-            log.warn("[WARN] HalfEdgeSurface.scissorTextures() : Atlas area is bigger than original area. diffPercent = " + (int) diffPercent + " %");
+            log.debug("[WARN] HalfEdgeSurface.scissorTextures() : Atlas area is bigger than original area. diffPercent = " + (int) diffPercent + " %");
         }
 
         visitedVertexMap.clear();
@@ -1711,7 +1711,7 @@ public class TextureAtlasManager {
 
         // make the atlas texture.**************************************************************************************
         int imageType = existPngTextures ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
-        log.info("[Tile][Photogrammetry][Atlas] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
+        log.debug("[Tile][Photogrammetry][Atlas] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
         resultTextureAtlas.createImage(maxWidth, maxHeight, imageType);
 
         // Fill atlas background with known color
@@ -2371,7 +2371,7 @@ public class TextureAtlasManager {
         }
 
         GaiaTexture textureAtlas = new GaiaTexture();
-        log.info("[Tile][Photogrammetry][makeAtlasTexture] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
+        log.debug("[Tile][Photogrammetry][makeAtlasTexture] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
         textureAtlas.createImage(maxWidth, maxHeight, imageType);
 
         // draw the images into textureAtlas
@@ -2427,7 +2427,7 @@ public class TextureAtlasManager {
         }
 
         GaiaTexture textureAtlas = new GaiaTexture();
-        log.info("[Tile][Photogrammetry][makeAtlasTexture] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
+        log.debug("[Tile][Photogrammetry][makeAtlasTexture] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
         textureAtlas.createImage(maxWidth, maxHeight, imageType);
 
         // draw the images into textureAtlas
