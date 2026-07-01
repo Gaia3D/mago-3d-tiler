@@ -826,7 +826,7 @@ public class HalfEdgeSurface implements Serializable {
                 cuttingVertices
         );
 
-        log.info(
+        log.debug(
                 "[Tile][Photogrammetry][cut][{}] "
                         + "halfEdges={}, cutVertices={}, "
                         + "tangentCandidates={}, acceptedTangents={}, "

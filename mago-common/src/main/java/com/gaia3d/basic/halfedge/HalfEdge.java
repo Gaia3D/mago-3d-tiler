@@ -8,8 +8,7 @@ import org.joml.Vector2d;
 import org.joml.Vector3d;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Setter
 @Getter
@@ -117,7 +116,46 @@ public class HalfEdge implements Serializable {
         return Math.sqrt(getSquaredLength());
     }
 
-    public List<HalfEdge> getLoop(List<HalfEdge> resultHalfEdgesLoop) {
+    public List<HalfEdge> getLoop(
+            List<HalfEdge> resultHalfEdgesLoop
+    ) {
+        if (resultHalfEdgesLoop == null) {
+            resultHalfEdgesLoop =
+                    new ArrayList<>();
+        }
+
+        resultHalfEdgesLoop.add(this);
+
+        HalfEdge nextHalfEdge =
+                this.next;
+
+        int iterationCount = 0;
+        final int maximumLoopSize = 1_000_000;
+
+        while (nextHalfEdge != null
+                && nextHalfEdge != this) {
+
+            resultHalfEdgesLoop.add(
+                    nextHalfEdge
+            );
+
+            nextHalfEdge =
+                    nextHalfEdge.next;
+
+            iterationCount++;
+
+            if (iterationCount >= maximumLoopSize) {
+                throw new IllegalStateException(
+                        "Malformed half-edge loop: "
+                                + "the loop did not return to its initial half-edge"
+                );
+            }
+        }
+
+        return resultHalfEdgesLoop;
+    }
+
+    public List<HalfEdge> getLoop_original(List<HalfEdge> resultHalfEdgesLoop) {
         if (resultHalfEdgesLoop == null) {
             resultHalfEdgesLoop = new ArrayList<>();
         }

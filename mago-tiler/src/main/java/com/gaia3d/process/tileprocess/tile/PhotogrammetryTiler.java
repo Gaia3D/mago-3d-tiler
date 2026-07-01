@@ -1608,7 +1608,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 )
         );
 
-        log.info(
+        log.debug(
                 "Integrating {} nodes using {} threads",
                 works.size(),
                 realThreadCount
@@ -1761,7 +1761,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                     );
         } else {
             /*
-             * Copia defensiva, ya que Matrix4d es mutable.
+             * Create a defensive copy because Matrix4d is mutable.
              */
             nodeTransformMatrix =
                     new Matrix4d(nodeTransformMatrix);
@@ -1779,8 +1779,8 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 globalOptions.getOutputPath();
 
         /*
-         * El nombre depende del índice asignado antes de lanzar
-         * los threads, no del orden de finalización.
+         * The name depends on the index assigned before launching
+         * the threads, not on their completion order.
          */
         String nodeName =
                 "node_L_"
@@ -1789,13 +1789,13 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                         + work.nodeIndex();
 
         /*
-         * Una instancia por worker.
-         * No compartimos manager entre nodos.
+         * Use one instance per worker.
+         * The manager is not shared between nodes.
          */
         MagoLeafTileManager magoLeafTileManager =
                 new MagoLeafTileManager();
 
-        log.info(
+        log.debug(
                 "Integrating node {} with {} source scenes on thread {}",
                 node.getNodeCode(),
                 sceneInfos.size(),

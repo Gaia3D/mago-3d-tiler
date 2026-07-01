@@ -11,10 +11,7 @@ import org.joml.Vector2d;
 import org.joml.Vector3d;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -1151,11 +1148,44 @@ public class HalfEdgeUtils {
             }
         }
 
-        //resultVertices.addAll(MapVertices.values());
         return resultVertices;
     }
 
-    public static List<HalfEdge> getHalfEdgesOfFaces(List<HalfEdgeFace> faces, List<HalfEdge> resultHalfEdges) {
+    public static List<HalfEdge> getHalfEdgesOfFaces(
+            List<HalfEdgeFace> faces,
+            List<HalfEdge> resultHalfEdges
+    ) {
+        Set<HalfEdge> halfEdgesSet =
+                new HashSet<>();
+
+        if (resultHalfEdges == null) {
+            resultHalfEdges =
+                    new ArrayList<>();
+        } else {
+            halfEdgesSet.addAll(resultHalfEdges);
+        }
+
+        List<HalfEdge> faceHalfEdges =
+                new ArrayList<>();
+
+        for (HalfEdgeFace face : faces) {
+            faceHalfEdges.clear();
+
+            face.getHalfEdgesLoop(
+                    faceHalfEdges
+            );
+
+            for (HalfEdge halfEdge : faceHalfEdges) {
+                if (halfEdgesSet.add(halfEdge)) {
+                    resultHalfEdges.add(halfEdge);
+                }
+            }
+        }
+
+        return resultHalfEdges;
+    }
+
+    public static List<HalfEdge> getHalfEdgesOfFaces_original(List<HalfEdgeFace> faces, List<HalfEdge> resultHalfEdges) {
         Map<HalfEdge, HalfEdge> MapHalfEdges = new HashMap<>();
         if (resultHalfEdges == null) {
             resultHalfEdges = new ArrayList<>();
@@ -1173,7 +1203,6 @@ public class HalfEdgeUtils {
             }
         }
 
-        //resultHalfEdges.addAll(MapHalfEdges.values());
         return resultHalfEdges;
     }
 

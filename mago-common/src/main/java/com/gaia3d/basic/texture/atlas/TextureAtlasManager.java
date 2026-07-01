@@ -706,7 +706,7 @@ public class TextureAtlasManager {
         double diffPercent = (atlasArea - originalArea) / originalArea * 100.0;
         log.debug("scissorProcess : diffPercent ( % ) = " + (int) diffPercent + " %");
         if (atlasArea > originalArea) {
-            log.warn("[WARN] HalfEdgeSurface.scissorTextures() : Atlas area is bigger than original area. diffPercent = " + (int) diffPercent + " %");
+            log.debug("[WARN] HalfEdgeSurface.scissorTextures() : Atlas area is bigger than original area. diffPercent = " + (int) diffPercent + " %");
         }
 
         visitedVertexMap.clear();
@@ -1601,7 +1601,7 @@ public class TextureAtlasManager {
         double diffPercent = (atlasArea - originalArea) / originalArea * 100.0;
         log.debug("scissorProcess : diffPercent ( % ) = " + (int) diffPercent + " %");
         if (atlasArea > originalArea) {
-            log.warn("[WARN] HalfEdgeSurface.scissorTextures() : Atlas area is bigger than original area. diffPercent = " + (int) diffPercent + " %");
+            log.debug("[WARN] HalfEdgeSurface.scissorTextures() : Atlas area is bigger than original area. diffPercent = " + (int) diffPercent + " %");
         }
 
         visitedVertexMap.clear();
