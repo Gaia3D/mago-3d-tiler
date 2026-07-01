@@ -94,6 +94,7 @@ public enum ProcessOptions {
     PHOTOGRAMMETRY("photogrammetry", "pg", false, false, "[Experimental] generate b3dm for photogrammetry model with GPU"),
     SPLIT_BY_NODE("splitByNode", "sbn", false, false, "[Experimental] Split tiles by nodes of scene."),
     CURVATURE_CORRECTION("curvatureCorrection", "cc", false, false, "[Experimental] Apply curvature correction for ellipsoid surface."),
+    UPDATE_ROOT_TRANSFORM("updateRootTransform", "urt", true, false, "[Experimental] Add 16 comma-separated transform values to the root node of tileset.json."),
 
     /* Deprecated Options */
     MULTI_THREAD_COUNT("multiThreadCount", "mc", true, false, "[Deprecated] set thread count"),
