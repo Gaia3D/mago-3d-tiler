@@ -64,7 +64,7 @@ class I3dmReleaseTest {
     void instanced03() {
         String path = "I03-seoul-yeouido-gpkg";
         String[] args = new String[]{
-                "-tilesVersion", "1.0",
+                //"-tilesVersion", "1.0",
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",

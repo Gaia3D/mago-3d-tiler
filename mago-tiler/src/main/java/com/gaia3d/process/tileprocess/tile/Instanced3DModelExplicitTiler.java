@@ -8,6 +8,7 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.types.LevelOfDetail;
 import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
+import com.gaia3d.process.tileprocess.TilesetBuildResult;
 import com.gaia3d.process.tileprocess.Tiler;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
 import com.gaia3d.process.tileprocess.tile.tileset.TilesetV2;
@@ -34,12 +35,11 @@ import java.util.stream.Collectors;
 @SuppressWarnings("ALL")
 @Slf4j
 @NoArgsConstructor
-@Deprecated
-public class TreeInstanceTiler extends DefaultTiler implements Tiler {
+public class Instanced3DModelExplicitTiler extends DefaultTiler implements Tiler {
 
-    private static final GlobalOptions globalOptions = GlobalOptions.getInstance();
     private final double maximumGeometricError = 64.0;
     private final double maximumDistance = 1000.0; // 1km
+    private GlobalOptions globalOptions = GlobalOptions.getInstance();
     private double instanceGeometricError = 1.0;
 
     @Override
@@ -63,14 +63,14 @@ public class TreeInstanceTiler extends DefaultTiler implements Tiler {
         root.setGeometricError(instanceGeometricError);
 
         try {
-            createNode(root, tileInfos, null, 0);
+            createNode(root, tileInfos, 0);
         } catch (IOException e) {
             log.error("[ERROR] :", e);
             throw new RuntimeException(e);
         }
 
         Tileset tileset;
-        if (globalOptions.getTilesVersion().equals("1.0")) {
+        if ("1.0".equals(globalOptions.getTilesVersion())) {
             tileset = new Tileset();
             AssetV1 asset = new AssetV1();
             tileset.setAsset(asset);
@@ -82,6 +82,12 @@ public class TreeInstanceTiler extends DefaultTiler implements Tiler {
         tileset.setGeometricError(instanceGeometricError);
         tileset.setRoot(root);
         return tileset;
+    }
+
+    @Override
+    public TilesetBuildResult runWithResult(List<TileInfo> tileInfos) {
+        Tileset tileset = run(tileInfos);
+        return new TilesetBuildResult(tileset, tileset.findAllContentInfo());
     }
 
     @Override
@@ -110,6 +116,12 @@ public class TreeInstanceTiler extends DefaultTiler implements Tiler {
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
+        try {
+            java.nio.file.Files.createDirectories(outputPath);
+        } catch (IOException e) {
+            log.error("[ERROR] Failed to create output directory: {}", outputPath, e);
+            throw new TileProcessingException("Failed to create output directory: " + outputPath, e);
+        }
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(tilesetFile))) {
             String result = objectMapper.writeValueAsString(tileset);
             log.info("[Tile][Tileset] write 'tileset.json' file.");
@@ -121,7 +133,7 @@ public class TreeInstanceTiler extends DefaultTiler implements Tiler {
         }
     }
 
-    private void createNode(Node parentNode, List<TileInfo> tileInfos, List<TileInfo> inheritanceTileInfos, int nodeDepth) throws IOException {
+    private void createNode(Node parentNode, List<TileInfo> tileInfos, int nodeDepth) throws IOException {
         BoundingVolume parentBoundingVolume = parentNode.getBoundingVolume();
         BoundingVolume squareBoundingVolume = parentBoundingVolume.createSqureBoundingVolume();
 
@@ -136,7 +148,7 @@ public class TreeInstanceTiler extends DefaultTiler implements Tiler {
         double distance = gaiaBoundingBox.getLongestDistance();
         if (nodeDepth > globalOptions.getMaxNodeDepth()) {
             log.warn("[WARN][Tile] Node depth limit exceeded : {}", nodeDepth);
-            Node childNode = createContentNode(parentNode, tileInfos, inheritanceTileInfos, 0);
+            Node childNode = createContentNode(parentNode, tileInfos, 0);
             if (childNode != null) {
                 parentNode.getChildren().add(childNode);
             }
@@ -150,46 +162,42 @@ public class TreeInstanceTiler extends DefaultTiler implements Tiler {
                 Node childNode = createLogicalNode(parentNode, childTileInfos, index);
                 if (childNode != null) {
                     parentNode.getChildren().add(childNode);
-                    createNode(childNode, childTileInfos, inheritanceTileInfos, nodeDepth + 1);
+                    createNode(childNode, childTileInfos, nodeDepth + 1);
                 }
             }
-        } else if (instanceCount >= 2) {
+        } else if (instanceCount > 1) {
             List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
                 List<TileInfo> childTileInfos = childrenScenes.get(index);
+                // shuffle
                 Collections.shuffle(childTileInfos);
-                Node childNode = createContentNode(parentNode, childTileInfos, inheritanceTileInfos, index);
+                Node childNode = createContentNode(parentNode, childTileInfos, index);
                 if (childNode != null) {
                     parentNode.getChildren().add(childNode);
                     Content content = childNode.getContent();
                     if (content != null) {
                         ContentInfo contentInfo = content.getContentInfo();
-                        List<TileInfo> remainTileInfos = contentInfo.getRemainTileInfos();
 
-                        List<List<TileInfo>> distributedInheritanceTileInfos = squareBoundingVolume.distributeScene(contentInfo.getTileInfos());
-                        List<TileInfo> newInheritanceTileInfos = distributedInheritanceTileInfos.get(index);
                         if (isRefineAdd) {
-                            createNode(childNode, remainTileInfos, newInheritanceTileInfos, nodeDepth + 1);
+                            createNode(childNode, contentInfo.getRemainTileInfos(), nodeDepth + 1);
                         } else {
-                            createNode(childNode, childTileInfos, inheritanceTileInfos, nodeDepth + 1);
+                            createNode(childNode, childTileInfos, nodeDepth + 1);
                         }
                     } else {
-                        createNode(childNode, childTileInfos, inheritanceTileInfos, nodeDepth + 1);
+                        createNode(childNode, childTileInfos, nodeDepth + 1);
                     }
                 }
             }
         } else if (!tileInfos.isEmpty()) {
-            Node childNode = createContentNode(parentNode, tileInfos, inheritanceTileInfos, 0);
+            Node childNode = createContentNode(parentNode, tileInfos, 0);
             if (childNode != null) {
                 parentNode.getChildren().add(childNode);
                 Content content = childNode.getContent();
                 if (content != null) {
                     ContentInfo contentInfo = content.getContentInfo();
-                    List<TileInfo> remainTileInfos = contentInfo.getRemainTileInfos();
-
-                    createNode(childNode, remainTileInfos, inheritanceTileInfos, nodeDepth + 1);
+                    createNode(childNode, contentInfo.getRemainTileInfos(), nodeDepth + 1);
                 } else {
-                    createNode(childNode, tileInfos, inheritanceTileInfos, nodeDepth + 1);
+                    createNode(childNode, tileInfos, nodeDepth + 1);
                 }
             }
         }
@@ -224,7 +232,7 @@ public class TreeInstanceTiler extends DefaultTiler implements Tiler {
         return childNode;
     }
 
-    private Node createContentNode(Node parentNode, List<TileInfo> tileInfos, List<TileInfo> inheritanceTileInfos, int index) {
+    private Node createContentNode(Node parentNode, List<TileInfo> tileInfos, int index) {
         if (tileInfos.isEmpty()) {
             return null;
         }
@@ -249,18 +257,21 @@ public class TreeInstanceTiler extends DefaultTiler implements Tiler {
             nodeCode = nodeCode + "C";
         }
         LevelOfDetail lod = getLodByNodeCode(minLod, maxLod, nodeCode);
+        boolean terminalRefineAddContent = refineAdd && lod.getLevel() <= minLevel;
         if (lod == LevelOfDetail.NONE) {
-            return null;
+            if (!refineAdd) {
+                return null;
+            }
+            lod = minLod;
+            terminalRefineAddContent = true;
         }
 
         if (refineAdd) {
-            /*if (lod.getLevel() == 0) {
-                lod = LevelOfDetail.LOD0;
-            } else {
-                lod = LevelOfDetail.LOD3;
-            }*/
-            lod = LevelOfDetail.getByLevel(lod.getLevel());
+            lod = LevelOfDetail.LOD3;
         }
+
+        //int lodError = refineAdd ? lod.getGeometricErrorBlock() : lod.getGeometricError();
+        //lodError = lod.getGeometricError() * 8;
 
         nodeCode = nodeCode + index;
         int lodError = lod.getGeometricError();
@@ -281,27 +292,27 @@ public class TreeInstanceTiler extends DefaultTiler implements Tiler {
         } else if (divideSize < GlobalConstants.DEFAULT_MIN_I3DM_FEATURE_COUNT) {
             divideSize = GlobalConstants.DEFAULT_MIN_I3DM_FEATURE_COUNT;
         }
+        //int divideSize = globalOptions.getMaxInstance();
+        // divide by globalOptions.getMaxInstance()
 
         List<TileInfo> resultInfos;
         List<TileInfo> remainInfos;
-        List<TileInfo> totalResultInfos;
 
         if (refineAdd) {
-            resultInfos = tileInfos.stream()
-                    .limit(divideSize)
-                    .collect(Collectors.toList());
-            remainInfos = tileInfos.stream()
-                    .skip(divideSize)
-                    .collect(Collectors.toList());
-            totalResultInfos = new ArrayList<>(resultInfos);
-
-            if (inheritanceTileInfos != null && !inheritanceTileInfos.isEmpty()) {
-                List<TileInfo> tempInheritanceTileInfos = boundingVolume.getVolumeIncludeScenes(inheritanceTileInfos, childBoundingBox);
-                totalResultInfos.addAll(tempInheritanceTileInfos);
-            }
-
-            if (remainInfos.isEmpty() && lod != LevelOfDetail.LOD0) {
-                remainInfos.addAll(tileInfos);
+            if (terminalRefineAddContent) {
+                resultInfos = tileInfos.stream()
+                        .limit(tileInfos.size())
+                        .collect(Collectors.toList());
+                remainInfos = tileInfos.stream()
+                        .skip(tileInfos.size())
+                        .collect(Collectors.toList());
+            } else {
+                resultInfos = tileInfos.stream()
+                        .limit(divideSize)
+                        .collect(Collectors.toList());
+                remainInfos = tileInfos.stream()
+                        .skip(divideSize)
+                        .collect(Collectors.toList());
             }
         } else {
             resultInfos = tileInfos.stream()
@@ -310,7 +321,6 @@ public class TreeInstanceTiler extends DefaultTiler implements Tiler {
             remainInfos = tileInfos.stream()
                     .skip(0)
                     .collect(Collectors.toList());
-            totalResultInfos = new ArrayList<>(resultInfos);
         }
 
         Node childNode = new Node();
@@ -324,7 +334,13 @@ public class TreeInstanceTiler extends DefaultTiler implements Tiler {
         }
         childNode.setGeometricError(lodError);
         childNode.setChildren(new ArrayList<>());
-        childNode.setRefine(Node.RefineType.REPLACE);
+
+        //childNode.setRefine(refineAdd ? Node.RefineType.ADD : Node.RefineType.REPLACE);
+        if (refineAdd) {
+            childNode.setRefine(Node.RefineType.ADD);
+        } else {
+            childNode.setRefine(Node.RefineType.REPLACE);
+        }
 
         if (!resultInfos.isEmpty()) {
             ContentInfo contentInfo = new ContentInfo();
@@ -332,11 +348,10 @@ public class TreeInstanceTiler extends DefaultTiler implements Tiler {
             contentInfo.setLod(lod);
             contentInfo.setBoundingBox(childBoundingBox);
             contentInfo.setNodeCode(nodeCode);
-            contentInfo.setTileInfos(totalResultInfos);
-            contentInfo.setTempTileInfos(resultInfos);
+            contentInfo.setTileInfos(resultInfos);
             contentInfo.setRemainTileInfos(remainInfos);
             Content content = new Content();
-            if (globalOptions.getTilesVersion().equals("1.0")) {
+            if ("1.0".equals(globalOptions.getTilesVersion())) {
                 content.setUri("data/" + nodeCode + ".i3dm");
             } else {
                 content.setUri("data/" + nodeCode + ".glb");

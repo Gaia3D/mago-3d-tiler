@@ -289,7 +289,7 @@ public class GaiaTextureCoordinator {
             List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
             if (!textures.isEmpty()) {
                 GaiaTexture texture = textures.get(0);
-                BufferedImage source = texture.getBufferedImage();
+                BufferedImage source = isPhotorealistic ? texture.getBufferedImage() : texture.getBufferedImage(lod);
                 graphics.drawImage(source, (int) splitRectangle.getMinX(), (int) splitRectangle.getMinY(), null); // original code
                 //graphics.drawImage(randomColoredImage, (int) splitRectangle.getMinX(), (int) splitRectangle.getMinY(), null); // test code
             }
@@ -467,7 +467,11 @@ public class GaiaTextureCoordinator {
 //                    this.atlasImage = imageResizer.resizeImageGraphic2D(this.atlasImage, imageWidth, imageHeight, true);
 //                }
             }
+        } else {
+            limitAtlasSize(GlobalConstants.DEFAULT_BATCH_ATLAS_MAX_TEXTURE_SIZE);
         }
+
+        updateAtlasTextureMetadata(maxWidth, maxHeight);
 
         /* debug */
         if (globalOptions.isDebug()) {
@@ -475,6 +479,41 @@ public class GaiaTextureCoordinator {
         }
 
         return this.atlasImage;
+    }
+
+    private void limitAtlasSize(int maximumSize) {
+        if (this.atlasImage == null || maximumSize <= 0) {
+            return;
+        }
+        int width = this.atlasImage.getWidth();
+        int height = this.atlasImage.getHeight();
+        int longestSide = Math.max(width, height);
+        if (longestSide <= maximumSize) {
+            return;
+        }
+
+        double scale = maximumSize / (double) longestSide;
+        int resizeWidth = Math.max(1, (int) Math.round(width * scale));
+        int resizeHeight = Math.max(1, (int) Math.round(height * scale));
+        log.debug("Resize batched atlas: {}x{} -> {}x{}", width, height, resizeWidth, resizeHeight);
+        ImageResizer imageResizer = new ImageResizer();
+        this.atlasImage = imageResizer.resizeMultiStepSmart(this.atlasImage, resizeWidth, resizeHeight);
+    }
+
+    private void updateAtlasTextureMetadata(int fallbackWidth, int fallbackHeight) {
+        int width = this.atlasImage != null ? this.atlasImage.getWidth() : fallbackWidth;
+        int height = this.atlasImage != null ? this.atlasImage.getHeight() : fallbackHeight;
+        for (GaiaMaterial material : materials) {
+            Map<TextureType, List<GaiaTexture>> textureMap = material.getTextures();
+            List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
+            if (textures == null || textures.isEmpty()) {
+                continue;
+            }
+            GaiaTexture texture = textures.get(0);
+            texture.setBufferedImage(this.atlasImage);
+            texture.setWidth(width);
+            texture.setHeight(height);
+        }
     }
 
     private void writeAtlasImageForTest(boolean existPngTextures, LevelOfDetail lod, String suffix) {
@@ -487,7 +526,7 @@ public class GaiaTextureCoordinator {
     }
 
     private void writeBatchedImage(String imageName, String imageExtension) {
-        File tempPath = new File(globalOptions.getTempPath(), "altras");
+        File tempPath = new File(globalOptions.getTempPath(), "atlas");
         if (!tempPath.exists()) {
             if (!tempPath.mkdirs()) {
                 log.error("[ERROR] Failed to create directory");

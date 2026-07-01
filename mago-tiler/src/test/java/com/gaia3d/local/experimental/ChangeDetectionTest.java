@@ -186,6 +186,21 @@ public class ChangeDetectionTest {
         }
     }*/
 
+
+    @Test
+    void convertChangeDetectionManualEumbongPointCloud() {
+        String name = "eumbong-change-detection-25년6월-point-cloud-fixed";
+        String path = "D:\\data\\mago-3d-tiler\\temp-sample\\아산시 변화탐지\\3.음봉면(폐기물_변화탐지)\\25년6월\\point_cloud";
+        String[] args = new String[]{
+                "-i", path,
+                "-o", MagoTestConfig.getOutputPath(name).getAbsolutePath(),
+                "-crs", "5186",
+                "-zOffset", Double.toString(-23.625),
+        };
+        MagoTestConfig.execute(args);
+    }
+
+
     @Test
     void convertChangeDetectionEumbongRealisticMesh() {
         String folder = "D:\\data\\mago-3d-tiler\\temp-sample\\아산시 변화탐지\\3.음봉면(폐기물_변화탐지)";

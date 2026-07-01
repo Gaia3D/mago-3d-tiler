@@ -28,7 +28,9 @@ class DefaultReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
-                "--quantize",
+                //"--quantize",
+                "--tilingMode", "implicit",
+                "--leaveTemp",
         };
         MagoTestConfig.execute(args);
     }
@@ -54,7 +56,10 @@ class DefaultReleaseTest {
         String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-V2",
+                "-c", "32652",
                 "-tilesVersion", "1.1",
+                "--tilingMode", "implicit"
+
         };
         MagoTestConfig.execute(args);
     }

@@ -6,7 +6,7 @@ import com.gaia3d.converter.loader.FileLoader;
 import com.gaia3d.process.postprocess.PostProcess;
 import com.gaia3d.process.preprocess.PreProcess;
 import com.gaia3d.process.tileprocess.Pipeline;
-import com.gaia3d.process.tileprocess.Tiler;
+import com.gaia3d.process.tileprocess.TilesetBuildResult;
 import com.gaia3d.process.tileprocess.TilingProcess;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
@@ -49,6 +49,7 @@ public class TilingPipeline implements Pipeline {
     private List<File> fileList;
     private List<TileInfo> tileInfos;
     private Tileset tileset;
+    private TilesetBuildResult tilesetBuildResult;
     private List<ContentInfo> contentInfos;
 
     @Override
@@ -137,10 +138,10 @@ public class TilingPipeline implements Pipeline {
 
     private void executeTilingProcess() throws FileNotFoundException {
         log.info("[Tile] Start the tiling process.");
-        Tiler tiler = (Tiler) tilingProcess;
         log.info("[Tile] Writing tileset file.");
-        tileset = tiler.run(tileInfos);
-        tiler.writeTileset(tileset);
+        tilesetBuildResult = tilingProcess.runWithResult(tileInfos);
+        tileset = tilesetBuildResult.getTileset();
+        tilingProcess.writeTileset(tileset);
         log.info("[Tile] End the tiling process.");
     }
 
@@ -149,7 +150,7 @@ public class TilingPipeline implements Pipeline {
 
         ExecutorService executorService = Executors.newFixedThreadPool(globalOptions.getMultiThreadCount());
         List<Runnable> tasks = new ArrayList<>();
-        contentInfos = tileset.findAllContentInfo();
+        contentInfos = new ArrayList<>(tilesetBuildResult.getContentInfos());
         AtomicInteger count = new AtomicInteger(1);
         int contentCount = contentInfos.size();
         globalOptions.setTileCount(contentCount);
@@ -163,7 +164,8 @@ public class TilingPipeline implements Pipeline {
                     List<TileInfo> tileInfos = contentInfo.getTileInfos();
                     List<TileInfo> tileInfosClone = tileInfos.stream()
                             .map((childTileInfo) -> TileInfo.builder()
-                                    .scene(childTileInfo.getScene())
+                                    .scene(contentInfo.isIsolateTextureLod() && childTileInfo.getScene() != null ? childTileInfo.getScene().clone() : childTileInfo.getScene())
+                                    .set(contentInfo.isIsolateTextureLod() && childTileInfo.getSet() != null ? childTileInfo.getSet().clone() : childTileInfo.getSet())
                                     .tileTransformInfo(childTileInfo.getTileTransformInfo())
                                     .scenePath(childTileInfo.getScenePath())
                                     .tempPath(childTileInfo.getTempPath())

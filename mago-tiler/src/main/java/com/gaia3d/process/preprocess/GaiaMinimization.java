@@ -37,7 +37,9 @@ public class GaiaMinimization implements PreProcess {
                 int maximumLod = globalOptions.getMaxLod();
                 for (int index = minimumLod; index <= maximumLod; index++) {
                     LevelOfDetail lod = LevelOfDetail.getByLevel(index);
-                    lodList.add(lod);
+                    if (lod != LevelOfDetail.NONE) {
+                        lodList.add(lod);
+                    }
                 }
             }
 

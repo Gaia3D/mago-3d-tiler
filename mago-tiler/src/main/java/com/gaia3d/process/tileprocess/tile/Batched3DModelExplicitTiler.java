@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exception.TileProcessingException;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.types.LevelOfDetail;
-import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
+import com.gaia3d.process.tileprocess.TilesetBuildResult;
 import com.gaia3d.process.tileprocess.Tiler;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
 import com.gaia3d.process.tileprocess.tile.tileset.TilesetV2;
@@ -20,6 +20,8 @@ import com.gaia3d.util.DecimalUtils;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
+import org.joml.Vector3d;
+import org.locationtech.proj4j.CoordinateReferenceSystem;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -27,50 +29,51 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("ALL")
 @Slf4j
 @NoArgsConstructor
-@Deprecated
-public class TreeInstanceTiler extends DefaultTiler implements Tiler {
+public class Batched3DModelExplicitTiler extends DefaultTiler implements Tiler {
 
-    private static final GlobalOptions globalOptions = GlobalOptions.getInstance();
-    private final double maximumGeometricError = 64.0;
-    private final double maximumDistance = 1000.0; // 1km
-    private double instanceGeometricError = 1.0;
+    public final GlobalOptions globalOptions = GlobalOptions.getInstance();
 
     @Override
     public Tileset run(List<TileInfo> tileInfos) {
-        if (!tileInfos.isEmpty()) {
-            instanceGeometricError = calcGeometricError(List.of(tileInfos.get(0)));
-        }
-        if (instanceGeometricError < maximumGeometricError) {
-            instanceGeometricError = maximumGeometricError;
-        }
+        double geometricError = calcGeometricError(tileInfos);
+        geometricError = DecimalUtils.cutFast(geometricError);
 
-        GaiaBoundingBox globalBoundingBox = calcCartographicBoundingBox(tileInfos);
-        Matrix4d transformMatrix = getTransformMatrixFromCartographic(globalBoundingBox);
-        if (globalOptions.isClassicTransformMatrix()) {
-            rotateX90(transformMatrix);
-        }
+        GaiaBoundingBox boundingBox = null;
+        Matrix4d transformMatrix = null;
 
         Node root = createRoot();
-        root.setBoundingVolume(new BoundingVolume(globalBoundingBox, BoundingVolume.BoundingVolumeType.REGION));
+        CoordinateReferenceSystem sourceCrs = globalOptions.getSourceCrs();
+        if (sourceCrs != null && sourceCrs.getName().equals("EPSG:4978")) {
+            boundingBox = calcCartesianBoundingBox(tileInfos);
+            transformMatrix = getTransformMatrixFromCartesian(boundingBox);
+            root.setBoundingVolume(new BoundingVolume(boundingBox, BoundingVolume.BoundingVolumeType.BOX));
+        } else {
+            boundingBox = calcCartographicBoundingBox(tileInfos);
+            transformMatrix = getTransformMatrixFromCartographic(boundingBox);
+            root.setBoundingVolume(new BoundingVolume(boundingBox, BoundingVolume.BoundingVolumeType.REGION));
+        }
+
+        if (globalOptions.isClassicTransformMatrix() && transformMatrix != null) {
+            rotateX90(transformMatrix);
+        }
         root.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
-        root.setGeometricError(instanceGeometricError);
+        root.setGeometricError(geometricError);
 
         try {
-            createNode(root, tileInfos, null, 0);
+            createNode(root, tileInfos, 0);
         } catch (IOException e) {
             log.error("[ERROR] :", e);
             throw new RuntimeException(e);
         }
 
         Tileset tileset;
-        if (globalOptions.getTilesVersion().equals("1.0")) {
+        if ("1.0".equals(globalOptions.getTilesVersion())) {
             tileset = new Tileset();
             AssetV1 asset = new AssetV1();
             tileset.setAsset(asset);
@@ -79,9 +82,15 @@ public class TreeInstanceTiler extends DefaultTiler implements Tiler {
             AssetV2 asset = new AssetV2();
             tileset.setAsset(asset);
         }
-        tileset.setGeometricError(instanceGeometricError);
+        tileset.setGeometricError(geometricError);
         tileset.setRoot(root);
         return tileset;
+    }
+
+    @Override
+    public TilesetBuildResult runWithResult(List<TileInfo> tileInfos) {
+        Tileset tileset = run(tileInfos);
+        return new TilesetBuildResult(tileset, tileset.findAllContentInfo());
     }
 
     @Override
@@ -110,6 +119,12 @@ public class TreeInstanceTiler extends DefaultTiler implements Tiler {
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
+        try {
+            java.nio.file.Files.createDirectories(outputPath);
+        } catch (IOException e) {
+            log.error("[ERROR] Failed to create output directory: {}", outputPath, e);
+            throw new TileProcessingException("Failed to create output directory: " + outputPath, e);
+        }
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(tilesetFile))) {
             String result = objectMapper.writeValueAsString(tileset);
             log.info("[Tile][Tileset] write 'tileset.json' file.");
@@ -121,76 +136,71 @@ public class TreeInstanceTiler extends DefaultTiler implements Tiler {
         }
     }
 
-    private void createNode(Node parentNode, List<TileInfo> tileInfos, List<TileInfo> inheritanceTileInfos, int nodeDepth) throws IOException {
+    private void createNode(Node parentNode, List<TileInfo> tileInfos, int nodeDepth) throws IOException {
         BoundingVolume parentBoundingVolume = parentNode.getBoundingVolume();
         BoundingVolume squareBoundingVolume = parentBoundingVolume.createSqureBoundingVolume();
 
-        long instanceLimit = globalOptions.getMaxInstance();
-        long instanceCount = tileInfos.size();
-        boolean isRefineAdd = globalOptions.isRefineAdd();
-
-        GaiaBoundingBox gaiaBoundingBox = parentNode.getBoundingBox();
-        if (gaiaBoundingBox == null) {
-            gaiaBoundingBox = calcCartographicBoundingBox(tileInfos);
-        }
-        double distance = gaiaBoundingBox.getLongestDistance();
+        boolean refineAdd = globalOptions.isRefineAdd();
+        long triangleLimit = globalOptions.getMaxTriangles();
+        long totalTriangleCount = tileInfos.stream().mapToLong(TileInfo::getTriangleCount).sum();
+        log.debug("[TriangleCount] Total : {}", totalTriangleCount);
+        log.debug("[Tile][ContentNode][OBJECT] : {}", tileInfos.size());
         if (nodeDepth > globalOptions.getMaxNodeDepth()) {
             log.warn("[WARN][Tile] Node depth limit exceeded : {}", nodeDepth);
-            Node childNode = createContentNode(parentNode, tileInfos, inheritanceTileInfos, 0);
+            Node childNode = createContentNode(parentNode, tileInfos, 0);
             if (childNode != null) {
                 parentNode.getChildren().add(childNode);
             }
             return;
         }
 
-        if (instanceCount > instanceLimit || distance > maximumDistance) {
+        if (tileInfos.size() <= 1) {
+            Node childNode = createContentNode(parentNode, tileInfos, 0);
+            if (childNode != null) {
+                parentNode.getChildren().add(childNode);
+                createNode(childNode, tileInfos, nodeDepth + 1);
+            }
+        } else if (totalTriangleCount > triangleLimit) {
             List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
+
+            // is samp transform matrix for all children nodes
+            GaiaBoundingBox matrixBoundingBox = new GaiaBoundingBox();
+            for (TileInfo tileInfo : tileInfos) {
+                GaiaBoundingBox boundingBox = tileInfo.getBoundingBox();
+                Vector3d center = boundingBox.getCenter();
+                matrixBoundingBox.addPoint(center);
+            }
+
             for (int index = 0; index < childrenScenes.size(); index++) {
                 List<TileInfo> childTileInfos = childrenScenes.get(index);
                 Node childNode = createLogicalNode(parentNode, childTileInfos, index);
                 if (childNode != null) {
                     parentNode.getChildren().add(childNode);
-                    createNode(childNode, childTileInfos, inheritanceTileInfos, nodeDepth + 1);
+                    createNode(childNode, childTileInfos, nodeDepth + 1);
                 }
             }
-        } else if (instanceCount >= 2) {
+        } else if (totalTriangleCount > 1) {
             List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
                 List<TileInfo> childTileInfos = childrenScenes.get(index);
-                Collections.shuffle(childTileInfos);
-                Node childNode = createContentNode(parentNode, childTileInfos, inheritanceTileInfos, index);
+
+                Node childNode = createContentNode(parentNode, childTileInfos, index);
                 if (childNode != null) {
                     parentNode.getChildren().add(childNode);
                     Content content = childNode.getContent();
-                    if (content != null) {
+                    if (content != null && refineAdd) {
                         ContentInfo contentInfo = content.getContentInfo();
-                        List<TileInfo> remainTileInfos = contentInfo.getRemainTileInfos();
-
-                        List<List<TileInfo>> distributedInheritanceTileInfos = squareBoundingVolume.distributeScene(contentInfo.getTileInfos());
-                        List<TileInfo> newInheritanceTileInfos = distributedInheritanceTileInfos.get(index);
-                        if (isRefineAdd) {
-                            createNode(childNode, remainTileInfos, newInheritanceTileInfos, nodeDepth + 1);
-                        } else {
-                            createNode(childNode, childTileInfos, inheritanceTileInfos, nodeDepth + 1);
-                        }
+                        createNode(childNode, contentInfo.getRemainTileInfos(), nodeDepth + 1);
                     } else {
-                        createNode(childNode, childTileInfos, inheritanceTileInfos, nodeDepth + 1);
+                        createNode(childNode, childTileInfos, nodeDepth + 1);
                     }
                 }
             }
-        } else if (!tileInfos.isEmpty()) {
-            Node childNode = createContentNode(parentNode, tileInfos, inheritanceTileInfos, 0);
+        } else {
+            Node childNode = createContentNode(parentNode, tileInfos, 0);
             if (childNode != null) {
                 parentNode.getChildren().add(childNode);
-                Content content = childNode.getContent();
-                if (content != null) {
-                    ContentInfo contentInfo = content.getContentInfo();
-                    List<TileInfo> remainTileInfos = contentInfo.getRemainTileInfos();
-
-                    createNode(childNode, remainTileInfos, inheritanceTileInfos, nodeDepth + 1);
-                } else {
-                    createNode(childNode, tileInfos, inheritanceTileInfos, nodeDepth + 1);
-                }
+                createNode(childNode, tileInfos, nodeDepth + 1);
             }
         }
     }
@@ -203,14 +213,26 @@ public class TreeInstanceTiler extends DefaultTiler implements Tiler {
         nodeCode = nodeCode + index;
         log.info("[Tile][LogicalNode][" + nodeCode + "][OBJECT{}]", tileInfos.size());
 
-        double geometricError = instanceGeometricError;
-        GaiaBoundingBox childBoundingBox = calcCartographicBoundingBox(tileInfos);
-        Matrix4d transformMatrix = getTransformMatrixFromCartographic(childBoundingBox);
+        double geometricError = calcGeometricError(tileInfos);
+
+        BoundingVolume boundingVolume;
+        GaiaBoundingBox boundingBox = null;
+        Matrix4d transformMatrix = null;
+
+        Node root = createRoot();
+        CoordinateReferenceSystem sourceCrs = globalOptions.getSourceCrs();
+        if (sourceCrs != null && sourceCrs.getName().equals("EPSG:4978")) {
+            boundingBox = calcCartesianBoundingBox(tileInfos);
+            transformMatrix = getTransformMatrixFromCartesian(boundingBox);
+            boundingVolume = new BoundingVolume(boundingBox, BoundingVolume.BoundingVolumeType.BOX);
+        } else {
+            boundingBox = calcCartographicBoundingBox(tileInfos);
+            transformMatrix = getTransformMatrixFromCartographic(boundingBox);
+            boundingVolume = new BoundingVolume(boundingBox, BoundingVolume.BoundingVolumeType.REGION);
+        }
         if (globalOptions.isClassicTransformMatrix()) {
             rotateX90(transformMatrix);
         }
-
-        BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox, BoundingVolume.BoundingVolumeType.REGION);
         geometricError = DecimalUtils.cutFast(geometricError);
 
         Node childNode = new Node();
@@ -224,22 +246,32 @@ public class TreeInstanceTiler extends DefaultTiler implements Tiler {
         return childNode;
     }
 
-    private Node createContentNode(Node parentNode, List<TileInfo> tileInfos, List<TileInfo> inheritanceTileInfos, int index) {
+    private Node createContentNode(Node parentNode, List<TileInfo> tileInfos, int index) {
         if (tileInfos.isEmpty()) {
             return null;
         }
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
         int minLevel = globalOptions.getMinLod();
         int maxLevel = globalOptions.getMaxLod();
         boolean refineAdd = globalOptions.isRefineAdd();
 
-        GaiaBoundingBox childBoundingBox = calcCartographicBoundingBox(tileInfos);
-        Matrix4d transformMatrix = getTransformMatrixFromCartographic(childBoundingBox);
+        BoundingVolume boundingVolume;
+        GaiaBoundingBox boundingBox = null;
+        Matrix4d transformMatrix = null;
+
+        Node root = createRoot();
+        CoordinateReferenceSystem sourceCrs = globalOptions.getSourceCrs();
+        if (sourceCrs != null && sourceCrs.getName().equals("EPSG:4978")) {
+            boundingBox = calcCartesianBoundingBox(tileInfos);
+            transformMatrix = getTransformMatrixFromCartesian(boundingBox);
+            boundingVolume = new BoundingVolume(boundingBox, BoundingVolume.BoundingVolumeType.BOX);
+        } else {
+            boundingBox = calcCartographicBoundingBox(tileInfos);
+            transformMatrix = getTransformMatrixFromCartographic(boundingBox);
+            boundingVolume = new BoundingVolume(boundingBox, BoundingVolume.BoundingVolumeType.REGION);
+        }
         if (globalOptions.isClassicTransformMatrix()) {
             rotateX90(transformMatrix);
         }
-
-        BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox, BoundingVolume.BoundingVolumeType.REGION);
 
         String nodeCode = parentNode.getNodeCode();
         LevelOfDetail minLod = LevelOfDetail.getByLevel(minLevel);
@@ -252,108 +284,62 @@ public class TreeInstanceTiler extends DefaultTiler implements Tiler {
         if (lod == LevelOfDetail.NONE) {
             return null;
         }
-
-        if (refineAdd) {
-            /*if (lod.getLevel() == 0) {
-                lod = LevelOfDetail.LOD0;
-            } else {
-                lod = LevelOfDetail.LOD3;
-            }*/
-            lod = LevelOfDetail.getByLevel(lod.getLevel());
-        }
-
         nodeCode = nodeCode + index;
-        int lodError = lod.getGeometricError();
-        if (refineAdd) {
-            double parentGeometricError = parentNode.getGeometricError();
-            if (parentGeometricError > 16) {
-                lodError = 16;
-            } else if (parentGeometricError > 1) {
-                lodError = (int) (parentGeometricError / 2);
-            }
-        }
-
         log.info("[Tile][ContentNode][" + nodeCode + "][LOD{}][OBJECT{}]", lod.getLevel(), tileInfos.size());
 
-        int divideSize = tileInfos.size() / 4;
-        if (divideSize > GlobalConstants.DEFAULT_MAX_I3DM_FEATURE_COUNT) {
-            divideSize = GlobalConstants.DEFAULT_MAX_I3DM_FEATURE_COUNT;
-        } else if (divideSize < GlobalConstants.DEFAULT_MIN_I3DM_FEATURE_COUNT) {
-            divideSize = GlobalConstants.DEFAULT_MIN_I3DM_FEATURE_COUNT;
+        int lodError = refineAdd ? lod.getGeometricErrorBlock() : lod.getGeometricError();
+        if (parentNode.getGeometricError() < lodError) {
+            parentNode.setGeometricError(lodError + 0.01);
+            log.debug("[Tile][ContentNode][{}] Adjust Parent Geometric Error : {}", parentNode.getNodeCode(), lodError + 0.01);
         }
 
         List<TileInfo> resultInfos;
         List<TileInfo> remainInfos;
-        List<TileInfo> totalResultInfos;
-
-        if (refineAdd) {
-            resultInfos = tileInfos.stream()
-                    .limit(divideSize)
-                    .collect(Collectors.toList());
-            remainInfos = tileInfos.stream()
-                    .skip(divideSize)
-                    .collect(Collectors.toList());
-            totalResultInfos = new ArrayList<>(resultInfos);
-
-            if (inheritanceTileInfos != null && !inheritanceTileInfos.isEmpty()) {
-                List<TileInfo> tempInheritanceTileInfos = boundingVolume.getVolumeIncludeScenes(inheritanceTileInfos, childBoundingBox);
-                totalResultInfos.addAll(tempInheritanceTileInfos);
-            }
-
-            if (remainInfos.isEmpty() && lod != LevelOfDetail.LOD0) {
-                remainInfos.addAll(tileInfos);
-            }
-        } else {
-            resultInfos = tileInfos.stream()
-                    .limit(tileInfos.size())
-                    .collect(Collectors.toList());
-            remainInfos = tileInfos.stream()
-                    .skip(0)
-                    .collect(Collectors.toList());
-            totalResultInfos = new ArrayList<>(resultInfos);
-        }
+        resultInfos = tileInfos.stream().filter(tileInfo -> {
+            double geometricError = tileInfo.getBoundingBox().getLongestDistance();
+            return geometricError >= lodError;
+        }).collect(Collectors.toList());
+        remainInfos = tileInfos.stream().filter(tileInfo -> {
+            double geometricError = tileInfo.getBoundingBox().getLongestDistance();
+            return geometricError < lodError;
+        }).collect(Collectors.toList());
 
         Node childNode = new Node();
         childNode.setParent(parentNode);
         childNode.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
         childNode.setBoundingVolume(boundingVolume);
         childNode.setNodeCode(nodeCode);
-
-        if (lodError < 1.0) {
-            lodError = 1;
-        }
-        childNode.setGeometricError(lodError);
+        childNode.setGeometricError(lodError + 0.01);
         childNode.setChildren(new ArrayList<>());
-        childNode.setRefine(Node.RefineType.REPLACE);
 
+        childNode.setRefine(refineAdd ? Node.RefineType.ADD : Node.RefineType.REPLACE);
         if (!resultInfos.isEmpty()) {
             ContentInfo contentInfo = new ContentInfo();
             contentInfo.setName(nodeCode);
             contentInfo.setLod(lod);
-            contentInfo.setBoundingBox(childBoundingBox);
+            contentInfo.setBoundingBox(boundingBox);
             contentInfo.setNodeCode(nodeCode);
-            contentInfo.setTileInfos(totalResultInfos);
-            contentInfo.setTempTileInfos(resultInfos);
+            contentInfo.setTileInfos(resultInfos);
             contentInfo.setRemainTileInfos(remainInfos);
+            contentInfo.setTransformMatrix(transformMatrix);
+
             Content content = new Content();
-            if (globalOptions.getTilesVersion().equals("1.0")) {
-                content.setUri("data/" + nodeCode + ".i3dm");
+            if ("1.0".equals(globalOptions.getTilesVersion())) {
+                content.setUri("data/" + nodeCode + ".b3dm");
             } else {
                 content.setUri("data/" + nodeCode + ".glb");
             }
             content.setContentInfo(contentInfo);
             childNode.setContent(content);
         } else {
-            log.warn("[WARN][Tile][ContentNode][{}] No content", nodeCode);
+            log.debug("[Tile][ContentNode][{}] No Contents", nodeCode);
         }
         return childNode;
     }
 
     private LevelOfDetail getLodByNodeCode(LevelOfDetail minLod, LevelOfDetail maxLod, String nodeCode) {
-        LevelOfDetail levelOfDetail;
         int minLevel = minLod.getLevel();
         int maxLevel = maxLod.getLevel();
-
         String[] splitCode = nodeCode.split("C");
         if (splitCode.length > 1) {
             String contentLevel = nodeCode.split("C")[1];
@@ -361,11 +347,9 @@ public class TreeInstanceTiler extends DefaultTiler implements Tiler {
             if (level < minLevel) {
                 level = -1;
             }
-            levelOfDetail = LevelOfDetail.getByLevel(level);
+            return LevelOfDetail.getByLevel(level);
         } else {
             return maxLod;
         }
-
-        return levelOfDetail;
     }
 }

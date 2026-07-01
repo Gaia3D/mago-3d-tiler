@@ -42,6 +42,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
 
     private int byteLength;
     private transient BufferedImage bufferedImage;
+    private transient LevelOfDetail bufferedImageLod = LevelOfDetail.NONE;
     private ByteBuffer byteBuffer;
 
     private int textureId = -1;
@@ -57,6 +58,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
             BufferedImage bufferedImage = readImage(imagePath);
             if (bufferedImage != null) {
                 this.bufferedImage = bufferedImage;
+                this.bufferedImageLod = LevelOfDetail.NONE;
                 this.width = bufferedImage.getWidth();
                 this.height = bufferedImage.getHeight();
                 this.format = bufferedImage.getType();
@@ -181,13 +183,14 @@ public class GaiaTexture extends TextureStructure implements Serializable {
                 BufferedImage bufferedImage = readImage(lodImageFile.getAbsolutePath());
                 if (bufferedImage != null) {
                     this.bufferedImage = bufferedImage;
+                    this.bufferedImageLod = lod;
                     this.width = bufferedImage.getWidth();
                     this.height = bufferedImage.getHeight();
                     this.format = bufferedImage.getType();
                 }
             }
         } else {
-            log.warn("[WARN] LOD file not found : {}, loading original image and resizing.", lodImageFile.getAbsolutePath());
+            log.debug("[WARN] LOD file not found : {}, loading original image and resizing.", lodImageFile.getAbsolutePath());
             float scaleFactor = lod.getTextureScale();
             loadImage();
             if (this.bufferedImage != null) {
@@ -199,6 +202,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
                 this.height = resizeHeight;
                 ImageResizer imageResizer = new ImageResizer();
                 this.bufferedImage = imageResizer.resizeImageGraphic2D(this.bufferedImage, resizeWidth, resizeHeight);
+                this.bufferedImageLod = lod;
             }
         }
     }
@@ -212,6 +216,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         }
         ImageResizer imageResizer = new ImageResizer();
         this.bufferedImage = imageResizer.resizeImageGraphic2D(this.bufferedImage, width, height);
+        this.bufferedImageLod = LevelOfDetail.NONE;
         this.width = width;
         this.height = height;
     }
@@ -231,7 +236,11 @@ public class GaiaTexture extends TextureStructure implements Serializable {
 
     // getBufferedImage
     public BufferedImage getBufferedImage(LevelOfDetail lod) {
-        if (this.bufferedImage == null) {
+        if (this.bufferedImage == null || this.bufferedImageLod != lod) {
+            if (this.bufferedImage != null) {
+                this.bufferedImage.flush();
+                this.bufferedImage = null;
+            }
             loadImage(lod);
         }
         return this.bufferedImage;
@@ -335,6 +344,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         if (this.bufferedImage != null) {
             this.bufferedImage.flush();
             this.bufferedImage = null;
+            this.bufferedImageLod = LevelOfDetail.NONE;
         }
         if (this.byteBuffer != null) {
             this.byteBuffer.clear();

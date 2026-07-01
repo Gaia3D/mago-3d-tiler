@@ -139,8 +139,7 @@ public class PointCloudModelV2 implements ContentModel {
 
         GaiaBatchTable batchTable = new GaiaBatchTable();
         String nodeCode = contentInfo.getNodeCode();
-        String glbFileName = nodeCode + "." + MAGIC;
-        File glbOutputFile = outputRoot.resolve(glbFileName).toFile();
+        File glbOutputFile = contentInfo.resolveContentFile(outputRoot, MAGIC);
 
         if (pointCloudBuffer.getPositions().length == 0) {
             log.warn("[WARN] Point cloud has no position data. Skip writing glb file for node : {}", nodeCode);

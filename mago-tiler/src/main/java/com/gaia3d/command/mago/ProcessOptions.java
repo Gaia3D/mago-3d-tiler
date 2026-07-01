@@ -27,6 +27,8 @@ public enum ProcessOptions {
 
     MESH_QUANTIZATION("quantize", "qt", false, false, "Quantize glTF 3DMesh via \"KHR_mesh_quantization\" Extension"),
     TILES_VERSION("tilesVersion", "tv", true, false, "3DTiles Version \n(default: 1.1)(options: 1.0, 1.1)"),
+    TILING_MODE("tilingMode", "tm", true, false, "3DTiles hierarchy mode \n(default: explicit)(options: explicit, implicit)"),
+    IMPLICIT_SUBTREE_LEVELS("implicitSubtreeLevels", "isl", true, false, "Implicit tiling subtree levels \n(default: 4)"),
 
     /* Coordinate Setting Options */
     CRS("crs", "c", true, false, "set input data CRS(Coordinate Reference Systems) \n " +

@@ -170,12 +170,12 @@ public class GaiaSet implements Serializable {
             log.debug("Directory created: {}", tempDir);
         }
         File tempFile = tempDir.resolve(tempFileName).toFile();
-        try (ObjectOutputStream outputStream = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(tempFile)))) {
-            outputStream.writeObject(this);
-
-            // Copy images to the temp directory
+        try {
             for (GaiaMaterial material : materials) {
                 copyTextures(material, tempDir, lods);
+            }
+            try (ObjectOutputStream outputStream = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(tempFile)))) {
+                outputStream.writeObject(this);
             }
         } catch (Exception e) {
             log.error("[ERROR] GaiaSet Write Error : ", e);
@@ -237,7 +237,8 @@ public class GaiaSet implements Serializable {
             }
             String fileFormat = FilenameUtils.getExtension(imageFile.getName()).toLowerCase();
 
-            texture.setPath(imageFile.getName());
+            String baseFileName = uniqueTextureFileName(material, imageFile.getName());
+            texture.setPath(baseFileName);
             if (!imageFile.exists()) {
                 log.error("[ERROR] Texture Input Image Path is not exists. {}", diffusePath);
             } else {
@@ -256,20 +257,24 @@ public class GaiaSet implements Serializable {
 
                     // Generate file name based on LOD level, Level 0 uses original name
                     boolean isOriginalLevel = level == 0;
-                    String fileName = !isOriginalLevel ? level + "_" + imageFile.getName() : imageFile.getName();
+                    String fileName = !isOriginalLevel ? level + "_" + baseFileName : baseFileName;
                     Path outputImagePath = imagesFolderPath.resolve(fileName);
                     File outputImageFile = outputImagePath.toFile();
-                    if (outputImageFile.exists()) {
-                        log.debug("File already exists, skipping: {}", outputImageFile.getAbsolutePath());
-                        continue;
-                    }
                     if (isOriginalLevel && scale == 1.0) {
+                        if (isSameImageSize(outputImageFile, bufferedImage.getWidth(), bufferedImage.getHeight())) {
+                            log.debug("File already exists with expected size, skipping: {}", outputImageFile.getAbsolutePath());
+                            continue;
+                        }
                         // No resizing needed, copy original file
                         FileUtils.copyFile(imageFile, outputImageFile);
                         continue;
                     }
                     int resizeWidth = Math.max(1, (int) Math.round(bufferedImage.getWidth() * scale));
                     int resizeHeight = Math.max(1, (int) Math.round(bufferedImage.getHeight() * scale));
+                    if (isSameImageSize(outputImageFile, resizeWidth, resizeHeight)) {
+                        log.debug("File already exists with expected size, skipping: {}", outputImageFile.getAbsolutePath());
+                        continue;
+                    }
                     BufferedImage resizedImage = imageResizer.resizeImageGraphic2D(bufferedImage, resizeWidth, resizeHeight);
                     //ImageIO.write(resizedImage, fileFormat, outputImageFile);
                     if (fileFormat.equals("jpg") || fileFormat.equals("jpeg")) {
@@ -280,6 +285,32 @@ public class GaiaSet implements Serializable {
                 }
             }
         }
+    }
+
+    private boolean isSameImageSize(File imageFile, int width, int height) {
+        if (!imageFile.exists() || !imageFile.isFile()) {
+            return false;
+        }
+        try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(imageFile))) {
+            BufferedImage image = ImageIO.read(inputStream);
+            return image != null && image.getWidth() == width && image.getHeight() == height;
+        } catch (IOException e) {
+            log.warn("[WARN] Failed to read existing texture image: {}", imageFile.getAbsolutePath(), e);
+            return false;
+        }
+    }
+
+    private String uniqueTextureFileName(GaiaMaterial material, String fileName) {
+        String identifier = attribute != null && attribute.getIdentifier() != null ? attribute.getIdentifier().toString() : projectName;
+        String prefix = sanitizeFileName(identifier) + "_" + material.getId();
+        return prefix + "_" + fileName;
+    }
+
+    private String sanitizeFileName(String value) {
+        if (value == null || value.isBlank()) {
+            return "texture";
+        }
+        return value.replaceAll("[^a-zA-Z0-9._-]", "_");
     }
 
     private GaiaRectangle calcTexcoordBoundingRectangle(GaiaBufferDataSet bufferDataSet) {

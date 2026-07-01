@@ -13,7 +13,7 @@ import java.awt.image.Kernel;
 @Slf4j
 public class ImageResizer {
     public final static int MAX_TEXTURE_SIZE = 8192 * 2;
-    public final static int MIN_TEXTURE_SIZE = 128;
+    public final static int MIN_TEXTURE_SIZE = 32;
 
     public BufferedImage resizeImageGraphic2D(BufferedImage originalImage, int width, int height) {
         return resizeImageGraphic2D(originalImage, width, height, false);
@@ -134,8 +134,8 @@ public class ImageResizer {
         BufferedImage outputImage = new BufferedImage(width, height, imageType);
         Graphics2D graphics2D = outputImage.createGraphics();
         if (interpolation) {
-            graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-            //graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            //graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
             graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             graphics2D.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
             graphics2D.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);

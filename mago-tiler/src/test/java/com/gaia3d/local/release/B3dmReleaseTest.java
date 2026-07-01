@@ -28,6 +28,7 @@ class B3dmReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
+                "--tilingMode", "implicit",
         };
         MagoTestConfig.execute(args);
     }
@@ -86,6 +87,7 @@ class B3dmReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "4326",
+                "--tilingMode", "implicit"
         };
         MagoTestConfig.execute(args);
     }
@@ -107,7 +109,8 @@ class B3dmReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-terrain", MagoTestConfig.getInputPath(path).getAbsolutePath() + "/seoul.tif",
-                "-c", "5186"
+                "-c", "5186",
+                "--tilingMode", "implicit"
         };
         MagoTestConfig.execute(args);
     }
@@ -147,6 +150,7 @@ class B3dmReleaseTest {
                 "-c", "5186",
                 "-skirtHeight", "10",
                 "-terrain", MagoTestConfig.getInputPath(path).getAbsolutePath() + "/korea-compressed.tif",
+                "--tilingMode", "implicit"
         };
         MagoTestConfig.execute(args);
     }
@@ -159,6 +163,7 @@ class B3dmReleaseTest {
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
                 "-terrain", MagoTestConfig.getInputPath(path).getAbsolutePath() + "/seoul.tif",
+
         };
         MagoTestConfig.execute(args);
     }
@@ -294,6 +299,7 @@ class B3dmReleaseTest {
                 "-heightColumn", "rel_height",
                 "-tilesVersion", "1.1",
                 "-c", "3857",
+                "--tilingMode", "implicit"
         };
         MagoTestConfig.execute(args);
     }
@@ -305,6 +311,7 @@ class B3dmReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-crs", "5186",
+                "--tilingMode", "implicit",
         };
         MagoTestConfig.execute(args);
     }
