@@ -748,7 +748,7 @@ public class MagoReTextureByObliqueCamera {
                 }
 
                 // Calculate globalBoundaryAnchors.*********************************************************************
-                calculateGlobalBoundaryAnchors(gaiaScene, reMeshParams, scenePositionRelToCellGrid, i);
+                //calculateGlobalBoundaryAnchors(gaiaScene, reMeshParams, scenePositionRelToCellGrid, i);
                 // End calculating globalBoundaryAnchors.---------------------------------------------------------------
 
                 if (gaiaSceneMaster == null) {

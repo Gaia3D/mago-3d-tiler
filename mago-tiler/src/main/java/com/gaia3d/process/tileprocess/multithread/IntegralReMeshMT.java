@@ -20,6 +20,7 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.function.Consumer;
 
 @Slf4j
 public final class IntegralReMeshMT {
@@ -37,15 +38,15 @@ public final class IntegralReMeshMT {
                 Math.max(1, threadCount);
     }
 
-    public List<NodeResult> process(
+    public void process(
             List<NodeJob> jobs,
-            ReMeshParameters baseReMeshParameters
+            ReMeshParameters baseReMeshParameters,
+            Consumer<NodeResult> resultConsumer
     ) {
-        List<NodeResult> completedResults =
-                new ArrayList<>();
-
-        if (jobs == null || jobs.isEmpty()) {
-            return completedResults;
+        if (jobs == null
+                || jobs.isEmpty()
+                || resultConsumer == null) {
+            return;
         }
 
         List<NodeJob> validJobs =
@@ -65,7 +66,7 @@ public final class IntegralReMeshMT {
         }
 
         if (validJobs.isEmpty()) {
-            return completedResults;
+            return;
         }
 
         int realThreadCount =
@@ -75,8 +76,7 @@ public final class IntegralReMeshMT {
                 );
 
         log.info(
-                "Integral reMesh MT started. "
-                        + "nodes={}, threads={}",
+                "Integral reMesh MT started. nodes={}, threads={}",
                 validJobs.size(),
                 realThreadCount
         );
@@ -91,73 +91,118 @@ public final class IntegralReMeshMT {
                         executor
                 );
 
-        int submittedTasks = 0;
+        /*
+         * Limit the number of submitted jobs to prevent the
+         * executor queue from retaining every NodeJob at once.
+         */
+        int maxInFlight =
+                Math.max(
+                        realThreadCount * 2,
+                        realThreadCount
+                );
 
-        for (NodeJob job : validJobs) {
-            completionService.submit(
-                    () -> processSingleNode(
-                            job,
-                            baseReMeshParameters
-                    )
-            );
+        java.util.Iterator<NodeJob> jobIterator =
+                validJobs.iterator();
 
-            submittedTasks++;
-        }
-
-        executor.shutdown();
+        int inFlightCount = 0;
+        int completedCount = 0;
 
         try {
-            for (int i = 0; i < submittedTasks; i++) {
+            /*
+             * Submit the initial batch.
+             */
+            while (jobIterator.hasNext()
+                    && inFlightCount < maxInFlight) {
+
+                NodeJob job =
+                        jobIterator.next();
+
+                completionService.submit(
+                        () -> processSingleNode(
+                                job,
+                                baseReMeshParameters
+                        )
+                );
+
+                inFlightCount++;
+            }
+
+            while (completedCount < validJobs.size()) {
                 Future<NodeResult> future =
                         completionService.take();
 
-                NodeResult result =
-                        future.get();
+                inFlightCount--;
 
+                NodeResult result;
+
+                try {
+                    result =
+                            future.get();
+
+                } catch (ExecutionException e) {
+                    Throwable cause =
+                            e.getCause();
+
+                    if (cause instanceof RuntimeException runtimeException) {
+                        throw runtimeException;
+                    }
+
+                    throw new RuntimeException(
+                            "Integral reMesh MT worker failed",
+                            cause
+                    );
+                }
+
+                /*
+                 * All workers remain parallel, but completed results
+                 * are processed sequentially by the caller thread.
+                 */
                 if (result != null
                         && result.halfEdgeScene() != null) {
-                    completedResults.add(result);
+
+                    resultConsumer.accept(
+                            result
+                    );
                 }
+
+                completedCount++;
 
                 log.info(
                         "Integral reMesh MT completed: {} / {}",
-                        i + 1,
-                        submittedTasks
+                        completedCount,
+                        validJobs.size()
                 );
+
+                /*
+                 * Submit one new job after consuming one result.
+                 * This provides backpressure.
+                 */
+                if (jobIterator.hasNext()) {
+                    NodeJob job =
+                            jobIterator.next();
+
+                    completionService.submit(
+                            () -> processSingleNode(
+                                    job,
+                                    baseReMeshParameters
+                            )
+                    );
+
+                    inFlightCount++;
+                }
             }
 
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            executor.shutdownNow();
 
             throw new RuntimeException(
                     "Integral reMesh MT interrupted",
                     e
             );
 
-        } catch (ExecutionException e) {
+        } finally {
             executor.shutdownNow();
-
-            Throwable cause =
-                    e.getCause();
-
-            if (cause instanceof RuntimeException runtimeException) {
-                throw runtimeException;
-            }
-
-            throw new RuntimeException(
-                    "Integral reMesh MT worker failed",
-                    cause
-            );
         }
-
-        completedResults.sort(
-                Comparator.comparingInt(
-                        NodeResult::order
-                )
-        );
-
-        return completedResults;
     }
 
     private NodeResult processSingleNode(

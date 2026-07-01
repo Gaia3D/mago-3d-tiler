@@ -20,6 +20,7 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.function.Consumer;
 
 @Slf4j
 public final class IntegralDecimateMT {
@@ -37,133 +38,138 @@ public final class IntegralDecimateMT {
                 Math.max(1, threadCount);
     }
 
-    public List<NodeResult> process(
+    public void process(
             List<NodeJob> jobs,
             DecimateParameters baseDecimateParameters,
-            ReMeshParameters baseReMeshParameters
+            ReMeshParameters baseReMeshParameters,
+            Consumer<NodeResult> resultConsumer
     ) {
-        List<NodeResult> completedResults =
-                new ArrayList<>();
-
-        if (jobs == null || jobs.isEmpty()) {
-            return completedResults;
-        }
-
-        List<NodeJob> validJobs =
-                new ArrayList<>(jobs.size());
-
-        for (NodeJob job : jobs) {
-            if (job != null
-                    && job.node() != null
-                    && job.sceneInfos() != null
-                    && !job.sceneInfos().isEmpty()
-                    && job.nodeBBoxLC() != null
-                    && job.nodeTransformMatrix() != null) {
-
-                validJobs.add(job);
-            }
-        }
-
-        if (validJobs.isEmpty()) {
-            return completedResults;
-        }
-
-        int realThreadCount =
-                Math.min(
-                        threadCount,
-                        validJobs.size()
-                );
-
-        log.info(
-                "Integral decimate MT started. "
-                        + "nodes={}, threads={}",
-                validJobs.size(),
-                realThreadCount
+        Objects.requireNonNull(
+                jobs,
+                "jobs must not be null"
         );
 
-        ExecutorService executor =
-                Executors.newFixedThreadPool(
-                        realThreadCount
-                );
+        Objects.requireNonNull(
+                resultConsumer,
+                "resultConsumer must not be null"
+        );
 
-        CompletionService<NodeResult>
-                completionService =
-                new ExecutorCompletionService<>(
-                        executor
-                );
-
-        int submittedTasks = 0;
-
-        for (NodeJob job : validJobs) {
-            completionService.submit(
-                    () -> processSingleNode(
-                            job,
-                            baseDecimateParameters,
-                            baseReMeshParameters
-                    )
-            );
-
-            submittedTasks++;
+        if (jobs.isEmpty()) {
+            return;
         }
 
-        executor.shutdown();
+        ExecutorService executorService =
+                Executors.newFixedThreadPool(
+                        threadCount
+                );
+
+        CompletionService<NodeResult> completionService =
+                new ExecutorCompletionService<>(
+                        executorService
+                );
+
+        /*
+         * Keep only a small number of jobs in flight.
+         * This provides backpressure and prevents finished
+         * scenes from accumulating in memory.
+         */
+        int maxInFlight =
+                Math.max(
+                        threadCount * 2,
+                        1
+                );
+
+        Iterator<NodeJob> jobIterator =
+                jobs.iterator();
+
+        int submittedCount = 0;
+        int completedCount = 0;
+        int inFlightCount = 0;
 
         try {
-            for (int i = 0; i < submittedTasks; i++) {
-                Future<NodeResult> future =
+            while (jobIterator.hasNext()
+                    && inFlightCount < maxInFlight) {
+
+                NodeJob job =
+                        jobIterator.next();
+
+                completionService.submit(
+                        () -> processSingleNode(
+                                job,
+                                baseDecimateParameters,
+                                baseReMeshParameters
+                        )
+                );
+
+                submittedCount++;
+                inFlightCount++;
+            }
+
+            while (completedCount < jobs.size()) {
+                Future<NodeResult> completedFuture =
                         completionService.take();
 
-                NodeResult result =
-                        future.get();
+                inFlightCount--;
 
-                if (result != null
-                        && result.halfEdgeScene() != null) {
-                    completedResults.add(result);
+                NodeResult result;
+
+                try {
+                    result =
+                            completedFuture.get();
+                } catch (ExecutionException e) {
+                    Throwable cause =
+                            e.getCause();
+
+                    throw new RuntimeException(
+                            "Integral decimate MT worker failed",
+                            cause
+                    );
                 }
+
+                /*
+                 * This runs in the caller thread, not in a worker.
+                 * Result processing therefore remains sequential.
+                 */
+                if (result != null) {
+                    resultConsumer.accept(
+                            result
+                    );
+                }
+
+                completedCount++;
 
                 log.info(
                         "Integral decimate MT completed: {} / {}",
-                        i + 1,
-                        submittedTasks
+                        completedCount,
+                        jobs.size()
                 );
-            }
 
+                if (jobIterator.hasNext()) {
+                    NodeJob job =
+                            jobIterator.next();
+
+                    completionService.submit(
+                            () -> processSingleNode(
+                                    job,
+                                    baseDecimateParameters,
+                                    baseReMeshParameters
+                            )
+                    );
+
+                    submittedCount++;
+                    inFlightCount++;
+                }
+            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            executor.shutdownNow();
 
             throw new RuntimeException(
-                    "Integral decimate MT interrupted",
+                    "Integral decimate MT was interrupted",
                     e
             );
-
-        } catch (ExecutionException e) {
-            executor.shutdownNow();
-
-            Throwable cause =
-                    e.getCause();
-
-            if (cause instanceof RuntimeException runtimeException) {
-                throw runtimeException;
-            }
-
-            throw new RuntimeException(
-                    "Integral decimate MT worker failed",
-                    cause
-            );
+        } finally {
+            executorService.shutdownNow();
         }
-
-        /*
-         * CompletionService devuelve los resultados
-         * según terminan. Restauramos el orden original.
-         */
-        completedResults.sort(
-                Comparator.comparingInt(
-                        NodeResult::order
-                )
-        );
-
-        return completedResults;
     }
 
     private NodeResult processSingleNode(
@@ -273,39 +279,6 @@ public final class IntegralDecimateMT {
         result.setTexturePixelsForMeter(
                 source.getTexturePixelsForMeter()
         );
-
-        return result;
-    }
-
-    private static Map<Vector3i, Vector3d>
-    copyCellAveragePositions(
-            Map<Vector3i, Vector3d> source
-    ) {
-        Map<Vector3i, Vector3d> result =
-                new HashMap<>();
-
-        if (source == null || source.isEmpty()) {
-            return result;
-        }
-
-        for (Map.Entry<Vector3i, Vector3d> entry
-                : source.entrySet()) {
-
-            Vector3i key =
-                    entry.getKey();
-
-            Vector3d value =
-                    entry.getValue();
-
-            if (key == null || value == null) {
-                continue;
-            }
-
-            result.put(
-                    new Vector3i(key),
-                    new Vector3d(value)
-            );
-        }
 
         return result;
     }
