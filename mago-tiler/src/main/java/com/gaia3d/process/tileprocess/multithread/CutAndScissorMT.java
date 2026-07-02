@@ -3,17 +3,16 @@ package com.gaia3d.process.tileprocess.multithread;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.entities.GaiaAAPlane;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaExtractor;
 import com.gaia3d.basic.geometry.modifier.topology.GaiaTriangulator;
 import com.gaia3d.basic.geometry.modifier.topology.GaiaWeldOptions;
 import com.gaia3d.basic.geometry.modifier.topology.GaiaWelder;
 import com.gaia3d.basic.geometry.octree.GaiaOctree;
 import com.gaia3d.basic.geometry.octree.HalfEdgeOctreeFaces;
 import com.gaia3d.basic.halfedge.*;
-import com.gaia3d.basic.model.GaiaMaterial;
-import com.gaia3d.basic.model.GaiaNode;
-import com.gaia3d.basic.model.GaiaScene;
-import com.gaia3d.basic.model.GaiaTexture;
+import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.remesher.CellGrid3D;
+import com.gaia3d.basic.remesher.GaiaFrontierFinder;
 import com.gaia3d.basic.remesher.GlobalBoundaryAnchors;
 import com.gaia3d.basic.remesher.GlobalBoundaryAnchorsBuilder;
 import com.gaia3d.basic.types.TextureType;
@@ -27,6 +26,7 @@ import com.gaia3d.util.GlobeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
+import org.joml.Vector3i;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -38,6 +38,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.*;
+
 
 
 @Slf4j
@@ -97,8 +98,11 @@ public class CutAndScissorMT {
         Map<Integer, List<TileInfo>> resultsByLod =
                 new HashMap<>();
 
-        Map<Integer, PlaneCutResult>
-                planeCutResultsByLod =
+        Map<Integer, PlaneCutResult> planeCutResultsByLod =
+                new HashMap<>();
+
+        Map<Integer, List<FrontierCandidate>>
+                frontierCandidatesByLod =
                 new HashMap<>();
 
         Map<Integer, LodBoundaryAnchors>
@@ -121,6 +125,7 @@ public class CutAndScissorMT {
         for (TileInfo tileInfo : tileInfos) {
             if (tileInfo != null
                     && tileInfo.getTempPath() != null) {
+
                 validTileCount++;
             }
         }
@@ -150,13 +155,13 @@ public class CutAndScissorMT {
                         realThreadCount
                 );
 
-        CompletionService<CutTaskResult>
-                completionService =
+        CompletionService<CutTaskResult> completionService =
                 new ExecutorCompletionService<>(
                         executor
                 );
 
         int submittedTasks = 0;
+        int nextSourceTileId = 0;
 
         for (TileInfo tileInfo : tileInfos) {
             if (tileInfo == null
@@ -164,9 +169,13 @@ public class CutAndScissorMT {
                 continue;
             }
 
+            int sourceTileId =
+                    nextSourceTileId++;
+
             completionService.submit(
                     () -> processSingleTile(
                             tileInfo,
+                            sourceTileId,
                             rootNode,
                             projectMaxDepthIdx
                     )
@@ -195,6 +204,11 @@ public class CutAndScissorMT {
                             planeCutResultsByLod,
                             taskResult.planeCutResultsByLod()
                     );
+
+                    mergeFrontierCandidates(
+                            frontierCandidatesByLod,
+                            taskResult.frontierCandidatesByLod()
+                    );
                 }
 
                 log.info(
@@ -216,7 +230,8 @@ public class CutAndScissorMT {
         } catch (ExecutionException e) {
             executor.shutdownNow();
 
-            Throwable cause = e.getCause();
+            Throwable cause =
+                    e.getCause();
 
             if (cause instanceof RuntimeException runtimeException) {
                 throw runtimeException;
@@ -228,10 +243,14 @@ public class CutAndScissorMT {
             );
         }
 
-        /* * At this point, all workers have finished. * Anchor calculation is entirely sequential. */
+        /*
+         * At this point, all workers have finished.
+         * Anchor calculation is entirely sequential.
+         */
         boundaryAnchorsByLod =
                 buildGlobalBoundaryAnchorsByLod(
                         planeCutResultsByLod,
+                        frontierCandidatesByLod,
                         resultsByLod,
                         projectMaxDepthIdx,
                         rootNodeBBoxLC
@@ -243,51 +262,100 @@ public class CutAndScissorMT {
         );
     }
 
+    private static final class FrontierAccumulator {
+
+        private final Vector3d positionSum =
+                new Vector3d();
+
+        private final Set<Integer> tileIds =
+                new HashSet<>();
+
+        private int pointCount;
+
+        public void add(
+                Vector3d position,
+                int tileId
+        ) {
+            if (position == null) {
+                return;
+            }
+
+            positionSum.add(position);
+            pointCount++;
+
+            tileIds.add(tileId);
+        }
+
+        public boolean isShared() {
+            return tileIds.size() >= 2;
+        }
+
+        public Vector3d calculateAverage() {
+            if (pointCount <= 0) {
+                return null;
+            }
+
+            return new Vector3d(positionSum)
+                    .div(pointCount);
+        }
+    }
+
+    private static void mergeFrontierCandidates(
+            Map<Integer, List<FrontierCandidate>> destination,
+            Map<Integer, List<FrontierCandidate>> source
+    ) {
+        if (destination == null
+                || source == null
+                || source.isEmpty()) {
+            return;
+        }
+
+        source.forEach((lod, candidates) -> {
+            if (lod == null
+                    || candidates == null
+                    || candidates.isEmpty()) {
+                return;
+            }
+
+            destination
+                    .computeIfAbsent(
+                            lod,
+                            ignored -> new ArrayList<>()
+                    )
+                    .addAll(candidates);
+        });
+    }
+
     private Map<Integer, LodBoundaryAnchors>
     buildGlobalBoundaryAnchorsByLod(
-            Map<Integer, PlaneCutResult>
-                    planeCutResultsByLod,
-            Map<Integer, List<TileInfo>>
-                    tileInfosByLod,
+            Map<Integer, PlaneCutResult> planeCutResultsByLod,
+            Map<Integer, List<FrontierCandidate>>
+                    frontierCandidatesByLod,
+            Map<Integer, List<TileInfo>> tileInfosByLod,
             int maxDepth,
             GaiaBoundingBox rootNodeBBoxLC
     ) {
         Map<Integer, LodBoundaryAnchors> result =
                 new HashMap<>();
 
-        if (planeCutResultsByLod == null
-                || planeCutResultsByLod.isEmpty()
-                || tileInfosByLod == null
+        if (tileInfosByLod == null
+                || tileInfosByLod.isEmpty()
                 || rootNodeBBoxLC == null) {
             return result;
         }
 
-        for (Map.Entry<Integer, PlaneCutResult> entry
-                : planeCutResultsByLod.entrySet()) {
+        for (Map.Entry<Integer, List<TileInfo>> lodEntry
+                : tileInfosByLod.entrySet()) {
 
-            Integer lod = entry.getKey();
-
-            PlaneCutResult planeCutResult =
-                    entry.getValue();
-
-            if (lod == null
-                    || planeCutResult == null
-                    || planeCutResult.isEmpty()) {
-                continue;
-            }
+            Integer lod =
+                    lodEntry.getKey();
 
             List<TileInfo> lodTileInfos =
-                    tileInfosByLod.get(lod);
+                    lodEntry.getValue();
 
-            if (lodTileInfos == null
+            if (lod == null
+                    || lodTileInfos == null
                     || lodTileInfos.isEmpty()) {
-
-                log.warn(
-                        "Cannot build global anchors. "
-                                + "No TileInfo found for LOD {}",
-                        lod
-                );
-
                 continue;
             }
 
@@ -305,13 +373,107 @@ public class CutAndScissorMT {
                             1e-4
                     );
 
-            /* * First, we check only the points * generated by interior intersections. */
-            builder.addPoints(
-                    planeCutResult.getCuttingPoints()
-            );
+            PlaneCutResult planeCutResult =
+                    planeCutResultsByLod == null
+                            ? null
+                            : planeCutResultsByLod.get(lod);
 
+            int cuttingPointCount = 0;
+
+            if (planeCutResult != null
+                    && !planeCutResult.isEmpty()) {
+
+                builder.addPoints(
+                        planeCutResult.getCuttingPoints()
+                );
+
+                cuttingPointCount =
+                        planeCutResult.getCuttingPoints()
+                                .size();
+            }
+
+            /*
+             * Cutting anchors have priority.
+             */
             GlobalBoundaryAnchors globalAnchors =
                     builder.build();
+
+            List<FrontierCandidate> frontierCandidates =
+                    frontierCandidatesByLod == null
+                            ? null
+                            : frontierCandidatesByLod.get(lod);
+
+            Map<Vector3i, FrontierAccumulator>
+                    frontierAccumulators =
+                    new HashMap<>();
+
+            if (frontierCandidates != null) {
+                for (FrontierCandidate candidate
+                        : frontierCandidates) {
+
+                    if (candidate == null
+                            || candidate.position() == null) {
+                        continue;
+                    }
+
+                    Vector3i cellIndex =
+                            cellGrid.getCellIndex(
+                                    candidate.position()
+                            );
+
+                    if (cellIndex == null) {
+                        continue;
+                    }
+
+                    /*
+                     * Never replace an anchor generated by a cut.
+                     */
+                    if (globalAnchors.hasAverage(
+                            cellIndex
+                    )) {
+                        continue;
+                    }
+
+                    frontierAccumulators
+                            .computeIfAbsent(
+                                    new Vector3i(cellIndex),
+                                    ignored ->
+                                            new FrontierAccumulator()
+                            )
+                            .add(
+                                    candidate.position(),
+                                    candidate.sourceTileId()
+                            );
+                }
+            }
+
+            int sharedFrontierAnchors = 0;
+
+            for (Map.Entry<Vector3i, FrontierAccumulator> entry
+                    : frontierAccumulators.entrySet()) {
+
+                FrontierAccumulator accumulator =
+                        entry.getValue();
+
+                if (accumulator == null
+                        || !accumulator.isShared()) {
+                    continue;
+                }
+
+                Vector3d average =
+                        accumulator.calculateAverage();
+
+                if (average == null) {
+                    continue;
+                }
+
+                globalAnchors.putIfAbsent(
+                        entry.getKey(),
+                        average
+                );
+
+                sharedFrontierAnchors++;
+            }
 
             result.put(
                     lod,
@@ -323,9 +485,15 @@ public class CutAndScissorMT {
 
             log.info(
                     "Global boundary anchors built. "
-                            + "LOD={}, cuttingPoints={}, anchors={}",
+                            + "LOD={}, cuttingPoints={}, "
+                            + "frontierCandidates={}, "
+                            + "sharedFrontierAnchors={}, anchors={}",
                     lod,
-                    planeCutResult.getCuttingPoints().size(),
+                    cuttingPointCount,
+                    frontierCandidates == null
+                            ? 0
+                            : frontierCandidates.size(),
+                    sharedFrontierAnchors,
                     globalAnchors.size()
             );
         }
@@ -382,17 +550,20 @@ public class CutAndScissorMT {
 
     private CutTaskResult processSingleTile(
             TileInfo tileInfo,
+            int sourceTileId,
             Node rootNode,
             int projectMaxDepthIdx
     ) {
         int initialLod =
-                Math.min(7, projectMaxDepthIdx);
-
-        BoundingVolume rootBoundingVolume =
-                rootNode.getBoundingVolume();
+                Math.min(
+                        7,
+                        projectMaxDepthIdx
+                );
 
         BoundingVolume rootBoundingVolumeCopy =
-                new BoundingVolume(rootBoundingVolume);
+                new BoundingVolume(
+                        rootNode.getBoundingVolume()
+                );
 
         Map<Integer, List<TileInfo>> localResults =
                 new HashMap<>();
@@ -401,24 +572,90 @@ public class CutAndScissorMT {
                 localPlaneCutResultsByLod =
                 new HashMap<>();
 
-        log.info(
-                "[Tile][PhotoRealistic] Cut RectangleCake: {}",
-                tileInfo.getTempPath()
-        );
+        Map<Integer, List<FrontierCandidate>>
+                localFrontierCandidatesByLod =
+                new HashMap<>();
+
+        Vector3d scenePositionRelToCellGrid =
+                calculateScenePositionRelToCellGrid(
+                        tileInfo,
+                        rootNode
+                );
 
         cutRectangleCakeAllLod(
                 tileInfo,
                 initialLod,
                 rootBoundingVolumeCopy,
                 projectMaxDepthIdx,
+                sourceTileId,
+                scenePositionRelToCellGrid,
                 localResults,
-                localPlaneCutResultsByLod
+                localPlaneCutResultsByLod,
+                localFrontierCandidatesByLod
         );
 
         return new CutTaskResult(
                 tileInfo.getTempPath().toString(),
                 localResults,
-                localPlaneCutResultsByLod
+                localPlaneCutResultsByLod,
+                localFrontierCandidatesByLod
+        );
+    }
+
+    private Vector3d calculateScenePositionRelToCellGrid(
+            TileInfo tileInfo,
+            Node rootNode
+    ) {
+        if (tileInfo == null
+                || tileInfo.getTileTransformInfo() == null
+                || tileInfo.getTileTransformInfo().getPosition() == null
+                || rootNode == null) {
+
+            return new Vector3d();
+        }
+
+        Vector3d tileGeoCoord =
+                tileInfo.getTileTransformInfo()
+                        .getPosition();
+
+        Vector3d tilePositionWorld =
+                GlobeUtils.geographicToCartesianWgs84(
+                        tileGeoCoord
+                );
+
+        Matrix4d rootTransform =
+                rootNode.getTransformMatrix();
+
+        if (rootTransform == null) {
+            Vector3d rootCenterRad =
+                    rootNode.getBoundingVolume()
+                            .calcCenter();
+
+            Vector3d rootCenterDeg =
+                    new Vector3d(
+                            Math.toDegrees(rootCenterRad.x),
+                            Math.toDegrees(rootCenterRad.y),
+                            rootCenterRad.z
+                    );
+
+            Vector3d rootPositionWorld =
+                    GlobeUtils.geographicToCartesianWgs84(
+                            rootCenterDeg
+                    );
+
+            rootTransform =
+                    GlobeUtils.transformMatrixAtCartesianPointWgs84(
+                            rootPositionWorld
+                    );
+        }
+
+        Matrix4d rootTransformInverse =
+                new Matrix4d(rootTransform)
+                        .invert();
+
+        return rootTransformInverse.transformPosition(
+                tilePositionWorld,
+                new Vector3d()
         );
     }
 
@@ -427,8 +664,12 @@ public class CutAndScissorMT {
             int lod,
             BoundingVolume rootNodeBoundingVolume,
             int depthIdx,
+            int sourceTileId,
+            Vector3d scenePositionRelToCellGrid,
             Map<Integer, List<TileInfo>> localResults,
-            Map<Integer, PlaneCutResult> localPlaneCutResultsByLod
+            Map<Integer, PlaneCutResult> localPlaneCutResultsByLod,
+            Map<Integer, List<FrontierCandidate>>
+                    localFrontierCandidatesByLod
     ) {
         Path path = tileInfo.getTempPath();
 
@@ -458,7 +699,35 @@ public class CutAndScissorMT {
 
             welder.apply(scene);
 
-            halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
+            List<FrontierCandidate> sourceFrontierCandidates =
+                    collectFrontierCandidates(
+                            scene,
+                            sourceTileId,
+                            scenePositionRelToCellGrid
+                    );
+
+            /*
+             * Original source frontiers are valid candidates for every
+             * generated LOD.
+             */
+            for (int currLod = lod;
+                 currLod >= 0;
+                 currLod--) {
+
+                localFrontierCandidatesByLod
+                        .computeIfAbsent(
+                                currLod,
+                                ignored -> new ArrayList<>()
+                        )
+                        .addAll(
+                                sourceFrontierCandidates
+                        );
+            }
+
+            halfEdgeScene =
+                    HalfEdgeUtils.halfEdgeSceneFromGaiaScene(
+                            scene
+                    );
 
             scene.clear();
 
@@ -606,6 +875,7 @@ public class CutAndScissorMT {
                 }
 
                 GaiaScene gaiaSceneCut = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(cuttedScene);
+
                 List<GaiaMaterial> materials = cuttedScene.getMaterials(); // keep material.
                 List<GaiaMaterial> voidMaterials = new ArrayList<>();
                 cuttedScene.setMaterials(voidMaterials);
@@ -906,10 +1176,113 @@ public class CutAndScissorMT {
         return new GaiaBoundingBox(minLonDegCut, minLatDegCut, geoCoordLeftDownBottom.z, maxLonDegCut, maxLatDegCut, geoCoordLeftDownUp.z, false);
     }
 
+    private static List<FrontierCandidate>
+    collectFrontierCandidates(
+            GaiaScene scene,
+            int sourceTileId,
+            Vector3d scenePositionRelToCellGrid
+    ) {
+        List<FrontierCandidate> result =
+                new ArrayList<>();
+
+        if (scene == null
+                || scenePositionRelToCellGrid == null) {
+            return result;
+        }
+
+        GaiaExtractor extractor =
+                new GaiaExtractor();
+
+        List<GaiaPrimitive> primitives =
+                extractor.extractAllPrimitives(
+                        scene
+                );
+
+        if (primitives == null
+                || primitives.isEmpty()) {
+            return result;
+        }
+
+        GaiaFrontierFinder frontierFinder =
+                new GaiaFrontierFinder();
+
+        for (GaiaPrimitive primitive : primitives) {
+            if (primitive == null
+                    || primitive.getVertices() == null
+                    || primitive.getVertices().isEmpty()) {
+                continue;
+            }
+
+            List<GaiaVertex> vertices =
+                    primitive.getVertices();
+
+            List<GaiaFace> faces =
+                    primitive.extractGaiaAllFaces(
+                            null
+                    );
+
+            if (faces == null
+                    || faces.isEmpty()) {
+                continue;
+            }
+
+            int vertexCount =
+                    vertices.size();
+
+            int[] weldedIndices =
+                    new int[vertexCount];
+
+            boolean[] frontierVertices =
+                    frontierFinder.findBoundaryVertices(
+                            vertices,
+                            faces,
+                            1e-6,
+                            weldedIndices
+                    );
+
+            if (frontierVertices == null
+                    || frontierVertices.length < vertexCount) {
+                continue;
+            }
+
+            for (int i = 0; i < vertexCount; i++) {
+                if (!frontierVertices[i]) {
+                    continue;
+                }
+
+                GaiaVertex vertex =
+                        vertices.get(i);
+
+                if (vertex == null
+                        || vertex.getPosition() == null) {
+                    continue;
+                }
+
+                Vector3d positionInCellGrid =
+                        new Vector3d(
+                                vertex.getPosition()
+                        ).add(
+                                scenePositionRelToCellGrid
+                        );
+
+                result.add(
+                        new FrontierCandidate(
+                                sourceTileId,
+                                positionInCellGrid
+                        )
+                );
+            }
+        }
+
+        return result;
+    }
+
     private record CutTaskResult(
             String sourcePath,
             Map<Integer, List<TileInfo>> tileInfosByLod,
-            Map<Integer, PlaneCutResult> planeCutResultsByLod
+            Map<Integer, PlaneCutResult> planeCutResultsByLod,
+            Map<Integer, List<FrontierCandidate>>
+            frontierCandidatesByLod
     ) {
     }
 
@@ -923,5 +1296,17 @@ public class CutAndScissorMT {
             Map<Integer, List<TileInfo>> tileInfosByLod,
             Map<Integer, LodBoundaryAnchors> boundaryAnchorsByLod
     ) {
+    }
+
+    private record FrontierCandidate(
+            int sourceTileId,
+            Vector3d position
+    ) {
+        private FrontierCandidate {
+            position =
+                    position == null
+                            ? null
+                            : new Vector3d(position);
+        }
     }
 }

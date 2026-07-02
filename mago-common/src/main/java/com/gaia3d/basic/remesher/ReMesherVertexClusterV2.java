@@ -146,36 +146,19 @@ public class ReMesherVertexClusterV2 {
                 "V2 reMeshScene localInteriorVertices = {}",
                 totalStats.localInteriorVertices
         );
-
-        log.debug(
-                "V2 reMeshScene localCells = {}",
-                totalStats.localCells
-        );
+        
 
         log.debug(
                 "V2 reMeshScene createdAnchoredVertices = {}",
                 totalStats.createdAnchoredVertices
         );
-
-        log.debug(
-                "V2 reMeshScene createdLocalVertices = {}",
-                totalStats.createdLocalVertices
-        );
+        
 
         log.debug(
                 "V2 reMeshScene mappedAnchoredVertices = {}",
                 totalStats.mappedAnchoredVertices
         );
-
-        log.debug(
-                "V2 reMeshScene mappedLocalVertices = {}",
-                totalStats.mappedLocalVertices
-        );
-
-        log.debug(
-                "V2 reMeshScene skippedSingleLocalCluster = {}",
-                totalStats.skippedSingleLocalCluster
-        );
+        
 
         log.debug(
                 "V2 reMeshScene missingGlobalAverage = {}",
@@ -242,15 +225,13 @@ public class ReMesherVertexClusterV2 {
         }
 
         /*
-         * Local clusters contain:
-         *
-         * - all interior vertices;
-         * - frontier vertices without a global anchor.
-         *
-         * Frontier vertices with a global anchor are excluded
-         * because they must use the globally locked position.
+         * Interior and unanchored frontier vertices must use
+         * separate local clusters.
          */
-        Map<Vector3i, CellAccumulator> localCellAccumulators =
+        Map<Vector3i, CellAccumulator> interiorCellAccumulators =
+                new HashMap<>();
+
+        Map<Vector3i, CellAccumulator> frontierCellAccumulators =
                 new HashMap<>();
 
         for (int oldIndex = 0;
@@ -258,9 +239,7 @@ public class ReMesherVertexClusterV2 {
              oldIndex++) {
 
             GaiaVertex vertex =
-                    vertices.get(
-                            oldIndex
-                    );
+                    vertices.get(oldIndex);
 
             if (vertex == null
                     || vertex.getPosition() == null) {
@@ -277,45 +256,68 @@ public class ReMesherVertexClusterV2 {
             boolean isFrontier =
                     frontierVertex[oldIndex];
 
+            Vector3d globalAnchor =
+                    null;
+
+            if (isFrontier
+                    && globalBoundaryAnchors != null) {
+
+                globalAnchor =
+                        globalBoundaryAnchors.getAverage(
+                                cellIndex
+                        );
+            }
+
             if (isFrontier) {
                 stats.frontierVertices++;
-            }
 
-            boolean hasGlobalAnchor =
-                    isFrontier
-                            && globalBoundaryAnchors != null
-                            && globalBoundaryAnchors.hasAverage(
-                            cellIndex
-                    );
+                if (globalAnchor != null) {
+                    stats.anchoredFrontierVertices++;
+                    continue;
+                }
 
-            if (hasGlobalAnchor) {
-                stats.anchoredFrontierVertices++;
-                continue;
-            }
+                /*
+                 * Unanchored frontier vertices are clustered only
+                 * with other unanchored frontier vertices.
+                 */
+                frontierCellAccumulators
+                        .computeIfAbsent(
+                                cellIndex,
+                                ignored -> new CellAccumulator()
+                        )
+                        .add(
+                                vertex.getPosition()
+                        );
 
-            localCellAccumulators
-                    .computeIfAbsent(
-                            cellIndex,
-                            ignored -> new CellAccumulator()
-                    )
-                    .add(
-                            vertex.getPosition()
-                    );
-
-            if (isFrontier) {
                 stats.localFrontierVertices++;
+
             } else {
+                /*
+                 * Interior vertices are clustered only with other
+                 * interior vertices.
+                 */
+                interiorCellAccumulators
+                        .computeIfAbsent(
+                                cellIndex,
+                                ignored -> new CellAccumulator()
+                        )
+                        .add(
+                                vertex.getPosition()
+                        );
+
                 stats.localInteriorVertices++;
             }
         }
 
-        stats.localCells =
-                localCellAccumulators.size();
-
         /*
-         * An array is cheaper than Map<Integer, Integer> and
-         * provides direct old-index to new-index lookup.
+         * This is the total number of local clusters, not necessarily
+         * the number of unique spatial cells, because one cell may
+         * contain both an interior and a frontier cluster.
          */
+        stats.localCells =
+                interiorCellAccumulators.size()
+                        + frontierCellAccumulators.size();
+
         int[] oldIndexToNewIndex =
                 new int[originalVertexCount];
 
@@ -325,14 +327,19 @@ public class ReMesherVertexClusterV2 {
         );
 
         /*
-         * Anchored and local vertices use different maps because
-         * both types may exist in the same grid cell but must not
-         * necessarily share the same resulting vertex.
+         * Keep separate resulting vertices for:
+         *
+         * - globally anchored frontiers;
+         * - locally clustered frontiers;
+         * - locally clustered interiors.
          */
-        Map<Vector3i, Integer> cellToNewLocalIndex =
+        Map<Vector3i, Integer> cellToNewAnchoredIndex =
                 new HashMap<>();
 
-        Map<Vector3i, Integer> cellToNewAnchoredIndex =
+        Map<Vector3i, Integer> cellToNewFrontierIndex =
+                new HashMap<>();
+
+        Map<Vector3i, Integer> cellToNewInteriorIndex =
                 new HashMap<>();
 
         for (int oldIndex = 0;
@@ -340,9 +347,7 @@ public class ReMesherVertexClusterV2 {
              oldIndex++) {
 
             GaiaVertex oldVertex =
-                    vertices.get(
-                            oldIndex
-                    );
+                    vertices.get(oldIndex);
 
             if (oldVertex == null
                     || oldVertex.getPosition() == null) {
@@ -359,45 +364,34 @@ public class ReMesherVertexClusterV2 {
             boolean isFrontier =
                     frontierVertex[oldIndex];
 
+            Vector3d globalAnchor =
+                    null;
+
+            if (isFrontier
+                    && globalBoundaryAnchors != null) {
+
+                globalAnchor =
+                        globalBoundaryAnchors.getAverage(
+                                cellIndex
+                        );
+            }
+
             boolean hasGlobalAnchor =
-                    isFrontier
-                            && globalBoundaryAnchors != null
-                            && globalBoundaryAnchors.hasAverage(
-                            cellIndex
-                    );
+                    globalAnchor != null;
 
             Vector3d targetPosition;
             Map<Vector3i, Integer> cellToNewIndex;
 
             if (hasGlobalAnchor) {
-                /*
-                 * This vertex belongs to a globally locked
-                 * boundary cell.
-                 */
                 targetPosition =
-                        globalBoundaryAnchors.getAverage(
-                                cellIndex
-                        );
-
-                if (targetPosition == null) {
-                    /*
-                     * This should not normally happen because
-                     * hasAverage() returned true.
-                     */
-                    stats.missingGlobalAverage++;
-                    continue;
-                }
+                        globalAnchor;
 
                 cellToNewIndex =
                         cellToNewAnchoredIndex;
 
-            } else {
-                /*
-                 * Interior vertices and unanchored frontier
-                 * vertices are treated identically.
-                 */
+            } else if (isFrontier) {
                 CellAccumulator accumulator =
-                        localCellAccumulators.get(
+                        frontierCellAccumulators.get(
                                 cellIndex
                         );
 
@@ -405,23 +399,43 @@ public class ReMesherVertexClusterV2 {
                         || accumulator.getCount() < 2) {
 
                     /*
-                     * A cell containing only one local vertex
-                     * cannot be simplified. Its original index
-                     * remains unchanged.
+                     * Leave the original vertex index unchanged.
                      */
-                    stats.skippedSingleLocalCluster++;
+                    stats.skippedSingleFrontierCluster++;
                     continue;
                 }
 
                 targetPosition =
                         accumulator.calculateAverage();
 
-                if (targetPosition == null) {
+                cellToNewIndex =
+                        cellToNewFrontierIndex;
+
+            } else {
+                CellAccumulator accumulator =
+                        interiorCellAccumulators.get(
+                                cellIndex
+                        );
+
+                if (accumulator == null
+                        || accumulator.getCount() < 2) {
+
+                    /*
+                     * Leave the original vertex index unchanged.
+                     */
+                    stats.skippedSingleInteriorCluster++;
                     continue;
                 }
 
+                targetPosition =
+                        accumulator.calculateAverage();
+
                 cellToNewIndex =
-                        cellToNewLocalIndex;
+                        cellToNewInteriorIndex;
+            }
+
+            if (targetPosition == null) {
+                continue;
             }
 
             Integer newIndex =
@@ -451,10 +465,6 @@ public class ReMesherVertexClusterV2 {
                         newVertex
                 );
 
-                /*
-                 * cellIndex is a newly created object and is not
-                 * modified after being inserted into the map.
-                 */
                 cellToNewIndex.put(
                         cellIndex,
                         newIndex
@@ -462,8 +472,10 @@ public class ReMesherVertexClusterV2 {
 
                 if (hasGlobalAnchor) {
                     stats.createdAnchoredVertices++;
+                } else if (isFrontier) {
+                    stats.createdFrontierVertices++;
                 } else {
-                    stats.createdLocalVertices++;
+                    stats.createdInteriorVertices++;
                 }
             }
 
@@ -472,33 +484,20 @@ public class ReMesherVertexClusterV2 {
 
             if (hasGlobalAnchor) {
                 stats.mappedAnchoredVertices++;
+            } else if (isFrontier) {
+                stats.mappedFrontierVertices++;
             } else {
-                stats.mappedLocalVertices++;
+                stats.mappedInteriorVertices++;
             }
         }
 
-        /*
-         * Replace original indices with clustered indices.
-         */
         replaceFaceIndices(
                 primitive,
                 oldIndexToNewIndex
         );
 
-        /*
-         * Several original vertices may now reference the same
-         * clustered vertex, producing degenerated faces.
-         */
         primitive.deleteDegeneratedFaces();
 
-        /*
-         * Remove original vertices that are no longer referenced
-         * by any face and compact all remaining indices.
-         *
-         * Without this step, clustered vertices are appended to
-         * the original list and the resulting primitive may become
-         * larger instead of smaller.
-         */
         removeUnusedVerticesAndReindex(
                 primitive
         );
@@ -902,20 +901,28 @@ public class ReMesherVertexClusterV2 {
      */
     private static final class RemeshStats {
 
+        public int localCells;
         private long originalVertices;
+
         private long frontierVertices;
         private long anchoredFrontierVertices;
         private long localFrontierVertices;
         private long localInteriorVertices;
-        private long localCells;
+
+        private long frontierCells;
+        private long interiorCells;
 
         private long createdAnchoredVertices;
-        private long createdLocalVertices;
+        private long createdFrontierVertices;
+        private long createdInteriorVertices;
 
         private long mappedAnchoredVertices;
-        private long mappedLocalVertices;
+        private long mappedFrontierVertices;
+        private long mappedInteriorVertices;
 
-        private long skippedSingleLocalCluster;
+        private long skippedSingleFrontierCluster;
+        private long skippedSingleInteriorCluster;
+
         private long missingGlobalAverage;
 
         private long verticesAfterCompaction;
@@ -942,23 +949,35 @@ public class ReMesherVertexClusterV2 {
             localInteriorVertices +=
                     other.localInteriorVertices;
 
-            localCells +=
-                    other.localCells;
+            frontierCells +=
+                    other.frontierCells;
+
+            interiorCells +=
+                    other.interiorCells;
 
             createdAnchoredVertices +=
                     other.createdAnchoredVertices;
 
-            createdLocalVertices +=
-                    other.createdLocalVertices;
+            createdFrontierVertices +=
+                    other.createdFrontierVertices;
+
+            createdInteriorVertices +=
+                    other.createdInteriorVertices;
 
             mappedAnchoredVertices +=
                     other.mappedAnchoredVertices;
 
-            mappedLocalVertices +=
-                    other.mappedLocalVertices;
+            mappedFrontierVertices +=
+                    other.mappedFrontierVertices;
 
-            skippedSingleLocalCluster +=
-                    other.skippedSingleLocalCluster;
+            mappedInteriorVertices +=
+                    other.mappedInteriorVertices;
+
+            skippedSingleFrontierCluster +=
+                    other.skippedSingleFrontierCluster;
+
+            skippedSingleInteriorCluster +=
+                    other.skippedSingleInteriorCluster;
 
             missingGlobalAverage +=
                     other.missingGlobalAverage;
