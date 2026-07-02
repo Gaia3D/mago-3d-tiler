@@ -1,777 +1,970 @@
 package com.gaia3d.basic.remesher;
 
 import com.gaia3d.basic.geometry.modifier.topology.GaiaExtractor;
-import com.gaia3d.basic.model.*;
+import com.gaia3d.basic.model.GaiaFace;
+import com.gaia3d.basic.model.GaiaPrimitive;
+import com.gaia3d.basic.model.GaiaScene;
+import com.gaia3d.basic.model.GaiaSurface;
+import com.gaia3d.basic.model.GaiaVertex;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector3i;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Slf4j
 public class ReMesherVertexClusterV2 {
+
+    private ReMesherVertexClusterV2() {
+    }
+
     /**
-     * PASADA 1:
-     * <p>
-     * Acumula anchors de frontera del tile.
-     * <p>
-     * Llamar una vez por cada mesh/scene del tile.
-     * No remeshea nada.
-     * Solo guarda posiciones de frontera en TileBoundaryAnchors.
+     * Remeshes all primitives in the scene using vertex clustering.
+     *
+     * <p>Frontier vertices are handled as follows:</p>
+     *
+     * <ul>
+     *     <li>
+     *         A frontier vertex with a global boundary anchor uses
+     *         the globally locked position.
+     *     </li>
+     *     <li>
+     *         A frontier vertex without a global boundary anchor is
+     *         treated as a regular local vertex.
+     *     </li>
+     * </ul>
+     *
+     * <p>The CellGrid3D and GlobalBoundaryAnchors must have been
+     * calculated using the same grid definition.</p>
      */
-    public static void accumulateTileBoundaryAnchorsFromScene(
+    public static void reMeshScene(
             GaiaScene scene,
             ReMeshParameters reMeshParams,
-            TileBoundaryAnchors tileBoundaryAnchors,
-            GlobalBoundaryAnchors globalBoundaryAnchors,
-            int meshId) {
-
-        if (scene == null || reMeshParams == null || tileBoundaryAnchors == null) {
+            Vector3i sceneMinCellIndex,
+            Vector3i sceneMaxCellIndex
+    ) {
+        if (scene == null || reMeshParams == null) {
             return;
         }
 
-        CellGrid3D cellGrid = reMeshParams.getCellGrid();
+        CellGrid3D cellGrid =
+                reMeshParams.getCellGrid();
 
         if (cellGrid == null) {
+            log.warn(
+                    "Could not remesh scene because CellGrid3D is null"
+            );
+
             return;
         }
 
-        GaiaExtractor extractor = new GaiaExtractor();
-        List<GaiaPrimitive> primitives = extractor.extractAllPrimitives(scene);
+        /*
+         * A null GlobalBoundaryAnchors is valid.
+         * It means that this LOD has no globally locked boundaries.
+         */
+        GlobalBoundaryAnchors globalBoundaryAnchors =
+                reMeshParams.getGlobalBoundaryAnchors();
+
+        GaiaExtractor extractor =
+                new GaiaExtractor();
+
+        List<GaiaPrimitive> primitives =
+                extractor.extractAllPrimitives(
+                        scene
+                );
 
         if (primitives == null || primitives.isEmpty()) {
             return;
         }
 
-        GaiaFrontierFinder frontierFinder = new GaiaFrontierFinder();
+        /*
+         * Calculate the complete scene bounds before modifying
+         * any primitive or adding clustered vertices.
+         */
+        updateSceneCellBounds(
+                primitives,
+                cellGrid,
+                sceneMinCellIndex,
+                sceneMaxCellIndex
+        );
 
-        int totalFrontierVertices = 0;
-        int addedLocalFrontierVertices = 0;
-        int reusedGlobalAnchors = 0;
+        RemeshStats totalStats =
+                new RemeshStats();
+
+        int processedPrimitives = 0;
 
         for (GaiaPrimitive primitive : primitives) {
             if (primitive == null) {
                 continue;
             }
 
-            List<GaiaVertex> vertices = primitive.getVertices();
+            RemeshStats primitiveStats =
+                    reMeshPrimitive(
+                            primitive,
+                            cellGrid,
+                            globalBoundaryAnchors
+                    );
 
-            if (vertices == null || vertices.isEmpty()) {
-                continue;
-            }
-
-            int vertexCount = vertices.size();
-
-            List<GaiaFace> faces = primitive.extractGaiaAllFaces(null);
-
-            if (faces == null || faces.isEmpty()) {
-                continue;
-            }
-
-            int[] weldedIndices = new int[vertexCount];
-
-            boolean[] frontierVertex = frontierFinder.findBoundaryVertices(
-                    vertices,
-                    faces,
-                    1e-6,
-                    weldedIndices
+            totalStats.add(
+                    primitiveStats
             );
 
-            if (frontierVertex == null || frontierVertex.length < vertexCount) {
-                continue;
-            }
-
-            for (int i = 0; i < vertexCount; i++) {
-                if (!frontierVertex[i]) {
-                    continue;
-                }
-
-                GaiaVertex vertex = vertices.get(i);
-
-                if (vertex == null || vertex.getPosition() == null) {
-                    continue;
-                }
-
-                Vector3i cellIndex = new Vector3i(
-                        cellGrid.getCellIndex(vertex.getPosition())
-                );
-
-                totalFrontierVertices++;
-
-                // Si ya existe un anchor global bloqueado para esta celda,
-                // este tile debe usarlo, no modificarlo.
-                if (globalBoundaryAnchors != null &&
-                        globalBoundaryAnchors.hasAverage(cellIndex)) {
-                    reusedGlobalAnchors++;
-                    continue;
-                }
-
-                // Si no existe global, este tile contribuye a crear el anchor local.
-                tileBoundaryAnchors.addFrontierPosition(
-                        cellIndex,
-                        vertex.getPosition(),
-                        meshId
-                );
-
-                addedLocalFrontierVertices++;
-            }
+            processedPrimitives++;
         }
 
-        log.debug("V2 accumulateTileBoundaryAnchorsFromScene meshId = {}", meshId);
-        log.debug("V2 total frontier vertices = {}", totalFrontierVertices);
-        log.debug("V2 added local frontier vertices = {}", addedLocalFrontierVertices);
-        log.debug("V2 reused global anchors = {}", reusedGlobalAnchors);
-        log.debug("V2 local frontierPositionClusters size = {}", tileBoundaryAnchors.frontierPositionClusters.size());
-        if (globalBoundaryAnchors != null) {
-            log.debug("V2 global lockedAveragePositions size = {}", globalBoundaryAnchors.lockedAveragePositions.size());
-        }
+        log.debug(
+                "V2 reMeshScene processedPrimitives = {}",
+                processedPrimitives
+        );
+
+        log.debug(
+                "V2 reMeshScene originalVertices = {}",
+                totalStats.originalVertices
+        );
+
+        log.debug(
+                "V2 reMeshScene frontierVertices = {}",
+                totalStats.frontierVertices
+        );
+
+        log.debug(
+                "V2 reMeshScene anchoredFrontierVertices = {}",
+                totalStats.anchoredFrontierVertices
+        );
+
+        log.debug(
+                "V2 reMeshScene localFrontierVertices = {}",
+                totalStats.localFrontierVertices
+        );
+
+        log.debug(
+                "V2 reMeshScene localInteriorVertices = {}",
+                totalStats.localInteriorVertices
+        );
+
+        log.debug(
+                "V2 reMeshScene localCells = {}",
+                totalStats.localCells
+        );
+
+        log.debug(
+                "V2 reMeshScene createdAnchoredVertices = {}",
+                totalStats.createdAnchoredVertices
+        );
+
+        log.debug(
+                "V2 reMeshScene createdLocalVertices = {}",
+                totalStats.createdLocalVertices
+        );
+
+        log.debug(
+                "V2 reMeshScene mappedAnchoredVertices = {}",
+                totalStats.mappedAnchoredVertices
+        );
+
+        log.debug(
+                "V2 reMeshScene mappedLocalVertices = {}",
+                totalStats.mappedLocalVertices
+        );
+
+        log.debug(
+                "V2 reMeshScene skippedSingleLocalCluster = {}",
+                totalStats.skippedSingleLocalCluster
+        );
+
+        log.debug(
+                "V2 reMeshScene missingGlobalAverage = {}",
+                totalStats.missingGlobalAverage
+        );
+
+        log.debug(
+                "V2 reMeshScene verticesAfterCompaction = {}",
+                totalStats.verticesAfterCompaction
+        );
     }
 
     /**
-     * Después de llamar a accumulateTileBoundaryAnchorsFromScene(...) para todos los meshes
-     * del tile, llamar a esta función una sola vez.
+     * Remeshes one primitive.
      */
-    public static void finishTileBoundaryAnchors(TileBoundaryAnchors tileBoundaryAnchors) {
-        if (tileBoundaryAnchors == null) {
-            return;
-        }
+    private static RemeshStats reMeshPrimitive(
+            GaiaPrimitive primitive,
+            CellGrid3D cellGrid,
+            GlobalBoundaryAnchors globalBoundaryAnchors
+    ) {
+        RemeshStats stats =
+                new RemeshStats();
 
-        tileBoundaryAnchors.calculateAveragePositions();
-
-        log.debug("V2 tile frontierPositionClusters = {}", tileBoundaryAnchors.frontierPositionClusters.size());
-        log.debug("V2 tile frontierAveragePositions = {}", tileBoundaryAnchors.frontierAveragePositions.size());
-        log.debug("V2 tile cornerLikeCells = {}", tileBoundaryAnchors.countCornerLikeCells());
-    }
-
-    /**
-     * PASADA 2:
-     * <p>
-     * Remeshea una scene/mesh usando:
-     * <p>
-     * - frontera global del tile: TileBoundaryAnchors
-     * - interiores calculados al vuelo dentro de esta función
-     */
-    public static void reMeshScene_original(
-            GaiaScene scene,
-            ReMeshParameters reMeshParams,
-            TileBoundaryAnchors tileBoundaryAnchors,
-            GlobalBoundaryAnchors globalBoundaryAnchors,
-            Vector3i sceneMinCellIndex,
-            Vector3i sceneMaxCellIndex) {
-
-        if (scene == null || reMeshParams == null || tileBoundaryAnchors == null) {
-            return;
-        }
-
-        CellGrid3D cellGrid = reMeshParams.getCellGrid();
-
-        if (cellGrid == null) {
-            return;
-        }
-
-        GaiaExtractor extractor = new GaiaExtractor();
-        List<GaiaPrimitive> primitives = extractor.extractAllPrimitives(scene);
-
-        if (primitives == null || primitives.isEmpty()) {
-            return;
-        }
-
-        // Si tienes varias primitives por scene, puedes adaptar esto a un for.
-        // Mantengo tu caso habitual: 1 primitive por scene.
-        GaiaPrimitive primitive = primitives.get(0);
-
-        if (primitive == null) {
-            return;
-        }
-
-        List<GaiaVertex> vertices = primitive.getVertices();
+        List<GaiaVertex> vertices =
+                primitive.getVertices();
 
         if (vertices == null || vertices.isEmpty()) {
-            return;
+            return stats;
         }
 
-        int originalVertexCount = vertices.size();
+        int originalVertexCount =
+                vertices.size();
 
-        List<GaiaFace> faces = primitive.extractGaiaAllFaces(null);
+        stats.originalVertices =
+                originalVertexCount;
+
+        List<GaiaFace> faces =
+                primitive.extractGaiaAllFaces(
+                        null
+                );
 
         if (faces == null || faces.isEmpty()) {
-            return;
+            return stats;
         }
 
-        GaiaFrontierFinder frontierFinder = new GaiaFrontierFinder();
+        GaiaFrontierFinder frontierFinder =
+                new GaiaFrontierFinder();
 
-        int[] weldedIndices = new int[originalVertexCount];
+        int[] weldedIndices =
+                new int[originalVertexCount];
 
-        boolean[] frontierVertex = frontierFinder.findBoundaryVertices(
-                vertices,
-                faces,
-                1e-6,
-                weldedIndices
+        boolean[] frontierVertex =
+                frontierFinder.findBoundaryVertices(
+                        vertices,
+                        faces,
+                        1e-6,
+                        weldedIndices
+                );
+
+        if (frontierVertex == null
+                || frontierVertex.length < originalVertexCount) {
+
+            return stats;
+        }
+
+        /*
+         * Local clusters contain:
+         *
+         * - all interior vertices;
+         * - frontier vertices without a global anchor.
+         *
+         * Frontier vertices with a global anchor are excluded
+         * because they must use the globally locked position.
+         */
+        Map<Vector3i, CellAccumulator> localCellAccumulators =
+                new HashMap<>();
+
+        for (int oldIndex = 0;
+             oldIndex < originalVertexCount;
+             oldIndex++) {
+
+            GaiaVertex vertex =
+                    vertices.get(
+                            oldIndex
+                    );
+
+            if (vertex == null
+                    || vertex.getPosition() == null) {
+                continue;
+            }
+
+            Vector3i cellIndex =
+                    new Vector3i(
+                            cellGrid.getCellIndex(
+                                    vertex.getPosition()
+                            )
+                    );
+
+            boolean isFrontier =
+                    frontierVertex[oldIndex];
+
+            if (isFrontier) {
+                stats.frontierVertices++;
+            }
+
+            boolean hasGlobalAnchor =
+                    isFrontier
+                            && globalBoundaryAnchors != null
+                            && globalBoundaryAnchors.hasAverage(
+                            cellIndex
+                    );
+
+            if (hasGlobalAnchor) {
+                stats.anchoredFrontierVertices++;
+                continue;
+            }
+
+            localCellAccumulators
+                    .computeIfAbsent(
+                            cellIndex,
+                            ignored -> new CellAccumulator()
+                    )
+                    .add(
+                            vertex.getPosition()
+                    );
+
+            if (isFrontier) {
+                stats.localFrontierVertices++;
+            } else {
+                stats.localInteriorVertices++;
+            }
+        }
+
+        stats.localCells =
+                localCellAccumulators.size();
+
+        /*
+         * An array is cheaper than Map<Integer, Integer> and
+         * provides direct old-index to new-index lookup.
+         */
+        int[] oldIndexToNewIndex =
+                new int[originalVertexCount];
+
+        Arrays.fill(
+                oldIndexToNewIndex,
+                -1
         );
 
-        if (frontierVertex == null || frontierVertex.length < originalVertexCount) {
-            return;
-        }
+        /*
+         * Anchored and local vertices use different maps because
+         * both types may exist in the same grid cell but must not
+         * necessarily share the same resulting vertex.
+         */
+        Map<Vector3i, Integer> cellToNewLocalIndex =
+                new HashMap<>();
 
-        updateSceneCellBounds(
-                vertices,
-                originalVertexCount,
-                cellGrid,
-                sceneMinCellIndex,
-                sceneMaxCellIndex
-        );
+        Map<Vector3i, Integer> cellToNewAnchoredIndex =
+                new HashMap<>();
 
-        //**************************************************************************
-        // 1) Construir clusters interiores locales al vuelo.
-        //    Guardamos índices viejos, no GaiaVertex, para ahorrar memoria y facilitar
-        //    oldIndex -> newIndex.
-        //**************************************************************************
-        Map<Vector3i, List<Integer>> interiorCellToOldIndices = new HashMap<>();
+        for (int oldIndex = 0;
+             oldIndex < originalVertexCount;
+             oldIndex++) {
 
-        int frontierOriginalVertices = 0;
-        int interiorOriginalVertices = 0;
+            GaiaVertex oldVertex =
+                    vertices.get(
+                            oldIndex
+                    );
 
-        for (int oldIndex = 0; oldIndex < originalVertexCount; oldIndex++) {
-            GaiaVertex vertex = vertices.get(oldIndex);
-
-            if (vertex == null || vertex.getPosition() == null) {
+            if (oldVertex == null
+                    || oldVertex.getPosition() == null) {
                 continue;
             }
 
-            if (frontierVertex[oldIndex]) {
-                frontierOriginalVertices++;
-                continue;
-            }
+            Vector3i cellIndex =
+                    new Vector3i(
+                            cellGrid.getCellIndex(
+                                    oldVertex.getPosition()
+                            )
+                    );
 
-            interiorOriginalVertices++;
+            boolean isFrontier =
+                    frontierVertex[oldIndex];
 
-            Vector3i cellIndex = new Vector3i(
-                    cellGrid.getCellIndex(vertex.getPosition())
-            );
+            boolean hasGlobalAnchor =
+                    isFrontier
+                            && globalBoundaryAnchors != null
+                            && globalBoundaryAnchors.hasAverage(
+                            cellIndex
+                    );
 
-            interiorCellToOldIndices
-                    .computeIfAbsent(new Vector3i(cellIndex), k -> new ArrayList<>())
-                    .add(oldIndex);
-        }
-
-        //**************************************************************************
-        // 2) Calcular averages interiores locales.
-        //**************************************************************************
-        Map<Vector3i, Vector3d> interiorAveragePositions =
-                calculateInteriorAveragePositions(vertices, interiorCellToOldIndices);
-
-        //**************************************************************************
-        // 3) Crear oldIndex -> newIndex.
-        //**************************************************************************
-        Map<Integer, Integer> oldIndexToNewIndex = new HashMap<>();
-
-        Map<Vector3i, Integer> cellToNewInteriorIndex = new HashMap<>();
-        Map<Vector3i, Integer> cellToNewFrontierIndex = new HashMap<>();
-
-        int createdInteriorVertices = 0;
-        int createdFrontierVertices = 0;
-        int mappedInteriorVertices = 0;
-        int mappedFrontierVertices = 0;
-        int skippedNoAverage = 0;
-        int skippedSingleInteriorCluster = 0;
-
-        for (int oldIndex = 0; oldIndex < originalVertexCount; oldIndex++) {
-            GaiaVertex oldVertex = vertices.get(oldIndex);
-
-            if (oldVertex == null || oldVertex.getPosition() == null) {
-                continue;
-            }
-
-            Vector3i cellIndex = new Vector3i(
-                    cellGrid.getCellIndex(oldVertex.getPosition())
-            );
-
-            boolean isFrontier = frontierVertex[oldIndex];
-
-            Vector3d targetAverage;
+            Vector3d targetPosition;
             Map<Vector3i, Integer> cellToNewIndex;
 
-            if (isFrontier) {
-                targetAverage = null;
-
-                if (globalBoundaryAnchors != null) {
-                    targetAverage = globalBoundaryAnchors.getAverage(cellIndex);
-                }
-
-                if (targetAverage == null) {
-                    targetAverage = tileBoundaryAnchors.getFrontierAverage(cellIndex);
-                }
-
-                cellToNewIndex = cellToNewFrontierIndex;
-
-                if (targetAverage == null) {
-                    skippedNoAverage++;
-                    continue;
-                }
-            } else {
-                List<Integer> cluster = interiorCellToOldIndices.get(cellIndex);
-
-                if (cluster == null || cluster.size() < 2) {
-                    skippedSingleInteriorCluster++;
-                    continue;
-                }
-
-                targetAverage = interiorAveragePositions.get(cellIndex);
-                cellToNewIndex = cellToNewInteriorIndex;
-
-                if (targetAverage == null) {
-                    skippedNoAverage++;
-                    continue;
-                }
-            }
-
-            Integer newIndex = cellToNewIndex.get(cellIndex);
-
-            if (newIndex == null) {
-                GaiaVertex newVertex = new GaiaVertex();
-                newVertex.setPosition(new Vector3d(targetAverage));
-
-                copyVertexAttributes(oldVertex, newVertex);
-
-                newIndex = vertices.size();
-                vertices.add(newVertex);
-
-                cellToNewIndex.put(new Vector3i(cellIndex), newIndex);
-
-                if (isFrontier) {
-                    createdFrontierVertices++;
-                } else {
-                    createdInteriorVertices++;
-                }
-            }
-
-            oldIndexToNewIndex.put(oldIndex, newIndex);
-
-            if (isFrontier) {
-                mappedFrontierVertices++;
-            } else {
-                mappedInteriorVertices++;
-            }
-        }
-
-        //**************************************************************************
-        // 4) Sustituir índices en las caras.
-        //**************************************************************************
-        replaceFaceIndices(primitive, oldIndexToNewIndex);
-
-        log.debug("V2 reMeshScene originalVertexCount = {}", originalVertexCount);
-        log.debug("V2 reMeshScene frontierOriginalVertices = {}", frontierOriginalVertices);
-        log.debug("V2 reMeshScene interiorOriginalVertices = {}", interiorOriginalVertices);
-        log.debug("V2 reMeshScene interiorCells = {}", interiorCellToOldIndices.size());
-        log.debug("V2 reMeshScene interiorAveragePositions = {}", interiorAveragePositions.size());
-        log.debug("V2 reMeshScene tile frontierAveragePositions = {}", tileBoundaryAnchors.frontierAveragePositions.size());
-        log.debug("V2 reMeshScene createdInteriorVertices = {}", createdInteriorVertices);
-        log.debug("V2 reMeshScene createdFrontierVertices = {}", createdFrontierVertices);
-        log.debug("V2 reMeshScene mappedInteriorVertices = {}", mappedInteriorVertices);
-        log.debug("V2 reMeshScene mappedFrontierVertices = {}", mappedFrontierVertices);
-        log.debug("V2 reMeshScene skippedNoAverage = {}", skippedNoAverage);
-        log.debug("V2 reMeshScene skippedSingleInteriorCluster = {}", skippedSingleInteriorCluster);
-        log.debug("V2 reMeshScene oldIndexToNewIndex size = {}", oldIndexToNewIndex.size());
-
-        //**************************************************************************
-        // 5) Borrar caras degeneradas y vértices no usados.
-        //**************************************************************************
-        primitive.deleteDegeneratedFaces();
-
-        //**************************************************************************
-        // 6) Limpiar temporales.
-        //**************************************************************************
-        oldIndexToNewIndex.clear();
-        cellToNewInteriorIndex.clear();
-        cellToNewFrontierIndex.clear();
-        interiorCellToOldIndices.clear();
-        interiorAveragePositions.clear();
-    }
-
-    public static void reMeshScene(
-            GaiaScene scene,
-            ReMeshParameters reMeshParams,
-            Vector3i sceneMinCellIndex,
-            Vector3i sceneMaxCellIndex) {
-
-        if (scene == null || reMeshParams == null) {
-            return;
-        }
-
-        CellGrid3D cellGrid = reMeshParams.getCellGrid();
-
-        if (cellGrid == null) {
-            return;
-        }
-
-        GlobalBoundaryAnchors globalBoundaryAnchors =
-                reMeshParams.getGlobalBoundaryAnchors();
-
-        if(globalBoundaryAnchors == null) {
-            // In the last LODs, is possible that there are no GlobalBoundaryAnchors because there are no cut meshes.
-            globalBoundaryAnchors = new GlobalBoundaryAnchors();
-        }
-
-        GaiaExtractor extractor = new GaiaExtractor();
-        List<GaiaPrimitive> primitives = extractor.extractAllPrimitives(scene);
-
-        if (primitives == null || primitives.isEmpty()) {
-            return;
-        }
-
-        // Si tienes varias primitives por scene, puedes adaptar esto a un for.
-        // Mantengo tu caso habitual: 1 primitive por scene.
-        GaiaPrimitive primitive = primitives.get(0);
-
-        if (primitive == null) {
-            return;
-        }
-
-        List<GaiaVertex> vertices = primitive.getVertices();
-
-        if (vertices == null || vertices.isEmpty()) {
-            return;
-        }
-
-        int originalVertexCount = vertices.size();
-
-        List<GaiaFace> faces = primitive.extractGaiaAllFaces(null);
-
-        if (faces == null || faces.isEmpty()) {
-            return;
-        }
-
-        GaiaFrontierFinder frontierFinder = new GaiaFrontierFinder();
-
-        int[] weldedIndices = new int[originalVertexCount];
-
-        boolean[] frontierVertex = frontierFinder.findBoundaryVertices(
-                vertices,
-                faces,
-                1e-6,
-                weldedIndices
-        );
-
-        if (frontierVertex == null || frontierVertex.length < originalVertexCount) {
-            return;
-        }
-
-        updateSceneCellBounds(
-                vertices,
-                originalVertexCount,
-                cellGrid,
-                sceneMinCellIndex,
-                sceneMaxCellIndex
-        );
-
-        //**************************************************************************
-        // 1) Construir clusters interiores locales al vuelo.
-        //    Guardamos índices viejos, no GaiaVertex, para ahorrar memoria y facilitar
-        //    oldIndex -> newIndex.
-        //**************************************************************************
-        Map<Vector3i, List<Integer>> interiorCellToOldIndices = new HashMap<>();
-
-        int frontierOriginalVertices = 0;
-        int interiorOriginalVertices = 0;
-
-        for (int oldIndex = 0; oldIndex < originalVertexCount; oldIndex++) {
-            GaiaVertex vertex = vertices.get(oldIndex);
-
-            if (vertex == null || vertex.getPosition() == null) {
-                continue;
-            }
-
-            if (frontierVertex[oldIndex]) {
-                frontierOriginalVertices++;
-                continue;
-            }
-
-            interiorOriginalVertices++;
-
-            Vector3i cellIndex = new Vector3i(
-                    cellGrid.getCellIndex(vertex.getPosition())
-            );
-
-            interiorCellToOldIndices
-                    .computeIfAbsent(new Vector3i(cellIndex), k -> new ArrayList<>())
-                    .add(oldIndex);
-        }
-
-        //**************************************************************************
-        // 2) Calcular averages interiores locales.
-        //**************************************************************************
-        Map<Vector3i, Vector3d> interiorAveragePositions =
-                calculateInteriorAveragePositions(vertices, interiorCellToOldIndices);
-
-        //**************************************************************************
-        // 3) Crear oldIndex -> newIndex.
-        //**************************************************************************
-        Map<Integer, Integer> oldIndexToNewIndex = new HashMap<>();
-
-        Map<Vector3i, Integer> cellToNewInteriorIndex = new HashMap<>();
-        Map<Vector3i, Integer> cellToNewFrontierIndex = new HashMap<>();
-
-        int createdInteriorVertices = 0;
-        int createdFrontierVertices = 0;
-        int mappedInteriorVertices = 0;
-        int mappedFrontierVertices = 0;
-        int skippedNoAverage = 0;
-        int skippedSingleInteriorCluster = 0;
-
-        for (int oldIndex = 0; oldIndex < originalVertexCount; oldIndex++) {
-            GaiaVertex oldVertex = vertices.get(oldIndex);
-
-            if (oldVertex == null || oldVertex.getPosition() == null) {
-                continue;
-            }
-
-            Vector3i cellIndex = new Vector3i(
-                    cellGrid.getCellIndex(oldVertex.getPosition())
-            );
-
-            boolean isFrontier = frontierVertex[oldIndex];
-
-            Vector3d targetAverage;
-            Map<Vector3i, Integer> cellToNewIndex;
-
-            if (isFrontier) {
-                targetAverage =
+            if (hasGlobalAnchor) {
+                /*
+                 * This vertex belongs to a globally locked
+                 * boundary cell.
+                 */
+                targetPosition =
                         globalBoundaryAnchors.getAverage(
                                 cellIndex
                         );
 
+                if (targetPosition == null) {
+                    /*
+                     * This should not normally happen because
+                     * hasAverage() returned true.
+                     */
+                    stats.missingGlobalAverage++;
+                    continue;
+                }
+
                 cellToNewIndex =
-                        cellToNewFrontierIndex;
+                        cellToNewAnchoredIndex;
 
-                if (targetAverage == null) {
-                    skippedNoAverage++;
-                    continue;
-                }
             } else {
-                List<Integer> cluster = interiorCellToOldIndices.get(cellIndex);
+                /*
+                 * Interior vertices and unanchored frontier
+                 * vertices are treated identically.
+                 */
+                CellAccumulator accumulator =
+                        localCellAccumulators.get(
+                                cellIndex
+                        );
 
-                if (cluster == null || cluster.size() < 2) {
-                    skippedSingleInteriorCluster++;
+                if (accumulator == null
+                        || accumulator.getCount() < 2) {
+
+                    /*
+                     * A cell containing only one local vertex
+                     * cannot be simplified. Its original index
+                     * remains unchanged.
+                     */
+                    stats.skippedSingleLocalCluster++;
                     continue;
                 }
 
-                targetAverage = interiorAveragePositions.get(cellIndex);
-                cellToNewIndex = cellToNewInteriorIndex;
+                targetPosition =
+                        accumulator.calculateAverage();
 
-                if (targetAverage == null) {
-                    skippedNoAverage++;
+                if (targetPosition == null) {
                     continue;
                 }
+
+                cellToNewIndex =
+                        cellToNewLocalIndex;
             }
 
-            Integer newIndex = cellToNewIndex.get(cellIndex);
+            Integer newIndex =
+                    cellToNewIndex.get(
+                            cellIndex
+                    );
 
             if (newIndex == null) {
-                GaiaVertex newVertex = new GaiaVertex();
-                newVertex.setPosition(new Vector3d(targetAverage));
+                GaiaVertex newVertex =
+                        new GaiaVertex();
 
-                copyVertexAttributes(oldVertex, newVertex);
+                newVertex.setPosition(
+                        new Vector3d(
+                                targetPosition
+                        )
+                );
 
-                newIndex = vertices.size();
-                vertices.add(newVertex);
+                copyVertexAttributes(
+                        oldVertex,
+                        newVertex
+                );
 
-                cellToNewIndex.put(new Vector3i(cellIndex), newIndex);
+                newIndex =
+                        vertices.size();
 
-                if (isFrontier) {
-                    createdFrontierVertices++;
+                vertices.add(
+                        newVertex
+                );
+
+                /*
+                 * cellIndex is a newly created object and is not
+                 * modified after being inserted into the map.
+                 */
+                cellToNewIndex.put(
+                        cellIndex,
+                        newIndex
+                );
+
+                if (hasGlobalAnchor) {
+                    stats.createdAnchoredVertices++;
                 } else {
-                    createdInteriorVertices++;
+                    stats.createdLocalVertices++;
                 }
             }
 
-            oldIndexToNewIndex.put(oldIndex, newIndex);
+            oldIndexToNewIndex[oldIndex] =
+                    newIndex;
 
-            if (isFrontier) {
-                mappedFrontierVertices++;
+            if (hasGlobalAnchor) {
+                stats.mappedAnchoredVertices++;
             } else {
-                mappedInteriorVertices++;
+                stats.mappedLocalVertices++;
             }
         }
 
-        //**************************************************************************
-        // 4) Sustituir índices en las caras.
-        //**************************************************************************
-        replaceFaceIndices(primitive, oldIndexToNewIndex);
+        /*
+         * Replace original indices with clustered indices.
+         */
+        replaceFaceIndices(
+                primitive,
+                oldIndexToNewIndex
+        );
 
-        log.debug("V2 reMeshScene originalVertexCount = {}", originalVertexCount);
-        log.debug("V2 reMeshScene frontierOriginalVertices = {}", frontierOriginalVertices);
-        log.debug("V2 reMeshScene interiorOriginalVertices = {}", interiorOriginalVertices);
-        log.debug("V2 reMeshScene interiorCells = {}", interiorCellToOldIndices.size());
-        log.debug("V2 reMeshScene interiorAveragePositions = {}", interiorAveragePositions.size());
-        log.debug("V2 reMeshScene createdInteriorVertices = {}", createdInteriorVertices);
-        log.debug("V2 reMeshScene createdFrontierVertices = {}", createdFrontierVertices);
-        log.debug("V2 reMeshScene mappedInteriorVertices = {}", mappedInteriorVertices);
-        log.debug("V2 reMeshScene mappedFrontierVertices = {}", mappedFrontierVertices);
-        log.debug("V2 reMeshScene skippedNoAverage = {}", skippedNoAverage);
-        log.debug("V2 reMeshScene skippedSingleInteriorCluster = {}", skippedSingleInteriorCluster);
-        log.debug("V2 reMeshScene oldIndexToNewIndex size = {}", oldIndexToNewIndex.size());
-
-        //**************************************************************************
-        // 5) Borrar caras degeneradas y vértices no usados.
-        //**************************************************************************
+        /*
+         * Several original vertices may now reference the same
+         * clustered vertex, producing degenerated faces.
+         */
         primitive.deleteDegeneratedFaces();
 
-        //**************************************************************************
-        // 6) Limpiar temporales.
-        //**************************************************************************
-        oldIndexToNewIndex.clear();
-        cellToNewInteriorIndex.clear();
-        cellToNewFrontierIndex.clear();
-        interiorCellToOldIndices.clear();
-        interiorAveragePositions.clear();
+        /*
+         * Remove original vertices that are no longer referenced
+         * by any face and compact all remaining indices.
+         *
+         * Without this step, clustered vertices are appended to
+         * the original list and the resulting primitive may become
+         * larger instead of smaller.
+         */
+        removeUnusedVerticesAndReindex(
+                primitive
+        );
+
+        stats.verticesAfterCompaction =
+                vertices.size();
+
+        return stats;
     }
 
-    private static Map<Vector3i, Vector3d> calculateInteriorAveragePositions(
-            List<GaiaVertex> vertices,
-            Map<Vector3i, List<Integer>> interiorCellToOldIndices) {
-
-        Map<Vector3i, Vector3d> result = new HashMap<>();
-
-        if (vertices == null || interiorCellToOldIndices == null || interiorCellToOldIndices.isEmpty()) {
-            return result;
-        }
-
-        for (Map.Entry<Vector3i, List<Integer>> entry : interiorCellToOldIndices.entrySet()) {
-            Vector3i cellIndex = entry.getKey();
-            List<Integer> oldIndices = entry.getValue();
-
-            if (cellIndex == null || oldIndices == null || oldIndices.size() < 2) {
-                continue;
-            }
-
-            Vector3d avg = new Vector3d();
-            int count = 0;
-
-            for (Integer oldIndex : oldIndices) {
-                if (oldIndex == null || oldIndex < 0 || oldIndex >= vertices.size()) {
-                    continue;
-                }
-
-                GaiaVertex vertex = vertices.get(oldIndex);
-
-                if (vertex == null || vertex.getPosition() == null) {
-                    continue;
-                }
-
-                avg.add(vertex.getPosition());
-                count++;
-            }
-
-            if (count == 0) {
-                continue;
-            }
-
-            avg.div(count);
-
-            result.put(new Vector3i(cellIndex), avg);
-        }
-
-        return result;
-    }
-
+    /**
+     * Replaces every mapped original vertex index with its
+     * corresponding clustered vertex index.
+     */
     private static void replaceFaceIndices(
             GaiaPrimitive primitive,
-            Map<Integer, Integer> oldIndexToNewIndex) {
-
-        if (primitive == null || oldIndexToNewIndex == null || oldIndexToNewIndex.isEmpty()) {
+            int[] oldIndexToNewIndex
+    ) {
+        if (primitive == null
+                || oldIndexToNewIndex == null
+                || oldIndexToNewIndex.length == 0) {
             return;
         }
 
-        List<GaiaSurface> surfaces = primitive.getSurfaces();
+        List<GaiaSurface> surfaces =
+                primitive.getSurfaces();
 
-        if (surfaces == null) {
+        if (surfaces == null || surfaces.isEmpty()) {
             return;
         }
 
         for (GaiaSurface surface : surfaces) {
-            if (surface == null || surface.getFaces() == null) {
+            if (surface == null
+                    || surface.getFaces() == null) {
                 continue;
             }
 
             for (GaiaFace face : surface.getFaces()) {
-                if (face == null || face.getIndices() == null) {
+                if (face == null
+                        || face.getIndices() == null) {
                     continue;
                 }
 
-                int[] indices = face.getIndices();
+                int[] indices =
+                        face.getIndices();
 
-                for (int i = 0; i < indices.length; i++) {
-                    Integer newIndex = oldIndexToNewIndex.get(indices[i]);
+                for (int i = 0;
+                     i < indices.length;
+                     i++) {
 
-                    if (newIndex != null) {
-                        indices[i] = newIndex;
+                    int oldIndex =
+                            indices[i];
+
+                    if (oldIndex < 0
+                            || oldIndex >= oldIndexToNewIndex.length) {
+                        continue;
+                    }
+
+                    int newIndex =
+                            oldIndexToNewIndex[oldIndex];
+
+                    if (newIndex >= 0) {
+                        indices[i] =
+                                newIndex;
                     }
                 }
             }
         }
     }
 
-    private static void updateSceneCellBounds(
-            List<GaiaVertex> vertices,
-            int originalVertexCount,
-            CellGrid3D cellGrid,
-            Vector3i sceneMinCellIndex,
-            Vector3i sceneMaxCellIndex) {
-
-        if (vertices == null || cellGrid == null || sceneMinCellIndex == null || sceneMaxCellIndex == null) {
+    /**
+     * Removes vertices that are not referenced by any face and
+     * rewrites all face indices to use the compacted vertex list.
+     */
+    private static void removeUnusedVerticesAndReindex(
+            GaiaPrimitive primitive
+    ) {
+        if (primitive == null) {
             return;
         }
 
-        boolean first = true;
+        List<GaiaVertex> vertices =
+                primitive.getVertices();
 
-        for (int i = 0; i < originalVertexCount; i++) {
-            GaiaVertex vertex = vertices.get(i);
+        if (vertices == null || vertices.isEmpty()) {
+            return;
+        }
 
-            if (vertex == null || vertex.getPosition() == null) {
+        List<GaiaFace> faces =
+                primitive.extractGaiaAllFaces(
+                        null
+                );
+
+        if (faces == null || faces.isEmpty()) {
+            vertices.clear();
+            return;
+        }
+
+        int vertexCount =
+                vertices.size();
+
+        boolean[] usedVertices =
+                new boolean[vertexCount];
+
+        int usedVertexCount = 0;
+
+        for (GaiaFace face : faces) {
+            if (face == null
+                    || face.getIndices() == null) {
                 continue;
             }
 
-            Vector3i cellIndex = new Vector3i(
-                    cellGrid.getCellIndex(vertex.getPosition())
-            );
+            int[] indices =
+                    face.getIndices();
 
-            if (first) {
-                sceneMinCellIndex.set(cellIndex);
-                sceneMaxCellIndex.set(cellIndex);
-                first = false;
-            } else {
-                sceneMinCellIndex.x = Math.min(sceneMinCellIndex.x, cellIndex.x);
-                sceneMinCellIndex.y = Math.min(sceneMinCellIndex.y, cellIndex.y);
-                sceneMinCellIndex.z = Math.min(sceneMinCellIndex.z, cellIndex.z);
+            for (int index : indices) {
+                if (index < 0 || index >= vertexCount) {
+                    continue;
+                }
 
-                sceneMaxCellIndex.x = Math.max(sceneMaxCellIndex.x, cellIndex.x);
-                sceneMaxCellIndex.y = Math.max(sceneMaxCellIndex.y, cellIndex.y);
-                sceneMaxCellIndex.z = Math.max(sceneMaxCellIndex.z, cellIndex.z);
+                if (!usedVertices[index]) {
+                    usedVertices[index] =
+                            true;
+
+                    usedVertexCount++;
+                }
             }
         }
-    }
 
-    private static void copyVertexAttributes(GaiaVertex src, GaiaVertex dst) {
-        if (src == null || dst == null) {
+        if (usedVertexCount == vertexCount) {
             return;
         }
 
-        if (src.getNormal() != null) {
-            dst.setNormal(new Vector3d(src.getNormal()));
+        int[] oldIndexToCompactedIndex =
+                new int[vertexCount];
+
+        Arrays.fill(
+                oldIndexToCompactedIndex,
+                -1
+        );
+
+        List<GaiaVertex> compactedVertices =
+                new ArrayList<>(
+                        usedVertexCount
+                );
+
+        for (int oldIndex = 0;
+             oldIndex < vertexCount;
+             oldIndex++) {
+
+            if (!usedVertices[oldIndex]) {
+                continue;
+            }
+
+            int compactedIndex =
+                    compactedVertices.size();
+
+            oldIndexToCompactedIndex[oldIndex] =
+                    compactedIndex;
+
+            compactedVertices.add(
+                    vertices.get(oldIndex)
+            );
         }
 
-        if (src.getTexcoords() != null) {
-            dst.setTexcoords(new Vector2d(src.getTexcoords()));
+        for (GaiaFace face : faces) {
+            if (face == null
+                    || face.getIndices() == null) {
+                continue;
+            }
+
+            int[] indices =
+                    face.getIndices();
+
+            for (int i = 0;
+                 i < indices.length;
+                 i++) {
+
+                int oldIndex =
+                        indices[i];
+
+                if (oldIndex < 0
+                        || oldIndex >= oldIndexToCompactedIndex.length) {
+                    continue;
+                }
+
+                int compactedIndex =
+                        oldIndexToCompactedIndex[oldIndex];
+
+                if (compactedIndex >= 0) {
+                    indices[i] =
+                            compactedIndex;
+                }
+            }
         }
 
-        if (src.getColor() != null) {
-            dst.setColor(src.getColor().clone());
+        vertices.clear();
+
+        vertices.addAll(
+                compactedVertices
+        );
+    }
+
+    /**
+     * Calculates the minimum and maximum CellGrid3D indices
+     * occupied by all primitives in the scene.
+     */
+    private static void updateSceneCellBounds(
+            List<GaiaPrimitive> primitives,
+            CellGrid3D cellGrid,
+            Vector3i sceneMinCellIndex,
+            Vector3i sceneMaxCellIndex
+    ) {
+        if (primitives == null
+                || cellGrid == null
+                || sceneMinCellIndex == null
+                || sceneMaxCellIndex == null) {
+            return;
         }
 
-        dst.setBatchId(src.getBatchId());
+        int minX =
+                Integer.MAX_VALUE;
+
+        int minY =
+                Integer.MAX_VALUE;
+
+        int minZ =
+                Integer.MAX_VALUE;
+
+        int maxX =
+                Integer.MIN_VALUE;
+
+        int maxY =
+                Integer.MIN_VALUE;
+
+        int maxZ =
+                Integer.MIN_VALUE;
+
+        boolean foundPosition =
+                false;
+
+        for (GaiaPrimitive primitive : primitives) {
+            if (primitive == null
+                    || primitive.getVertices() == null) {
+                continue;
+            }
+
+            List<GaiaVertex> vertices =
+                    primitive.getVertices();
+
+            for (GaiaVertex vertex : vertices) {
+                if (vertex == null
+                        || vertex.getPosition() == null) {
+                    continue;
+                }
+
+                Vector3i cellIndex =
+                        cellGrid.getCellIndex(
+                                vertex.getPosition()
+                        );
+
+                minX =
+                        Math.min(
+                                minX,
+                                cellIndex.x
+                        );
+
+                minY =
+                        Math.min(
+                                minY,
+                                cellIndex.y
+                        );
+
+                minZ =
+                        Math.min(
+                                minZ,
+                                cellIndex.z
+                        );
+
+                maxX =
+                        Math.max(
+                                maxX,
+                                cellIndex.x
+                        );
+
+                maxY =
+                        Math.max(
+                                maxY,
+                                cellIndex.y
+                        );
+
+                maxZ =
+                        Math.max(
+                                maxZ,
+                                cellIndex.z
+                        );
+
+                foundPosition =
+                        true;
+            }
+        }
+
+        if (!foundPosition) {
+            return;
+        }
+
+        sceneMinCellIndex.set(
+                minX,
+                minY,
+                minZ
+        );
+
+        sceneMaxCellIndex.set(
+                maxX,
+                maxY,
+                maxZ
+        );
+    }
+
+    /**
+     * Copies the non-positional attributes of a source vertex.
+     */
+    private static void copyVertexAttributes(
+            GaiaVertex source,
+            GaiaVertex destination
+    ) {
+        if (source == null || destination == null) {
+            return;
+        }
+
+        if (source.getNormal() != null) {
+            destination.setNormal(
+                    new Vector3d(
+                            source.getNormal()
+                    )
+            );
+        }
+
+        if (source.getTexcoords() != null) {
+            destination.setTexcoords(
+                    new Vector2d(
+                            source.getTexcoords()
+                    )
+            );
+        }
+
+        if (source.getColor() != null) {
+            destination.setColor(
+                    source.getColor().clone()
+            );
+        }
+
+        destination.setBatchId(
+                source.getBatchId()
+        );
+    }
+
+    /**
+     * Accumulates local vertex positions for one grid cell.
+     */
+    private static final class CellAccumulator {
+
+        private final Vector3d positionSum =
+                new Vector3d();
+
+        private int count;
+
+        private void add(
+                Vector3d position
+        ) {
+            if (position == null) {
+                return;
+            }
+
+            positionSum.add(
+                    position
+            );
+
+            count++;
+        }
+
+        private int getCount() {
+            return count;
+        }
+
+        private Vector3d calculateAverage() {
+            if (count <= 0) {
+                return null;
+            }
+
+            return new Vector3d(
+                    positionSum
+            ).div(
+                    count
+            );
+        }
+    }
+
+    /**
+     * Aggregated remeshing statistics.
+     */
+    private static final class RemeshStats {
+
+        private long originalVertices;
+        private long frontierVertices;
+        private long anchoredFrontierVertices;
+        private long localFrontierVertices;
+        private long localInteriorVertices;
+        private long localCells;
+
+        private long createdAnchoredVertices;
+        private long createdLocalVertices;
+
+        private long mappedAnchoredVertices;
+        private long mappedLocalVertices;
+
+        private long skippedSingleLocalCluster;
+        private long missingGlobalAverage;
+
+        private long verticesAfterCompaction;
+
+        private void add(
+                RemeshStats other
+        ) {
+            if (other == null) {
+                return;
+            }
+
+            originalVertices +=
+                    other.originalVertices;
+
+            frontierVertices +=
+                    other.frontierVertices;
+
+            anchoredFrontierVertices +=
+                    other.anchoredFrontierVertices;
+
+            localFrontierVertices +=
+                    other.localFrontierVertices;
+
+            localInteriorVertices +=
+                    other.localInteriorVertices;
+
+            localCells +=
+                    other.localCells;
+
+            createdAnchoredVertices +=
+                    other.createdAnchoredVertices;
+
+            createdLocalVertices +=
+                    other.createdLocalVertices;
+
+            mappedAnchoredVertices +=
+                    other.mappedAnchoredVertices;
+
+            mappedLocalVertices +=
+                    other.mappedLocalVertices;
+
+            skippedSingleLocalCluster +=
+                    other.skippedSingleLocalCluster;
+
+            missingGlobalAverage +=
+                    other.missingGlobalAverage;
+
+            verticesAfterCompaction +=
+                    other.verticesAfterCompaction;
+        }
     }
 }

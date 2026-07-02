@@ -747,10 +747,6 @@ public class MagoReTextureByObliqueCamera {
                     log.error("[ERROR] initializing the engine: ", e);
                 }
 
-                // Calculate globalBoundaryAnchors.*********************************************************************
-                //calculateGlobalBoundaryAnchors(gaiaScene, reMeshParams, scenePositionRelToCellGrid, i);
-                // End calculating globalBoundaryAnchors.---------------------------------------------------------------
-
                 if (gaiaSceneMaster == null) {
                     gaiaSceneMaster = gaiaScene;
                 } else {
@@ -1085,53 +1081,6 @@ public class MagoReTextureByObliqueCamera {
 //        for (RenderableGaiaScene renderableScene : renderableGaiaScenes) {
 //            renderableScene.deleteGLBuffers();
 //        }
-    }
-
-    private void calculateGlobalBoundaryAnchors(
-            GaiaScene gaiaScene,
-            ReMeshParameters reMeshParams,
-            Vector3d scenePositionRelToCellGrid,
-            int sceneId) {
-
-        if (gaiaScene == null || reMeshParams == null || scenePositionRelToCellGrid == null) {
-            return;
-        }
-
-        GlobalBoundaryAnchors globalBoundaryAnchors =
-                reMeshParams.getGlobalBoundaryAnchors();
-
-        if (globalBoundaryAnchors == null) {
-            globalBoundaryAnchors = new GlobalBoundaryAnchors();
-            reMeshParams.setGlobalBoundaryAnchors(globalBoundaryAnchors);
-        }
-
-        TileBoundaryAnchors lodTransitionTileAnchors =
-                reMeshParams.getTileBoundaryAnchors();
-
-        if (lodTransitionTileAnchors == null) {
-            lodTransitionTileAnchors = new TileBoundaryAnchors();
-            reMeshParams.setTileBoundaryAnchors(lodTransitionTileAnchors);
-        }
-
-        Vector3d scenePosRelToCellGridNegative = new Vector3d(
-                -scenePositionRelToCellGrid.x,
-                -scenePositionRelToCellGrid.y,
-                -scenePositionRelToCellGrid.z
-        );
-
-        try {
-            translateScene(gaiaScene, scenePositionRelToCellGrid);
-
-            ReMesherVertexClusterV2.accumulateTileBoundaryAnchorsFromScene(
-                    gaiaScene,
-                    reMeshParams,                 // debe tener CellGrid3D de LOD3
-                    lodTransitionTileAnchors,
-                    globalBoundaryAnchors,
-                    sceneId
-            );
-        } finally {
-            translateScene(gaiaScene, scenePosRelToCellGridNegative);
-        }
     }
 
     private void translateScene(GaiaScene gaiaScene, Vector3d translation) {
