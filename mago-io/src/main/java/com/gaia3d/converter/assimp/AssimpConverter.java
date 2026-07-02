@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class AssimpConverter implements Converter {
 
-    public final int DEFAULT_FLAGS = Assimp.aiProcess_Triangulate | Assimp.aiProcess_JoinIdenticalVertices | Assimp.aiProcess_SortByPType;
+    public final int DEFAULT_FLAGS = Assimp.aiProcess_Triangulate | Assimp.aiProcess_SortByPType;
     private final AssimpConverterOptions options;
 
     public List<GaiaScene> load(String filePath) {

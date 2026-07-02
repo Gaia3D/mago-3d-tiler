@@ -817,17 +817,9 @@ public class GltfWriter {
     }
 
     private byte[] convertBufferedImageToBytes(BufferedImage bufferedImage, String mimeType) {
-        ImageResizer imageResizer = new ImageResizer();
         String formatName = ImageUtils.getFormatNameByMimeType(mimeType);
         byte[] imageBytes = null;
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            int width = bufferedImage.getWidth();
-            int height = bufferedImage.getHeight();
-            int powerOfTwoWidth = ImageUtils.getNearestPowerOfTwo(width);
-            int powerOfTwoHeight = ImageUtils.getNearestPowerOfTwo(height);
-            if (width != powerOfTwoWidth || height != powerOfTwoHeight) {
-                bufferedImage = imageResizer.resizeImageGraphic2D(bufferedImage, powerOfTwoWidth, powerOfTwoHeight, true);
-            }
             assert formatName != null;
 
             if (gltfOptions.isForceJpeg() || mimeType.equals("image/jpeg")) {
@@ -852,17 +844,9 @@ public class GltfWriter {
     }
 
     private String convertBufferedImageToURI(BufferedImage bufferedImage, String mimeType) {
-        ImageResizer imageResizer = new ImageResizer();
         String formatName = ImageUtils.getFormatNameByMimeType(mimeType);
         String imageString = null;
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            int width = bufferedImage.getWidth();
-            int height = bufferedImage.getHeight();
-            int powerOfTwoWidth = ImageUtils.getNearestPowerOfTwo(width);
-            int powerOfTwoHeight = ImageUtils.getNearestPowerOfTwo(height);
-            if (width != powerOfTwoWidth || height != powerOfTwoHeight) {
-                bufferedImage = imageResizer.resizeImageGraphic2D(bufferedImage, powerOfTwoWidth, powerOfTwoHeight, true);
-            }
             assert formatName != null;
 
             if (gltfOptions.isForceJpeg() || mimeType.equals("image/jpeg")) {

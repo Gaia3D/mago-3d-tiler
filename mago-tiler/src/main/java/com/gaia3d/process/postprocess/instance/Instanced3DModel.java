@@ -262,7 +262,7 @@ public class Instanced3DModel implements ContentModel {
             byteLength += lastPadLength;
         }
 
-        File i3dmOutputFile = outputRoot.resolve(nodeCode + "." + MAGIC).toFile();
+        File i3dmOutputFile = contentInfo.resolveContentFile(outputRoot, MAGIC);
         try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(i3dmOutputFile)))) {
             // 32-byte header (first 20 bytes)
             stream.writePureText(MAGIC);

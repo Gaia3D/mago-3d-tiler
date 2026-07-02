@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 @SuppressWarnings("ALL")
 @Slf4j
 @NoArgsConstructor
+@Deprecated
 public class TreeInstanceTiler extends DefaultTiler implements Tiler {
 
     private static final GlobalOptions globalOptions = GlobalOptions.getInstance();

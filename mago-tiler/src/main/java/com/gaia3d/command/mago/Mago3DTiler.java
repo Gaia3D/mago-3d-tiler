@@ -3,7 +3,9 @@ package com.gaia3d.command.mago;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.model.*;
 import com.gaia3d.process.tileprocess.TileMerger;
+import com.gaia3d.process.tileprocess.TilesetRootTransformUpdater;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.cli.CommandLine;
 
 import java.io.IOException;
 
@@ -30,6 +32,15 @@ public class Mago3DTiler {
     public void merge() {
         TileMerger tileMerger = new TileMerger();
         tileMerger.merge();
+    }
+
+    public void updateRootTransform(CommandLine command) {
+        String inputPath = command.getOptionValue(ProcessOptions.INPUT_PATH.getLongName());
+        String outputPath = command.getOptionValue(ProcessOptions.OUTPUT_PATH.getLongName());
+        String rootTransform = command.getOptionValue(ProcessOptions.UPDATE_ROOT_TRANSFORM.getLongName());
+
+        TilesetRootTransformUpdater updater = new TilesetRootTransformUpdater();
+        updater.update(inputPath, outputPath, rootTransform);
     }
 
     /**

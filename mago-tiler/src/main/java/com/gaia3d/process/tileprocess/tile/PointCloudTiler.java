@@ -7,13 +7,21 @@ import com.gaia3d.basic.exception.TileProcessingException;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.types.LevelOfDetail;
 import com.gaia3d.command.mago.GlobalOptions;
+import com.gaia3d.command.mago.TilingMode;
 import com.gaia3d.converter.pointcloud.GaiaLasPoint;
 import com.gaia3d.converter.pointcloud.GaiaPointCloud;
+import com.gaia3d.process.tileprocess.TilesetBuildResult;
 import com.gaia3d.process.tileprocess.Tiler;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
 import com.gaia3d.process.tileprocess.tile.tileset.TilesetV2;
 import com.gaia3d.process.tileprocess.tile.tileset.asset.AssetV1;
 import com.gaia3d.process.tileprocess.tile.tileset.asset.AssetV2;
+import com.gaia3d.process.tileprocess.tile.tileset.implicit.ImplicitSubtreeArtifact;
+import com.gaia3d.process.tileprocess.tile.tileset.implicit.ImplicitSubtreeBuilder;
+import com.gaia3d.process.tileprocess.tile.tileset.implicit.ImplicitTileCoordinate;
+import com.gaia3d.process.tileprocess.tile.tileset.implicit.ImplicitTiling;
+import com.gaia3d.process.tileprocess.tile.tileset.implicit.SubdivisionScheme;
+import com.gaia3d.process.tileprocess.tile.tileset.implicit.TemplateUri;
 import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Content;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
@@ -27,7 +35,9 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,6 +47,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
     private final int MAXIMUM_DEPTH = 20;
     private final float POINT_EXPANSION_FACTOR = 3.0f;
     private GaiaBoundingBox globalFitBoundingBox = null;
+    private List<ImplicitSubtreeArtifact> implicitSubtreeArtifacts = Collections.emptyList();
 
     private static GaiaBoundingBox toCube(GaiaBoundingBox box) {
         // degree with height
@@ -126,6 +137,19 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         return tileset;
     }
 
+    @Override
+    public TilesetBuildResult runWithResult(List<TileInfo> tileInfos) {
+        Tileset tileset = run(tileInfos);
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        if (globalOptions.getTilingMode() != TilingMode.IMPLICIT) {
+            return new TilesetBuildResult(tileset, tileset.findAllContentInfo());
+        }
+        if (!"1.1".equals(globalOptions.getTilesVersion())) {
+            throw new TileProcessingException("Implicit tiling requires 3D Tiles 1.1.");
+        }
+        return prepareImplicitPointCloudTileset(tileset);
+    }
+
     public void writeTileset(Tileset tileset) {
         Node rootNode = tileset.getRoot();
         if (rootNode == null) {
@@ -166,6 +190,124 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         } catch (IOException e) {
             log.error("[ERROR] :", e);
             throw new TileProcessingException(e.getMessage());
+        }
+
+        if (globalOptions.getTilingMode() == TilingMode.IMPLICIT) {
+            writeImplicitSubtrees(outputPath, objectMapper);
+        }
+    }
+
+    private TilesetBuildResult prepareImplicitPointCloudTileset(Tileset tileset) {
+        Node root = tileset.getRoot();
+        if (root == null || root.getChildren() == null || root.getChildren().isEmpty()) {
+            throw new TileProcessingException("Implicit point cloud tileset requires explicit root children.");
+        }
+
+        root.refineDepth();
+        root.refineParentNode();
+
+        List<ContentInfo> contentInfos = new ArrayList<>();
+        List<ImplicitSubtreeArtifact> subtreeArtifacts = new ArrayList<>();
+        for (Node implicitRoot : root.getChildren()) {
+            subtreeArtifacts.addAll(prepareImplicitRoot(implicitRoot, contentInfos));
+        }
+        implicitSubtreeArtifacts = subtreeArtifacts;
+        return new TilesetBuildResult(tileset, contentInfos);
+    }
+
+    private List<ImplicitSubtreeArtifact> prepareImplicitRoot(Node implicitRoot, List<ContentInfo> contentInfos) {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        String rootCode = implicitRoot.getNodeCode();
+        int subtreeLevels = globalOptions.getImplicitSubtreeLevels();
+
+        ImplicitSubtreeBuilder subtreeBuilder = new ImplicitSubtreeBuilder(rootCode, subtreeLevels);
+        int maxLevel = collectImplicitContent(implicitRoot, rootCode, ImplicitTileCoordinate.root(), subtreeBuilder, contentInfos);
+        adjustImplicitRootGeometricError(implicitRoot);
+
+        Content contentTemplate = new Content();
+        contentTemplate.setUri("data/" + rootCode + "/{level}/{x}/{y}/{z}.glb");
+        implicitRoot.setContent(contentTemplate);
+        implicitRoot.setChildren(null);
+
+        ImplicitTiling implicitTiling = new ImplicitTiling();
+        implicitTiling.setSubdivisionScheme(SubdivisionScheme.OCTREE);
+        implicitTiling.setAvailableLevels(maxLevel + 1);
+        implicitTiling.setSubtreeLevels(subtreeLevels);
+        implicitTiling.setSubtrees(new TemplateUri("subtrees/" + rootCode + "/{level}/{x}/{y}/{z}.json"));
+        implicitRoot.setImplicitTiling(implicitTiling);
+
+        return subtreeBuilder.build();
+    }
+
+    private void adjustImplicitRootGeometricError(Node implicitRoot) {
+        List<Node> children = implicitRoot.getChildren();
+        if (children == null || children.isEmpty()) {
+            return;
+        }
+
+        double maxChildGeometricError = children.stream()
+                .mapToDouble(Node::getGeometricError)
+                .max()
+                .orElse(0.0d);
+        if (maxChildGeometricError <= 0.0d) {
+            return;
+        }
+
+        double adjustedGeometricError = maxChildGeometricError * 2.0d;
+        log.debug("[Tile][Implicit] Adjust root geometricError: {} -> {} ({})",
+                implicitRoot.getGeometricError(),
+                adjustedGeometricError,
+                implicitRoot.getNodeCode());
+        implicitRoot.setGeometricError(adjustedGeometricError);
+    }
+
+    private int collectImplicitContent(Node node, String rootCode, ImplicitTileCoordinate coordinate, ImplicitSubtreeBuilder subtreeBuilder, List<ContentInfo> contentInfos) {
+        int maxLevel = coordinate.getLevel();
+        Content content = node.getContent();
+        if (content != null && content.getContentInfo() != null) {
+            ContentInfo contentInfo = content.getContentInfo();
+            contentInfo.setContentPath(coordinate.toContentPath(rootCode));
+            contentInfos.add(contentInfo);
+            subtreeBuilder.addContent(coordinate);
+        }
+
+        if (node.getChildren() == null) {
+            return maxLevel;
+        }
+
+        for (Node child : node.getChildren()) {
+            char childCode = getPointCloudChildCode(node, child);
+            ImplicitTileCoordinate childCoordinate = coordinate.child(childCode);
+            maxLevel = Math.max(maxLevel, collectImplicitContent(child, rootCode, childCoordinate, subtreeBuilder, contentInfos));
+        }
+        return maxLevel;
+    }
+
+    private char getPointCloudChildCode(Node parent, Node child) {
+        String parentCode = parent.getNodeCode();
+        String childCode = child.getNodeCode();
+        if (childCode == null || parentCode == null || !childCode.startsWith(parentCode) || childCode.length() <= parentCode.length()) {
+            throw new TileProcessingException("Cannot derive implicit child code from node: " + childCode);
+        }
+        char code = childCode.charAt(parentCode.length());
+        if (code < 'A' || code > 'H') {
+            throw new TileProcessingException("Point cloud implicit tiling only supports A-H octree children. Node: " + childCode);
+        }
+        return code;
+    }
+
+    private void writeImplicitSubtrees(File outputPath, ObjectMapper objectMapper) {
+        for (ImplicitSubtreeArtifact artifact : implicitSubtreeArtifacts) {
+            try {
+                File subtreeFile = new File(outputPath, artifact.getSubtreeUri());
+                File bufferFile = new File(outputPath, artifact.getBufferUri());
+                Files.createDirectories(subtreeFile.toPath().getParent());
+                Files.createDirectories(bufferFile.toPath().getParent());
+                objectMapper.writeValue(subtreeFile, artifact.getSubtree());
+                Files.write(bufferFile.toPath(), artifact.getAvailabilityBuffer());
+            } catch (IOException e) {
+                throw new TileProcessingException("Failed to write implicit subtree: " + artifact.getSubtreeUri(), e);
+            }
         }
     }
 

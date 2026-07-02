@@ -1,12 +1,45 @@
 package com.gaia3d.local.experimental;
 
+import com.gaia3d.command.LoggingConfiguration;
 import com.gaia3d.local.MagoTestConfig;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
+
 @Tag("experimental")
 public class ExperimentalTest {
+
+    static {
+        LoggingConfiguration.initConsoleLogger();
+    }
+
+    @Test
+    void transform() {
+        double[] rootTransform = new double[]{
+                1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 200, 1
+        };
+
+        String transformString = String.join(",",
+                String.valueOf(rootTransform[0]), String.valueOf(rootTransform[1]), String.valueOf(rootTransform[2]), String.valueOf(rootTransform[3]),
+                String.valueOf(rootTransform[4]), String.valueOf(rootTransform[5]), String.valueOf(rootTransform[6]), String.valueOf(rootTransform[7]),
+                String.valueOf(rootTransform[8]), String.valueOf(rootTransform[9]), String.valueOf(rootTransform[10]), String.valueOf(rootTransform[11]),
+                String.valueOf(rootTransform[12]), String.valueOf(rootTransform[13]), String.valueOf(rootTransform[14]), String.valueOf(rootTransform[15])
+        );
+
+
+        String path = "B01-wangsuk2-3ds";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getOutputPath(path).getAbsolutePath() + File.separator + "tileset.json",
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + File.separator + "tileset.json",
+                "--updateRootTransform", transformString,
+        };
+        MagoTestConfig.execute(args);
+    }
 
     @Test
     void problemseoul() {

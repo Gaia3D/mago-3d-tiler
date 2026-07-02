@@ -17,7 +17,7 @@ import java.util.List;
 @Getter
 @Setter
 public class Tileset {
-    @JsonInclude(JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     protected double geometricError = 0.0d;
     protected Node root;
     protected Properties properties;

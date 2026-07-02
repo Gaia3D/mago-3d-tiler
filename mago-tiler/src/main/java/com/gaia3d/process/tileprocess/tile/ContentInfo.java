@@ -1,13 +1,19 @@
 package com.gaia3d.process.tileprocess.tile;
 
+import com.gaia3d.basic.exception.TileProcessingException;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.types.LevelOfDetail;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.joml.Matrix4d;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 @Slf4j
@@ -16,6 +22,7 @@ import java.util.List;
 public class ContentInfo {
     private String name;
     private String nodeCode;
+    private String contentPath;
     private LevelOfDetail lod;
     private List<TileInfo> tileInfos;
     private List<TileInfo> tempTileInfos;
@@ -23,6 +30,27 @@ public class ContentInfo {
     private GaiaBoundingBox boundingBox;
     private GaiaSet batchedSet;
     private Matrix4d transformMatrix;
+    private boolean isolateTextureLod;
+
+    public String getContentPath() {
+        if (StringUtils.isBlank(contentPath)) {
+            return nodeCode;
+        }
+        return contentPath;
+    }
+
+    public File resolveContentFile(Path outputRoot, String extension) {
+        Path outputPath = outputRoot.resolve(getContentPath() + "." + extension);
+        Path parent = outputPath.getParent();
+        if (parent != null) {
+            try {
+                Files.createDirectories(parent);
+            } catch (IOException e) {
+                throw new TileProcessingException("Failed to create content output directory: " + parent, e);
+            }
+        }
+        return outputPath.toFile();
+    }
 
     public void deleteTexture() {
         for (TileInfo tileInfo : tileInfos) {

@@ -136,8 +136,7 @@ public class Batched3DModelV2 implements ContentModel {
             });
         });
 
-        String glbFileName = nodeCode + "." + MAGIC;
-        File glbOutputFile = outputRoot.resolve(glbFileName).toFile();
+        File glbOutputFile = contentInfo.resolveContentFile(outputRoot, MAGIC);
         if (globalOptions.isPhotogrammetry()) {
             scene.deleteNormals();
         }

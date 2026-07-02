@@ -36,6 +36,8 @@ public class GlobalOptions {
 
     /* 0.1 Analysis Info */
     private String tilesVersion;
+    private TilingMode tilingMode = GlobalConstants.DEFAULT_TILING_MODE;
+    private int implicitSubtreeLevels = GlobalConstants.DEFAULT_IMPLICIT_SUBTREE_LEVELS;
     private String version;
     private String javaVersionInfo;
     private String programInfo;
@@ -203,6 +205,16 @@ public class GlobalOptions {
             instance.setTilesVersion(tilesVersion);
         } else {
             instance.setTilesVersion(GlobalConstants.DEFAULT_TILES_VERSION);
+        }
+        if (command.hasOption(ProcessOptions.TILING_MODE.getLongName())) {
+            instance.setTilingMode(TilingMode.fromOption(command.getOptionValue(ProcessOptions.TILING_MODE.getLongName())));
+        } else {
+            instance.setTilingMode(GlobalConstants.DEFAULT_TILING_MODE);
+        }
+        if (command.hasOption(ProcessOptions.IMPLICIT_SUBTREE_LEVELS.getLongName())) {
+            instance.setImplicitSubtreeLevels(Integer.parseInt(command.getOptionValue(ProcessOptions.IMPLICIT_SUBTREE_LEVELS.getLongName())));
+        } else {
+            instance.setImplicitSubtreeLevels(GlobalConstants.DEFAULT_IMPLICIT_SUBTREE_LEVELS);
         }
 
         boolean isRecursive;
@@ -424,6 +436,7 @@ public class GlobalOptions {
         if (outputFormat.equals(FormatType.FOREST)) {
             isRefineAdd = true;
             instance.setTilesVersion("1.0");
+            instance.setTilingMode(TilingMode.EXPLICIT);
         }
 
         if (isParametric) {
@@ -497,6 +510,8 @@ public class GlobalOptions {
 
         Mago3DTilerMain.drawLine();
         log.info("3DTiles Version: {}", instance.tilesVersion);
+        log.info("Tiling Mode: {}", instance.tilingMode);
+        log.info("Implicit Subtree Levels: {}", instance.implicitSubtreeLevels);
         log.info("Input Path: {}", instance.inputPath);
         log.info("Output Path: {}", instance.outputPath);
         log.info("Temp path: {}", instance.tempPath);

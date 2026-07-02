@@ -239,7 +239,7 @@ public class PointCloudModel implements ContentModel {
         }
 
         PointCloudBinaryWriter writer = new PointCloudBinaryWriter(featureTableJson, batchTableJson, featureTableBytes, batchTableBytes);
-        writer.write(outputRoot, contentInfo.getNodeCode());
+        writer.write(outputRoot, contentInfo.getContentPath());
         return contentInfo;
     }
 

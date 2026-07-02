@@ -13,7 +13,7 @@ import java.awt.image.Kernel;
 @Slf4j
 public class ImageResizer {
     public final static int MAX_TEXTURE_SIZE = 8192 * 2;
-    public final static int MIN_TEXTURE_SIZE = 128;
+    public final static int MIN_TEXTURE_SIZE = 32;
 
     public BufferedImage resizeImageGraphic2D(BufferedImage originalImage, int width, int height) {
         return resizeImageGraphic2D(originalImage, width, height, false);

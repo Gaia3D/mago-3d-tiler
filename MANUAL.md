@@ -26,6 +26,29 @@ Specify the input and output data paths through the workspace volume.
 docker run --rm -v "/workspace:/workspace" gaia3d/mago-3d-tiler -input /workspace/3ds-samples -output /workspace/sample-3d-tiles -inputType 3ds -crs 5186
 ```
 
+### Docker memory tuning
+For large meshes, point clouds, CityGML, or photogrammetry inputs, set both the container memory limit and JVM options. Java reads `JAVA_TOOL_OPTIONS` automatically before starting mago 3DTiler.
+
+```bash
+docker run --rm --memory=24g \
+  -e JAVA_TOOL_OPTIONS="-Xms4g -Xmx16g -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication" \
+  -v "/workspace:/workspace" \
+  gaia3d/mago-3d-tiler \
+  -input /workspace/3ds-samples -output /workspace/sample-3d-tiles -inputType 3ds -crs 5186
+```
+
+For percentage-based sizing inside a container:
+
+```bash
+docker run --rm --memory=24g \
+  -e JAVA_TOOL_OPTIONS="-XX:InitialRAMPercentage=12.5 -XX:MaxRAMPercentage=70 -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication" \
+  -v "/workspace:/workspace" \
+  gaia3d/mago-3d-tiler \
+  -input /workspace/3ds-samples -output /workspace/sample-3d-tiles -inputType 3ds -crs 5186
+```
+
+When building a custom Docker image with Jib, JVM options can be set in `mago-tiler/build.gradle`. If a custom `entrypoint` is used, include the JVM options in the entrypoint or pass them at runtime with `JAVA_TOOL_OPTIONS`.
+
 ### Using Docker Compose
 Also, you can use Docker Compose to run mago 3DTiler.
 When using Docker Compose, you can specifically set the input and output data paths through volume mapping.
@@ -40,6 +63,9 @@ services:
     pull_policy: always
     platform: linux/amd64
     container_name: mago-tiler
+    mem_limit: 24g
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xms4g -Xmx16g -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication"
     volumes:
       - C:/input:/input
       - D:/output:/output
@@ -61,6 +87,33 @@ or using short options
 
 ```
 java -jar mago-3d-tiler.jar -i "/data/input/sample" -o "/data/output/sample"
+```
+
+### JVM memory tuning
+mago 3DTiler can require a large Java heap for large meshes, point clouds, CityGML, or photogrammetry inputs. The warning `Maximum memory is less than the recommended 16GB` checks the JVM maximum heap, not the physical RAM installed on the PC.
+
+For large jobs, start the jar with an explicit heap size:
+
+```bash
+java -Xms4g -Xmx16g -jar mago-3d-tiler.jar -input "/data/input/sample" -output "/data/output/sample"
+```
+
+Recommended JVM options:
+
+```bash
+java -Xms4g -Xmx16g -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication -Dfile.encoding=UTF-8 -Djava.awt.headless=true -jar mago-3d-tiler.jar -input "/data/input/sample" -output "/data/output/sample"
+```
+
+You can also size the heap as a percentage of available memory instead of a fixed value:
+
+```bash
+java -XX:InitialRAMPercentage=12.5 -XX:MaxRAMPercentage=50 -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication -Dfile.encoding=UTF-8 -Djava.awt.headless=true -jar mago-3d-tiler.jar -input "/data/input/sample" -output "/data/output/sample"
+```
+
+Use `-Xmx16g` only on machines with enough free RAM. On a 32GB machine, 16GB heap is usually reasonable if no other heavy process is running. For troubleshooting out-of-memory failures, add:
+
+```bash
+-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=./heap-dumps
 ```
 
 ## Supported Formats

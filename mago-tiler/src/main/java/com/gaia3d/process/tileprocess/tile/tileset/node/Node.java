@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
+import com.gaia3d.process.tileprocess.tile.tileset.implicit.ImplicitTiling;
 import com.gaia3d.util.DecimalUtils;
 import com.gaia3d.util.GlobeUtils;
 import lombok.Getter;
@@ -37,11 +38,12 @@ public class Node {
     private int depth;
     private BoundingVolume boundingVolume;
     private RefineType refine = RefineType.ADD;
-    @JsonInclude(JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     private double geometricError = 0.0d;
     private float[] transform;
     private List<Node> children;
     private Content content;
+    private ImplicitTiling implicitTiling;
 
     public void setTransformMatrix(Matrix4d transformMatrixAux, boolean useTransform) {
         this.transformMatrixAux = transformMatrixAux;

@@ -32,6 +32,7 @@ public class Mago3DTilerMain {
             boolean isDebug = command.hasOption(ProcessOptions.DEBUG.getLongName());
             boolean isVerbose = command.hasOption(ProcessOptions.VERBOSE.getLongName());
             boolean isMerge = command.hasOption(ProcessOptions.MERGE.getLongName());
+            boolean isUpdateRootTransform = command.hasOption(ProcessOptions.UPDATE_ROOT_TRANSFORM.getLongName());
 
             // Logging configuration
             if (isQuiet) {
@@ -69,11 +70,14 @@ public class Mago3DTilerMain {
                 formatter.printHelp("command options", options);
                 return;
             }
-            GlobalOptions.init(command);
             Mago3DTiler mago3DTiler = new Mago3DTiler();
-            if (isMerge) {
+            if (isUpdateRootTransform) {
+                mago3DTiler.updateRootTransform(command);
+            } else if (isMerge) {
+                GlobalOptions.init(command);
                 mago3DTiler.merge();
             } else {
+                GlobalOptions.init(command);
                 mago3DTiler.execute();
             }
 

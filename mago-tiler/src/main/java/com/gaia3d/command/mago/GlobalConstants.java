@@ -8,11 +8,12 @@ import org.locationtech.proj4j.CoordinateReferenceSystem;
  */
 public class GlobalConstants {
     public static final String DEFAULT_TILES_VERSION = "1.1";
+    public static final TilingMode DEFAULT_TILING_MODE = TilingMode.EXPLICIT;
+    public static final int DEFAULT_IMPLICIT_SUBTREE_LEVELS = 4;
     public static final String DEFAULT_INPUT_FORMAT = "kml";
     public static final String DEFAULT_INSTANCE_FILE = "instance.dae";
     public static final String DEFAULT_TEMP_FOLDER = "temp";
     public static final long DEFAULT_RECOMMENDED_MEMORY = 64L * 1024 * 1024 * 1024;
-    ;
 
     public static final int DEFAULT_MIN_LOD = 0;
     public static final int DEFAULT_MAX_LOD = 3;
@@ -49,6 +50,7 @@ public class GlobalConstants {
     public static final double DEFAULT_HEADING = 0.0d;
 
     public static final boolean DEFAULT_USE_QUANTIZATION = false;
+    public static final int DEFAULT_BATCH_ATLAS_MAX_TEXTURE_SIZE = 1024;
     public static final int REALISTIC_LOD0_MAX_TEXTURE_SIZE = 1024;
     public static final int REALISTIC_MAX_TEXTURE_SIZE = 512;
     public static final int REALISTIC_MIN_TEXTURE_SIZE = 32;

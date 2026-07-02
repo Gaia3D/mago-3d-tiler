@@ -105,7 +105,7 @@ public class InstancedProcessFlow implements ProcessFlow {
                 .diameterColumnName(globalOptions.getDiameterColumn())
                 .scaleColumnName(globalOptions.getScaleColumn())
                 .densityColumnName(globalOptions.getDensityColumn())
-                .randomHeading(false)
+                .randomHeading(true)
                 .headingColumnName(globalOptions.getHeadingColumn())
                 .absoluteAltitudeValue(globalOptions.getAbsoluteAltitude())
                 .minimumHeightValue(globalOptions.getMinimumHeight())
