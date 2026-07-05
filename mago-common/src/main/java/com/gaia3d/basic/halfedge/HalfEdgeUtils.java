@@ -1077,12 +1077,7 @@ public class HalfEdgeUtils {
             halfEdgePrimitive.getSurfaces().add(halfEdgeSurface);
         }
 
-        // make vertices of the primitive
-        List<HalfEdgeSurface> halfEdgeSurfaces = halfEdgePrimitive.getSurfaces();
-        for (HalfEdgeSurface halfEdgeSurface : halfEdgeSurfaces) {
-            List<HalfEdgeVertex> halfEdgeVertices = halfEdgeSurface.getVertices();
-            halfEdgePrimitive.getVertices().addAll(halfEdgeVertices);
-        }
+        halfEdgePrimitive.calculateVertices();
 
         return halfEdgePrimitive;
     }

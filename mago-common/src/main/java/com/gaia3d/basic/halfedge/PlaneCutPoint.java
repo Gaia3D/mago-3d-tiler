@@ -95,6 +95,19 @@ public final class PlaneCutPoint {
         );
     }
 
+    public PlaneCutPoint translated(Vector3dc offset) {
+        if (offset == null) {
+            return this.copy();
+        }
+
+        return new PlaneCutPoint(
+                px + offset.x(),
+                py + offset.y(),
+                pz + offset.z(),
+                planeType
+        );
+    }
+
     public PlaneCutPoint copy() {
         return new PlaneCutPoint(
                 px,

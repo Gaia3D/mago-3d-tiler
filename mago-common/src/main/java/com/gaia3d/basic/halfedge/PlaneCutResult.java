@@ -1,5 +1,8 @@
 package com.gaia3d.basic.halfedge;
 
+import org.joml.Vector3d;
+import org.joml.Vector3dc;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -61,6 +64,65 @@ public class PlaneCutResult {
         return Collections.unmodifiableList(
                 coplanarPoints
         );
+    }
+
+    public PlaneCutResult translated(Vector3dc offset) {
+        PlaneCutResult result =
+                new PlaneCutResult();
+
+        if (offset == null) {
+            result.add(this);
+            return result;
+        }
+
+        for (PlaneCutPoint point : cuttingPoints) {
+            if (point != null) {
+                result.addCuttingPoint(
+                        point.translated(offset)
+                );
+            }
+        }
+
+        for (PlaneCutPoint point : tangentPoints) {
+            if (point != null) {
+                result.addTangentPoint(
+                        point.translated(offset)
+                );
+            }
+        }
+
+        for (PlaneCutPoint point : coplanarPoints) {
+            if (point != null) {
+                result.addCoplanarPoint(
+                        point.translated(offset)
+                );
+            }
+        }
+
+        result.addHalfEdgesCutCount(
+                halfEdgesCutCount
+        );
+
+        return result;
+    }
+
+    private PlaneCutResult copy() {
+        List<PlaneCutPoint> cuttingPoints = new ArrayList<>();
+        for(PlaneCutPoint cuttingPoint : this.cuttingPoints) {
+            cuttingPoints.add(cuttingPoint.copy());
+        }
+
+        List<PlaneCutPoint> tangentPoints = new ArrayList<>();
+        for(PlaneCutPoint tangentPoint : this.tangentPoints) {
+            tangentPoints.add(tangentPoint.copy());
+        }
+
+        List<PlaneCutPoint> coplanarPoints = new ArrayList<>();
+        for(PlaneCutPoint coplanarPoint : this.coplanarPoints) {
+            coplanarPoints.add(coplanarPoint.copy());
+        }
+
+        return new PlaneCutResult(cuttingPoints, tangentPoints, coplanarPoints, halfEdgesCutCount);
     }
 
     public int getHalfEdgesCutCount() {

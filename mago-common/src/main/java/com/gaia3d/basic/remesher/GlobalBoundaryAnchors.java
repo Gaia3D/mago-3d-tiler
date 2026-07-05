@@ -20,13 +20,16 @@ public class GlobalBoundaryAnchors {
         return lockedAveragePositions.containsKey(cellIndex);
     }
 
-    public void putIfAbsent(Vector3i cellIndex, Vector3d average) {
-        if (cellIndex == null || average == null) {return;}
+    public boolean putIfAbsent(Vector3i cellIndex, Vector3d average) {
+        if (cellIndex == null || average == null) {
+            return false;
+        }
 
         lockedAveragePositions.putIfAbsent(
                 new Vector3i(cellIndex),
                 new Vector3d(average)
         );
+        return false;
     }
 
     public void addMissingFromTileAnchors(TileBoundaryAnchors tileAnchors) {

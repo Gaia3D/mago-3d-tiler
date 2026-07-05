@@ -29,7 +29,7 @@ import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.process.tileprocess.PhotogrammetryBatcher;
 import com.gaia3d.process.tileprocess.Tiler;
-import com.gaia3d.process.tileprocess.multithread.CutAndScissorMT;
+import com.gaia3d.process.tileprocess.multithread.CutAndScissorMTV2;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
 import com.gaia3d.process.tileprocess.tile.tileset.TilesetV2;
 import com.gaia3d.process.tileprocess.tile.tileset.asset.AssetV1;
@@ -41,7 +41,6 @@ import com.gaia3d.render.MagoLeafTileManager;
 import com.gaia3d.render.MagoReTextureByObliqueCamera;
 import com.gaia3d.util.DecimalUtils;
 import com.gaia3d.util.GlobeUtils;
-import com.gaia3d.util.ImageResizer;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
@@ -451,7 +450,8 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                     maxScreenSize,
                     outputPathString,
                     nodeName,
-                    lod
+                    lod,
+                    node
             );
             //************************************************************************************************************************************************
             if (resultHalfEdgeScenes.isEmpty()) {
@@ -1278,7 +1278,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
     protected boolean configureBoundaryAnchors(
             ReMeshParameters reMeshParameters,
             int anchorLod,
-            Map<Integer, CutAndScissorMT.LodBoundaryAnchors>
+            Map<Integer, CutAndScissorMTV2.LodBoundaryAnchors>
                     boundaryAnchorsByLod
     ) {
         if (reMeshParameters == null
@@ -1286,7 +1286,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             return false;
         }
 
-        CutAndScissorMT.LodBoundaryAnchors lodAnchors =
+        CutAndScissorMTV2.LodBoundaryAnchors lodAnchors =
                 boundaryAnchorsByLod.get(anchorLod);
 
         if (lodAnchors == null
@@ -2252,6 +2252,26 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         }
 
         return averageBBoxMinSize / (double) tileInfosCount;
+    }
+
+    protected double calculateMinBBoxMinSize(List<TileInfo> tileInfos) {
+        double bboxMinSize = Double.MAX_VALUE;
+        double minBBoxMinSize = Double.MAX_VALUE;
+        int tileInfosCount = tileInfos.size();
+        for (int i = 0; i < tileInfosCount; i++) {
+            TileInfo tileInfo = tileInfos.get(i);
+            GaiaBoundingBox bbox = tileInfo.getBoundingBox();
+            double tileMinSizeX = bbox.getSizeX();
+            double tileMinSizeY = bbox.getSizeY();
+
+            if (tileMinSizeX < tileMinSizeY) {
+                minBBoxMinSize = tileMinSizeX;
+            } else {
+                minBBoxMinSize = tileMinSizeY;
+            }
+        }
+
+        return minBBoxMinSize;
     }
 
     protected void makeContentsForNode(Node node, GaiaScene gaiaScene, int lod, int nodeDepth, int nodeIdx){

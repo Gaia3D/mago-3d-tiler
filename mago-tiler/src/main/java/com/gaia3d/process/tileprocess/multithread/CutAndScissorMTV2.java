@@ -42,23 +42,45 @@ import java.util.concurrent.*;
 
 
 @Slf4j
-public class CutAndScissorMT {
+public class CutAndScissorMTV2 {
     public final GlobalOptions globalOptions = GlobalOptions.getInstance();
 
     private final int threadCount;
 
-    public CutAndScissorMT() {
+    public CutAndScissorMTV2() {
         this(2);
     }
 
-    public CutAndScissorMT(int threadCount) {
+    public CutAndScissorMTV2(int threadCount) {
         this.threadCount = Math.max(1, threadCount);
     }
 
-    private static void mergeResults(Map<Integer, List<TileInfo>> destination, Map<Integer, List<TileInfo>> source) {
-        for (Map.Entry<Integer, List<TileInfo>> entry : source.entrySet()) {
+    private static void mergeResults(
+            Map<Integer, List<TileInfo>> destination,
+            Map<Integer, List<TileInfo>> source
+    ) {
+        if (destination == null
+                || source == null
+                || source.isEmpty()) {
+            return;
+        }
 
-            destination.computeIfAbsent(entry.getKey(), ignored -> new ArrayList<>()).addAll(entry.getValue());
+        for (Map.Entry<Integer, List<TileInfo>> entry : source.entrySet()) {
+            if (entry == null
+                    || entry.getKey() == null
+                    || entry.getValue() == null
+                    || entry.getValue().isEmpty()) {
+                continue;
+            }
+
+            destination
+                    .computeIfAbsent(
+                            entry.getKey(),
+                            ignored -> new ArrayList<>()
+                    )
+                    .addAll(
+                            entry.getValue()
+                    );
         }
     }
 
@@ -326,6 +348,214 @@ public class CutAndScissorMT {
         });
     }
 
+    private static final boolean DEBUG_ADD_SHARED_FRONTIER_ANCHORS =
+            false;
+
+//    private Map<Integer, LodBoundaryAnchors>
+//    buildGlobalBoundaryAnchorsByLod(
+//            Map<Integer, PlaneCutResult> planeCutResultsByLod,
+//            Map<Integer, List<FrontierCandidate>>
+//                    frontierCandidatesByLod,
+//            Map<Integer, List<TileInfo>> tileInfosByLod,
+//            int maxDepth,
+//            GaiaBoundingBox rootNodeBBoxLC
+//    ) {
+//        Map<Integer, LodBoundaryAnchors> result =
+//                new HashMap<>();
+//
+//        if (tileInfosByLod == null
+//                || tileInfosByLod.isEmpty()
+//                || rootNodeBBoxLC == null) {
+//            return result;
+//        }
+//
+//        for (Map.Entry<Integer, List<TileInfo>> lodEntry
+//                : tileInfosByLod.entrySet()) {
+//
+//            Integer lod =
+//                    lodEntry.getKey();
+//
+//            List<TileInfo> lodTileInfos =
+//                    lodEntry.getValue();
+//
+//            if (lod == null
+//                    || lodTileInfos == null
+//                    || lodTileInfos.isEmpty()) {
+//                continue;
+//            }
+//
+//            CellGrid3D cellGrid =
+//                    createReMeshCellGridForLod(
+//                            lod,
+//                            maxDepth,
+//                            rootNodeBBoxLC,
+//                            lodTileInfos
+//                    );
+//
+//            GlobalBoundaryAnchorsBuilder builder =
+//                    new GlobalBoundaryAnchorsBuilder(
+//                            cellGrid,
+//                            1e-4
+//                    );
+//
+//            PlaneCutResult planeCutResult =
+//                    planeCutResultsByLod == null
+//                            ? null
+//                            : planeCutResultsByLod.get(lod);
+//
+//            int cuttingPointCount =
+//                    0;
+//
+//            if (planeCutResult != null
+//                    && !planeCutResult.isEmpty()
+//                    && planeCutResult.getCuttingPoints() != null) {
+//
+//                builder.addPoints(
+//                        planeCutResult.getCuttingPoints()
+//                );
+//
+//                cuttingPointCount =
+//                        planeCutResult.getCuttingPoints()
+//                                .size();
+//            }
+//
+//            /*
+//             * Build the initial anchors using only cutting points.
+//             */
+//            GlobalBoundaryAnchors globalAnchors =
+//                    builder.build();
+//
+//            List<FrontierCandidate> frontierCandidates =
+//                    frontierCandidatesByLod == null
+//                            ? null
+//                            : frontierCandidatesByLod.get(lod);
+//
+//            int frontierCandidateCount =
+//                    frontierCandidates == null
+//                            ? 0
+//                            : frontierCandidates.size();
+//
+//            int sharedFrontierAnchors =
+//                    0;
+//
+//            /*
+//             * Diagnostic switch:
+//             *
+//             * false:
+//             *     GlobalBoundaryAnchors contains only cutting anchors.
+//             *
+//             * true:
+//             *     Shared frontiers are also converted into global
+//             *     anchors.
+//             */
+//            if (DEBUG_ADD_SHARED_FRONTIER_ANCHORS
+//                    && frontierCandidates != null
+//                    && !frontierCandidates.isEmpty()) {
+//
+//                Map<Vector3i, FrontierAccumulator>
+//                        frontierAccumulators =
+//                        new HashMap<>();
+//
+//                for (FrontierCandidate candidate
+//                        : frontierCandidates) {
+//
+//                    if (candidate == null
+//                            || candidate.position() == null) {
+//                        continue;
+//                    }
+//
+//                    Vector3i candidateCellIndex =
+//                            cellGrid.getCellIndex(
+//                                    candidate.position()
+//                            );
+//
+//                    if (candidateCellIndex == null) {
+//                        continue;
+//                    }
+//
+//                    Vector3i cellIndex =
+//                            new Vector3i(
+//                                    candidateCellIndex
+//                            );
+//
+//                    /*
+//                     * Cutting anchors have priority.
+//                     */
+//                    if (globalAnchors.hasAverage(
+//                            cellIndex
+//                    )) {
+//                        continue;
+//                    }
+//
+//                    frontierAccumulators
+//                            .computeIfAbsent(
+//                                    cellIndex,
+//                                    ignored ->
+//                                            new FrontierAccumulator()
+//                            )
+//                            .add(
+//                                    candidate.position(),
+//                                    candidate.sourceTileId()
+//                            );
+//                }
+//
+//                for (Map.Entry<Vector3i, FrontierAccumulator> entry
+//                        : frontierAccumulators.entrySet()) {
+//
+//                    FrontierAccumulator accumulator =
+//                            entry.getValue();
+//
+//                    if (accumulator == null
+//                            || !accumulator.isShared()) {
+//                        continue;
+//                    }
+//
+//                    Vector3d average =
+//                            accumulator.calculateAverage();
+//
+//                    if (average == null) {
+//                        continue;
+//                    }
+//
+//                    boolean inserted =
+//                            globalAnchors.putIfAbsent(
+//                                    entry.getKey(),
+//                                    average
+//                            );
+//
+//                    if (inserted) {
+//                        sharedFrontierAnchors++;
+//                    }
+//                }
+//            }
+//
+//            result.put(
+//                    lod,
+//                    new LodBoundaryAnchors(
+//                            cellGrid,
+//                            globalAnchors
+//                    )
+//            );
+//
+//            log.info(
+//                    "Global boundary anchors built. "
+//                            + "LOD={}, cuttingPoints={}, "
+//                            + "frontierCandidates={}, "
+//                            + "addSharedFrontiers={}, "
+//                            + "sharedFrontierAnchors={}, "
+//                            + "anchors={}",
+//                    lod,
+//                    cuttingPointCount,
+//                    frontierCandidateCount,
+//                    DEBUG_ADD_SHARED_FRONTIER_ANCHORS,
+//                    sharedFrontierAnchors,
+//                    globalAnchors.size()
+//            );
+//        }
+//
+//        return result;
+//    }
+
     private Map<Integer, LodBoundaryAnchors>
     buildGlobalBoundaryAnchorsByLod(
             Map<Integer, PlaneCutResult> planeCutResultsByLod,
@@ -381,7 +611,8 @@ public class CutAndScissorMT {
             int cuttingPointCount = 0;
 
             if (planeCutResult != null
-                    && !planeCutResult.isEmpty()) {
+                    && !planeCutResult.isEmpty()
+                    && planeCutResult.getCuttingPoints() != null) {
 
                 builder.addPoints(
                         planeCutResult.getCuttingPoints()
@@ -467,12 +698,15 @@ public class CutAndScissorMT {
                     continue;
                 }
 
-                globalAnchors.putIfAbsent(
-                        entry.getKey(),
-                        average
-                );
+                boolean inserted =
+                        globalAnchors.putIfAbsent(
+                                entry.getKey(),
+                                average
+                        );
 
-                sharedFrontierAnchors++;
+                if (inserted) {
+                    sharedFrontierAnchors++;
+                }
             }
 
             result.put(
@@ -546,6 +780,26 @@ public class CutAndScissorMT {
         }
 
         return averageBBoxMinSize / (double) tileInfosCount;
+    }
+
+    /**
+     * Converts PlaneCutResult cutting points from source tile-local
+     * coordinates to the root-local coordinate system used by CellGrid3D.
+     *
+     * This method intentionally mutates the PlaneCutResult in place because
+     * PlaneCutResult is only used afterwards for global anchor accumulation.
+     */
+    private static PlaneCutResult translatedPlaneCutResultToCellGridCoordinates(
+            PlaneCutResult source,
+            Vector3d scenePositionRelToCellGrid
+    ) {
+        if (source == null) {
+            return new PlaneCutResult();
+        }
+
+        return source.translated(
+                scenePositionRelToCellGrid
+        );
     }
 
     private CutTaskResult processSingleTile(
@@ -751,6 +1005,7 @@ public class CutAndScissorMT {
                     rootNodeBoundingVolume,
                     depthIdx,
                     cutTempPath,
+                    scenePositionRelToCellGrid,
                     localResults,
                     localPlaneCutResultsByLod
             );
@@ -783,6 +1038,7 @@ public class CutAndScissorMT {
             BoundingVolume rootNodeBoundingVolume,
             int projectMaxDepth,
             Path cutTempPath,
+            Vector3d scenePositionRelToCellGrid,
             Map<Integer, List<TileInfo>> localResults,
             Map<Integer, PlaneCutResult> localPlaneCutResultsByLod
     ) {
@@ -819,6 +1075,12 @@ public class CutAndScissorMT {
             }
 
             if (!planeCutResult.isEmpty()) {
+                PlaneCutResult planeCutResultInCellGrid =
+                        translatedPlaneCutResultToCellGridCoordinates(
+                                planeCutResult,
+                                scenePositionRelToCellGrid
+                        );
+
                 PlaneCutResult accumulatedResult =
                         localPlaneCutResultsByLod.computeIfAbsent(
                                 currLod,
@@ -826,7 +1088,7 @@ public class CutAndScissorMT {
                         );
 
                 accumulatedResult.add(
-                        planeCutResult
+                        planeCutResultInCellGrid
                 );
             }
 
@@ -1309,4 +1571,6 @@ public class CutAndScissorMT {
                             : new Vector3d(position);
         }
     }
+
+
 }

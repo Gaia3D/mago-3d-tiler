@@ -25,6 +25,7 @@ import com.gaia3d.basic.remesher.*;
 import com.gaia3d.basic.remesher.information.GaiaStatistics;
 import com.gaia3d.basic.texture.atlas.TextureAtlasManager;
 import com.gaia3d.basic.types.TextureType;
+import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
 import com.gaia3d.util.GaiaTextureUtils;
 import com.gaia3d.util.ImageResizer;
 import lombok.Getter;
@@ -105,7 +106,8 @@ public class MagoReTextureByObliqueCamera {
                                                 int maxScreenSize,
                                                 String outputPathString,
                                                 String nodeName,
-                                                int lod) {
+                                                int lod,
+                                                Node node) {
         // Note: There are only one scene in the scene list
         Map<CameraDirectionType, GaiaBoundingBox> mapCameraDirectionTypeBBox = new HashMap<>();
         Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix = new HashMap<>();
@@ -186,8 +188,16 @@ public class MagoReTextureByObliqueCamera {
 
         MagoRenderableMaker magoRenderableMaker = new MagoRenderableMaker();
 
+        CellGrid3D cellGrid3d = reMeshParams.getCellGrid();
+        double cellGridSize = cellGrid3d.cellSize;
+
         // remesh each mesh
         MagoRenderingSession renderingSession = renderingBackend.openSession();
+
+        GaiaBoundingBox translatedNodeBBox = nodeBBox.clone();
+        Vector3d nodePositionRelativeToRoot =
+                node.getCartesianPositionRelativeToRootNode();
+        translatedNodeBBox.translate(nodePositionRelativeToRoot.x, nodePositionRelativeToRoot.y, nodePositionRelativeToRoot.z);
         try {
             for (int i = 0; i < scenesCount; i++) {
                 // load and render, one by one
@@ -218,9 +228,9 @@ public class MagoReTextureByObliqueCamera {
                     gaiaSceneToRender = new GaiaScene(gaiaSet);
                     triangulator.apply(gaiaSceneToRender);
 
-                    GaiaNode gaiaNode = gaiaSceneToRender.getNodes().get(0);
-                    gaiaNode.setTransformMatrix(new Matrix4d(sceneTMatLC));
-                    gaiaNode.setPreMultipliedTransformMatrix(new Matrix4d(sceneTMatLC));
+                    GaiaNode gaiaNodeToRender = gaiaSceneToRender.getNodes().get(0);
+                    gaiaNodeToRender.setTransformMatrix(new Matrix4d(sceneTMatLC));
+                    gaiaNodeToRender.setPreMultipliedTransformMatrix(new Matrix4d(sceneTMatLC));
                     magoRenderableScene = magoRenderableMaker.makeScene(gaiaSceneToRender);
                 } catch (Exception e) {
                     log.error("[ERROR] reading the file: ", e);
@@ -247,7 +257,9 @@ public class MagoReTextureByObliqueCamera {
                 GaiaBoundingBox effectiveNodeBBox = nodeBBox.clone();
 
                 double desiredLeafSize = 1.5;
+                //desiredLeafSize = nodeBBoxMaxSize / 30.0; // test
                 OctreeBBoxInfo octreeBoxInfo = preReMesher.calculateBoundingBoxForLeafDistInfo(nodeBBox, desiredLeafSize);
+                //log.info("desiredLeafSize: " + desiredLeafSize + " / maxDepth: " + octreeBoxInfo.maxDepth + " / rootCubeSize: " + octreeBoxInfo.rootCubeSize);
                 int octreeMaxDepth = octreeBoxInfo.maxDepth;
                 double rootOctreeSize = octreeBoxInfo.rootCubeSize;
                 double nodeSize = nodeBBox.getMaxSize();
@@ -269,7 +281,7 @@ public class MagoReTextureByObliqueCamera {
                 // Here decimate the scene.*******************************************************************************************************
                 DecimateParameters decimateParameters = new DecimateParameters();
                 //decimateParameters.setBasicValues(14.0, 0.01, 0.9, 40.0, 1000000, 5, 1.0);
-                decimateParameters.setBasicValues(12.0, 0.001, 0.9, 40.0, 1000000, 5, 0.1);
+                decimateParameters.setBasicValues(12.0, 0.001, 2.0, 40.0, 1000000, 5, 0.1);
                 HalfEdgeScene halfEdgeSceneToDecimate = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(gaiaScene);
                 HalfEdgeDecimator decimator = new HalfEdgeDecimator(decimateParameters);
                 decimator.apply(halfEdgeSceneToDecimate);
@@ -286,6 +298,19 @@ public class MagoReTextureByObliqueCamera {
                 Vector3i sceneMinCellIndex = new Vector3i();
                 Vector3i sceneMaxCellIndex = new Vector3i();
                 translateScene(gaiaScene, scenePositionRelToCellGrid); // translate the scene to the cell grid position
+
+//                // check thin-scene after translated scene to cellGridCoordSystem.***
+                //GaiaBoundingBox sceneBBox = gaiaScene.updateBoundingBox();
+//                boolean isThinSceneX = false;
+//                boolean isThinSceneY = false;
+//                if(sceneBBox.getLengthX() < cellGridSize){
+//                    isThinSceneX = true;
+//                }
+//                if(sceneBBox.getLengthY() < cellGridSize){
+//                    isThinSceneY = true;
+//                }
+
+                // nodeBBox
                 // new.*******************************************************
 
                 ReMesherVertexClusterV2.reMeshScene(
@@ -294,6 +319,8 @@ public class MagoReTextureByObliqueCamera {
                         sceneMinCellIndex,
                         sceneMaxCellIndex
                 );
+
+
                 // end new.-------------------------------------------------------------------------------
                 translateScene(gaiaScene, scenePosRelToCellGridNegative); // translate the scene back to the original position
 
@@ -329,7 +356,7 @@ public class MagoReTextureByObliqueCamera {
 
                 // Test 2nd decimating.*****************************************************************************************
                 DecimateParameters decimateParameters2ndTest = new DecimateParameters();
-                decimateParameters.setBasicValues(12.0, 0.001, 0.0, 40.0, 1000000, 2, 0.1);
+                decimateParameters.setBasicValues(12.0, 0.001, 2.0, 40.0, 1000000, 2, 0.1);
                 HalfEdgeScene halfEdgeSceneToDecimate2ndTest = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(gaiaScene);
                 HalfEdgeDecimator decimator2ndTest = new HalfEdgeDecimator(decimateParameters2ndTest);
                 decimator2ndTest.apply(halfEdgeSceneToDecimate2ndTest);
@@ -421,27 +448,6 @@ public class MagoReTextureByObliqueCamera {
         weld.apply(gaiaSceneMaster);
         cleaner.apply(gaiaSceneMaster);
 
-//        // GaiaSkirtMaker.**********************************************************************************************
-//        double nodeBoxSizeX = nodeBBox.getSizeX();
-//        double nodeBoxSizeY = nodeBBox.getSizeY();
-//        double nodeBoxSizeZ = nodeBBox.getSizeZ();
-//        GaiaBoundingBox nodeBBoxCentered = new GaiaBoundingBox(-nodeBoxSizeX / 2.0, -nodeBoxSizeY / 2.0, -nodeBoxSizeZ / 2.0,
-//                nodeBoxSizeX / 2.0, nodeBoxSizeY / 2.0, nodeBoxSizeZ / 2.0
-//        );
-//        GaiaSkirtMaker skirtMaker = new GaiaSkirtMaker();
-//        double limitBoxSize = nodeBBox.getMaxSize() / 16.0;
-//        double tolerance = nodeBoxSizeX * 0.08;
-//        double skirtDepth = nodeBoxSizeX * 0.08;
-//        double maxSegmentLength = nodeBoxSizeX * 0.5;
-//
-//        skirtMaker.addSkirtsToScene(
-//                gaiaSceneMaster,
-//                nodeBBoxCentered,
-//                tolerance,
-//                skirtDepth,
-//                maxSegmentLength
-//        );
-//        // end making skirt.--------------------------------------------------------------------------------------------
         // Make frontier expansion.************************************************************************************
         GaiaFrontierExpander frontierExpander = new GaiaFrontierExpander();
         double maxNodeBBoxSize = nodeBBox.getMaxSize();
@@ -467,6 +473,29 @@ public class MagoReTextureByObliqueCamera {
                 mapClassificationCamDirTypeFacesList,
                 outputPathString, nodeName, lod);
         // end of atlas texture*************************************************************************************
+
+//        // GaiaSkirtMaker.**********************************************************************************************
+//        GaiaBoundingBox expandedNodeBBox = nodeBBox.clone();
+//        expandedNodeBBox.expand(maxNodeBBoxSize * 0.005);
+//        double nodeBoxSizeX = expandedNodeBBox.getSizeX();
+//        double nodeBoxSizeY = expandedNodeBBox.getSizeY();
+//        double nodeBoxSizeZ = expandedNodeBBox.getSizeZ();
+//        GaiaBoundingBox nodeBBoxCentered = new GaiaBoundingBox(-nodeBoxSizeX / 2.0, -nodeBoxSizeY / 2.0, -nodeBoxSizeZ / 2.0,
+//                nodeBoxSizeX / 2.0, nodeBoxSizeY / 2.0, nodeBoxSizeZ / 2.0
+//        );
+//        GaiaSkirtMaker skirtMaker = new GaiaSkirtMaker();
+//        double tolerance = nodeBoxSizeX * 0.08;
+//        double skirtDepth = nodeBoxSizeX * 0.08;
+//        double maxSegmentLength = nodeBoxSizeX * 0.5;
+//
+//        skirtMaker.addSkirtsToScene(
+//                gaiaSceneMaster,
+//                nodeBBoxCentered,
+//                tolerance,
+//                skirtDepth,
+//                maxSegmentLength
+//        );
+//        // end making skirt.--------------------------------------------------------------------------------------------
 
         // check if atlasTexture is made.
         if (!resultAtlasTextures.isEmpty()) {

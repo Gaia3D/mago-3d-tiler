@@ -961,6 +961,10 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
                     continue;
                 }
 
+                if (outingEdge2.getEndVertex() != startVertex) {
+                    continue;
+                }
+
                 if (!outingEdge2.hasTwin()) {
                     // this is a frontier halfEdge
                     HalfEdgeVertex startVertex2 = outingEdge2.getStartVertex();

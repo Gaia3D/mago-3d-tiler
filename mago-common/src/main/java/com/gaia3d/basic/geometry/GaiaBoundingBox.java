@@ -697,4 +697,13 @@ public class GaiaBoundingBox implements Serializable {
                 new Vector3d(minX, maxY, maxZ)
         );
     }
+
+    public void translate(double x, double y, double z) {
+        minX += x;
+        minY += y;
+        minZ += z;
+        maxX += x;
+        maxY += y;
+        maxZ += z;
+    }
 }

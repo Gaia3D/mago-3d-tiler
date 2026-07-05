@@ -237,7 +237,8 @@ public final class IntegralReMeshMT {
                 job.maxScreenSize(),
                 job.outputPath(),
                 job.nodeName(),
-                job.lod()
+                job.lod(),
+                job.node()
         );
 
         if (localResultScenes.isEmpty()) {

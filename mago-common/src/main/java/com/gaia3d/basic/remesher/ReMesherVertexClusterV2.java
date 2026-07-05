@@ -35,7 +35,7 @@ public class ReMesherVertexClusterV2 {
      *     </li>
      *     <li>
      *         A frontier vertex without a global boundary anchor is
-     *         treated as a regular local vertex.
+     *          clustered only with other local frontier vertices.
      *     </li>
      * </ul>
      *
@@ -175,6 +175,319 @@ public class ReMesherVertexClusterV2 {
      * Remeshes one primitive.
      */
     private static RemeshStats reMeshPrimitive(
+            GaiaPrimitive primitive,
+            CellGrid3D cellGrid,
+            GlobalBoundaryAnchors globalBoundaryAnchors
+    ) {
+        RemeshStats stats =
+                new RemeshStats();
+
+        List<GaiaVertex> vertices =
+                primitive.getVertices();
+
+        if (vertices == null || vertices.isEmpty()) {
+            return stats;
+        }
+
+        int originalVertexCount =
+                vertices.size();
+
+        stats.originalVertices =
+                originalVertexCount;
+
+        List<GaiaFace> faces =
+                primitive.extractGaiaAllFaces(
+                        null
+                );
+
+        if (faces == null || faces.isEmpty()) {
+            return stats;
+        }
+
+        GaiaFrontierFinder frontierFinder =
+                new GaiaFrontierFinder();
+
+        int[] weldedIndices =
+                new int[originalVertexCount];
+
+        boolean[] frontierVertex =
+                frontierFinder.findBoundaryVertices(
+                        vertices,
+                        faces,
+                        1e-6,
+                        weldedIndices
+                );
+
+        if (frontierVertex == null
+                || frontierVertex.length < originalVertexCount) {
+
+            return stats;
+        }
+
+        /*
+         * Interior and unanchored frontier vertices must use
+         * separate local clusters.
+         */
+        Map<Vector3i, CellAccumulator> interiorCellAccumulators =
+                new HashMap<>();
+
+        Map<Vector3i, CellAccumulator> frontierCellAccumulators =
+                new HashMap<>();
+
+        for (int oldIndex = 0;
+             oldIndex < originalVertexCount;
+             oldIndex++) {
+
+            GaiaVertex vertex =
+                    vertices.get(oldIndex);
+
+            if (vertex == null
+                    || vertex.getPosition() == null) {
+                continue;
+            }
+
+            Vector3i cellIndex =
+                    new Vector3i(
+                            cellGrid.getCellIndex(
+                                    vertex.getPosition()
+                            )
+                    );
+
+            boolean isFrontier =
+                    frontierVertex[oldIndex];
+
+            Vector3d globalAnchor =
+                    null;
+
+            if (isFrontier
+                    && globalBoundaryAnchors != null) {
+
+                globalAnchor =
+                        globalBoundaryAnchors.getAverage(
+                                cellIndex
+                        );
+            }
+
+            if (isFrontier) {
+                stats.frontierVertices++;
+
+                if (globalAnchor != null) {
+                    stats.anchoredFrontierVertices++;
+                    continue;
+                }
+
+                frontierCellAccumulators
+                        .computeIfAbsent(
+                                cellIndex,
+                                ignored -> new CellAccumulator()
+                        )
+                        .add(
+                                vertex.getPosition()
+                        );
+
+                stats.localFrontierVertices++;
+
+            } else {
+                interiorCellAccumulators
+                        .computeIfAbsent(
+                                cellIndex,
+                                ignored -> new CellAccumulator()
+                        )
+                        .add(
+                                vertex.getPosition()
+                        );
+
+                stats.localInteriorVertices++;
+            }
+        }
+
+        /*
+         * This is the total number of local clusters, not necessarily
+         * the number of unique spatial cells, because one cell may
+         * contain both an interior and a frontier cluster.
+         */
+        stats.localCells =
+                interiorCellAccumulators.size()
+                        + frontierCellAccumulators.size();
+
+        int[] oldIndexToNewIndex =
+                new int[originalVertexCount];
+
+        Arrays.fill(
+                oldIndexToNewIndex,
+                -1
+        );
+
+        /*
+         * Keep separate resulting vertices for:
+         *
+         * - globally anchored frontiers;
+         * - locally clustered frontiers;
+         * - locally clustered interiors.
+         */
+        Map<Vector3i, Integer> cellToNewAnchoredIndex =
+                new HashMap<>();
+
+        Map<Vector3i, Integer> cellToNewFrontierIndex =
+                new HashMap<>();
+
+        Map<Vector3i, Integer> cellToNewInteriorIndex =
+                new HashMap<>();
+
+        for (int oldIndex = 0;
+             oldIndex < originalVertexCount;
+             oldIndex++) {
+
+            GaiaVertex oldVertex =
+                    vertices.get(oldIndex);
+
+            if (oldVertex == null
+                    || oldVertex.getPosition() == null) {
+                continue;
+            }
+
+            Vector3i cellIndex =
+                    new Vector3i(
+                            cellGrid.getCellIndex(
+                                    oldVertex.getPosition()
+                            )
+                    );
+
+            boolean isFrontier =
+                    frontierVertex[oldIndex];
+
+            Vector3d globalAnchor =
+                    null;
+
+            if (isFrontier
+                    && globalBoundaryAnchors != null) {
+
+                globalAnchor =
+                        globalBoundaryAnchors.getAverage(
+                                cellIndex
+                        );
+            }
+
+            boolean hasGlobalAnchor =
+                    globalAnchor != null;
+
+            Vector3d targetPosition;
+            Map<Vector3i, Integer> cellToNewIndex;
+
+            if (hasGlobalAnchor) {
+                targetPosition =
+                        globalAnchor;
+
+                cellToNewIndex =
+                        cellToNewAnchoredIndex;
+
+            } else if (isFrontier) {
+                /*
+                 * No global anchor means this frontier vertex must remain untouched.
+                 * oldIndexToNewIndex stays -1, so replaceFaceIndices() will keep
+                 * the original vertex index.
+                 */
+                //stats.preservedUnanchoredFrontierVertices++;
+                continue;
+
+            } else {
+                CellAccumulator accumulator =
+                        interiorCellAccumulators.get(
+                                cellIndex
+                        );
+
+                if (accumulator == null
+                        || accumulator.getCount() < 2) {
+
+                    /*
+                     * Leave the original vertex index unchanged.
+                     */
+                    stats.skippedSingleInteriorCluster++;
+                    continue;
+                }
+
+                targetPosition =
+                        accumulator.calculateAverage();
+
+                cellToNewIndex =
+                        cellToNewInteriorIndex;
+            }
+
+            if (targetPosition == null) {
+                continue;
+            }
+
+            Integer newIndex =
+                    cellToNewIndex.get(
+                            cellIndex
+                    );
+
+            if (newIndex == null) {
+                GaiaVertex newVertex =
+                        new GaiaVertex();
+
+                newVertex.setPosition(
+                        new Vector3d(
+                                targetPosition
+                        )
+                );
+
+                copyVertexAttributes(
+                        oldVertex,
+                        newVertex
+                );
+
+                newIndex =
+                        vertices.size();
+
+                vertices.add(
+                        newVertex
+                );
+
+                cellToNewIndex.put(
+                        cellIndex,
+                        newIndex
+                );
+
+                if (hasGlobalAnchor) {
+                    stats.createdAnchoredVertices++;
+                } else if (isFrontier) {
+                    stats.createdFrontierVertices++;
+                } else {
+                    stats.createdInteriorVertices++;
+                }
+            }
+
+            oldIndexToNewIndex[oldIndex] =
+                    newIndex;
+
+            if (hasGlobalAnchor) {
+                stats.mappedAnchoredVertices++;
+            } else if (isFrontier) {
+                stats.mappedFrontierVertices++;
+            } else {
+                stats.mappedInteriorVertices++;
+            }
+        }
+
+        replaceFaceIndices(
+                primitive,
+                oldIndexToNewIndex
+        );
+
+        primitive.deleteDegeneratedFaces();
+
+        removeUnusedVerticesAndReindex(
+                primitive
+        );
+
+        stats.verticesAfterCompaction =
+                vertices.size();
+
+        return stats;
+    }
+
+    private static RemeshStats reMeshPrimitive_original(
             GaiaPrimitive primitive,
             CellGrid3D cellGrid,
             GlobalBoundaryAnchors globalBoundaryAnchors
