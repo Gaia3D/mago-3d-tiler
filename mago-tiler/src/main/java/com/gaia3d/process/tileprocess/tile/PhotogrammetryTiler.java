@@ -29,7 +29,7 @@ import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.process.tileprocess.PhotogrammetryBatcher;
 import com.gaia3d.process.tileprocess.Tiler;
-import com.gaia3d.process.tileprocess.multithread.CutAndScissorMTV2;
+import com.gaia3d.process.tileprocess.multithread.CutAndScissorMT;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
 import com.gaia3d.process.tileprocess.tile.tileset.TilesetV2;
 import com.gaia3d.process.tileprocess.tile.tileset.asset.AssetV1;
@@ -1278,7 +1278,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
     protected boolean configureBoundaryAnchors(
             ReMeshParameters reMeshParameters,
             int anchorLod,
-            Map<Integer, CutAndScissorMTV2.LodBoundaryAnchors>
+            Map<Integer, CutAndScissorMT.LodBoundaryAnchors>
                     boundaryAnchorsByLod
     ) {
         if (reMeshParameters == null
@@ -1286,7 +1286,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             return false;
         }
 
-        CutAndScissorMTV2.LodBoundaryAnchors lodAnchors =
+        CutAndScissorMT.LodBoundaryAnchors lodAnchors =
                 boundaryAnchorsByLod.get(anchorLod);
 
         if (lodAnchors == null

@@ -42,16 +42,16 @@ import java.util.concurrent.*;
 
 
 @Slf4j
-public class CutAndScissorMTV2 {
+public class CutAndScissorMT {
     public final GlobalOptions globalOptions = GlobalOptions.getInstance();
 
     private final int threadCount;
 
-    public CutAndScissorMTV2() {
+    public CutAndScissorMT() {
         this(2);
     }
 
-    public CutAndScissorMTV2(int threadCount) {
+    public CutAndScissorMT(int threadCount) {
         this.threadCount = Math.max(1, threadCount);
     }
 
