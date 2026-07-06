@@ -313,7 +313,7 @@ public class MagoReTextureByObliqueCamera {
                 // nodeBBox
                 // new.*******************************************************
 
-                ReMesherVertexClusterV2.reMeshScene(
+                ReMesherVertexCluster.reMeshScene(
                         gaiaScene,
                         reMeshParams,
                         sceneMinCellIndex,

@@ -1,6 +1,5 @@
 package com.gaia3d.basic.halfedge;
 
-import org.joml.Vector3d;
 import org.joml.Vector3dc;
 
 import java.util.ArrayList;
