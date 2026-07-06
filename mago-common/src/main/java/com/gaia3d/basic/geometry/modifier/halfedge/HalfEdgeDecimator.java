@@ -371,21 +371,6 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
 
     }
 
-    public void classifySurfaceTypes(HalfEdgeSurface surface) {
-
-        // 1. rugosidad
-        HalfEdgeDecimaterUtils.calculateVerticesRoughness(surface);
-
-        // 2. suavizado (muy importante)
-        HalfEdgeDecimaterUtils.smoothRoughness(surface, 2);
-
-        // 3. regiones
-        List<List<HalfEdgeVertex>> regions = HalfEdgeDecimaterUtils.buildRegions(surface, 0.05f);
-
-        // 4. clasificación final
-        HalfEdgeDecimaterUtils.classifyRegions(regions);
-    }
-
     protected int decimateSurface(Matrix4d productTransformMatrix,
                                   List<HalfEdgeVertex> vertices,
                                   HalfEdgeSurface surface,
@@ -576,7 +561,7 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
         boolean isNoisySurface = (startVertex.getClassifyId() == 1);
 
         if (halfEdge.getLength() > hedgeMinLength) {
-            if (!HalfEdgeDecimaterUtils.decideIfCollapseCheckingFacesAdvanced(halfEdge, outgoingEdgesByVertexId, mapVertexToSamePosVertices, maxDiffAngDeg, maxAspectRatio, smallHedgeSize)) {
+            if (!HalfEdgeDecimaterUtils.decideIfCollapseCheckingFaces(halfEdge, outgoingEdgesByVertexId, mapVertexToSamePosVertices, maxDiffAngDeg, maxAspectRatio, smallHedgeSize)) {
                 return false;
             }
         }
@@ -737,7 +722,7 @@ public class HalfEdgeDecimator extends HalfEdgeModifier {
         }
 
         if (halfEdge.getLength() > hedgeMinLength) {
-            if (!HalfEdgeDecimaterUtils.decideIfCollapseCheckingFacesAdvanced(halfEdge, outgoingEdgesByVertexId, mapVertexToSamePosVertices, maxDiffAngDeg, maxAspectRatio, smallHedgeSize)) {
+            if (!HalfEdgeDecimaterUtils.decideIfCollapseCheckingFaces(halfEdge, outgoingEdgesByVertexId, mapVertexToSamePosVertices, maxDiffAngDeg, maxAspectRatio, smallHedgeSize)) {
                 return false;
             }
         }
