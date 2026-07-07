@@ -3,7 +3,6 @@ package com.gaia3d.basic.remesher;
 import org.joml.Vector3d;
 import org.joml.Vector3i;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,34 +31,12 @@ public class GlobalBoundaryAnchors {
         return false;
     }
 
-    public void addMissingFromTileAnchors(TileBoundaryAnchors tileAnchors) {
-        if (tileAnchors == null) {return;}
-
-        for (Map.Entry<Vector3i, Vector3d> entry : tileAnchors.frontierAveragePositions.entrySet()) {
-            Vector3i cellIndex = entry.getKey();
-            Vector3d avg = entry.getValue();
-
-            if (cellIndex == null || avg == null) {
-                continue;
-            }
-
-            putIfAbsent(cellIndex, avg);
-        }
-    }
-
     public int size() {
         return lockedAveragePositions.size();
     }
 
     public boolean isEmpty() {
         return lockedAveragePositions.isEmpty();
-    }
-
-    public Map<Vector3i, Vector3d>
-    getLockedAveragePositions() {
-        return Collections.unmodifiableMap(
-                lockedAveragePositions
-        );
     }
 
     public void clear() {

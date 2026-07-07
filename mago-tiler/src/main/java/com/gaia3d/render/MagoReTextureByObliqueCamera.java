@@ -83,21 +83,6 @@ public class MagoReTextureByObliqueCamera {
 
     }
 
-    public static void faceCodeToColor(
-            int faceCode,
-            Vector4f result
-    ) {
-        float inverse255 = 1.0f / 255.0f;
-
-        result.set(
-                ((faceCode >>> 16) & 0xFF) * inverse255,
-                ((faceCode >>> 8) & 0xFF) * inverse255,
-                (faceCode & 0xFF) * inverse255,
-                ((faceCode >>> 24) & 0xFF) * inverse255
-        );
-
-    }
-
     public void integralReMeshByObliqueCameraV2(List<SceneInfo> sceneInfos,
                                                 List<HalfEdgeScene> resultHalfEdgeScenes,
                                                 ReMeshParameters reMeshParams,
@@ -1088,28 +1073,7 @@ public class MagoReTextureByObliqueCamera {
 //                nodeName + "_topView"
 //        );
 
-        int hola = 0;
-
         return colorFbo;
-
-        // take the final rendered colorBuffer of the fbo
-//        colorFbo.bind();
-//        BufferedImage image = colorFbo.getBufferedImage(bufferedImageType);
-//        resultImages.add(image);
-//        colorFbo.unbind();
-//
-//        // take the final rendered depthBuffer of the fbo
-//        int depthBufferedImageType = BufferedImage.TYPE_INT_ARGB;
-//        depthFbo.bind();
-//        BufferedImage depthImage = depthFbo.getBufferedImage(depthBufferedImageType);
-//        resultImages.add(depthImage);
-//        depthFbo.unbind();
-
-        // delete renderableGaiaScenes
-//        engine.deleteObjects();
-//        for (RenderableGaiaScene renderableScene : renderableGaiaScenes) {
-//            renderableScene.deleteGLBuffers();
-//        }
     }
 
     private void translateScene(GaiaScene gaiaScene, Vector3d translation) {

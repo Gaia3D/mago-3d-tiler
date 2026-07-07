@@ -21,7 +21,6 @@ import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.remesher.CellGrid3D;
 import com.gaia3d.basic.remesher.GlobalBoundaryAnchors;
 import com.gaia3d.basic.remesher.ReMeshParameters;
-import com.gaia3d.basic.remesher.TileBoundaryAnchors;
 import com.gaia3d.basic.types.LevelOfDetail;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalConstants;
@@ -255,26 +254,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 nodeTMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(nodePosWC);
             }
             GaiaBoundingBox nodeBBoxLC = node.calculateLocalBoundingBox();
-
-            // clear tile boundaryAnchors.******************************************************************************
-            if (lod == 2 && reMeshParams != null) {
-                TileBoundaryAnchors tileBoundaryAnchors = reMeshParams.getTileBoundaryAnchors();
-
-                if (tileBoundaryAnchors == null) {
-                    tileBoundaryAnchors = new TileBoundaryAnchors();
-                    reMeshParams.setTileBoundaryAnchors(tileBoundaryAnchors);
-                } else {
-                    tileBoundaryAnchors.clear();
-                }
-
-                GlobalBoundaryAnchors globalBoundaryAnchors = reMeshParams.getGlobalBoundaryAnchors();
-
-                if (globalBoundaryAnchors == null) {
-                    globalBoundaryAnchors = new GlobalBoundaryAnchors();
-                    reMeshParams.setGlobalBoundaryAnchors(globalBoundaryAnchors);
-                }
-            }
-            // End clear tileBoundaryAnchors.---------------------------------------------------------------------------
 
             log.info("nodeCode : " + node.getNodeCode() + " currNodeIdx : " + i + " / " + nodesCount);
             int maxScreenSize = 512;
