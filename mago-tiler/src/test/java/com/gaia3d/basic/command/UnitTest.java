@@ -708,8 +708,8 @@ class UnitTest {
     @Test
     void SangAm() {
         // someTiles
-        String inputPath = "F:\\disk_E\\data\\mago3dtiler_TESTDATA\\SangAm_JoGoNi\\Production_2\\L22_4_buildings\\";
-        String outputPath = "D:\\data\\mago-server\\output\\SangAm_L22_4_buildings_20260624_OS_2\\";
+        String inputPath = "F:\\disk_E\\data\\mago3dtiler_TESTDATA\\SangAm_JoGoNi\\Production_2\\L22_16_buildings\\";
+        String outputPath = "E:\\data\\mago-server\\output\\SangAm_16_20260716_NOPOR_2\\";
 
         String[] args = new String[]{
                 "-i", inputPath,
@@ -755,6 +755,20 @@ class UnitTest {
                 "-pg",
                 "-c", "5187",
                 "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void Chuncheon08x09x12Kml() {
+        // Chuncheon_08_09_12_16Buildings -> 13min 30sec
+        String INPUT_PATH = "F:\\disk_E\\data\\mago3dtiler_TESTDATA\\ChunCheon\\smalls\\Chuncheon_08_09_12_66Buildings\\";
+        String OUTPUT_PATH = "E:\\data\\mago-server\\output\\Chuncheon_08_09_12_66Buildings_NOPOR\\";
+        String[] args = new String[]{
+                "-i", INPUT_PATH,
+                "-it", "kml",
+                "-o", OUTPUT_PATH,
+                "-pg"
         };
         Mago3DTilerMain.main(args);
     }

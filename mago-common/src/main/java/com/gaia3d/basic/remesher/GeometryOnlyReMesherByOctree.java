@@ -273,16 +273,6 @@ public class GeometryOnlyReMesherByOctree {
         } else {
             this.sceneStats = GaiaStatistics.calculateStatistics(scene);
         }
-        //GaiaStatistics sceneStats = GaiaStatistics.calculateStatistics(scene);
-
-        // SangAm 1 building stats sample.
-//        sceneStats = {GaiaStatistics@4834}
-//        areaTotal = 8549.56866980057
-//        trianglesCount = 47336
-//        trianglesDensity = 5.5366535819758695
-//        normalVariance = 0.5396526701369196
-//        verticalRange = 45.24596405029297
-//        areaFoldRatio = 3.43007347681656
 
         List<GaiaNode> nodes = scene.getNodes();
         for (GaiaNode node : nodes) {
@@ -498,16 +488,6 @@ public class GeometryOnlyReMesherByOctree {
                 continue;
             }
 
-//            List<GaiaFace> facesOfOctree = new ArrayList<>();
-//
-//            for (int i = 0; i < facesCount; i++) {
-//                GeometryContent faceData = facesDates.get(i);
-//                GaiaFaceContent faceContent = (GaiaFaceContent) faceData;
-//                GaiaFace face = faceContent.getFace();
-//                facesOfOctree.add(face);
-//            }
-
-            //GaiaStatistics stats = GaiaStatistics.calculateStatistics(facesOfOctree, vertices);
             List<GaiaFace> facesOfParentOctree = new ArrayList<>();
             List<GeometryContent> parentFaces = getContentsOfParent(octree);
             for (GeometryContent faceData : parentFaces) {

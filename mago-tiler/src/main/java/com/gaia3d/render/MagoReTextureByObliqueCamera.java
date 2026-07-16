@@ -145,7 +145,6 @@ public class MagoReTextureByObliqueCamera {
         Matrix4d nodeMatrixInv = new Matrix4d(nodeTMatrix);
         nodeMatrixInv.invert();
 
-        Map<Vector3i, List<GaiaVertex>> vertexClusters = new HashMap<>();
         GaiaScene gaiaSceneMaster = null;
         double weldError = 1e-5; // 1e-6 is a good value for remeshing
 
@@ -237,6 +236,9 @@ public class MagoReTextureByObliqueCamera {
 
                 GaiaStatistics stats = GaiaStatistics.calculateStatistics(gaiaScene);
 
+                // translate the scene to cellGrid-coord local.*********************************************************
+                translateScene(gaiaScene, scenePositionRelToCellGrid); // translate the scene to the cell grid position
+
                 // Pre-ReMesh.******************************************************************************************
                 GeometryOnlyReMesherByOctree preReMesher = new GeometryOnlyReMesherByOctree();
                 GaiaBoundingBox effectiveNodeBBox = nodeBBox.clone();
@@ -282,21 +284,6 @@ public class MagoReTextureByObliqueCamera {
 
                 Vector3i sceneMinCellIndex = new Vector3i();
                 Vector3i sceneMaxCellIndex = new Vector3i();
-                translateScene(gaiaScene, scenePositionRelToCellGrid); // translate the scene to the cell grid position
-
-//                // check thin-scene after translated scene to cellGridCoordSystem.***
-                //GaiaBoundingBox sceneBBox = gaiaScene.updateBoundingBox();
-//                boolean isThinSceneX = false;
-//                boolean isThinSceneY = false;
-//                if(sceneBBox.getLengthX() < cellGridSize){
-//                    isThinSceneX = true;
-//                }
-//                if(sceneBBox.getLengthY() < cellGridSize){
-//                    isThinSceneY = true;
-//                }
-
-                // nodeBBox
-                // new.*******************************************************
 
                 ReMesherVertexCluster.reMeshScene(
                         gaiaScene,
@@ -432,6 +419,9 @@ public class MagoReTextureByObliqueCamera {
         gaiaSceneMaster.joinAllSurfaces();
         weld.apply(gaiaSceneMaster);
         cleaner.apply(gaiaSceneMaster);
+
+        // do a last remesh for the gaiaSceneMaster.***
+
 
         // Make frontier expansion.************************************************************************************
         GaiaFrontierExpander frontierExpander = new GaiaFrontierExpander();
@@ -622,8 +612,6 @@ public class MagoReTextureByObliqueCamera {
                     gaiaSceneToRender = null;
                 }
 
-                //gaiaScenesContainer.setRenderableGaiaScenes(renderableGaiaScenes);
-
                 // decimate the scene.****************************************************************************************
                 triangulator.apply(gaiaScene);
 
@@ -716,8 +704,15 @@ public class MagoReTextureByObliqueCamera {
                 }
 
                 Vector3d scenePositionRelToCellGrid = sceneInfo.getScenePosLC(); // relative position of the scene respect the center of RootNode (Depth = 0).
+                Vector3d scenePositionRelToCellGridNeg = new Vector3d(-scenePositionRelToCellGrid.x, -scenePositionRelToCellGrid.y, -scenePositionRelToCellGrid.z);
                 gaiaScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
+
+                translateScene(gaiaScene, scenePositionRelToCellGrid); // translate the scene to the cell grid position
+
                 reMesherByOctree.reMeshScene(gaiaScene, stats, nodeBBox);
+
+                translateScene(gaiaScene, scenePositionRelToCellGridNeg); // translate the scene back to the original position
+
 
                 //******************************************************************************************************
                 halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(gaiaScene);

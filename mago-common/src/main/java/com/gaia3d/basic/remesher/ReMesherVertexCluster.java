@@ -174,7 +174,7 @@ public class ReMesherVertexCluster {
     /**
      * Remeshes one primitive.
      */
-    private static RemeshStats reMeshPrimitive(
+    private static RemeshStats reMeshPrimitive_new(
             GaiaPrimitive primitive,
             CellGrid3D cellGrid,
             GlobalBoundaryAnchors globalBoundaryAnchors
@@ -487,7 +487,7 @@ public class ReMesherVertexCluster {
         return stats;
     }
 
-    private static RemeshStats reMeshPrimitive_original(
+    private static RemeshStats reMeshPrimitive(
             GaiaPrimitive primitive,
             CellGrid3D cellGrid,
             GlobalBoundaryAnchors globalBoundaryAnchors
