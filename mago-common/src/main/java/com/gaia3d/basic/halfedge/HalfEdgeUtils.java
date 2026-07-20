@@ -58,10 +58,12 @@ public class HalfEdgeUtils {
 
         // make halfEdgeVertices
         List<HalfEdgeVertex> halfEdgeVertices = new ArrayList<>();
+        List<HalfEdge> memSaveHalfEdges = new ArrayList<>();
         Map<HalfEdgeVertex, HalfEdgeVertex> mapUniqueHalfEdgeVertex = new HashMap<>();
         for (HalfEdgeFace halfEdgeFace : halfEdgeFaces) {
             halfEdgeVertices.clear();
-            halfEdgeFace.getVertices(halfEdgeVertices);
+            memSaveHalfEdges.clear();
+            halfEdgeFace.getVertices(halfEdgeVertices, memSaveHalfEdges);
 
             for (HalfEdgeVertex halfEdgeVertex : halfEdgeVertices) {
                 mapUniqueHalfEdgeVertex.put(halfEdgeVertex, halfEdgeVertex);
@@ -85,9 +87,12 @@ public class HalfEdgeUtils {
         }
 
         // make faces
+        List<HalfEdgeVertex> faceVertices  = new ArrayList<>();
         for (HalfEdgeFace halfEdgeFace : halfEdgeFaces) {
             GaiaFace gaiaFace = new GaiaFace();
-            List<HalfEdgeVertex> faceVertices = halfEdgeFace.getVertices(null);
+            faceVertices.clear();
+            memSaveHalfEdges.clear();
+            halfEdgeFace.getVertices(faceVertices, memSaveHalfEdges);
             int verticesCount = faceVertices.size();
             int[] indices = new int[verticesCount];
             for (int i = 0; i < verticesCount; i++) {
@@ -181,9 +186,11 @@ public class HalfEdgeUtils {
 
         // faces
         List<HalfEdgeFace> halfEdgeFaces = halfEdgeSurface.getFaces();
+        List<HalfEdge> memSaveHalfEdges = new ArrayList<>();
         for (HalfEdgeFace halfEdgeFace : halfEdgeFaces) {
             memSaveVertices.clear();
-            GaiaFace gaiaFace = gaiaFaceFromHalfEdgeFace(halfEdgeFace, mapHalfEdgeVertexToGaiaVertex, mapGaiaVertexToIndex, memSaveVertices);
+            memSaveHalfEdges.clear();
+            GaiaFace gaiaFace = gaiaFaceFromHalfEdgeFace(halfEdgeFace, mapHalfEdgeVertexToGaiaVertex, mapGaiaVertexToIndex, memSaveVertices, memSaveHalfEdges);
             if (gaiaFace == null) {
                 continue;
             }
@@ -196,7 +203,8 @@ public class HalfEdgeUtils {
     public static GaiaFace gaiaFaceFromHalfEdgeFace(HalfEdgeFace halfEdgeFace,
                                                     Map<HalfEdgeVertex, GaiaVertex> mapHalfEdgeVertexToGaiaVertex,
                                                     Map<GaiaVertex, Integer> mapGaiaVertexToIndex,
-                                                    List<HalfEdgeVertex> memSaveVertices) {
+                                                    List<HalfEdgeVertex> memSaveVertices,
+                                                    List<HalfEdge> memSaveHalfEdges) {
         if (halfEdgeFace == null) {
             return null;
         }
@@ -216,7 +224,8 @@ public class HalfEdgeUtils {
 
         GaiaFace gaiaFace = new GaiaFace();
         memSaveVertices.clear();
-        memSaveVertices = halfEdgeFace.getVertices(memSaveVertices);
+        memSaveHalfEdges.clear();
+        memSaveVertices = halfEdgeFace.getVertices(memSaveVertices, memSaveHalfEdges);
         int verticesCount = memSaveVertices.size();
         int[] indices = new int[verticesCount];
         int indicesCount = 0;
@@ -1093,11 +1102,15 @@ public class HalfEdgeUtils {
         // 1- count incidents.
         int numVertices = surface.getVertices().size();
         int[] counts = new int[numVertices];
+        List<HalfEdgeVertex> resultVertices = new ArrayList<>();
+        List<HalfEdge> memSaveHalfEdges = new ArrayList<>();
 
         for (HalfEdgeFace face : surface.getFaces()) {
             int fIdx = face.getId();
-            List<HalfEdgeVertex> faceVertices = face.getVertices(null);
-            for (HalfEdgeVertex v : faceVertices) {
+            resultVertices.clear();
+            memSaveHalfEdges.clear();
+            resultVertices = face.getVertices(resultVertices, memSaveHalfEdges);
+            for (HalfEdgeVertex v : resultVertices) {
                 counts[v.getId()]++;
             }
         }
@@ -1113,12 +1126,16 @@ public class HalfEdgeUtils {
         int[] cursor = vertexOffsets.clone();
         for (HalfEdgeFace face : surface.getFaces()) {
             int fIdx = face.getId();
-
-            for (HalfEdgeVertex v : face.getVertices(null)) {
+            resultVertices.clear();
+            memSaveHalfEdges.clear();
+            resultVertices = face.getVertices(resultVertices, memSaveHalfEdges);
+            for (HalfEdgeVertex v : resultVertices) {
                 int vIdx = v.getId();
                 vertexFaces[cursor[vIdx]++] = fIdx;
             }
         }
+
+        resultVertices.clear();
 
         MapVertexAllFacesIndices resultMapVertexAllFacesIndices = new MapVertexAllFacesIndices(vertexOffsets, vertexFaces);
         return resultMapVertexAllFacesIndices;
@@ -1129,11 +1146,15 @@ public class HalfEdgeUtils {
         if (resultVertices == null) {
             resultVertices = new ArrayList<>();
         }
+        List<HalfEdgeVertex> faceVertices = new ArrayList<>();
+        List<HalfEdge>  memSaveHalfEdges = new ArrayList<>();
         for (HalfEdgeFace face : faces) {
             if (face.getStatus() == ObjectStatus.DELETED) {
                 continue;
             }
-            List<HalfEdgeVertex> faceVertices = face.getVertices(null);
+            faceVertices.clear();
+            memSaveHalfEdges.clear();
+            faceVertices = face.getVertices(faceVertices, memSaveHalfEdges);
             for (HalfEdgeVertex vertex : faceVertices) {
                 if (MapVertices.containsKey(vertex)) {
                     continue;
@@ -1174,27 +1195,6 @@ public class HalfEdgeUtils {
                 if (halfEdgesSet.add(halfEdge)) {
                     resultHalfEdges.add(halfEdge);
                 }
-            }
-        }
-
-        return resultHalfEdges;
-    }
-
-    public static List<HalfEdge> getHalfEdgesOfFaces_original(List<HalfEdgeFace> faces, List<HalfEdge> resultHalfEdges) {
-        Map<HalfEdge, HalfEdge> MapHalfEdges = new HashMap<>();
-        if (resultHalfEdges == null) {
-            resultHalfEdges = new ArrayList<>();
-        }
-        List<HalfEdge> faceHalfEdges = new ArrayList<>();
-        for (HalfEdgeFace face : faces) {
-            faceHalfEdges.clear();
-            faceHalfEdges = face.getHalfEdgesLoop(faceHalfEdges);
-            for (HalfEdge halfEdge : faceHalfEdges) {
-                if (MapHalfEdges.containsKey(halfEdge)) {
-                    continue;
-                }
-                resultHalfEdges.add(halfEdge);
-                MapHalfEdges.put(halfEdge, halfEdge);
             }
         }
 
@@ -1752,8 +1752,10 @@ public class HalfEdgeUtils {
         boundingBox.setMaxZ(-Double.MAX_VALUE);
 
         List<HalfEdgeVertex> vertices = new ArrayList<>();
+        List<HalfEdge> memSaveHalfEdges = new ArrayList<>();
         for (HalfEdgeFace face : faces) {
-            vertices = face.getVertices(vertices);
+            memSaveHalfEdges.clear();
+            vertices = face.getVertices(vertices, memSaveHalfEdges);
         }
 
         for (HalfEdgeVertex vertex : vertices) {

@@ -264,6 +264,9 @@ public class HalfEdgeDecimaterUtils {
         List<HalfEdgeFace> facesA = new ArrayList<>();
         List<HalfEdgeFace> facesB = new ArrayList<>();
 
+        List<HalfEdgeVertex> verticesA = new ArrayList<>();
+        List<HalfEdge> memSaveEdges = new ArrayList<>();
+
         getFacesImplicatedWithHalfEdge(halfEdge, facesA, facesB, outgoingEdgesByVertexId);
         int facesACount = facesA.size();
         for (int i = 0; i < facesACount; i++) {
@@ -273,7 +276,9 @@ public class HalfEdgeDecimaterUtils {
             }
             Vector3d normalA = faceA.getNormal();
             if (normalA == null) {
-                List<HalfEdgeVertex> verticesA = faceA.getVertices(null);
+                memSaveEdges.clear();
+                verticesA.clear();
+                verticesA = faceA.getVertices(verticesA, memSaveEdges);
                 normalA = HalfEdgeUtils.calculateNormalAsConvex(verticesA, null);
                 if (normalA == null) {
                     continue;
@@ -298,7 +303,9 @@ public class HalfEdgeDecimaterUtils {
             }
 
             // simulate transformedFaceA.
-            List<HalfEdgeVertex> verticesA = faceA.getVertices(null);
+            memSaveEdges.clear();
+            verticesA.clear();
+            verticesA = faceA.getVertices(verticesA, memSaveEdges);
             List<HalfEdgeVertex> verticesB = new ArrayList<>();
 
             int verticesACount = verticesA.size();

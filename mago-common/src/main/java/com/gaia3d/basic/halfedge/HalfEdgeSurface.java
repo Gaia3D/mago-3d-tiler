@@ -583,6 +583,7 @@ public class HalfEdgeSurface implements Serializable {
 
         List<HalfEdgeVertex> faceVertices =
                 new ArrayList<>(4);
+        List<HalfEdge> memSaveHalfEdges = new ArrayList<>();
 
         for (int i = start; i < end; i++) {
             int faceIndex =
@@ -602,7 +603,8 @@ public class HalfEdgeSurface implements Serializable {
             }
 
             faceVertices.clear();
-            face.getVertices(faceVertices);
+            memSaveHalfEdges.clear();
+            face.getVertices(faceVertices, memSaveHalfEdges);
 
             for (HalfEdgeVertex faceVertex : faceVertices) {
                 if (faceVertex == null
@@ -813,6 +815,8 @@ public class HalfEdgeSurface implements Serializable {
                 acceptedTangentSet.add(candidate);
             }
         }
+
+        mapVertexAllFacesIndices.deleteObjects();
 
         /*
          * Prioridad:
@@ -1469,6 +1473,8 @@ public class HalfEdgeSurface implements Serializable {
     public void classifyFacesIdByPlane(PlaneType planeType, Vector3d planePosition) {
         int facesCount = faces.size();
         Vector3d barycenter = new Vector3d();
+        List<HalfEdgeVertex> memSaveVertices = new ArrayList<HalfEdgeVertex>();
+        List<HalfEdge> memSaveEdges = new ArrayList<HalfEdge>();
         if (planeType == PlaneType.XY) {
             for (int i = 0; i < facesCount; i++) {
                 HalfEdgeFace face = faces.get(i);
@@ -1476,7 +1482,9 @@ public class HalfEdgeSurface implements Serializable {
                     continue;
                 }
 
-                barycenter = face.getBarycenter(barycenter);
+                memSaveVertices.clear();
+                memSaveEdges.clear();
+                barycenter = face.getBarycenter(barycenter, memSaveVertices, memSaveEdges);
                 double z = barycenter.z;
                 if (z > planePosition.z) {
                     face.setClassifyId(2);
@@ -1493,7 +1501,9 @@ public class HalfEdgeSurface implements Serializable {
                     continue;
                 }
 
-                barycenter = face.getBarycenter(barycenter);
+                memSaveVertices.clear();
+                memSaveEdges.clear();
+                barycenter = face.getBarycenter(barycenter, memSaveVertices, memSaveEdges);
                 double y = barycenter.y;
                 if (y > planePosition.y) {
                     face.setClassifyId(2);
@@ -1510,7 +1520,9 @@ public class HalfEdgeSurface implements Serializable {
                     continue;
                 }
 
-                barycenter = face.getBarycenter(barycenter);
+                memSaveVertices.clear();
+                memSaveEdges.clear();
+                barycenter = face.getBarycenter(barycenter, memSaveVertices, memSaveEdges);
                 double x = barycenter.x;
                 if (x > planePosition.x) {
                     face.setClassifyId(2);
@@ -2339,6 +2351,7 @@ public class HalfEdgeSurface implements Serializable {
         }
         boolean texCoordBBoxStarted = false;
         List<HalfEdgeVertex> memSaveVertices = new ArrayList<>();
+        List<HalfEdge> memSaveEdges = new ArrayList<>();
         int facesCount = faces.size();
         GaiaRectangle faceTexCoordBRect = new GaiaRectangle();
         for (int i = 0; i < facesCount; i++) {
@@ -2347,7 +2360,7 @@ public class HalfEdgeSurface implements Serializable {
                 continue;
             }
             memSaveVertices.clear();
-            faceTexCoordBRect = face.getTexCoordBoundingRectangle(faceTexCoordBRect, invertTexCoordY, memSaveVertices);
+            faceTexCoordBRect = face.getTexCoordBoundingRectangle(faceTexCoordBRect, invertTexCoordY, memSaveVertices, memSaveEdges);
 
             if (!texCoordBBoxStarted) {
                 resultTexCoordBRect.copyFrom(faceTexCoordBRect);
@@ -2597,6 +2610,7 @@ public class HalfEdgeSurface implements Serializable {
 
         // now, join the groups that are connected by vertex
         List<HalfEdgeVertex> memSaveVertices = new ArrayList<>();
+        List<HalfEdge> memSaveEdges = new ArrayList<>();
         List<GaiaTextureScissorData> textureScissorDatas = new ArrayList<>();
         boolean invertTexCoordY = false;
         int weldedFacesGroupsCount = weldedFacesGroups.size();
@@ -2608,7 +2622,8 @@ public class HalfEdgeSurface implements Serializable {
                 GaiaRectangle texCoordBRect = new GaiaRectangle();
                 HalfEdgeFace face = weldedFacesGroup.get(j);
                 memSaveVertices.clear();
-                texCoordBRect = face.getTexCoordBoundingRectangle(texCoordBRect, invertTexCoordY, memSaveVertices);
+                memSaveEdges.clear();
+                texCoordBRect = face.getTexCoordBoundingRectangle(texCoordBRect, invertTexCoordY, memSaveVertices, memSaveEdges);
 
                 if (j == 0) {
                     groupTexCoordBRect.copyFrom(texCoordBRect);
@@ -2702,6 +2717,8 @@ public class HalfEdgeSurface implements Serializable {
         }
 
         // now, make the provisional faces
+        List<HalfEdgeVertex> halfEdgeVertices = new ArrayList<>();
+        List<HalfEdge> memSaveHalfEdges = new ArrayList<>();
         int facesCount = faces.size();
         for (int i = 0; i < facesCount; i++) {
             HalfEdgeFace halfEdgeFace = faces.get(i);
@@ -2719,7 +2736,9 @@ public class HalfEdgeSurface implements Serializable {
 
             GaiaFace gaiaFace = new GaiaFace();
 
-            List<HalfEdgeVertex> halfEdgeVertices = halfEdgeFace.getVertices(null);
+            halfEdgeVertices.clear();
+            memSaveHalfEdges.clear();
+            halfEdgeVertices = halfEdgeFace.getVertices(halfEdgeVertices, memSaveHalfEdges);
             int faceVerticesCount = halfEdgeVertices.size();
             int[] indices = new int[faceVerticesCount];
             int indicesCount = 0;
@@ -2821,10 +2840,12 @@ public class HalfEdgeSurface implements Serializable {
         int[] indices = new int[facesCount * 3];
         int index = 0;
         List<HalfEdgeVertex> faceVertices = new ArrayList<>();
+        List<HalfEdge> memSaveHalfEdges = new ArrayList<>();
         for (int i = 0; i < facesCount; i++) {
             HalfEdgeFace face = faces.get(i);
             faceVertices.clear();
-            faceVertices = face.getVertices(faceVertices);
+            memSaveHalfEdges.clear();
+            faceVertices = face.getVertices(faceVertices, memSaveHalfEdges);
             for (int j = 0; j < 3; j++) {
                 HalfEdgeVertex vertex = faceVertices.get(j);
                 int vertexIndex = vertexIndexMap.get(vertex);

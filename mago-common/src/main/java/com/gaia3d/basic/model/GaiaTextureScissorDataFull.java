@@ -1,6 +1,7 @@
 package com.gaia3d.basic.model;
 
 import com.gaia3d.basic.geometry.GaiaRectangle;
+import com.gaia3d.basic.halfedge.HalfEdge;
 import com.gaia3d.basic.halfedge.HalfEdgeFace;
 import com.gaia3d.basic.halfedge.HalfEdgeVertex;
 import com.gaia3d.basic.halfedge.ObjectStatus;
@@ -62,6 +63,7 @@ public class GaiaTextureScissorDataFull extends GaiaTextureScissorData {
         double dstMinY = batchedBoundary.getMinY();
 
         List<HalfEdgeVertex> vertices = new ArrayList<>();
+        List<HalfEdge> memSaveEdges = new ArrayList<>();
         Set<HalfEdgeVertex> visitedVertices = new java.util.HashSet<>();
 
         for (HalfEdgeFace face : faces) {
@@ -70,7 +72,8 @@ public class GaiaTextureScissorDataFull extends GaiaTextureScissorData {
             }
 
             vertices.clear();
-            face.getVertices(vertices);
+            memSaveEdges.clear();
+            face.getVertices(vertices, memSaveEdges);
 
             for (HalfEdgeVertex vertex : vertices) {
                 if (visitedVertices.contains(vertex)) {
@@ -111,6 +114,7 @@ public class GaiaTextureScissorDataFull extends GaiaTextureScissorData {
         }
         boolean texCoordBBoxStarted = false;
         List<HalfEdgeVertex> memSaveVertices = new ArrayList<>();
+        List<HalfEdge> memSaveEdges = new ArrayList<>();
         int facesCount = faces.size();
         GaiaRectangle faceTexCoordBRect = new GaiaRectangle();
         for (int i = 0; i < facesCount; i++) {
@@ -119,7 +123,8 @@ public class GaiaTextureScissorDataFull extends GaiaTextureScissorData {
                 continue;
             }
             memSaveVertices.clear();
-            faceTexCoordBRect = face.getTexCoordBoundingRectangle(faceTexCoordBRect, invertTexCoordY, memSaveVertices);
+            memSaveEdges.clear();
+            faceTexCoordBRect = face.getTexCoordBoundingRectangle(faceTexCoordBRect, invertTexCoordY, memSaveVertices, memSaveEdges);
 
             if (!texCoordBBoxStarted) {
                 resultTexCoordBRect.copyFrom(faceTexCoordBRect);

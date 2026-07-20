@@ -1,12 +1,15 @@
 package com.gaia3d.basic.geometry.octree;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.halfedge.HalfEdge;
 import com.gaia3d.basic.halfedge.HalfEdgeFace;
+import com.gaia3d.basic.halfedge.HalfEdgeVertex;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -60,8 +63,11 @@ public class HalfEdgeOctreeFaces extends GaiaOctree<HalfEdgeFace> {
         GaiaOctree<HalfEdgeFace> child6 = children.get(6);
         GaiaOctree<HalfEdgeFace> child7 = children.get(7);
 
+        List<HalfEdgeVertex> memSaveVertices = new ArrayList<>();
+        List<HalfEdge> memSaveHalfEdges = new ArrayList<>();
+        Vector3d center = new Vector3d();
         for (HalfEdgeFace face : faces) {
-            Vector3d center = face.getBarycenter(null);
+            center = face.getBarycenter(center, memSaveVertices, memSaveHalfEdges);
             if (center.x < midX) {
                 if (center.y < midY) {
                     if (center.z < midZ) {

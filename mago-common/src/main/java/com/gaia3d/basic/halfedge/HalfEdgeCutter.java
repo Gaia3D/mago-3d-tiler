@@ -352,6 +352,9 @@ public class HalfEdgeCutter {
         List<HalfEdge> newHalfEdges = new ArrayList<>();
         List<HalfEdgeFace> newFaces = new ArrayList<>();
 
+        List<HalfEdgeVertex> faceVertices = new ArrayList<>();
+        List<HalfEdge> memSaveEdges = new ArrayList<>();
+
         // copy faces
         for (HalfEdgeFace face : faces) {
             if (face.getStatus() == ObjectStatus.DELETED) {
@@ -360,7 +363,9 @@ public class HalfEdgeCutter {
             HalfEdgeFace copyFace = new HalfEdgeFace();
             copyFace.copyFrom(face);
 
-            List<HalfEdgeVertex> faceVertices = face.getVertices(null);
+            memSaveEdges.clear();
+            faceVertices.clear();
+            faceVertices = face.getVertices(faceVertices, memSaveEdges);
 
             HalfEdgeVertex hVertex0 = faceVertices.get(0);
             HalfEdgeVertex hVertex1 = faceVertices.get(1);

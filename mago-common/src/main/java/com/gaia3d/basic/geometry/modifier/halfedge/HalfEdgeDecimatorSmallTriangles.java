@@ -79,12 +79,16 @@ public class HalfEdgeDecimatorSmallTriangles extends HalfEdgeModifier {
         mapHalfEdgeToInitialDirection = HalfEdgeDecimaterUtils.getMapHalfEdgeToDirection(mapHalfEdgeToInitialDirection, halfEdges);
 
         // classify vertices
+        List<HalfEdgeVertex> faceVertices = new ArrayList<>();
+        List<HalfEdge> memSaveEdges = new ArrayList<>();
         weldedFacesGroups = WeldedFacesFinder.getWeldedFacesGroups(surface, weldedFacesGroups);
         int weldedFacesGroupsCount = weldedFacesGroups.size();
         for (int i = 0; i < weldedFacesGroupsCount; i++) {
             List<HalfEdgeFace> weldedFacesGroup = weldedFacesGroups.get(i);
             for (HalfEdgeFace face : weldedFacesGroup) {
-                List<HalfEdgeVertex> faceVertices = face.getVertices(null);
+                memSaveEdges.clear();
+                faceVertices.clear();
+                faceVertices = face.getVertices(faceVertices, memSaveEdges);
                 for (HalfEdgeVertex vertex : faceVertices) {
                     vertex.setClassifyId(i);
                 }
@@ -240,11 +244,15 @@ public class HalfEdgeDecimatorSmallTriangles extends HalfEdgeModifier {
         List<List<HalfEdgeFace>> weldedFacesGroups = new ArrayList<>();
         WeldedFacesFinder.getWeldedFacesGroups(surface, weldedFacesGroups);
         //weldedFacesGroups = surface.getWeldedFacesGroups(weldedFacesGroups);
+        List<HalfEdgeVertex> faceVertices = new ArrayList<>();
+        List<HalfEdge> memSaveEdges = new ArrayList<>();
         int weldedFacesGroupsCount = weldedFacesGroups.size();
         for (int i = 0; i < weldedFacesGroupsCount; i++) {
             List<HalfEdgeFace> weldedFacesGroup = weldedFacesGroups.get(i);
             for (HalfEdgeFace face : weldedFacesGroup) {
-                List<HalfEdgeVertex> faceVertices = face.getVertices(null);
+                memSaveEdges.clear();
+                faceVertices.clear();
+                faceVertices = face.getVertices(faceVertices, memSaveEdges);
                 for (HalfEdgeVertex vertex : faceVertices) {
                     vertex.setClassifyId(i);
                 }

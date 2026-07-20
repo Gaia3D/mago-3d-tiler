@@ -50,6 +50,7 @@ public class WeldedFacesFinder {
         int counter = 0;
         List<HalfEdgeFace> memSaveAdjacentFaces = new ArrayList<>();
         List<HalfEdgeVertex> memSaveVertices = new ArrayList<>();
+        List<HalfEdge> memSaveHalfEdges = new ArrayList<>();
         while (!finished)// && counter < 10000000)
         {
             List<HalfEdgeFace> newAddedfaces = new ArrayList<>();
@@ -69,8 +70,9 @@ public class WeldedFacesFinder {
                 weldedFacesAux.clear();
                 memSaveAdjacentFaces.clear();
                 memSaveVertices.clear();
+                memSaveHalfEdges.clear();
                 currFace.getWeldedFaces(weldedFacesAux, mapVisitedFaces, mapVertexAllFacesIndices,
-                        surface.getFaces(), memSaveAdjacentFaces, memSaveVertices);
+                        surface.getFaces(), memSaveAdjacentFaces, memSaveVertices, memSaveHalfEdges);
                 newAddedfaces.addAll(weldedFacesAux);
             }
 

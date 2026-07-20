@@ -1207,6 +1207,7 @@ public class MagoReTextureByObliqueCamera {
         CameraDirectionType cameraDirectionType;
 
         List<HalfEdgeVertex> verticesOfFaces = new ArrayList<>();
+        List<HalfEdge> memSaveEdges = new ArrayList<>();
         Map<HalfEdgeVertex, HalfEdgeVertex> visitedVerticesMap = new HashMap<>();
         double texCoordError = 1e-4; // clamp error.
         for (Map.Entry<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> entry : mapFaceGroupByClassifyIdAndObliqueCamDirType.entrySet()) {
@@ -1229,7 +1230,8 @@ public class MagoReTextureByObliqueCamera {
 
                 for (HalfEdgeFace halfEdgeFace : facesList) {
                     verticesOfFaces.clear();
-                    verticesOfFaces = halfEdgeFace.getVertices(verticesOfFaces);
+                    memSaveEdges.clear();
+                    verticesOfFaces = halfEdgeFace.getVertices(verticesOfFaces, memSaveEdges);
                     for (HalfEdgeVertex vertex : verticesOfFaces) {
                         if (visitedVerticesMap.containsKey(vertex)) {
                             continue;

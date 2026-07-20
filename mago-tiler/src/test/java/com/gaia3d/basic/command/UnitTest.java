@@ -708,8 +708,8 @@ class UnitTest {
     @Test
     void SangAm() {
         // someTiles
-        String inputPath = "F:\\disk_E\\data\\mago3dtiler_TESTDATA\\SangAm_JoGoNi\\Production_2\\L22_16_buildings\\";
-        String outputPath = "E:\\data\\mago-server\\output\\SangAm_16_20260716_NOPOR_2\\";
+        String inputPath = "F:\\disk_E\\data\\mago3dtiler_TESTDATA\\SangAm_JoGoNi\\Production_2\\L22_35_buildings\\";
+        String outputPath = "E:\\data\\mago-server\\output\\SangAm_35_20260716_NOPOR_ST\\";
 
         String[] args = new String[]{
                 "-i", inputPath,

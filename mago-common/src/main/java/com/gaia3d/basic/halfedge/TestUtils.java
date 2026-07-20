@@ -129,7 +129,7 @@ public class TestUtils {
 
                 }
             }
-            List<HalfEdgeVertex> faceVertices = face.getVertices(null);
+            List<HalfEdgeVertex> faceVertices = face.getVertices(null, null);
             for (HalfEdgeVertex vertex : faceVertices) {
                 if (vertex == null) {
 
@@ -240,22 +240,6 @@ public class TestUtils {
         return true;
     }
 
-    public static boolean checkHalfEdgeSurfacesHalfEdgeVertices(List<HalfEdgeSurface> halfEdgeSurfaces, List<HalfEdgeVertex> halfEdgeVertices) {
-        Map<HalfEdgeVertex, HalfEdgeVertex> verticesMap = new HashMap<>();
-        for (HalfEdgeSurface halfEdgeSurface : halfEdgeSurfaces) {
-            for (HalfEdgeFace face : halfEdgeSurface.getFaces()) {
-                List<HalfEdgeVertex> faceVertices = face.getVertices(null);
-                for (HalfEdgeVertex vertex : faceVertices) {
-                    verticesMap.put(vertex, vertex);
-                }
-            }
-        }
-        if (halfEdgeVertices.size() != verticesMap.size()) {
-
-        }
-        return true;
-    }
-
     public static int checkTexCoordsOfHalfEdgeScene(HalfEdgeScene scene) {
         int badFacesCount = 0;
         List<HalfEdgeSurface> surfaces = scene.extractSurfaces(null);
@@ -288,7 +272,7 @@ public class TestUtils {
     }
 
     public static boolean checkTexCoordsOfHalfEdgeFace(HalfEdgeFace face) {
-        List<HalfEdgeVertex> faceVertices = face.getVertices(null);
+        List<HalfEdgeVertex> faceVertices = face.getVertices(null, null);
         Vector3d pos0 = faceVertices.get(0).getPosition();
         Vector3d pos1 = faceVertices.get(1).getPosition();
         Vector3d pos2 = faceVertices.get(2).getPosition();
@@ -297,7 +281,7 @@ public class TestUtils {
         Vector2d texCoord1 = faceVertices.get(1).getTexcoords();
         Vector2d texCoord2 = faceVertices.get(2).getTexcoords();
 
-        GaiaRectangle texBRect = face.getTexCoordBoundingRectangle(null, false);
+        GaiaRectangle texBRect = face.getTexCoordBoundingRectangle(null, false, null, null);
 
         double width = texBRect.getWidth();
         double height = texBRect.getHeight();
