@@ -671,6 +671,9 @@ public class HalfEdgeSurface implements Serializable {
          */
         int originalHalfEdgesCount = halfEdges.size();
 
+        HalfEdgeVertex dummyIntersectionVertex =
+                new HalfEdgeVertex();
+
         for (int i = 0; i < originalHalfEdgesCount; i++) {
             HalfEdge halfEdge = halfEdges.get(i);
 
@@ -678,9 +681,6 @@ public class HalfEdgeSurface implements Serializable {
                     || halfEdge.getStatus() == ObjectStatus.DELETED) {
                 continue;
             }
-
-            HalfEdgeVertex dummyIntersectionVertex =
-                    new HalfEdgeVertex();
 
             PlaneHEdgeIntersectionType type =
                     halfEdge.getIntersectionByPlane(

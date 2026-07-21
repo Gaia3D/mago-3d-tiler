@@ -89,7 +89,9 @@ public class GaiaMaterial extends MaterialStructure implements Serializable {
         if (textures != null) {
             textures.forEach((key, value) -> {
                 value.forEach(GaiaTexture::clear);
+                value.clear();
             });
+            textures.clear();
         }
         this.diffuseColor = null;
         this.ambientColor = null;

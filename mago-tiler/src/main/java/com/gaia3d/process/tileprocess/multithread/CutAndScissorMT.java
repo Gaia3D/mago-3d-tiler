@@ -732,7 +732,7 @@ public class CutAndScissorMT {
 
             scene = new GaiaScene(gaiaSet);
             gaiaSet.setMaterials(null); // avoid to keep materials in memory, because we will not use them for cutting, and they can consume a lot of memory.
-            gaiaSet.clear();
+            gaiaSet.clear(); // delete to save memory.
             scene.deleteNormals();
 
             GaiaTriangulator triangulator = new GaiaTriangulator();
@@ -775,7 +775,7 @@ public class CutAndScissorMT {
                             scene
                     );
 
-            scene.clear();
+            scene.clear(); // delete to save memory.
 
             boolean scissorTextures = true;
             boolean makeSkirt = GlobalConstants.MAKE_SKIRT;
@@ -783,8 +783,8 @@ public class CutAndScissorMT {
             Path cutTempPath = Path.of(globalOptions.getTempPath(), "cutTemp");
 
             /*
-             * Thread-safe e idempotente.
-             * Mucho mejor que exists() + mkdirs().
+             * Thread-safe.
+             * Better than exists() + mkdirs().
              */
             Files.createDirectories(cutTempPath);
 
@@ -1026,7 +1026,6 @@ public class CutAndScissorMT {
                 // In reality, we must recalculate the position of the cut scene. Provisionally, we use the same position
                 TileTransformInfo tileTransformInfoCut = TileTransformInfo.builder().position(geoCoordPosition).build();
                 tileInfoCut.setTileTransformInfo(tileTransformInfoCut);
-                //cutTileInfos.add(tileInfoCut);
 
                 localResults.computeIfAbsent(currLod, ignored -> new ArrayList<>()).add(tileInfoCut);
 
