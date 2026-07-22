@@ -282,39 +282,64 @@ public class MagoReTextureByObliqueCamera {
                 }
                 gaiaScene.getMaterials().clear();
 
-                Vector3i sceneMinCellIndex = new Vector3i();
-                Vector3i sceneMaxCellIndex = new Vector3i();
+                GaiaBoundingBox sceneBBox = gaiaScene.updateBoundingBox();
+                double width = sceneBBox.getLengthX();
+                double length = sceneBBox.getLengthY();
+                double depth = sceneBBox.getLengthZ();
+                boolean isSmallScene = false;
 
-                ReMesherVertexCluster.reMeshScene(
-                        gaiaScene,
-                        reMeshParams,
-                        sceneMinCellIndex,
-                        sceneMaxCellIndex
-                );
+                if(width < cellGridSize) {
+                    isSmallScene  = true;
+                }
 
+                if(length < cellGridSize) {
+                    isSmallScene  = true;
+                }
+
+                //if(!isSmallScene) {
+                    Vector3i sceneMinCellIndex = new Vector3i();
+                    Vector3i sceneMaxCellIndex = new Vector3i();
+
+                    ReMesherVertexCluster.reMeshScene(
+                            gaiaScene,
+                            reMeshParams,
+                            sceneMinCellIndex,
+                            sceneMaxCellIndex
+                    );
+
+                    // update the node cell index bbox
+                    if (sceneMinCellIndex.x < nodeMinCellIndex.x) {
+                        nodeMinCellIndex.x = sceneMinCellIndex.x;
+                    }
+                    if (sceneMinCellIndex.y < nodeMinCellIndex.y) {
+                        nodeMinCellIndex.y = sceneMinCellIndex.y;
+                    }
+                    if (sceneMinCellIndex.z < nodeMinCellIndex.z) {
+                        nodeMinCellIndex.z = sceneMinCellIndex.z;
+                    }
+                    if (sceneMaxCellIndex.x > nodeMaxCellIndex.x) {
+                        nodeMaxCellIndex.x = sceneMaxCellIndex.x;
+                    }
+                    if (sceneMaxCellIndex.y > nodeMaxCellIndex.y) {
+                        nodeMaxCellIndex.y = sceneMaxCellIndex.y;
+                    }
+                    if (sceneMaxCellIndex.z > nodeMaxCellIndex.z) {
+                        nodeMaxCellIndex.z = sceneMaxCellIndex.z;
+                    }
+//                } else {
+//                    preReMesher.setReMeshAnyWay(true);
+//                    preReMesher.setLimitDepth(octreeMaxDepth);
+//                    preReMesher.setMinFacesCount(1);
+//                    preReMesher.setLimitBoxSize(cellGridSize);
+//                    preReMesher.reMeshScene(gaiaScene, stats, effectiveNodeBBox);
+//                    weld.apply(gaiaScene);
+//                    cleaner.apply(gaiaScene);
+//                }
 
                 // end new.-------------------------------------------------------------------------------
                 translateScene(gaiaScene, scenePosRelToCellGridNegative); // translate the scene back to the original position
 
-                // update the node cell index bbox
-                if (sceneMinCellIndex.x < nodeMinCellIndex.x) {
-                    nodeMinCellIndex.x = sceneMinCellIndex.x;
-                }
-                if (sceneMinCellIndex.y < nodeMinCellIndex.y) {
-                    nodeMinCellIndex.y = sceneMinCellIndex.y;
-                }
-                if (sceneMinCellIndex.z < nodeMinCellIndex.z) {
-                    nodeMinCellIndex.z = sceneMinCellIndex.z;
-                }
-                if (sceneMaxCellIndex.x > nodeMaxCellIndex.x) {
-                    nodeMaxCellIndex.x = sceneMaxCellIndex.x;
-                }
-                if (sceneMaxCellIndex.y > nodeMaxCellIndex.y) {
-                    nodeMaxCellIndex.y = sceneMaxCellIndex.y;
-                }
-                if (sceneMaxCellIndex.z > nodeMaxCellIndex.z) {
-                    nodeMaxCellIndex.z = sceneMaxCellIndex.z;
-                }
+
                 // end of reMeshing the scene.******************************************************************************
 
                 // now must translate to the relative position in the node

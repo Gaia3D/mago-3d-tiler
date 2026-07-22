@@ -748,14 +748,11 @@ public class HalfEdgeSurface implements Serializable {
                 continue;
             }
 
-            HalfEdgeVertex intersectionVertex =
-                    new HalfEdgeVertex();
-
             PlaneHEdgeIntersectionType type =
                     halfEdge.getIntersectionByPlane(
                             planeType,
                             planePosition,
-                            intersectionVertex,
+                            dummyIntersectionVertex,
                             error
                     );
 
@@ -763,6 +760,14 @@ public class HalfEdgeSurface implements Serializable {
                     != PlaneHEdgeIntersectionType.INNER_INTERSECTION) {
                 continue;
             }
+
+            // create here the intersected vertex, when sure intersects.
+            HalfEdgeVertex intersectionVertex =
+                    new HalfEdgeVertex();
+
+            intersectionVertex.copyFrom(
+                    dummyIntersectionVertex
+            );
 
             splitHalfEdge(
                     halfEdge,
