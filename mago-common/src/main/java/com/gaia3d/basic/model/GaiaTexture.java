@@ -99,7 +99,8 @@ public class GaiaTexture extends TextureStructure implements Serializable {
             return false;
         }
 
-        ImageUtils.saveBufferedImage(bufferedImage, savePath, fastPng, jpegQuality);
+        //ImageUtils.saveBufferedImage(bufferedImage, savePath, fastPng, jpegQuality);
+        ImageUtils.saveBufferedImageControlled(bufferedImage, savePath, fastPng, jpegQuality);
 
         return true;
     }
