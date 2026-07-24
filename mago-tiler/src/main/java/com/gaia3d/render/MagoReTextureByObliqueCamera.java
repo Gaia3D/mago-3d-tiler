@@ -1001,8 +1001,8 @@ public class MagoReTextureByObliqueCamera {
 
 
         // Make frontier expansion.************************************************************************************
-        double maxNodeBBoxSize = nodeBBox.getMaxSize();
-        frontierExpander.expandFrontiersToScene(gaiaSceneMaster, nodeBBox, 0.2, maxNodeBBoxSize * 0.005);
+//        double maxNodeBBoxSize = nodeBBox.getMaxSize();
+//        frontierExpander.expandFrontiersToScene(gaiaSceneMaster, nodeBBox, 0.2, maxNodeBBoxSize * 0.005);
         // End making frontier expansion.------------------------------------------------------------------------------
 
         gaiaSceneMaster.joinAllSurfaces();
