@@ -25,6 +25,7 @@ import com.gaia3d.basic.remesher.*;
 import com.gaia3d.basic.remesher.information.GaiaStatistics;
 import com.gaia3d.basic.texture.atlas.TextureAtlasManager;
 import com.gaia3d.basic.types.TextureType;
+import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
 import com.gaia3d.util.GaiaTextureUtils;
 import com.gaia3d.util.ImageResizer;
@@ -296,45 +297,35 @@ public class MagoReTextureByObliqueCamera {
                     isSmallScene  = true;
                 }
 
-                //if(!isSmallScene) {
-                    Vector3i sceneMinCellIndex = new Vector3i();
-                    Vector3i sceneMaxCellIndex = new Vector3i();
+                Vector3i sceneMinCellIndex = new Vector3i();
+                Vector3i sceneMaxCellIndex = new Vector3i();
 
-                    ReMesherVertexCluster.reMeshScene(
-                            gaiaScene,
-                            reMeshParams,
-                            sceneMinCellIndex,
-                            sceneMaxCellIndex
-                    );
+                ReMesherVertexCluster.reMeshScene(
+                        gaiaScene,
+                        reMeshParams,
+                        sceneMinCellIndex,
+                        sceneMaxCellIndex
+                );
 
-                    // update the node cell index bbox
-                    if (sceneMinCellIndex.x < nodeMinCellIndex.x) {
-                        nodeMinCellIndex.x = sceneMinCellIndex.x;
-                    }
-                    if (sceneMinCellIndex.y < nodeMinCellIndex.y) {
-                        nodeMinCellIndex.y = sceneMinCellIndex.y;
-                    }
-                    if (sceneMinCellIndex.z < nodeMinCellIndex.z) {
-                        nodeMinCellIndex.z = sceneMinCellIndex.z;
-                    }
-                    if (sceneMaxCellIndex.x > nodeMaxCellIndex.x) {
-                        nodeMaxCellIndex.x = sceneMaxCellIndex.x;
-                    }
-                    if (sceneMaxCellIndex.y > nodeMaxCellIndex.y) {
-                        nodeMaxCellIndex.y = sceneMaxCellIndex.y;
-                    }
-                    if (sceneMaxCellIndex.z > nodeMaxCellIndex.z) {
-                        nodeMaxCellIndex.z = sceneMaxCellIndex.z;
-                    }
-//                } else {
-//                    preReMesher.setReMeshAnyWay(true);
-//                    preReMesher.setLimitDepth(octreeMaxDepth);
-//                    preReMesher.setMinFacesCount(1);
-//                    preReMesher.setLimitBoxSize(cellGridSize);
-//                    preReMesher.reMeshScene(gaiaScene, stats, effectiveNodeBBox);
-//                    weld.apply(gaiaScene);
-//                    cleaner.apply(gaiaScene);
-//                }
+                // update the node cell index bbox
+                if (sceneMinCellIndex.x < nodeMinCellIndex.x) {
+                    nodeMinCellIndex.x = sceneMinCellIndex.x;
+                }
+                if (sceneMinCellIndex.y < nodeMinCellIndex.y) {
+                    nodeMinCellIndex.y = sceneMinCellIndex.y;
+                }
+                if (sceneMinCellIndex.z < nodeMinCellIndex.z) {
+                    nodeMinCellIndex.z = sceneMinCellIndex.z;
+                }
+                if (sceneMaxCellIndex.x > nodeMaxCellIndex.x) {
+                    nodeMaxCellIndex.x = sceneMaxCellIndex.x;
+                }
+                if (sceneMaxCellIndex.y > nodeMaxCellIndex.y) {
+                    nodeMaxCellIndex.y = sceneMaxCellIndex.y;
+                }
+                if (sceneMaxCellIndex.z > nodeMaxCellIndex.z) {
+                    nodeMaxCellIndex.z = sceneMaxCellIndex.z;
+                }
 
                 // end new.-------------------------------------------------------------------------------
                 translateScene(gaiaScene, scenePosRelToCellGridNegative); // translate the scene back to the original position
@@ -450,6 +441,566 @@ public class MagoReTextureByObliqueCamera {
 
         // Make frontier expansion.************************************************************************************
         GaiaFrontierExpander frontierExpander = new GaiaFrontierExpander();
+        double maxNodeBBoxSize = nodeBBox.getMaxSize();
+        frontierExpander.expandFrontiersToScene(gaiaSceneMaster, nodeBBox, 0.2, maxNodeBBoxSize * 0.005);
+        // End making frontier expansion.------------------------------------------------------------------------------
+
+        gaiaSceneMaster.joinAllSurfaces();
+        weld.apply(gaiaSceneMaster);
+        cleaner.apply(gaiaSceneMaster);
+        // end----------------------------------------------------------------------------------------------------------
+
+        HalfEdgeScene halfEdgeSceneMaster = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(gaiaSceneMaster);
+
+        List<GaiaTexture> resultAtlasTextures = new ArrayList<>();
+        // Here scissor the atlas textures.
+        atlasTextureForIntegralReMesh9Directions(fboSet,
+                faceCodeFboSet,
+                backgroundColor,
+                halfEdgeSceneMaster,
+                mapCameraDirectionTypeBBox,
+                mapCameraDirectionTypeModelViewMatrix,
+                resultAtlasTextures,
+                mapClassificationCamDirTypeFacesList,
+                outputPathString, nodeName, lod);
+        // end of atlas texture*************************************************************************************
+
+//        // GaiaSkirtMaker.**********************************************************************************************
+//        GaiaBoundingBox expandedNodeBBox = nodeBBox.clone();
+//        expandedNodeBBox.expand(maxNodeBBoxSize * 0.005);
+//        double nodeBoxSizeX = expandedNodeBBox.getSizeX();
+//        double nodeBoxSizeY = expandedNodeBBox.getSizeY();
+//        double nodeBoxSizeZ = expandedNodeBBox.getSizeZ();
+//        GaiaBoundingBox nodeBBoxCentered = new GaiaBoundingBox(-nodeBoxSizeX / 2.0, -nodeBoxSizeY / 2.0, -nodeBoxSizeZ / 2.0,
+//                nodeBoxSizeX / 2.0, nodeBoxSizeY / 2.0, nodeBoxSizeZ / 2.0
+//        );
+//        GaiaSkirtMaker skirtMaker = new GaiaSkirtMaker();
+//        double tolerance = nodeBoxSizeX * 0.08;
+//        double skirtDepth = nodeBoxSizeX * 0.08;
+//        double maxSegmentLength = nodeBoxSizeX * 0.5;
+//
+//        skirtMaker.addSkirtsToScene(
+//                gaiaSceneMaster,
+//                nodeBBoxCentered,
+//                tolerance,
+//                skirtDepth,
+//                maxSegmentLength
+//        );
+//        // end making skirt.--------------------------------------------------------------------------------------------
+
+        // check if atlasTexture is made.
+        if (!resultAtlasTextures.isEmpty()) {
+            resultHalfEdgeScenes.add(halfEdgeSceneMaster);
+        }
+    }
+
+    private GaiaScene getMergedGaiaScene(List<SceneInfo> sceneInfos, Matrix4d nodeTMatrix) {
+        Matrix4d nodeMatrixInv = new Matrix4d(nodeTMatrix);
+        nodeMatrixInv.invert();
+
+        GaiaTriangulator triangulator = new GaiaTriangulator();
+        GaiaSceneCleaner cleaner = new GaiaSceneCleaner();
+        double weldError = 1e-5; // 1e-6 is a good value for remeshing
+        GaiaWeldOptions weldOptions = GaiaWeldOptions.builder()
+                .error(weldError)
+                .checkTexCoord(false)
+                .checkNormal(false)
+                .checkColor(false)
+                .checkBatchId(false)
+                .build();
+        GaiaWelder weld = new GaiaWelder(weldOptions);
+        GaiaExtractor extractor = new GaiaExtractor();
+        GaiaScene mergedScene = null;
+
+        //****************************************************************************
+        // The 1rst gaiaScene will be the base for merging.
+        // we translate all scenes at the position relative to the node and merge,
+        // then return the mergedScene to the 1rstGaiaScene original position.
+        //****************************************************************************
+
+        Vector3d scenePositionLCMaster = null;
+        Vector3d scenePositionLCMasterNegative = null;
+
+        for (int i = 0; i < sceneInfos.size(); i++) {
+            SceneInfo sceneInfo = sceneInfos.get(i);
+            String scenePath = sceneInfo.getScenePath();
+            Matrix4d sceneTMat = sceneInfo.getTransformMatrix();
+
+            // must find the local position of the scene rel to node
+            Vector3d scenePosWC = new Vector3d(sceneTMat.m30(), sceneTMat.m31(), sceneTMat.m32());
+            Vector3d scenePosLC = nodeMatrixInv.transformPosition(scenePosWC, new Vector3d());
+
+            // calculate the local sceneTMat
+            Matrix4d sceneTMatLC = new Matrix4d();
+            sceneTMatLC.identity();
+            sceneTMatLC.m30(scenePosLC.x);
+            sceneTMatLC.m31(scenePosLC.y);
+            sceneTMatLC.m32(scenePosLC.z);
+
+            // load the set file
+            GaiaSet gaiaSet = null;
+            GaiaScene gaiaScene = null;
+
+            Path path = Paths.get(scenePath);
+            try {
+                gaiaSet = GaiaSet.readFile(path);
+                gaiaScene = new GaiaScene(gaiaSet);
+
+            } catch (Exception e) {
+                log.error("[ERROR] reading the file: ", e);
+            }
+
+            if (gaiaScene == null) {
+                // throw error
+                throw new RuntimeException("[ERROR] integralReMeshByObliqueCamera : GaiaScene is null");
+            }
+
+            Vector3d scenePositionLC = sceneInfo.getScenePosLC(); // relative position of the scene respect the center of RootNode (Depth = 0).
+            Vector3d scenePositionLCNegative = new Vector3d(-scenePositionLC.x, -scenePositionLC.y, -scenePositionLC.z);
+
+            if(scenePositionLCMaster == null){
+                scenePositionLCMaster = new Vector3d(scenePositionLC);
+                scenePositionLCMasterNegative = new Vector3d(-scenePositionLC.x, -scenePositionLC.y, -scenePositionLC.z);
+            }
+
+            translateScene(gaiaScene, scenePositionLC); // translate the scene to the position in the node
+
+            if(mergedScene == null) {
+                mergedScene = gaiaScene.clone();
+            } else {
+                List<GaiaMaterial> masterMaterials = mergedScene.getMaterials();
+                int materialsCount = masterMaterials.size();
+                GaiaNode masterRootNode = mergedScene.getRootNode();
+                List<GaiaNode> masterChildNodes = masterRootNode.getChildren();
+                GaiaNode masterChildNode =  masterChildNodes.get(0); // take the 1rst.
+                GaiaMesh masterMesh = masterChildNode.getMeshes().get(0);
+
+                List<GaiaPrimitive> currPrimitives = extractor.extractAllPrimitives(gaiaScene);
+                int primitivesCount = currPrimitives.size();
+                for(int j=0; j< primitivesCount; j++) {
+                    GaiaPrimitive primitive = currPrimitives.get(j);
+                    int matId = primitive.getMaterialIndex();
+                    if(matId >= 0 && matId < gaiaScene.getMaterials().size()) {
+                        GaiaMaterial material = gaiaScene.getMaterials().get(matId);
+                        masterMaterials.add(material);
+                        primitive.setMaterialIndex(materialsCount);
+                        materialsCount++;
+
+                        // now add primitive to mergedScene.
+                        masterMesh.getPrimitives().add(primitive);
+                    }
+                }
+                int hola = 0;
+            }
+        }
+
+        translateScene(mergedScene, scenePositionLCMasterNegative); // translate the scene to the original position of 1rstScene.
+
+        return mergedScene;
+    }
+
+    public void getGroupedSceneInfos(List<SceneInfo> sceneInfos, List<List<SceneInfo>> resultGroupedSceneInfos, int scenesCountForGroup){
+        if (sceneInfos == null
+                || sceneInfos.isEmpty()
+                || resultGroupedSceneInfos == null) {
+            return;
+        }
+
+        if (scenesCountForGroup <= 0) {
+            throw new IllegalArgumentException(
+                    "scenesCountForGroup must be greater than zero"
+            );
+        }
+
+        for (int startIndex = 0;
+             startIndex < sceneInfos.size();
+             startIndex += scenesCountForGroup) {
+
+            int endIndex = Math.min(
+                    startIndex + scenesCountForGroup,
+                    sceneInfos.size()
+            );
+
+            List<SceneInfo> group = new ArrayList<>(
+                    sceneInfos.subList(startIndex, endIndex)
+            );
+
+            resultGroupedSceneInfos.add(group);
+        }
+    }
+
+    public void integralReMeshByObliqueCamera2by2(List<SceneInfo> sceneInfos,
+                                                List<HalfEdgeScene> resultHalfEdgeScenes,
+                                                ReMeshParameters reMeshParams,
+                                                GaiaBoundingBox nodeBBox,
+                                                Matrix4d nodeTMatrix,
+                                                int maxScreenSize,
+                                                String outputPathString,
+                                                String nodeName,
+                                                int lod,
+                                                Node node) {
+        // Note: There are only one scene in the scene list
+        Map<CameraDirectionType, GaiaBoundingBox> mapCameraDirectionTypeBBox = new HashMap<>();
+        Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix = new HashMap<>();
+        Map<CameraDirectionType, Projection> mapCameraDirectionTypeProjection = new HashMap<>();
+
+        double screenPixelsForMeter = 20;
+        double nodeBBoxMaxSize = nodeBBox.getMaxSize();
+
+        if (!Double.isFinite(nodeBBoxMaxSize)
+                || nodeBBoxMaxSize <= 0.0) {
+
+            throw new IllegalStateException(
+                    "Invalid node bounding-box size: "
+                            + nodeBBoxMaxSize
+            );
+        }
+
+        int targetMaxSize = 512;
+        screenPixelsForMeter = targetMaxSize / nodeBBoxMaxSize;
+        MagoFboSet fboSet = create9MagoFbos(nodeBBox,
+                renderDirections,
+                mapCameraDirectionTypeBBox,
+                mapCameraDirectionTypeModelViewMatrix,
+                mapCameraDirectionTypeProjection,
+                screenPixelsForMeter);
+
+        Vector4f backgroundColor =
+                new Vector4f(
+                        1.0f,
+                        0.0f,
+                        1.0f,
+                        1.0f
+                );
+
+        int backgroundArgb =
+                toArgb(backgroundColor);
+
+        fboSet.clearAll(
+                backgroundArgb,
+                1.0f
+        ); // only one time
+
+        // create faceCodeFboSet by copy from fboSet.
+        MagoFboSet faceCodeFboSet =
+                fboSet.createCompatible(
+                        BACKGROUND_FACE_CODE,
+                        1.0f
+                );
+
+        Matrix4d nodeMatrixInv = new Matrix4d(nodeTMatrix);
+        nodeMatrixInv.invert();
+
+        Node rootNode = node.getRootNode();
+        Matrix4d rootNodeMatrix = rootNode.getTransformMatrixAux();
+        Matrix4d rootNodeMatrixInv = new Matrix4d(rootNodeMatrix);
+        rootNodeMatrixInv.invert();
+
+        GaiaScene gaiaSceneMaster = null;
+        double weldError = 1e-5; // 1e-6 is a good value for remeshing
+
+        // render the scenes
+        int scenesCount = sceneInfos.size();
+        int counter = 0;
+        int faceIdAvailable = 0;
+
+        Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapClassificationCamDirTypeFacesList = new HashMap<>();
+
+        Vector3i nodeMinCellIndex = new Vector3i(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
+        Vector3i nodeMaxCellIndex = new Vector3i(Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE);
+
+        GaiaWeldOptions weldOptions = GaiaWeldOptions.builder()
+                .error(weldError)
+                .checkTexCoord(false)
+                .checkNormal(false)
+                .checkColor(false)
+                .checkBatchId(false)
+                .build();
+
+        GaiaTriangulator triangulator = new GaiaTriangulator();
+        GaiaSceneCleaner cleaner = new GaiaSceneCleaner();
+        GaiaWelder weld = new GaiaWelder(weldOptions);
+        GaiaFrontierExpander frontierExpander = new GaiaFrontierExpander();
+
+        MagoRenderableMaker magoRenderableMaker = new MagoRenderableMaker();
+
+        CellGrid3D cellGrid3d = reMeshParams.getCellGrid();
+        double cellGridSize = cellGrid3d.cellSize;
+
+        // remesh each mesh
+        MagoRenderingSession renderingSession = renderingBackend.openSession();
+
+        GaiaBoundingBox translatedNodeBBox = nodeBBox.clone();
+        Vector3d nodePositionRelativeToRoot =
+                node.getCartesianPositionRelativeToRootNode();
+        translatedNodeBBox.translate(nodePositionRelativeToRoot.x, nodePositionRelativeToRoot.y, nodePositionRelativeToRoot.z);
+
+        String nodeCode = node.getNodeCode();
+        if(nodeCode.equals("R10")){
+            int hola = 0;
+        }
+
+        log.info("ReMesh : sceneInfosCount: " + sceneInfos.size());
+        List<List<SceneInfo>> resultGroupedSceneInfos = new ArrayList<>();
+        getGroupedSceneInfos(sceneInfos, resultGroupedSceneInfos, 1);
+        int sceneGroupsCount = resultGroupedSceneInfos.size();
+        try {
+            for (int i = 0; i < sceneGroupsCount; i++) {
+                // load and render, one by one
+                List<SceneInfo> groupedSceneInfos = resultGroupedSceneInfos.get(i);
+                GaiaScene mergedScene = getMergedGaiaScene(groupedSceneInfos, nodeTMatrix);
+                GaiaBoundingBox mergedBBox = mergedScene.updateBoundingBox();
+
+                SceneInfo sceneInfo = groupedSceneInfos.get(0);
+                String scenePath = sceneInfo.getScenePath();
+                Matrix4d sceneTMat = sceneInfo.getTransformMatrix();
+
+                // must find the local position of the scene rel to node
+                Vector3d scenePosWC = new Vector3d(sceneTMat.m30(), sceneTMat.m31(), sceneTMat.m32());
+                Vector3d scenePosLC = nodeMatrixInv.transformPosition(scenePosWC, new Vector3d());
+
+                Vector3d scenePosLCToRoot = rootNodeMatrixInv.transformPosition(scenePosWC, new Vector3d());
+
+                // calculate the local sceneTMat
+                Matrix4d sceneTMatLC = new Matrix4d();
+                sceneTMatLC.identity();
+                sceneTMatLC.m30(scenePosLC.x);
+                sceneTMatLC.m31(scenePosLC.y);
+                sceneTMatLC.m32(scenePosLC.z);
+
+                // load the set file
+                //GaiaSet gaiaSet = null;
+                //GaiaScene gaiaScene = null;
+                GaiaScene gaiaSceneToRender = null;
+                MagoRenderableScene magoRenderableScene = null;
+                Path path = Paths.get(scenePath);
+                try {
+//                    gaiaSet = GaiaSet.readFile(path);
+//                    gaiaScene = new GaiaScene(gaiaSet);
+                    gaiaSceneToRender = mergedScene.clone();
+                    triangulator.apply(gaiaSceneToRender);
+
+                    GaiaNode gaiaNodeToRender = gaiaSceneToRender.getNodes().get(0);
+                    gaiaNodeToRender.setTransformMatrix(new Matrix4d(sceneTMatLC));
+                    gaiaNodeToRender.setPreMultipliedTransformMatrix(new Matrix4d(sceneTMatLC));
+                    magoRenderableScene = magoRenderableMaker.makeScene(gaiaSceneToRender);
+                } catch (Exception e) {
+                    log.error("[ERROR] reading the file: ", e);
+                }
+
+                if (mergedScene == null) {
+                    // throw error
+                    throw new RuntimeException("[ERROR] integralReMeshByObliqueCamera : GaiaScene is null");
+                }
+
+                // reMesh the scene.****************************************************************************************
+                // The "scenePositionRelToCellGrid" is the relative position of the scene respect the center of RootNode (Depth = 0). All scenes must be synchronized to the RootNode.
+                Vector3d scenePositionRelToCellGrid = sceneInfo.getScenePosLC(); // relative position of the scene respect the center of RootNode (Depth = 0).
+                Vector3d scenePosRelToCellGridNegative = new Vector3d(-scenePositionRelToCellGrid.x, -scenePositionRelToCellGrid.y, -scenePositionRelToCellGrid.z);
+                triangulator.apply(mergedScene);
+                GaiaBaker baker = new GaiaBaker();
+                baker.apply(mergedScene);
+                mergedScene.joinAllSurfaces();
+                weld.apply(mergedScene);
+                cleaner.apply(mergedScene);
+
+                GaiaStatistics stats = GaiaStatistics.calculateStatistics(mergedScene);
+
+                // translate the scene to cellGrid-coord local.*********************************************************
+                //translateScene(mergedScene, scenePositionRelToCellGrid); // translate the scene to the cell grid position
+                translateScene(mergedScene, scenePosLCToRoot); // translate the scene to the cell grid position
+
+                // Pre-ReMesh.******************************************************************************************
+                GeometryOnlyReMesherByOctree preReMesher = new GeometryOnlyReMesherByOctree();
+                GaiaBoundingBox effectiveNodeBBox = nodeBBox.clone();
+
+                double desiredLeafSize = 1.5;
+                //desiredLeafSize = nodeBBoxMaxSize / 30.0; // test
+                OctreeBBoxInfo octreeBoxInfo = preReMesher.calculateBoundingBoxForLeafDistInfo(nodeBBox, desiredLeafSize);
+                //log.info("desiredLeafSize: " + desiredLeafSize + " / maxDepth: " + octreeBoxInfo.maxDepth + " / rootCubeSize: " + octreeBoxInfo.rootCubeSize);
+                int octreeMaxDepth = octreeBoxInfo.maxDepth;
+                double rootOctreeSize = octreeBoxInfo.rootCubeSize;
+                double nodeSize = nodeBBox.getMaxSize();
+                double scaleFactor = rootOctreeSize / nodeSize;
+                effectiveNodeBBox.expand(nodeSize * scaleFactor * 0.5);
+                preReMesher.setReMeshAnyWay(true);
+                preReMesher.setLimitDepth(octreeMaxDepth);
+                preReMesher.setMinFacesCount(1);
+                preReMesher.setLimitBoxSize(desiredLeafSize);
+                preReMesher.reMeshScene(mergedScene, stats, effectiveNodeBBox);
+                weld.apply(mergedScene);
+                cleaner.apply(mergedScene);
+                // End pre-ReMesh.--------------------------------------------------------------------------------------
+
+                weld.apply(mergedScene);
+                cleaner.apply(mergedScene);
+                List<GaiaMaterial> materials = mergedScene.getMaterials();
+
+                // Here decimate the scene.*******************************************************************************************************
+                DecimateParameters decimateParameters = new DecimateParameters();
+                //decimateParameters.setBasicValues(14.0, 0.01, 0.9, 40.0, 1000000, 5, 1.0);
+                decimateParameters.setBasicValues(12.0, 0.001, 2.0, 40.0, 1000000, 5, 0.1);
+                HalfEdgeScene halfEdgeSceneToDecimate = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(mergedScene);
+                HalfEdgeDecimator decimator = new HalfEdgeDecimator(decimateParameters);
+                decimator.apply(halfEdgeSceneToDecimate);
+
+                // now, try to reMesh vegetation.
+                mergedScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneToDecimate);
+
+                // delete materials.
+                for (GaiaMaterial material : materials) {
+                    material.clear();
+                }
+                mergedScene.getMaterials().clear();
+
+                // expand mesh half cellGridSize to avoid void joint between tiles.
+                GaiaBoundingBox sceneBBox = mergedScene.updateBoundingBox();
+                frontierExpander.expandFrontiersToScene(mergedScene, sceneBBox, 0.2, cellGridSize * 0.5);
+
+                Vector3i sceneMinCellIndex = new Vector3i();
+                Vector3i sceneMaxCellIndex = new Vector3i();
+
+                ReMesherVertexCluster.reMeshScene(
+                        mergedScene,
+                        reMeshParams,
+                        sceneMinCellIndex,
+                        sceneMaxCellIndex
+                );
+
+                // update the node cell index bbox
+                if (sceneMinCellIndex.x < nodeMinCellIndex.x) {
+                    nodeMinCellIndex.x = sceneMinCellIndex.x;
+                }
+                if (sceneMinCellIndex.y < nodeMinCellIndex.y) {
+                    nodeMinCellIndex.y = sceneMinCellIndex.y;
+                }
+                if (sceneMinCellIndex.z < nodeMinCellIndex.z) {
+                    nodeMinCellIndex.z = sceneMinCellIndex.z;
+                }
+                if (sceneMaxCellIndex.x > nodeMaxCellIndex.x) {
+                    nodeMaxCellIndex.x = sceneMaxCellIndex.x;
+                }
+                if (sceneMaxCellIndex.y > nodeMaxCellIndex.y) {
+                    nodeMaxCellIndex.y = sceneMaxCellIndex.y;
+                }
+                if (sceneMaxCellIndex.z > nodeMaxCellIndex.z) {
+                    nodeMaxCellIndex.z = sceneMaxCellIndex.z;
+                }
+
+                // end new.-------------------------------------------------------------------------------
+                //translateScene(mergedScene, scenePosRelToCellGridNegative); // translate the scene back to the original position
+                Vector3d scenePosLCToRootNegative = new Vector3d(-scenePosLCToRoot.x, -scenePosLCToRoot.y, -scenePosLCToRoot.z);
+                translateScene(mergedScene, scenePosLCToRootNegative);
+
+                // end of reMeshing the scene.******************************************************************************
+
+                // now must translate to the relative position in the node
+                GaiaNode gaiaNode = mergedScene.getNodes().get(0);
+                gaiaNode.setTransformMatrix(new Matrix4d(sceneTMatLC));
+                gaiaNode.setPreMultipliedTransformMatrix(new Matrix4d(sceneTMatLC));
+                baker.apply(mergedScene);
+                mergedScene.joinAllSurfaces();
+                weld.apply(mergedScene);
+                cleaner.apply(mergedScene);
+
+                // Test 2nd decimating.*****************************************************************************************
+                DecimateParameters decimateParameters2ndTest = new DecimateParameters();
+                decimateParameters.setBasicValues(12.0, 0.001, 2.0, 40.0, 1000000, 2, 0.1);
+                HalfEdgeScene halfEdgeSceneToDecimate2ndTest = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(mergedScene);
+                HalfEdgeDecimator decimator2ndTest = new HalfEdgeDecimator(decimateParameters2ndTest);
+                decimator2ndTest.apply(halfEdgeSceneToDecimate2ndTest);
+                mergedScene.clear();
+                mergedScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneToDecimate2ndTest);
+                halfEdgeSceneToDecimate2ndTest.deleteObjects();
+                // End test 2nd decimating.-------------------------------------------------------------------------------------
+
+                try {
+                    // render the scene
+                    log.debug("Rendering the scene : " + i + " / " + scenesCount + ". LOD : " + lod);
+
+                    // for each gaiaScene, set the available faceIds, to use for colorCoded rendering
+                    GaiaExtractor extractor = new GaiaExtractor();
+                    List<GaiaFace> gaiaFaces = extractor.extractAllFaces(mergedScene);
+                    for (GaiaFace gaiaFace : gaiaFaces) {
+                        gaiaFace.setId(faceIdAvailable);
+                        faceIdAvailable++;
+                    }
+
+                    MagoRenderableScene decimatedRenderableScene = magoRenderableMaker.makeScene(mergedScene);
+                    makeIntegralBoxTexturesByObliqueCamera9Directions(magoRenderableScene,
+                            decimatedRenderableScene,
+                            fboSet,
+                            faceCodeFboSet,
+                            mapCameraDirectionTypeModelViewMatrix,
+                            mapCameraDirectionTypeProjection,
+                            renderingSession);
+                    // end of making oblique camera textures
+
+                    if (magoRenderableScene != null) {
+                        magoRenderableScene.deleteObjects();
+                    }
+
+                    if (decimatedRenderableScene != null) {
+                        decimatedRenderableScene.deleteObjects();
+                    }
+
+                } catch (Exception e) {
+                    log.error("[ERROR] initializing the engine: ", e);
+                }
+
+                if (gaiaSceneMaster == null) {
+                    gaiaSceneMaster = mergedScene;
+                } else {
+                    GaiaExtractor extractor = new GaiaExtractor();
+                    List<GaiaPrimitive> primitives = extractor.extractAllPrimitives(mergedScene);
+                    GaiaNode rootNodeMaster = gaiaSceneMaster.getNodes().get(0);
+                    GaiaNode nodeMaster = rootNodeMaster.getChildren().get(0);
+                    GaiaMesh meshMaster = nodeMaster.getMeshes().get(0);
+                    meshMaster.getPrimitives().addAll(primitives);
+                    mergedScene = null;
+                }
+
+//                if (gaiaSet != null) {
+//                    gaiaSet.clear();
+//                }
+
+                counter++;
+                if (counter > 20) {
+                    counter = 0;
+                }
+            }
+
+            finishRenderingSession(renderingSession, fboSet, faceCodeFboSet);
+        } finally {
+            renderingSession.close();
+        }
+
+        // Test save 9 camera rendered.*************************
+//        String outputPathStringTest = "D:\\temp";
+//        String nodeNameTest = "albedo";
+//        save9MagoFboAsPng(
+//                fboSet,
+//                outputPathStringTest,
+//                nodeNameTest
+//        );
+//
+//        nodeNameTest = "colorCode";
+//        save9MagoFboAsPng(
+//                faceCodeFboSet,
+//                outputPathStringTest,
+//                nodeNameTest
+//        );
+        // End test.------------------------------------------------------
+
+        // Join all surfaces and weld vertices of the gaiaSceneMaster.
+        gaiaSceneMaster.joinAllSurfaces();
+        weld.apply(gaiaSceneMaster);
+        cleaner.apply(gaiaSceneMaster);
+
+        // do a last remesh for the gaiaSceneMaster.***
+
+
+        // Make frontier expansion.************************************************************************************
         double maxNodeBBoxSize = nodeBBox.getMaxSize();
         frontierExpander.expandFrontiersToScene(gaiaSceneMaster, nodeBBox, 0.2, maxNodeBBoxSize * 0.005);
         // End making frontier expansion.------------------------------------------------------------------------------

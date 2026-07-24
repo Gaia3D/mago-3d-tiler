@@ -68,16 +68,9 @@ public class ReMesherVertexCluster {
          * A null GlobalBoundaryAnchors is valid.
          * It means that this LOD has no globally locked boundaries.
          */
-        GlobalBoundaryAnchors globalBoundaryAnchors =
-                reMeshParams.getGlobalBoundaryAnchors();
-
-        GaiaExtractor extractor =
-                new GaiaExtractor();
-
-        List<GaiaPrimitive> primitives =
-                extractor.extractAllPrimitives(
-                        scene
-                );
+        GlobalBoundaryAnchors globalBoundaryAnchors = reMeshParams.getGlobalBoundaryAnchors();
+        GaiaExtractor extractor = new GaiaExtractor();
+        List<GaiaPrimitive> primitives = extractor.extractAllPrimitives( scene );
 
         if (primitives == null || primitives.isEmpty()) {
             return;
@@ -94,13 +87,11 @@ public class ReMesherVertexCluster {
                 sceneMaxCellIndex
         );
 
-        RemeshStats totalStats =
-                new RemeshStats();
+        RemeshStats totalStats = new RemeshStats();
 
         int processedPrimitives = 0;
 
-        GaiaBoundingBox sceneBBox =
-                scene.updateBoundingBox();
+        GaiaBoundingBox sceneBBox = scene.updateBoundingBox();
 
         for (GaiaPrimitive primitive : primitives) {
             if (primitive == null) {
@@ -182,47 +173,28 @@ public class ReMesherVertexCluster {
             GlobalBoundaryAnchors globalBoundaryAnchors,
             GaiaBoundingBox sceneBBox
     ) {
-        RemeshStats stats =
-                new RemeshStats();
+        RemeshStats stats = new RemeshStats();
 
-        List<GaiaVertex> vertices =
-                primitive.getVertices();
+        List<GaiaVertex> vertices = primitive.getVertices();
 
         if (vertices == null || vertices.isEmpty()) {
             return stats;
         }
 
-        int originalVertexCount =
-                vertices.size();
-
-        stats.originalVertices =
-                originalVertexCount;
-
-        List<GaiaFace> faces =
-                primitive.extractGaiaAllFaces(
-                        null
-                );
+        int originalVertexCount = vertices.size();
+        stats.originalVertices = originalVertexCount;
+        List<GaiaFace> faces = primitive.extractGaiaAllFaces(   null );
 
         if (faces == null || faces.isEmpty()) {
             return stats;
         }
 
-        GaiaFrontierFinder frontierFinder =
-                new GaiaFrontierFinder();
+        GaiaFrontierFinder frontierFinder = new GaiaFrontierFinder();
 
-        int[] weldedIndices =
-                new int[originalVertexCount];
+        int[] weldedIndices = new int[originalVertexCount];
 
-        boolean[] frontierVertex =
-                frontierFinder.findBoundaryVertices(
-                        vertices,
-                        faces,
-                        1e-6,
-                        weldedIndices
-                );
-
-        if (frontierVertex == null
-                || frontierVertex.length < originalVertexCount) {
+        boolean[] frontierVertex = frontierFinder.findBoundaryVertices( vertices, faces, 1e-6, weldedIndices );
+        if (frontierVertex == null || frontierVertex.length < originalVertexCount) {
 
             return stats;
         }
@@ -237,38 +209,19 @@ public class ReMesherVertexCluster {
         Map<Vector3i, CellAccumulator> frontierCellAccumulators =
                 new HashMap<>();
 
-        for (int oldIndex = 0;
-             oldIndex < originalVertexCount;
-             oldIndex++) {
+        for (int oldIndex = 0; oldIndex < originalVertexCount; oldIndex++) {
+            GaiaVertex vertex = vertices.get(oldIndex);
 
-            GaiaVertex vertex =
-                    vertices.get(oldIndex);
-
-            if (vertex == null
-                    || vertex.getPosition() == null) {
+            if (vertex == null || vertex.getPosition() == null) {
                 continue;
             }
 
-            Vector3i cellIndex =
-                    new Vector3i(
-                            cellGrid.getCellIndex(
-                                    vertex.getPosition()
-                            )
-                    );
+            Vector3i cellIndex = new Vector3i( cellGrid.getCellIndex( vertex.getPosition() ) );
+            boolean isFrontier = frontierVertex[oldIndex];
+            Vector3d globalAnchor = null;
 
-            boolean isFrontier =
-                    frontierVertex[oldIndex];
-
-            Vector3d globalAnchor =
-                    null;
-
-            if (isFrontier
-                    && globalBoundaryAnchors != null) {
-
-                globalAnchor =
-                        globalBoundaryAnchors.getAverage(
-                                cellIndex
-                        );
+            if (isFrontier && globalBoundaryAnchors != null) {
+                globalAnchor = globalBoundaryAnchors.getAverage( cellIndex );
             }
 
             if (isFrontier) {
@@ -283,14 +236,7 @@ public class ReMesherVertexCluster {
                  * Unanchored frontier vertices are clustered only
                  * with other unanchored frontier vertices.
                  */
-                frontierCellAccumulators
-                        .computeIfAbsent(
-                                cellIndex,
-                                ignored -> new CellAccumulator()
-                        )
-                        .add(
-                                vertex.getPosition()
-                        );
+                frontierCellAccumulators.computeIfAbsent( cellIndex, ignored -> new CellAccumulator() ).add( vertex.getPosition() );
 
                 stats.localFrontierVertices++;
 
@@ -299,15 +245,7 @@ public class ReMesherVertexCluster {
                  * Interior vertices are clustered only with other
                  * interior vertices.
                  */
-                interiorCellAccumulators
-                        .computeIfAbsent(
-                                cellIndex,
-                                ignored -> new CellAccumulator()
-                        )
-                        .add(
-                                vertex.getPosition()
-                        );
-
+                interiorCellAccumulators.computeIfAbsent( cellIndex, ignored -> new CellAccumulator() ).add( vertex.getPosition() );
                 stats.localInteriorVertices++;
             }
         }
@@ -317,17 +255,11 @@ public class ReMesherVertexCluster {
          * the number of unique spatial cells, because one cell may
          * contain both an interior and a frontier cluster.
          */
-        stats.localCells =
-                interiorCellAccumulators.size()
-                        + frontierCellAccumulators.size();
+        stats.localCells = interiorCellAccumulators.size() + frontierCellAccumulators.size();
 
-        int[] oldIndexToNewIndex =
-                new int[originalVertexCount];
+        int[] oldIndexToNewIndex = new int[originalVertexCount];
 
-        Arrays.fill(
-                oldIndexToNewIndex,
-                -1
-        );
+        Arrays.fill( oldIndexToNewIndex, -1 );
 
         /*
          * Keep separate resulting vertices for:
@@ -336,42 +268,25 @@ public class ReMesherVertexCluster {
          * - locally clustered frontiers;
          * - locally clustered interiors.
          */
-        Map<Vector3i, Integer> cellToNewAnchoredIndex =
-                new HashMap<>();
+        Map<Vector3i, Integer> cellToNewAnchoredIndex = new HashMap<>();
+        Map<Vector3i, Integer> cellToNewFrontierIndex = new HashMap<>();
+        Map<Vector3i, Integer> cellToNewInteriorIndex = new HashMap<>();
 
-        Map<Vector3i, Integer> cellToNewFrontierIndex =
-                new HashMap<>();
+        for (int oldIndex = 0; oldIndex < originalVertexCount; oldIndex++) {
 
-        Map<Vector3i, Integer> cellToNewInteriorIndex =
-                new HashMap<>();
+            GaiaVertex oldVertex = vertices.get(oldIndex);
 
-        for (int oldIndex = 0;
-             oldIndex < originalVertexCount;
-             oldIndex++) {
-
-            GaiaVertex oldVertex =
-                    vertices.get(oldIndex);
-
-            if (oldVertex == null
-                    || oldVertex.getPosition() == null) {
+            if (oldVertex == null || oldVertex.getPosition() == null) {
                 continue;
             }
 
-            Vector3i cellIndex =
-                    new Vector3i(
-                            cellGrid.getCellIndex(
-                                    oldVertex.getPosition()
-                            )
-                    );
+            Vector3i cellIndex = new Vector3i( cellGrid.getCellIndex( oldVertex.getPosition() ) );
 
-            boolean isFrontier =
-                    frontierVertex[oldIndex];
+            boolean isFrontier = frontierVertex[oldIndex];
 
-            Vector3d globalAnchor =
-                    null;
+            Vector3d globalAnchor = null;
 
-            if (isFrontier
-                    && globalBoundaryAnchors != null) {
+            if (isFrontier && globalBoundaryAnchors != null) {
 
 //                FrontierClub fc = FrontierClub.classify(
 //                        oldVertex.getPosition(),
@@ -389,24 +304,18 @@ public class ReMesherVertexCluster {
 //                    cellIndex.y -=1;
 //                }
 
-                globalAnchor =
-                        globalBoundaryAnchors.getAverage(
-                                cellIndex
-                        );
+                globalAnchor = globalBoundaryAnchors.getAverage( cellIndex );
             }
 
-            boolean hasGlobalAnchor =
-                    globalAnchor != null;
+            boolean hasGlobalAnchor = globalAnchor != null;
 
             Vector3d targetPosition;
             Map<Vector3i, Integer> cellToNewIndex;
 
             if (hasGlobalAnchor) {
-                targetPosition =
-                        globalAnchor;
+                targetPosition = globalAnchor;
 
-                cellToNewIndex =
-                        cellToNewAnchoredIndex;
+                cellToNewIndex = cellToNewAnchoredIndex;
 
             } else if (isFrontier) {
                 CellAccumulator accumulator =
@@ -414,8 +323,7 @@ public class ReMesherVertexCluster {
                                 cellIndex
                         );
 
-                if (accumulator == null
-                        || accumulator.getCount() < 2) {
+                if (accumulator == null || accumulator.getCount() < 2) {
 
                     /*
                      * Leave the original vertex index unchanged.
@@ -424,20 +332,14 @@ public class ReMesherVertexCluster {
                     continue;
                 }
 
-                targetPosition =
-                        accumulator.calculateAverage();
+                targetPosition = accumulator.calculateAverage();
 
-                cellToNewIndex =
-                        cellToNewFrontierIndex;
+                cellToNewIndex = cellToNewFrontierIndex;
 
             } else {
-                CellAccumulator accumulator =
-                        interiorCellAccumulators.get(
-                                cellIndex
-                        );
+                CellAccumulator accumulator = interiorCellAccumulators.get( cellIndex );
 
-                if (accumulator == null
-                        || accumulator.getCount() < 2) {
+                if (accumulator == null || accumulator.getCount() < 2) {
 
                     /*
                      * Leave the original vertex index unchanged.
@@ -446,11 +348,8 @@ public class ReMesherVertexCluster {
                     continue;
                 }
 
-                targetPosition =
-                        accumulator.calculateAverage();
-
-                cellToNewIndex =
-                        cellToNewInteriorIndex;
+                targetPosition = accumulator.calculateAverage();
+                cellToNewIndex = cellToNewInteriorIndex;
             }
 
             if (targetPosition == null) {
@@ -466,23 +365,13 @@ public class ReMesherVertexCluster {
                 GaiaVertex newVertex =
                         new GaiaVertex();
 
-                newVertex.setPosition(
-                        new Vector3d(
-                                targetPosition
-                        )
-                );
+                newVertex.setPosition( new Vector3d( targetPosition ) );
 
-                copyVertexAttributes(
-                        oldVertex,
-                        newVertex
-                );
+                copyVertexAttributes( oldVertex, newVertex );
 
-                newIndex =
-                        vertices.size();
+                newIndex = vertices.size();
 
-                vertices.add(
-                        newVertex
-                );
+                vertices.add( newVertex );
 
                 cellToNewIndex.put(
                         cellIndex,

@@ -1054,6 +1054,499 @@ public class TextureAtlasManager {
         // make the atlas texture.**************************************************************************************
         int imageType = existPngTextures ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
         log.debug("[Tile][Photogrammetry][Atlas] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
+        if(maxWidth > 8192 || maxHeight > 8192) {
+            log.warn("[Tile][Photogrammetry][Atlas] Atlas size exceeds 8192 x 8192. maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
+        }
+        resultTextureAtlas.createImage(maxWidth, maxHeight, imageType);
+
+        // Fill atlas background with known color
+        BufferedImage atlasImage = resultTextureAtlas.getBufferedImage();
+
+        Graphics2D g = atlasImage.createGraphics();
+        try {
+            g.setColor(new Color(255, 0, 255)); // magenta debug
+            g.fillRect(0, 0, maxWidth, maxHeight);
+        } finally {
+            g.dispose();
+        }
+
+        WritableRaster atlasRaster = atlasImage.getRaster();
+
+        Raster srcRaster = srcImage.getRaster();
+
+        int atlasW = atlasImage.getWidth();
+        int atlasH = atlasImage.getHeight();
+
+        int bands = atlasRaster.getNumBands();
+        int[] pixelBuffer = new int[bands];
+
+        textureScissorDatasCount = textureScissorDatas.size();
+        for (int i = 0; i < textureScissorDatasCount; i++) {
+            GaiaTextureScissorData data = textureScissorDatas.get(i);
+
+            GaiaRectangle noExp = data.getNoExpandedBoundary();
+            GaiaRectangle batched = data.getBatchedBoundary();
+
+            int expanded = Math.max(data.getExpandedPixel(), 0);
+
+            int srcX = (int) Math.floor(noExp.getMinX());
+            int srcY = (int) Math.floor(noExp.getMinY());
+            int w = Math.max(noExp.getWidthInt(), 1);
+            int h = Math.max(noExp.getHeightInt(), 1);
+
+            int dstX = (int) Math.floor(batched.getMinX());
+            int dstY = (int) Math.floor(batched.getMinY());
+
+            // Si el destino completo está totalmente fuera, saltar.
+            int totalDstW = expanded * 2 + w;
+            int totalDstH = expanded * 2 + h;
+
+            if (dstX >= atlasW || dstY >= atlasH || dstX + totalDstW <= 0 || dstY + totalDstH <= 0) {
+                log.warn("Skipping scissor fully outside atlas: dstX={}, dstY={}, totalW={}, totalH={}, atlasW={}, atlasH={}",
+                        dstX, dstY, totalDstW, totalDstH, atlasW, atlasH);
+                continue;
+            }
+
+            // =========================
+            // 1. COPIA CENTRAL
+            // =========================
+            for (int y = 0; y < h; y++) {
+                for (int x = 0; x < w; x++) {
+                    safeCopyPixel(
+                            srcRaster,
+                            atlasRaster,
+                            srcX + x,
+                            srcY + y,
+                            dstX + expanded + x,
+                            dstY + expanded + y,
+                            pixelBuffer
+                    );
+                }
+            }
+
+            // =========================
+            // 2. BORDES CLAMP
+            // =========================
+
+            // TOP
+            for (int y = 0; y < expanded; y++) {
+                for (int x = 0; x < w; x++) {
+                    safeCopyPixel(
+                            srcRaster,
+                            atlasRaster,
+                            srcX + x,
+                            srcY,
+                            dstX + expanded + x,
+                            dstY + y,
+                            pixelBuffer
+                    );
+                }
+            }
+
+            // BOTTOM
+            for (int y = 0; y < expanded; y++) {
+                for (int x = 0; x < w; x++) {
+                    safeCopyPixel(
+                            srcRaster,
+                            atlasRaster,
+                            srcX + x,
+                            srcY + h - 1,
+                            dstX + expanded + x,
+                            dstY + expanded + h + y,
+                            pixelBuffer
+                    );
+                }
+            }
+
+            // LEFT
+            for (int x = 0; x < expanded; x++) {
+                for (int y = 0; y < h; y++) {
+                    safeCopyPixel(
+                            srcRaster,
+                            atlasRaster,
+                            srcX,
+                            srcY + y,
+                            dstX + x,
+                            dstY + expanded + y,
+                            pixelBuffer
+                    );
+                }
+            }
+
+            // RIGHT
+            for (int x = 0; x < expanded; x++) {
+                for (int y = 0; y < h; y++) {
+                    safeCopyPixel(
+                            srcRaster,
+                            atlasRaster,
+                            srcX + w - 1,
+                            srcY + y,
+                            dstX + expanded + w + x,
+                            dstY + expanded + y,
+                            pixelBuffer
+                    );
+                }
+            }
+
+            // =========================
+            // 3. ESQUINAS
+            // =========================
+
+            // TL
+            for (int y = 0; y < expanded; y++) {
+                for (int x = 0; x < expanded; x++) {
+                    safeCopyPixel(
+                            srcRaster,
+                            atlasRaster,
+                            srcX,
+                            srcY,
+                            dstX + x,
+                            dstY + y,
+                            pixelBuffer
+                    );
+                }
+            }
+
+            // TR
+            for (int y = 0; y < expanded; y++) {
+                for (int x = 0; x < expanded; x++) {
+                    safeCopyPixel(
+                            srcRaster,
+                            atlasRaster,
+                            srcX + w - 1,
+                            srcY,
+                            dstX + expanded + w + x,
+                            dstY + y,
+                            pixelBuffer
+                    );
+                }
+            }
+
+            // BL
+            for (int y = 0; y < expanded; y++) {
+                for (int x = 0; x < expanded; x++) {
+                    safeCopyPixel(
+                            srcRaster,
+                            atlasRaster,
+                            srcX,
+                            srcY + h - 1,
+                            dstX + x,
+                            dstY + expanded + h + y,
+                            pixelBuffer
+                    );
+                }
+            }
+
+            // BR
+            for (int y = 0; y < expanded; y++) {
+                for (int x = 0; x < expanded; x++) {
+                    safeCopyPixel(
+                            srcRaster,
+                            atlasRaster,
+                            srcX + w - 1,
+                            srcY + h - 1,
+                            dstX + expanded + w + x,
+                            dstY + expanded + h + y,
+                            pixelBuffer
+                    );
+                }
+            }
+        }
+
+        if (paintUsedPixels) {
+            paintUsedFacesByGroupColorOnAtlas(
+                    atlasImage,
+                    textureScissorDatas,
+                    maxWidth,
+                    maxHeight
+            );
+
+        }
+
+        dilateBackgroundColor(
+                resultTextureAtlas.getBufferedImage(),
+                new Color(255, 0, 255));
+
+        // check if textureAtlas width > 8192 and or height > 8192
+        if (maxWidth > 8192 || maxHeight > 8192) {
+            // resize the textureAtlas
+            int newWidth = Math.min(maxWidth, 8192);
+            int newHeight = Math.min(maxHeight, 8192);
+            BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, imageType);
+            Graphics2D g2dResized = resizedImage.createGraphics();
+            g2dResized.drawImage(resultTextureAtlas.getBufferedImage(), 0, 0, newWidth, newHeight, null);
+            g2dResized.dispose();
+            resultTextureAtlas.setBufferedImage(resizedImage);
+            resultTextureAtlas.setWidth(newWidth);
+            resultTextureAtlas.setHeight(newHeight);
+        }
+
+        return textureScissorDatas;
+    }
+
+    public List<GaiaTextureScissorData> calculateTextureScissorDates_original(List<List<HalfEdgeFace>> mergedWeldedFacesGroups,
+                                                                     int texWidth,
+                                                                     int texHeight,
+                                                                     boolean existPngTextures,
+                                                                     BufferedImage srcImage,
+                                                                     GaiaTexture resultTextureAtlas,
+                                                                     boolean paintUsedPixels) {
+        // now, for each faceGroup, create a scissorData
+        // there are 2 types of scissorData :
+        // 1- more width than height.
+        // 2- more height than width.
+        List<GaiaTextureScissorData> textureScissorDatasWidth = new ArrayList<>();
+        List<GaiaTextureScissorData> textureScissorDatasHeight = new ArrayList<>();
+        int weldedFacesGroupsCount = mergedWeldedFacesGroups.size();
+
+        List<HalfEdgeVertex> faceVertices = new ArrayList<>();
+        Map<HalfEdgeVertex, HalfEdgeVertex> groupVertexMap = new HashMap<>();
+        Map<HalfEdgeVertex, HalfEdgeVertex> visitedVertexMap = new HashMap<>();
+
+        log.debug("ScissorTextures : weldedFacesCount" + weldedFacesGroupsCount + " " + textureScissorDatasWidth.size());
+        boolean invertTexCoordY = false;
+        List<HalfEdgeVertex> memSaveVertices = new ArrayList<>();
+        List<HalfEdge>  memSaveEdges = new ArrayList<>();
+        for (int i = 0; i < weldedFacesGroupsCount; i++) {
+            List<HalfEdgeFace> weldedFacesGroup = mergedWeldedFacesGroups.get(i);
+            GaiaRectangle groupTexCoordBRect = new GaiaRectangle();
+            int weldedFacesCount = weldedFacesGroup.size();
+            for (int j = 0; j < weldedFacesCount; j++) {
+                GaiaRectangle texCoordBRect = new GaiaRectangle();
+                HalfEdgeFace face = weldedFacesGroup.get(j);
+                memSaveVertices.clear();
+                memSaveEdges.clear();
+                texCoordBRect = face.getTexCoordBoundingRectangle(texCoordBRect, invertTexCoordY, memSaveVertices, memSaveEdges);
+
+                if (j == 0) {
+                    groupTexCoordBRect.copyFrom(texCoordBRect);
+                } else {
+                    groupTexCoordBRect.addBoundingRectangle(texCoordBRect);
+                }
+            }
+
+            // check if must translate to positive quadrant
+            if (groupTexCoordBRect.getMinX() < 0.0 || groupTexCoordBRect.getMinX() > 1.0 || groupTexCoordBRect.getMinY() < 0.0 || groupTexCoordBRect.getMinY() > 1.0) {
+                double texCoordOriginX = groupTexCoordBRect.getMinX();
+                double texCoordOriginY = groupTexCoordBRect.getMinY();
+                double offsetX = 0.0;
+                double offsetY = 0.0;
+                if (texCoordOriginX < 0.0 || texCoordOriginX > 1.0) {
+                    offsetX = Math.floor(texCoordOriginX);
+                }
+
+                if (texCoordOriginY < 0.0 || texCoordOriginY > 1.0) {
+                    offsetY = Math.floor(texCoordOriginY);
+                }
+
+                if (offsetX != 0.0 || offsetY != 0.0) {
+                    // must translate to positive quadrant
+                    int facesCount = weldedFacesGroup.size();
+                    for (int j = 0; j < facesCount; j++) {
+                        HalfEdgeFace face = weldedFacesGroup.get(j);
+                        faceVertices.clear();
+                        memSaveEdges.clear();
+                        faceVertices = face.getVertices(faceVertices, memSaveEdges);
+                        int verticesCount = faceVertices.size();
+                        for (int k = 0; k < verticesCount; k++) {
+                            HalfEdgeVertex vertex = faceVertices.get(k);
+                            if (visitedVertexMap.containsKey(vertex)) {
+                                continue;
+                            }
+                            Vector2d texCoord = vertex.getTexcoords();
+                            texCoord.x -= offsetX;
+                            texCoord.y -= offsetY;
+                            visitedVertexMap.put(vertex, vertex);
+                        }
+                    }
+                }
+            }
+
+            // create a new GaiaTextureScissorData
+            GaiaTextureScissorData textureScissorData = new GaiaTextureScissorData();
+            textureScissorData.setTexCoordBoundary(groupTexCoordBRect);
+
+            // calculate the expanded boundary in pixels
+            double groupTexCoordMinX = groupTexCoordBRect.getMinX();
+            double groupTexCoordMinY = groupTexCoordBRect.getMinY();
+            double groupTexCoordMaxX = groupTexCoordBRect.getMaxX();
+            double groupTexCoordMaxY = groupTexCoordBRect.getMaxY();
+            double minPixelPosX = groupTexCoordMinX * (double) texWidth;
+            double minPixelPosY = groupTexCoordMinY * (double) texHeight;
+            double maxPixelPosX = groupTexCoordMaxX * (double) texWidth;
+            double maxPixelPosY = groupTexCoordMaxY * (double) texHeight;
+            GaiaRectangle noExpandedRect = new GaiaRectangle(minPixelPosX, minPixelPosY, maxPixelPosX, maxPixelPosY);
+            textureScissorData.setNoExpandedBoundary(noExpandedRect);
+
+            double width = groupTexCoordBRect.getWidthInt();
+            double height = groupTexCoordBRect.getHeightInt();
+
+            double pixelWidth = maxPixelPosX - minPixelPosX;
+            double pixelHeight = maxPixelPosY - minPixelPosY;
+
+            int expandedPixels = calculateExpandedPixels(pixelWidth, pixelHeight);
+
+            minPixelPosX -= expandedPixels;
+            minPixelPosY -= expandedPixels;
+            maxPixelPosX += expandedPixels;
+            maxPixelPosY += expandedPixels;
+
+            textureScissorData.setExpandedPixel(expandedPixels);
+
+            GaiaRectangle expandedCurrBoundary = new GaiaRectangle(minPixelPosX, minPixelPosY, maxPixelPosX, maxPixelPosY);
+            textureScissorData.setCurrentBoundary(expandedCurrBoundary);
+
+            textureScissorData.setFaces(weldedFacesGroup); // set the faces
+
+            if (width == 0 || height == 0) {
+                continue;
+            }
+
+            if (width > height) {
+                textureScissorDatasWidth.add(textureScissorData);
+            } else {
+                textureScissorDatasHeight.add(textureScissorData);
+            }
+        }
+
+        // Now, sort the textureScissorDatas by xLength & yLength (big to small)
+        textureScissorDatasWidth = textureScissorDatasWidth.stream().sorted(Comparator.comparing(textureScissorData -> textureScissorData.getCurrentBoundary().getWidthInt())).collect(Collectors.toList());
+        Collections.reverse(textureScissorDatasWidth);
+        textureScissorDatasHeight = textureScissorDatasHeight.stream().sorted(Comparator.comparing(textureScissorData -> textureScissorData.getCurrentBoundary().getHeightInt())).collect(Collectors.toList());
+        Collections.reverse(textureScissorDatasHeight);
+
+        // make a unique textureScissorData, alternating width & height
+        int textureScissorDatasWidthCount = textureScissorDatasWidth.size();
+        int textureScissorDatasHeightCount = textureScissorDatasHeight.size();
+
+        List<GaiaTextureScissorData> textureScissorDatas = new ArrayList<>();
+        int maxCount = Math.max(textureScissorDatasWidthCount, textureScissorDatasHeightCount);
+        for (int i = 0; i < maxCount; i++) {
+            if (i < textureScissorDatasWidthCount) {
+                textureScissorDatas.add(textureScissorDatasWidth.get(i));
+            }
+
+            if (i < textureScissorDatasHeightCount) {
+                textureScissorDatas.add(textureScissorDatasHeight.get(i));
+            }
+        }
+
+        doAtlasTextureProcessByScissorDates(textureScissorDatas);
+
+        // recalculate texCoords.***************************************************************************************
+        int maxWidth = getMaxWidthScissorDates(textureScissorDatas);
+        int maxHeight = getMaxHeightScissorDates(textureScissorDatas);
+        if (maxWidth == 0 || maxHeight == 0) {
+            log.warn("[WARN] HalfEdgeSurface.scissorTextures() : maxWidth == 0 || maxHeight == 0.");
+            return null;
+        }
+
+        double originalArea = texWidth * texHeight;
+        double atlasArea = maxWidth * maxHeight;
+        double diffPercent = (atlasArea - originalArea) / originalArea * 100.0;
+        log.debug("scissorProcess : diffPercent ( % ) = " + (int) diffPercent + " %");
+        if (atlasArea > originalArea) {
+            log.debug("[WARN] HalfEdgeSurface.scissorTextures() : Atlas area is bigger than original area. diffPercent = " + (int) diffPercent + " %");
+        }
+
+        visitedVertexMap.clear();
+
+        int textureScissorDatasCount = textureScissorDatas.size();
+        log.debug("TextureScissorDatasCount : " + textureScissorDatasCount);
+        for (int i = 0; i < textureScissorDatasCount; i++) {
+            //log.debug("textureScissorDatas : " + i + " / " + textureScissorDatasCount);
+            GaiaTextureScissorData textureScissorData = textureScissorDatas.get(i);
+            if (!textureScissorData.validate()) {
+                log.error("[ERROR] HalfEdgeSurface.scissorTextures() : textureScissorData.TEST_Check() == false.");
+            }
+            List<HalfEdgeFace> faceGroup = textureScissorData.getFaces();
+            GaiaRectangle currentBoundary = textureScissorData.getCurrentBoundary();
+            GaiaRectangle batchedBoundary = textureScissorData.getBatchedBoundary();
+            GaiaRectangle texCoordBoundary = textureScissorData.getTexCoordBoundary();
+            GaiaRectangle noExpandedRect = textureScissorData.getNoExpandedBoundary();
+
+            //int badFacesCount0 = TestUtils.checkTexCoordsOfHalfEdgeFaces(faceGroup);
+
+            if (texCoordBoundary == null) {
+                log.error("[ERROR] HalfEdgeSurface.scissorTextures() : texCoordBoundary == null.");
+            }
+
+            // obtain all vertex of the faceGroup
+            groupVertexMap.clear();
+            int facesCount = faceGroup.size();
+            //GaiaRectangle groupTexCoordBRect = new GaiaRectangle();
+            for (int j = 0; j < facesCount; j++) {
+                HalfEdgeFace face = faceGroup.get(j);
+                if (face.getStatus() == ObjectStatus.DELETED) {
+
+                }
+                //groupTexCoordBRect = face.getTexCoordBoundingRectangle(groupTexCoordBRect, invertTexCoordY);
+                faceVertices.clear();
+                memSaveEdges.clear();
+                faceVertices = face.getVertices(faceVertices,  memSaveEdges);
+                int verticesCount = faceVertices.size();
+                for (int k = 0; k < verticesCount; k++) {
+                    HalfEdgeVertex vertex = faceVertices.get(k);
+                    groupVertexMap.put(vertex, vertex);
+                }
+            }
+
+            // now, calculate the vertex list from the map
+            List<HalfEdgeVertex> vertexList = new ArrayList<>(groupVertexMap.values());
+            int verticesCount = vertexList.size();
+            int currBoundaryWidth = currentBoundary.getWidthInt();
+            int currBoundaryHeight = currentBoundary.getHeightInt();
+            double texCoordClampError = 1e-6; // Small epsilon to prevent clamping issues
+
+            for (int k = 0; k < verticesCount; k++) {
+                HalfEdgeVertex vertex = vertexList.get(k);
+                if (visitedVertexMap.containsKey(vertex)) {
+                    continue;
+                }
+                visitedVertexMap.put(vertex, vertex);
+                Vector2d texCoord = vertex.getTexcoords();
+
+                // transform the texCoords to texCoordRelToCurrentBoundary
+                if (currBoundaryWidth != 0 || currBoundaryHeight != 0) {
+                    double x = texCoord.x;
+                    double y = texCoord.y;
+
+                    int expandedPixels = textureScissorData.getExpandedPixel();
+
+                    noExpandedRect = textureScissorData.getNoExpandedBoundary();
+                    batchedBoundary = textureScissorData.getBatchedBoundary();
+
+                    int srcX = (int) Math.floor(noExpandedRect.getMinX());
+                    int srcY = (int) Math.floor(noExpandedRect.getMinY());
+
+                    double originalPixelX = x * texWidth;
+                    double originalPixelY = y * texHeight;
+
+                    double innerMinX = batchedBoundary.getMinX() + expandedPixels;
+                    double innerMinY = batchedBoundary.getMinY() + expandedPixels;
+
+                    double xAtlas = (innerMinX + (originalPixelX - srcX)) / maxWidth;
+                    double yAtlas = (innerMinY + (originalPixelY - srcY)) / maxHeight;
+
+                    Vector2d texCoordFinal = new Vector2d(xAtlas, yAtlas);
+                    GaiaTextureUtils.clampTextureCoordinate(texCoordFinal, texCoordClampError);
+
+                    texCoord.set(texCoordFinal.x, texCoordFinal.y);
+                    vertex.setTexcoords(texCoord);
+                } else {
+                    texCoord.set(0.0, 0.0);
+                    vertex.setTexcoords(texCoord);
+                }
+            }
+
+        }
+
+        // make the atlas texture.**************************************************************************************
+        int imageType = existPngTextures ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
+        log.debug("[Tile][Photogrammetry][Atlas] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
+        if(maxWidth > 8192 || maxHeight > 8192) {
+            log.warn("[Tile][Photogrammetry][Atlas] Atlas size exceeds 8192 x 8192. maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
+        }
         resultTextureAtlas.createImage(maxWidth, maxHeight, imageType);
 
         // Fill atlas background with known color

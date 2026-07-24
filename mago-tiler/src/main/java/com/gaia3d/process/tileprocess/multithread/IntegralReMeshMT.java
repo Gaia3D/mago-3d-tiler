@@ -226,7 +226,22 @@ public final class IntegralReMeshMT {
                         new SoftwareRenderingBackend()
                 );
 
-        processor.integralReMeshByObliqueCameraV2(
+//        processor.integralReMeshByObliqueCameraV2(
+//                job.sceneInfos(),
+//                localResultScenes,
+//                localReMeshParameters,
+//                job.nodeBBoxLC().clone(),
+//                new Matrix4d(
+//                        job.nodeTransformMatrix()
+//                ),
+//                job.maxScreenSize(),
+//                job.outputPath(),
+//                job.nodeName(),
+//                job.lod(),
+//                job.node()
+//        );
+
+        processor.integralReMeshByObliqueCamera2by2(
                 job.sceneInfos(),
                 localResultScenes,
                 localReMeshParameters,
