@@ -31,9 +31,12 @@ public final class MagoRenderablePrimitive {
      * Optional vertex attributes.
      */
     private MagoBuffer normalsBuffer;
+    private MagoBuffer tangentsBuffer;
+    private MagoBuffer bitangentsBuffer;
     private MagoBuffer texCoordsBuffer;
     private MagoBuffer colorsBuffer;
     private MagoTexture2D diffuseTexture;
+    private MagoTexture2D normalTexture;
 
     /**
      * Constructor used when face-code rendering is not required,
@@ -53,11 +56,14 @@ public final class MagoRenderablePrimitive {
                 positionsBuffer,
                 indicesBuffer,
                 normalsBuffer,
+                null,
+                null,
                 texCoordsBuffer,
                 colorsBuffer,
                 vertexCount,
                 indexCount,
                 diffuseTexture,
+                null,
                 null
         );
     }
@@ -74,6 +80,36 @@ public final class MagoRenderablePrimitive {
             int vertexCount,
             int indexCount,
             MagoTexture2D diffuseTexture,
+            int[] faceCodes
+    ) {
+        this(
+                positionsBuffer,
+                indicesBuffer,
+                normalsBuffer,
+                null,
+                null,
+                texCoordsBuffer,
+                colorsBuffer,
+                vertexCount,
+                indexCount,
+                diffuseTexture,
+                null,
+                faceCodes
+        );
+    }
+
+    public MagoRenderablePrimitive(
+            MagoBuffer positionsBuffer,
+            MagoBuffer indicesBuffer,
+            MagoBuffer normalsBuffer,
+            MagoBuffer tangentsBuffer,
+            MagoBuffer bitangentsBuffer,
+            MagoBuffer texCoordsBuffer,
+            MagoBuffer colorsBuffer,
+            int vertexCount,
+            int indexCount,
+            MagoTexture2D diffuseTexture,
+            MagoTexture2D normalTexture,
             int[] faceCodes
     ) {
         this.positionsBuffer = Objects.requireNonNull(
@@ -103,6 +139,8 @@ public final class MagoRenderablePrimitive {
                 positionsBuffer,
                 indicesBuffer,
                 normalsBuffer,
+                tangentsBuffer,
+                bitangentsBuffer,
                 texCoordsBuffer,
                 colorsBuffer,
                 vertexCount,
@@ -146,6 +184,8 @@ public final class MagoRenderablePrimitive {
         }
 
         this.normalsBuffer = normalsBuffer;
+        this.tangentsBuffer = tangentsBuffer;
+        this.bitangentsBuffer = bitangentsBuffer;
         this.texCoordsBuffer = texCoordsBuffer;
         this.colorsBuffer = colorsBuffer;
 
@@ -153,6 +193,7 @@ public final class MagoRenderablePrimitive {
         this.indexCount = indexCount;
 
         this.diffuseTexture = diffuseTexture;
+        this.normalTexture = normalTexture;
 
         /*
          * Defensive copy to preserve immutability.
@@ -169,6 +210,8 @@ public final class MagoRenderablePrimitive {
             MagoBuffer positionsBuffer,
             MagoBuffer indicesBuffer,
             MagoBuffer normalsBuffer,
+            MagoBuffer tangentsBuffer,
+            MagoBuffer bitangentsBuffer,
             MagoBuffer texCoordsBuffer,
             MagoBuffer colorsBuffer,
             int vertexCount,
@@ -227,6 +270,44 @@ public final class MagoRenderablePrimitive {
             }
         }
 
+        if (tangentsBuffer != null) {
+            int requiredTangentsBytes =
+                    Math.multiplyExact(
+                            vertexCount,
+                            3 * Float.BYTES
+                    );
+
+            if (tangentsBuffer.getSizeBytes()
+                    < requiredTangentsBytes) {
+
+                throw new IllegalArgumentException(
+                        "Tangents buffer is too small. Required: "
+                                + requiredTangentsBytes
+                                + ", available: "
+                                + tangentsBuffer.getSizeBytes()
+                );
+            }
+        }
+
+        if (bitangentsBuffer != null) {
+            int requiredBitangentsBytes =
+                    Math.multiplyExact(
+                            vertexCount,
+                            3 * Float.BYTES
+                    );
+
+            if (bitangentsBuffer.getSizeBytes()
+                    < requiredBitangentsBytes) {
+
+                throw new IllegalArgumentException(
+                        "Bitangents buffer is too small. Required: "
+                                + requiredBitangentsBytes
+                                + ", available: "
+                                + bitangentsBuffer.getSizeBytes()
+                );
+            }
+        }
+
         if (texCoordsBuffer != null) {
             int requiredTexCoordsBytes =
                     Math.multiplyExact(
@@ -275,6 +356,14 @@ public final class MagoRenderablePrimitive {
 
     public boolean hasTexCoords() {
         return texCoordsBuffer != null;
+    }
+
+    public boolean hasTangents() {
+        return tangentsBuffer != null;
+    }
+
+    public boolean hasBitangents() {
+        return bitangentsBuffer != null;
     }
 
     public boolean hasColors() {
@@ -327,6 +416,14 @@ public final class MagoRenderablePrimitive {
             normalsBuffer.delete();
         }
 
+        if (tangentsBuffer != null) {
+            tangentsBuffer.delete();
+        }
+
+        if (bitangentsBuffer != null) {
+            bitangentsBuffer.delete();
+        }
+
         if (texCoordsBuffer != null) {
             texCoordsBuffer.delete();
         }
@@ -339,11 +436,18 @@ public final class MagoRenderablePrimitive {
             diffuseTexture.delete();
         }
 
+        if (normalTexture != null) {
+            normalTexture.delete();
+        }
+
         positionsBuffer = null;
         indicesBuffer = null;
         normalsBuffer = null;
+        tangentsBuffer = null;
+        bitangentsBuffer = null;
         texCoordsBuffer = null;
         colorsBuffer = null;
         diffuseTexture = null;
+        normalTexture = null;
     }
 }

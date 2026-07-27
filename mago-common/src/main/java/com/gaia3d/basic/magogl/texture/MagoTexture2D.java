@@ -313,21 +313,31 @@ public final class MagoTexture2D {
         float b11 = (c11 & 0xFF) / 255.0f;
         float a11 = ((c11 >>> 24) & 0xFF) / 255.0f;
 
-        float r0 = lerp(r00, r10, tx);
-        float g0 = lerp(g00, g10, tx);
-        float b0 = lerp(b00, b10, tx);
+        float r0 = lerp(r00 * a00, r10 * a10, tx);
+        float g0 = lerp(g00 * a00, g10 * a10, tx);
+        float b0 = lerp(b00 * a00, b10 * a10, tx);
         float a0 = lerp(a00, a10, tx);
 
-        float r1 = lerp(r01, r11, tx);
-        float g1 = lerp(g01, g11, tx);
-        float b1 = lerp(b01, b11, tx);
+        float r1 = lerp(r01 * a01, r11 * a11, tx);
+        float g1 = lerp(g01 * a01, g11 * a11, tx);
+        float b1 = lerp(b01 * a01, b11 * a11, tx);
         float a1 = lerp(a01, a11, tx);
 
+        float alpha = lerp(a0, a1, ty);
+        float red = lerp(r0, r1, ty);
+        float green = lerp(g0, g1, ty);
+        float blue = lerp(b0, b1, ty);
+        if (alpha > 1e-6f) {
+            red /= alpha;
+            green /= alpha;
+            blue /= alpha;
+        }
+
         result.set(
-                lerp(r0, r1, ty),
-                lerp(g0, g1, ty),
-                lerp(b0, b1, ty),
-                lerp(a0, a1, ty)
+                red,
+                green,
+                blue,
+                alpha
         );
     }
     public void delete() {
