@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -166,6 +167,7 @@ public class HalfEdgeScene implements Serializable {
         int cutCountBefore =
                 result.getHalfEdgesCutCount();
 
+        Map<HalfEdgeVertex, Integer> memSaveVertexIndexMap = new HashMap<>();
         for (HalfEdgeNode node : nodes) {
             if (node == null) {
                 continue;
@@ -175,7 +177,8 @@ public class HalfEdgeScene implements Serializable {
                     node.cutByPlane(
                             planeType,
                             planePosition,
-                            error
+                            error,
+                            memSaveVertexIndexMap
                     );
 
             result.add(currentResult);

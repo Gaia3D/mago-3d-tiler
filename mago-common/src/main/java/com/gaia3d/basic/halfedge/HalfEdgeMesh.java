@@ -11,6 +11,7 @@ import org.joml.Vector3d;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Setter
 @Getter
@@ -32,10 +33,11 @@ public class HalfEdgeMesh implements Serializable {
         }
     }
 
-    public PlaneCutResult cutByPlane(PlaneType planeType, Vector3d planePosition, double error) {
+    public PlaneCutResult cutByPlane(PlaneType planeType, Vector3d planePosition, double error, Map<HalfEdgeVertex, Integer> memSaveVertexIndexMap) {
         PlaneCutResult total = new PlaneCutResult();
+        memSaveVertexIndexMap.clear();
         for (HalfEdgePrimitive primitive : primitives) {
-            PlaneCutResult currentResult = primitive.cutByPlane(planeType, planePosition, error);
+            PlaneCutResult currentResult = primitive.cutByPlane(planeType, planePosition, error, memSaveVertexIndexMap);
             total.add(currentResult);
         }
 
