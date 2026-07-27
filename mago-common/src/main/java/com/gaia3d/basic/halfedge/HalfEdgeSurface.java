@@ -646,7 +646,8 @@ public class HalfEdgeSurface implements Serializable {
     public PlaneCutResult cutByPlane(
             PlaneType planeType,
             Vector3d planePosition,
-            double error
+            double error,
+            Map<HalfEdgeVertex, Integer> memSaveVertexIndexMap
     ) {
         Set<HalfEdgeVertex> tangentCandidates =
                 Collections.newSetFromMap(
@@ -791,14 +792,13 @@ public class HalfEdgeSurface implements Serializable {
         MapVertexAllFacesIndices mapVertexAllFacesIndices =
                 HalfEdgeUtils.getMapVertexAllFacesIndices(this);
 
-        Map<HalfEdgeVertex, Integer> vertexIndexMap =
-                new IdentityHashMap<>();
+        memSaveVertexIndexMap.clear();
 
         for (int i = 0; i < vertices.size(); i++) {
             HalfEdgeVertex vertex = vertices.get(i);
 
             if (vertex != null) {
-                vertexIndexMap.put(vertex, i);
+                memSaveVertexIndexMap.put(vertex, i);
             }
         }
 
@@ -815,7 +815,7 @@ public class HalfEdgeSurface implements Serializable {
                     planePosition,
                     error,
                     mapVertexAllFacesIndices,
-                    vertexIndexMap
+                    memSaveVertexIndexMap
             )) {
                 acceptedTangentSet.add(candidate);
             }
@@ -851,7 +851,7 @@ public class HalfEdgeSurface implements Serializable {
         List<PlaneCutPoint> cuttingPoints =
                 copyExistingPoints(
                         cuttingVertices,
-                        vertexIndexMap,
+                        memSaveVertexIndexMap,
                         planeType,
                         planePosition
                 );
@@ -859,7 +859,7 @@ public class HalfEdgeSurface implements Serializable {
         List<PlaneCutPoint> acceptedTangentPoints =
                 copyExistingPoints(
                         acceptedTangentSet,
-                        vertexIndexMap,
+                        memSaveVertexIndexMap,
                         planeType,
                         planePosition
                 );
@@ -867,10 +867,12 @@ public class HalfEdgeSurface implements Serializable {
         List<PlaneCutPoint> coplanarPoints =
                 copyExistingPoints(
                         coplanarCandidates,
-                        vertexIndexMap,
+                        memSaveVertexIndexMap,
                         planeType,
                         planePosition
                 );
+
+        memSaveVertexIndexMap.clear();
 
         return new PlaneCutResult(
                 cuttingPoints,

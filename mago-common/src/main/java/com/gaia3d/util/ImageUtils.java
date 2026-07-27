@@ -596,13 +596,11 @@ public class ImageUtils {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
 
-            log.error(
-                    "Interrupted while waiting to save image: {}",
-                    savePath,
+            throw new RuntimeException(
+                    "Interrupted while waiting to save image: "
+                            + savePath,
                     e
             );
-
-            return false;
 
         } finally {
             if (acquired) {

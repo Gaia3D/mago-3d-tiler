@@ -974,19 +974,16 @@ public class CutAndScissorMT {
                         if (texture == null) {
                             continue;
                         }
-                        // check if exist bufferedImage of the texture
-                        if (texture.getBufferedImage() == null) {
-                            // load the image
-                            texture.loadImage();
-                        }
+                        BufferedImage originalImage = texture.getBufferedImage();
 
-                        if (texture.getBufferedImage() == null) {
+                        // check if exist bufferedImage of the texture
+                        if (originalImage == null) {
+                            log.warn("originalImage is null for texture: " + texture.getFullPath());
                             continue;
                         }
 
                         if (currLod > 4) {
                             // resize the texture to half size
-                            BufferedImage originalImage = texture.getBufferedImage();
                             if (originalImage == null) {
                                 log.error("originalImage is null.");
                                 continue;
@@ -1006,6 +1003,12 @@ public class CutAndScissorMT {
 
                         texture.setParentPath(imagesPath.toString());
                         texture.saveImage(texture.getFullPath());
+
+                        texture.setBufferedImage(null);
+
+                        if (originalImage != null) {
+                            originalImage.flush();
+                        }
                     }
                 }
 

@@ -11,6 +11,7 @@ import org.joml.Vector3d;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -72,14 +73,15 @@ public class HalfEdgeNode implements Serializable {
         transformMatrix.identity();
     }
 
-    public PlaneCutResult cutByPlane(PlaneType planeType, Vector3d planePosition, double error) {
+    public PlaneCutResult cutByPlane(PlaneType planeType, Vector3d planePosition, double error, Map<HalfEdgeVertex, Integer> memSaveVertexIndexMap) {
         PlaneCutResult total = new PlaneCutResult();
+        memSaveVertexIndexMap.clear();
         for (HalfEdgeMesh mesh : meshes) {
-            PlaneCutResult currentResult = mesh.cutByPlane(planeType, planePosition, error);
+            PlaneCutResult currentResult = mesh.cutByPlane(planeType, planePosition, error, memSaveVertexIndexMap);
             total.add(currentResult);
         }
         for (HalfEdgeNode child : children) {
-            PlaneCutResult currentResult = child.cutByPlane(planeType, planePosition, error);
+            PlaneCutResult currentResult = child.cutByPlane(planeType, planePosition, error, memSaveVertexIndexMap);
             total.add(currentResult);
         }
 
