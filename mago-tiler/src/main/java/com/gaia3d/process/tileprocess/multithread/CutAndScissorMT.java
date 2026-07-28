@@ -974,7 +974,13 @@ public class CutAndScissorMT {
                         if (texture == null) {
                             continue;
                         }
+                        String texPath = texture.getPath();
+                        if (texPath == null || texPath.isEmpty()) {
+                            log.warn("Texture path is null or empty for texture: " + texture.getFullPath());
+                            continue;
+                        }
                         BufferedImage originalImage = texture.getBufferedImage();
+                        BufferedImage resizedImage = null;
 
                         // check if exist bufferedImage of the texture
                         if (originalImage == null) {
@@ -991,14 +997,13 @@ public class CutAndScissorMT {
                             if (originalImage.getWidth() > 4096 || originalImage.getHeight() > 4096) {
                                 int newWidth = Math.min(originalImage.getWidth(), 4096);
                                 int newHeight = Math.min(originalImage.getHeight(), 4096);
-                                BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, originalImage.getType());
+                                resizedImage = new BufferedImage(newWidth, newHeight, originalImage.getType());
                                 Graphics2D g = resizedImage.createGraphics();
                                 g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
                                 g.drawImage(originalImage, 0, 0, newWidth, newHeight, null);
                                 g.dispose();
                                 texture.setBufferedImage(resizedImage);
                             }
-
                         }
 
                         texture.setParentPath(imagesPath.toString());
@@ -1008,6 +1013,12 @@ public class CutAndScissorMT {
 
                         if (originalImage != null) {
                             originalImage.flush();
+                            originalImage = null;
+                        }
+
+                        if (resizedImage != null) {
+                            resizedImage.flush();
+                            resizedImage = null;
                         }
                     }
                 }
