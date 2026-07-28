@@ -45,6 +45,22 @@ public final class MagoDefaultVertexShader
             output.normal.set(0.0f, 0.0f, 1.0f);
         }
 
+        output.tangent.set(input.tangent);
+        uniforms.normalMatrix.transform(output.tangent);
+        if (output.tangent.lengthSquared() > NORMAL_EPSILON) {
+            output.tangent.normalize();
+        } else {
+            output.tangent.set(1.0f, 0.0f, 0.0f);
+        }
+
+        output.bitangent.set(input.bitangent);
+        uniforms.normalMatrix.transform(output.bitangent);
+        if (output.bitangent.lengthSquared() > NORMAL_EPSILON) {
+            output.bitangent.normalize();
+        } else {
+            output.bitangent.set(0.0f, 1.0f, 0.0f);
+        }
+
         // Varyings.
         output.texCoord.set(input.texCoord);
         output.color.set(input.color);

@@ -8,6 +8,8 @@ public final class MagoVertexInput {
 
     public final Vector3f position = new Vector3f();
     public final Vector3f normal = new Vector3f();
+    public final Vector3f tangent = new Vector3f(1.0f, 0.0f, 0.0f);
+    public final Vector3f bitangent = new Vector3f(0.0f, 1.0f, 0.0f);
     public final Vector2f texCoord = new Vector2f();
     public final Vector4f color = new Vector4f(1.0f);
 }

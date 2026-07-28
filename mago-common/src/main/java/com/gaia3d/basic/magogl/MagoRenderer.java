@@ -495,7 +495,7 @@ public final class MagoRenderer {
             int y,
             float depth
     ) {
-        MagoVertexOutput output0 =
+            MagoVertexOutput output0 =
                 vertex0.output;
 
         MagoVertexOutput output1 =
@@ -538,6 +538,42 @@ public final class MagoRenderer {
 
         if (result.normal.lengthSquared() > EPSILON) {
             result.normal.normalize();
+        }
+
+        result.tangent.set(
+                output0.tangent.x * weight0
+                        + output1.tangent.x * weight1
+                        + output2.tangent.x * weight2,
+
+                output0.tangent.y * weight0
+                        + output1.tangent.y * weight1
+                        + output2.tangent.y * weight2,
+
+                output0.tangent.z * weight0
+                        + output1.tangent.z * weight1
+                        + output2.tangent.z * weight2
+        );
+
+        if (result.tangent.lengthSquared() > EPSILON) {
+            result.tangent.normalize();
+        }
+
+        result.bitangent.set(
+                output0.bitangent.x * weight0
+                        + output1.bitangent.x * weight1
+                        + output2.bitangent.x * weight2,
+
+                output0.bitangent.y * weight0
+                        + output1.bitangent.y * weight1
+                        + output2.bitangent.y * weight2,
+
+                output0.bitangent.z * weight0
+                        + output1.bitangent.z * weight1
+                        + output2.bitangent.z * weight2
+        );
+
+        if (result.bitangent.lengthSquared() > EPSILON) {
+            result.bitangent.normalize();
         }
 
         result.texCoord.set(
@@ -715,6 +751,8 @@ public final class MagoRenderer {
             int vertexIndex,
             ByteBuffer positions,
             ByteBuffer normals,
+            ByteBuffer tangents,
+            ByteBuffer bitangents,
             ByteBuffer texCoords,
             ByteBuffer colors,
             MagoVertexInput result
@@ -750,6 +788,48 @@ public final class MagoRenderer {
                     0.0f,
                     0.0f,
                     1.0f
+            );
+        }
+
+        if (tangents != null) {
+            int tangentOffset =
+                    vertexIndex * 3 * Float.BYTES;
+
+            result.tangent.set(
+                    tangents.getFloat(tangentOffset),
+                    tangents.getFloat(
+                            tangentOffset + Float.BYTES
+                    ),
+                    tangents.getFloat(
+                            tangentOffset + 2 * Float.BYTES
+                    )
+            );
+        } else {
+            result.tangent.set(
+                    1.0f,
+                    0.0f,
+                    0.0f
+            );
+        }
+
+        if (bitangents != null) {
+            int bitangentOffset =
+                    vertexIndex * 3 * Float.BYTES;
+
+            result.bitangent.set(
+                    bitangents.getFloat(bitangentOffset),
+                    bitangents.getFloat(
+                            bitangentOffset + Float.BYTES
+                    ),
+                    bitangents.getFloat(
+                            bitangentOffset + 2 * Float.BYTES
+                    )
+            );
+        } else {
+            result.bitangent.set(
+                    0.0f,
+                    1.0f,
+                    0.0f
             );
         }
 
@@ -987,6 +1067,8 @@ public final class MagoRenderer {
 
         uniforms.diffuseTexture =
                 primitive.getDiffuseTexture();
+        uniforms.normalTexture =
+                primitive.getNormalTexture();
 
         ByteBuffer positions =
                 primitive.getPositionsBuffer().getData();
@@ -996,6 +1078,14 @@ public final class MagoRenderer {
 
         ByteBuffer normals = primitive.hasNormals()
                 ? primitive.getNormalsBuffer().getData()
+                : null;
+
+        ByteBuffer tangents = primitive.hasTangents()
+                ? primitive.getTangentsBuffer().getData()
+                : null;
+
+        ByteBuffer bitangents = primitive.hasBitangents()
+                ? primitive.getBitangentsBuffer().getData()
                 : null;
 
         ByteBuffer texCoords = primitive.hasTexCoords()
@@ -1029,6 +1119,8 @@ public final class MagoRenderer {
                     vertexIndex,
                     positions,
                     normals,
+                    tangents,
+                    bitangents,
                     texCoords,
                     colors,
                     vertexInput

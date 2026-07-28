@@ -20,6 +20,7 @@ public final class MagoUniforms {
     public final Vector3f lightDirection = new Vector3f(0.0f, 0.0f, -1.0f);
 
     public MagoTexture2D diffuseTexture;
+    public MagoTexture2D normalTexture;
 
     public MagoTextureWrap wrapS =
             MagoTextureWrap.CLAMP_TO_EDGE;
