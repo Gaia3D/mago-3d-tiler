@@ -22,13 +22,11 @@ public enum ProcessOptions {
     RECURSIVE("recursive", "r", false, false, "Tree directory deep navigation."),
 
     TERRAIN_PATH("terrain", "te", true, false, "GeoTiff Terrain file path, 3D Object applied as clampToGround (Supports GeoTIFF format)"),
-    GEOID_PATH("geoid", "ge", true, false, "Geoid file path for height correction, \n(default: Ellipsoid)(options: Ellipsoid, EGM96 or GeoTIFF File Path)"),
+    GEOID_PATH("geoid", "ge", true, false, "Geoid file path for height correction, \n(default: Ellipsoid)(options: Ellipsoid, EGM84, EGM96, EGM2008 or GeoTIFF File Path)"),
     INSTANCE_PATH("instance", "if", true, false, "Instance file path for I3DM \n(default: {OUTPUT}/instance.dae)"),
 
     MESH_QUANTIZATION("quantize", "qt", false, false, "Quantize glTF 3DMesh via \"KHR_mesh_quantization\" Extension"),
     TILES_VERSION("tilesVersion", "tv", true, false, "3DTiles Version \n(default: 1.1)(options: 1.0, 1.1)"),
-    TILING_MODE("tilingMode", "tm", true, false, "3DTiles hierarchy mode \n(default: explicit)(options: explicit, implicit)"),
-    IMPLICIT_SUBTREE_LEVELS("implicitSubtreeLevels", "isl", true, false, "Implicit tiling subtree levels \n(default: 4)"),
 
     /* Coordinate Setting Options */
     CRS("crs", "c", true, false, "set input data CRS(Coordinate Reference Systems) \n " +
@@ -45,20 +43,8 @@ public enum ProcessOptions {
     LONGITUDE("longitude", "lon", true, false, "Longitude value for coordinate transformation. (The lon lat option must be used together)."),
     LATITUDE("latitude", "lat", true, false, "Latitude value for coordinate transformation. (The lon lat option must be used together)."),
 
-    // Scale Options
-    // SCALE_X("scaleX", "sx",  true, false, "Scale the X-Axis by a factor"),
-    // SCALE_Y("scaleY", "sy",  true, false, "Scale the Y-Axis by a factor"),
-    // SCALE_Z("scaleZ", "sz",  true, false, "Scale the Z-Axis by a factor"),
-
     // Rotation Options
     ROTATE_X_AXIS("rotateXAxis", "rx", true, false, "Rotate the X-Axis in degrees"),
-    // ROTATE_Y_AXIS("rotateYAxis", "ry",  true, false, "Rotate the Y-Axis in degrees"),
-    // ROTATE_Z_AXIS("rotateZAxis", "rz",  true, false, "Rotate the Z-Axis in degrees"),
-
-    // Translation Options
-    // TRANSLATE_X("translateX", "tx",  true, false, "Translate the X-Axis by a factor"),
-    // TRANSLATE_Y("translateY", "ty",  true, false, "Translate the Y-Axis by a factor"),
-    // TRANSLATE_Z("translateZ", "tz",  true, false, "Translate the Z-Axis by a factor"),
 
     /* Tiling Control Options */
     REFINE_ADD("refineAdd", "ra", false, false, "[Tileset] Set 3D Tiles Refine 'ADD' mode"),
@@ -95,24 +81,18 @@ public enum ProcessOptions {
     SPLIT_BY_NODE("splitByNode", "sbn", false, false, "[Experimental] Split tiles by nodes of scene."),
     CURVATURE_CORRECTION("curvatureCorrection", "cc", false, false, "[Experimental] Apply curvature correction for ellipsoid surface."),
     UPDATE_ROOT_TRANSFORM("updateRootTransform", "urt", true, false, "[Experimental] Add 16 comma-separated transform values to the root node of tileset.json."),
+    TILING_MODE("tilingMode", "tm", true, false, "[Experimental] 3DTiles hierarchy mode \n(default: explicit)(options: explicit, implicit)"),
+    IMPLICIT_SUBTREE_LEVELS("implicitSubtreeLevels", "isl", true, false, "[Experimental] Implicit tiling subtree levels \n(default: 4)"),
 
     /* Deprecated Options */
     MULTI_THREAD_COUNT("multiThreadCount", "mc", true, false, "[Deprecated] set thread count"),
     DEBUG_GLB("glb", "glb", false, false, "[Deprecated] Create glb file with B3DM."),
     IGNORE_TEXTURES("ignoreTextures", "igtx", false, false, "[Deprecated] Ignore diffuse textures. "),
-    //AUTO_UP_AXIS("autoUpAxis", "aa",  false, "Automatically Assign 3D Matrix Axes. If your 3D data up-axis is incorrect, try this option."),
-    //SWAP_UP_AXIS("swapUpAxis", "su",  false, "Rotate the matrix -90 degrees about the X-axis."),
-    //FLIP_UP_AXIS("flipUpAxis", "ru", false, false, "Rotate the matrix 180 degrees about the X-axis."),
-    //LARGE_MESH("largeMesh", "lm", false, false, "[Experimental] Large Mesh Splitting Mode)"),
-    //VOXEL_LOD("voxelLod", "vl", false, false, "[Experimental] Voxel Level Of Detail setting for i3dm"),
-    //ZERO_ORIGIN("zeroOrigin", "zo", false, false, "[Experimental] fix 3d root transformed matrix origin to zero point."),
 
     /* Validation Options */
     VALIDATION_REPORT("validationReport", "vr", false, false, "[Validation] Save per-file validation JSON reports to the temp directory and write a batch summary to the output directory."),
-
     /* Verbose Options */
     VERBOSE("verbose", "v", false, false, "[Verbose] Show debug-level logs without changing the log format or disabling async logging."),
-
     /* Debug Options */
     DEBUG("debug", "d", false, false, "[DEBUG] More detailed log output and stops on Multi-Thread bugs.");
 

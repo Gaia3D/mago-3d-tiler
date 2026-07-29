@@ -127,7 +127,9 @@ public class ImageResizer {
             log.debug("height is greater than {}", MAX_TEXTURE_SIZE);
         }
 
-        int imageType = originalImage.getType() == 0 ? BufferedImage.TYPE_INT_ARGB : originalImage.getType();
+        int imageType = originalImage.getColorModel().hasAlpha()
+                ? BufferedImage.TYPE_INT_ARGB
+                : (originalImage.getType() == BufferedImage.TYPE_CUSTOM ? BufferedImage.TYPE_INT_RGB : originalImage.getType());
         BufferedImage outputImage = new BufferedImage(width, height, imageType);
         Graphics2D graphics2D = outputImage.createGraphics();
         if (interpolation) {

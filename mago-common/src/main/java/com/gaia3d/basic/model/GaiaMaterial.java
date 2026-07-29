@@ -39,6 +39,7 @@ public class GaiaMaterial extends MaterialStructure implements Serializable {
     private boolean isRepeat = false;
     private boolean isBlend = false;
     private boolean isOpaque = true;
+    private boolean doubleSided = false;
 
     public boolean isOpaqueMaterial() {
         this.isOpaque = true;
@@ -113,6 +114,7 @@ public class GaiaMaterial extends MaterialStructure implements Serializable {
         newMaterial.setRepeat(isRepeat);
         newMaterial.setBlend(isBlend);
         newMaterial.setOpaque(isOpaque);
+        newMaterial.setDoubleSided(doubleSided);
         newMaterial.setAlphaCutoff(this.alphaCutoff);
         newMaterial.setId(this.id);
         newMaterial.setName(this.name);

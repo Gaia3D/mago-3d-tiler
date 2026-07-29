@@ -25,10 +25,12 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -276,6 +278,7 @@ public class AssimpConverter implements Converter {
         float shininess = 0.0f;
         float roughness = 0.0f;
         float opacity = 1.0f;
+        boolean doubleSided = false;
         int properties = aiMaterial.mNumProperties();
         for (int i = 0; i < properties; i++) {
             long address = aiMaterial.mProperties().get(i);
@@ -287,15 +290,17 @@ public class AssimpConverter implements Converter {
             buffer.get(data);
 
             //log.info(aiMaterialProperty.mKey().dataString());
-            if (aiMaterialProperty.mKey().dataString().contains("opacity")) {
+            String propertyKey = aiMaterialProperty.mKey().dataString();
+            String normalizedPropertyKey = propertyKey.toLowerCase(Locale.ROOT);
+            if (normalizedPropertyKey.contains("opacity")) {
                 ByteBuffer byteBuffer = ByteBuffer.wrap(data);
                 byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
                 float opacityValue = byteBuffer.getFloat();
                 if (opacityValue < 1.0f) {
                     opacity = opacityValue;
                 }
-            } else if (aiMaterialProperty.mKey().dataString().contains("alphaMode")) {
-                String value = new String(data);
+            } else if (normalizedPropertyKey.contains("alphamode")) {
+                String value = new String(data, StandardCharsets.UTF_8);
                 value = value.toUpperCase().trim();
 
                 if (value.contains("OPAQUE")) {
@@ -305,27 +310,29 @@ public class AssimpConverter implements Converter {
                 } else if (value.contains("BLEND")) {
                     alphaMode = "BLEND";
                 }
-            } else if (aiMaterialProperty.mKey().dataString().contains("alphaCutoff")) {
+            } else if (normalizedPropertyKey.contains("alphacutoff")) {
                 ByteBuffer byteBuffer = ByteBuffer.wrap(data);
                 byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
                 float value = byteBuffer.getFloat();
                 if (value < 1.0f) {
                     alphaCutoff = value;
                 }
-            } else if (aiMaterialProperty.mKey().dataString().contains("shininess")) {
+            } else if (normalizedPropertyKey.contains("shininess")) {
                 ByteBuffer byteBuffer = ByteBuffer.wrap(data);
                 byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
                 float value = byteBuffer.getFloat();
                 if (value < 1.0f) {
                     shininess = value;
                 }
-            } else if (aiMaterialProperty.mKey().dataString().contains("roughness")) {
+            } else if (normalizedPropertyKey.contains("roughness")) {
                 ByteBuffer byteBuffer = ByteBuffer.wrap(data);
                 byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
                 float value = byteBuffer.getFloat();
                 if (value < 1.0f) {
                     roughness = value;
                 }
+            } else if (normalizedPropertyKey.contains("twosided") || normalizedPropertyKey.contains("two_sided") || normalizedPropertyKey.contains("doublesided")) {
+                doubleSided = parseBooleanMaterialProperty(data);
             }
         }
 
@@ -363,6 +370,7 @@ public class AssimpConverter implements Converter {
         if (roughness > 0.0f) {
             material.setRoughness(roughness);
         }
+        material.setDoubleSided(doubleSided);
         switch (alphaMode) {
             case "OPAQUE":
                 material.setBlend(false);
@@ -606,6 +614,34 @@ public class AssimpConverter implements Converter {
         return material;
     }
 
+    private boolean parseBooleanMaterialProperty(byte[] data) {
+        if (data == null || data.length == 0) {
+            return false;
+        }
+
+        String value = new String(data, StandardCharsets.UTF_8).trim().toLowerCase(Locale.ROOT);
+        if (value.equals("0") || value.contains("false")) {
+            return false;
+        }
+        if (value.equals("1") || value.contains("true")) {
+            return true;
+        }
+
+        if (data.length >= Integer.BYTES) {
+            ByteBuffer byteBuffer = ByteBuffer.wrap(data);
+            byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+            int intValue = byteBuffer.getInt(0);
+            if (intValue == 0 || intValue == 1) {
+                return intValue == 1;
+            }
+            float floatValue = byteBuffer.getFloat(0);
+            if (!Float.isNaN(floatValue)) {
+                return floatValue != 0.0f;
+            }
+        }
+        return false;
+    }
+
     private GaiaNode processNode(GaiaScene gaiaScene, AIScene aiScene, AINode aiNode, GaiaNode parentNode, FormatType formatType) {
         String name = aiNode.mName().dataString();
 
@@ -730,10 +766,25 @@ public class AssimpConverter implements Converter {
 
         if (shouldGenerateNormals) {
             primitive.calculateVertexNormals();
+        } else if (normalsBuffer != null) {
+            calculateFaceNormalsPreservingVertexNormals(primitive);
         } else {
             primitive.calculateNormal();
         }
         return primitive;
+    }
+
+    private void calculateFaceNormalsPreservingVertexNormals(GaiaPrimitive primitive) {
+        List<Vector3d> vertexNormals = primitive.getVertices().stream()
+                .map(vertex -> vertex.getNormal() == null ? null : new Vector3d(vertex.getNormal()))
+                .toList();
+        primitive.calculateNormal();
+        for (int i = 0; i < primitive.getVertices().size(); i++) {
+            Vector3d normal = vertexNormals.get(i);
+            if (normal != null) {
+                primitive.getVertices().get(i).setNormal(normal);
+            }
+        }
     }
 
     private GaiaSurface processSurface() {

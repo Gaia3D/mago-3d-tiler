@@ -149,11 +149,8 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
 
     public GaiaBufferDataSet toGaiaBufferSet(Matrix4d transformMatrixOrigin) {
         Matrix4d transformMatrix = new Matrix4d(transformMatrixOrigin);
-        Matrix3d rotationMatrix = new Matrix3d();
-        transformMatrix.get3x3(rotationMatrix);
-        // normalize the rotation matrix
-        rotationMatrix.normal();
-        Matrix4d rotationMatrix4 = new Matrix4d(rotationMatrix);
+        Matrix3d normalMatrix = new Matrix3d(transformMatrix);
+        normalMatrix.invert().transpose();
 
         int[] indices = getIndices();
 
@@ -228,9 +225,8 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
             boundingBox.addPoint(position);
             Vector3d normal = vertex.getNormal();
             if (normal != null) {
-                rotationMatrix4.transformPosition(normal);
-
-                Vector3d normalized = normal.normalize(new Vector3d());
+                Vector3d normalized = normalMatrix.transform(normal, new Vector3d());
+                normalized.normalize();
                 if (Double.isNaN(normalized.x()) || Double.isNaN(normalized.y()) || Double.isNaN(normalized.z())) {
                     log.debug("[ERROR] Normal is NaN");
                     log.debug(" - Normal : {}", normal);
@@ -668,19 +664,8 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
 
             Vector3d normal = vertex.getNormal();
             if (normal != null) {
-                Vector3d transformedNormal = new Vector3d();
-                finalMatrix.transformPosition(normal, transformedNormal);
-                vertex.setNormal(transformedNormal);
-            }
-        }
-
-        // Also transform normals if they exist
-        Matrix3d normalMatrix = new Matrix3d();
-        finalMatrix.get3x3(normalMatrix);
-        normalMatrix.invert().transpose();
-        for (GaiaVertex vertex : vertices) {
-            Vector3d normal = vertex.getNormal();
-            if (normal != null) {
+                Matrix3d normalMatrix = new Matrix3d(finalMatrix);
+                normalMatrix.invert().transpose();
                 Vector3d transformedNormal = new Vector3d();
                 normalMatrix.transform(normal, transformedNormal);
                 transformedNormal.normalize();

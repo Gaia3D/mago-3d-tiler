@@ -81,7 +81,6 @@ public class Mago3DTilerMain {
                 mago3DTiler.execute();
             }
 
-
         } catch (ParseException e) {
             log.error("[ERROR] Failed to parse command line options, Please check the arguments.", e);
             throw new RuntimeException("Failed to parse command line options, Please check the arguments.", e);
