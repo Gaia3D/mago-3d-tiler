@@ -794,6 +794,10 @@ public class TextureAtlasManager {
         return compareImages.stream().mapToInt(textureScissorData -> (int) textureScissorData.getBatchedBoundary().getMaxY()).max().orElse(0);
     }
 
+    private static long bytesToMiB(long bytes) {
+        return bytes / (1024L * 1024L);
+    }
+
     public List<GaiaTextureScissorData> calculateTextureScissorDates(List<List<HalfEdgeFace>> mergedWeldedFacesGroups,
                                                                      int texWidth,
                                                                      int texHeight,
@@ -1054,9 +1058,34 @@ public class TextureAtlasManager {
         // make the atlas texture.**************************************************************************************
         int imageType = existPngTextures ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
         log.debug("[Tile][Photogrammetry][Atlas] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
-        if(maxWidth > 8192 || maxHeight > 8192) {
-            log.warn("[Tile][Photogrammetry][Atlas] Atlas size exceeds 8192 x 8192. maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
-        }
+        long atlasPixels =
+                (long) maxWidth * maxHeight;
+
+        long atlasBytes =
+                atlasPixels * Integer.BYTES;
+
+        Runtime runtime =
+                Runtime.getRuntime();
+
+        long usedHeap =
+                runtime.totalMemory() - runtime.freeMemory();
+
+        long freeUntilMax =
+                runtime.maxMemory() - usedHeap;
+
+        log.debug(
+                "[ATLAS ALLOCATION] thread={}, size={}x{}, "
+                        + "pixels={}, estimated={} MiB, "
+                        + "usedHeap={} MiB, freeUntilMax={} MiB, maxHeap={} MiB",
+                Thread.currentThread().getName(),
+                maxWidth,
+                maxHeight,
+                atlasPixels,
+                bytesToMiB(atlasBytes),
+                bytesToMiB(usedHeap),
+                bytesToMiB(freeUntilMax),
+                bytesToMiB(runtime.maxMemory())
+        );
         resultTextureAtlas.createImage(maxWidth, maxHeight, imageType);
 
         // Fill atlas background with known color
