@@ -27,6 +27,19 @@ public class GaiaTextureScissorData {
         return originBoundary;
     }
 
+    public void deleteObjects(){
+        originBoundary = null;
+        currentBoundary = null;
+        batchedBoundary = null;
+        texCoordBoundary = null;
+        if(faces != null){
+            faces.clear();
+        }
+        faces = null;
+        expandedPixel = 0;
+        noExpandedBoundary = null;
+    }
+
     public boolean mergeIfMergeable(GaiaTextureScissorData other) {
         if (!isMergeable(other)) {
             return false;

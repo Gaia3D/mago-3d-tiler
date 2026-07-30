@@ -180,9 +180,14 @@ public class HalfEdgeFace implements Serializable {
         this.halfEdge = null;
     }
 
-    public boolean isDegenerated() {
+    public boolean isDegenerated(List<HalfEdge> memSaveHalfEdges) {
+        if(memSaveHalfEdges == null){
+            memSaveHalfEdges = new ArrayList<>();
+        }
+        memSaveHalfEdges.clear();
+
         // if area is 0, then is degenerated
-        List<HalfEdge> halfEdgesLoop = this.getHalfEdgesLoop(null);
+        List<HalfEdge> halfEdgesLoop = this.getHalfEdgesLoop(memSaveHalfEdges);
         if (halfEdgesLoop == null) {
             return true;
         }

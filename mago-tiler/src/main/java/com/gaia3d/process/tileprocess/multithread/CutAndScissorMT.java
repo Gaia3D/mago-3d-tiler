@@ -911,6 +911,245 @@ public class CutAndScissorMT {
                 }
             }
 
+            octreesWithContents.clear();
+
+            for (int j = 0; j < octreesCount; j++) {
+                int classifyId = j;
+
+                // create a new HalfEdgeScene
+                HalfEdgeScene cuttedScene = halfEdgeScene.cloneByClassifyId(classifyId);
+                if (cuttedScene == null) {
+                    log.info("cuttedScene is null");
+                    continue;
+                }
+                cuttedScene.deleteDegeneratedFaces();
+                cuttedScene.deleteNoUsedMaterials();
+                cuttedScene.removeDeletedObjects();
+                List<GaiaMaterial> motherMaterials = halfEdgeScene.getMaterials();
+
+                if (scissorTextures && cut) {
+                    cuttedScene.scissorTexturesByMotherScene(motherMaterials);
+                }
+
+                // test clear bufferedImages of motherMaterials to save memory.*******************
+                for(GaiaMaterial motherMaterial : motherMaterials){
+                    motherMaterial.deleteTextures();
+                }
+                // end test.-----------------------------------------------------------------------
+
+                GaiaScene gaiaSceneCut = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(cuttedScene);
+
+                List<GaiaMaterial> materials = cuttedScene.getMaterials(); // keep material.
+                List<GaiaMaterial> voidMaterials = new ArrayList<>();
+                cuttedScene.setMaterials(voidMaterials);
+                cuttedScene.deleteObjects();// delete to save memory.
+
+                GaiaBoundingBox boundingBoxCutLC = new GaiaBoundingBox();
+                GaiaBoundingBox cartographicBoundingBox = this.calculateCartographicBoundingBox(gaiaSceneCut, transformMatrix, boundingBoxCutLC);
+
+                // create an originalPath for the cut scene
+                Path cutScenePath = Paths.get("");
+                gaiaSceneCut.setOriginalPath(cutScenePath);
+
+                GaiaSet gaiaSetCut = GaiaSet.fromGaiaScene(gaiaSceneCut);
+
+                // delete the contents of the gaiaSceneCut before create tileInfo**********************
+                gaiaSceneCut.getNodes().forEach(GaiaNode::clear); // new 20260420.
+
+                // Save.*****************************************************************************************
+                Path cutTempLodPath = cutTempPath.resolve("lod" + currLod);
+                if (!cutTempLodPath.toFile().exists() && cutTempLodPath.toFile().mkdirs()) {
+                    log.debug("cutTempLod folder created.");
+                }
+
+                UUID identifier = UUID.randomUUID();
+                Path gaiaSetCutFolderPath = cutTempLodPath.resolve(identifier.toString());
+                if (!gaiaSetCutFolderPath.toFile().exists() && gaiaSetCutFolderPath.toFile().mkdirs()) {
+                    log.debug("gaiaSetCut folder created.");
+                }
+
+                // save the materials
+                // save material atlas textures/////////////////////////////////////////////////////
+                //Path parentPath = path.getParent();
+                Path imagesPath = gaiaSetCutFolderPath.resolve("images");
+                // make directories if not exists
+                File imagesFolder = imagesPath.toFile();
+                if (!imagesFolder.exists() && imagesFolder.mkdirs()) {
+                    log.debug("images folder created.");
+                }
+                for (GaiaMaterial material : materials) {
+                    List<GaiaTexture> textures = material.getTextures().get(TextureType.DIFFUSE);
+                    for (GaiaTexture texture : textures) {
+                        if (texture == null) {
+                            continue;
+                        }
+
+                        BufferedImage originalImage = null;
+                        BufferedImage resizedImage = null;
+
+                        if(!texture.hasBufferedImage()) {
+                            String texPath = texture.getPath();
+                            if (texPath == null || texPath.isEmpty()) {
+                                log.debug("Texture path is null or empty for texture: " + texture.getFullPath());
+                                continue;
+                            }
+                            String parentPath = texture.getParentPath();
+                            if (parentPath == null || parentPath.isEmpty()) {
+                                log.debug("Texture path is null or empty for texture: " + texture.getFullPath());
+                                continue;
+                            }
+
+                            if (currLod > 2) {
+                                Path path = Path.of(texture.getFullPath());
+                                try {
+                                    log.debug("load image SCALED for LOD: " + currLod);
+                                    originalImage = texture.readImageScaled(path, 4096);
+                                } catch (Exception e) {
+                                    log.error("Failed to read and scale image for texture: " + texture.getFullPath(), e);
+                                    throw new RuntimeException("Failed to read and scale image for texture: " + texture.getFullPath(), e);
+                                }
+                            } else {
+                                originalImage = texture.getBufferedImage();
+                            }
+
+                            //originalImage = texture.getBufferedImage();
+
+                            // check if exist bufferedImage of the texture
+                            if (originalImage == null) {
+                                log.warn("originalImage is null for texture: " + texture.getFullPath());
+                                continue;
+                            }
+                        } else {
+                            log.debug("Texture already has bufferedImage for texture: " + texture.getFullPath());
+                        }
+
+                        texture.setParentPath(imagesPath.toString());
+                        texture.saveImage(texture.getFullPath());
+                        texture.deleteBufferedImage();
+                    }
+                }
+
+                boolean copyTexturesToNewPath = false;
+                Path tempPathLod = gaiaSetCut.writeFileForPR(gaiaSetCutFolderPath, copyTexturesToNewPath);
+
+                /////////////////////////////////////////////////////////////////////////////////////////
+
+                // create a new tileInfo for the cut scene
+                TileInfo tileInfoCut = TileInfo.builder().scene(gaiaSceneCut).outputPath(motherTileInfo.getOutputPath()).build();
+                tileInfoCut.setTempPath(tempPathLod);
+                Matrix4d transformMatrixCut = new Matrix4d(motherTileInfo.getTransformMatrix());
+                tileInfoCut.setTransformMatrix(transformMatrixCut);
+                tileInfoCut.setBoundingBox(boundingBoxCutLC);
+                tileInfoCut.setCartographicBBox(cartographicBoundingBox);
+
+                // make a kmlInfo for the cut scene
+                // In reality, we must recalculate the position of the cut scene. Provisionally, we use the same position
+                TileTransformInfo tileTransformInfoCut = TileTransformInfo.builder().position(geoCoordPosition).build();
+                tileInfoCut.setTileTransformInfo(tileTransformInfoCut);
+
+                localResults.computeIfAbsent(currLod, ignored -> new ArrayList<>()).add(tileInfoCut);
+
+                resultOctree.clearTree();
+                cuttedScene.deleteObjects();
+                gaiaSetCut.clear();
+                gaiaSceneCut.clear();
+            }
+        }
+
+        return cutTileInfos;
+    }
+
+    public List<TileInfo>
+    cutHalfEdgeSceneByGaiaAAPlanesAndSaveTileInfosAllLodMode_original(
+            HalfEdgeScene halfEdgeScene,
+            boolean scissorTextures,
+            boolean makeSkirt,
+            TileInfo motherTileInfo,
+            int lod,
+            BoundingVolume rootNodeBoundingVolume,
+            int projectMaxDepth,
+            Path cutTempPath,
+            Vector3d scenePositionRelToCellGrid,
+            Map<Integer, List<TileInfo>> localResults,
+            Map<Integer, PlaneCutResult> localPlaneCutResultsByLod
+    ) {
+        TileTransformInfo tileTransformInfo = motherTileInfo.getTileTransformInfo();
+        Vector3d geoCoordPosition = tileTransformInfo.getPosition();
+
+        List<TileInfo> cutTileInfos = new ArrayList<>();
+        List<GaiaAAPlane> planes = new ArrayList<>();
+
+        for (int currLod = lod; currLod >= 0; currLod--) {
+            // calculate the AAPlanes to cut.***
+            Matrix4d transformMatrix = new Matrix4d();
+            GaiaBoundingBox boundingBox = null;
+            planes.clear();
+            try {
+                boundingBox = this.getCuttingPlanesAndLocalBoundingBox(motherTileInfo, currLod, rootNodeBoundingVolume, projectMaxDepth, planes, transformMatrix);
+            } catch (Exception e) {
+                log.error("[ERROR] calculating cutting planes for LOD " + currLod, e);
+                continue;
+            }
+
+            HalfEdgeOctreeFaces resultOctree = new HalfEdgeOctreeFaces(null, boundingBox);
+            resultOctree.setLimitDepth(projectMaxDepth - currLod);
+
+            double error = 1e-4;
+            int planesCount = planes.size();
+            boolean cut = false;
+            PlaneCutResult planeCutResult = new PlaneCutResult();
+            for (int i = 0; i < planesCount; i++) {
+                GaiaAAPlane plane = planes.get(i);
+                if (halfEdgeScene.cutByPlane(plane.getPlaneType(), plane.getPoint(), error, planeCutResult)) {
+                    cut = true;
+                }
+            }
+
+            if (!planeCutResult.isEmpty()) {
+                PlaneCutResult planeCutResultInCellGrid =
+                        translatedPlaneCutResultToCellGridCoordinates(
+                                planeCutResult,
+                                scenePositionRelToCellGrid
+                        );
+
+                PlaneCutResult accumulatedResult =
+                        localPlaneCutResultsByLod.computeIfAbsent(
+                                currLod,
+                                ignored -> new PlaneCutResult()
+                        );
+
+                accumulatedResult.add(
+                        planeCutResultInCellGrid
+                );
+            }
+
+            halfEdgeScene.deleteDegeneratedFaces();
+
+            // now, distribute faces into octree
+            List<HalfEdgeSurface> surfaces = halfEdgeScene.extractSurfaces(null);
+            for (HalfEdgeSurface surface : surfaces) {
+                List<HalfEdgeFace> faces = surface.getFaces();
+                for (HalfEdgeFace face : faces) {
+                    if (face.getStatus() == ObjectStatus.DELETED) {
+                        continue;
+                    }
+                    resultOctree.addContent(face);
+                }
+            }
+
+            resultOctree.distributeFacesToTargetDepth(resultOctree.getLimitDepth());
+            List<GaiaOctree<HalfEdgeFace>> octreesWithContents = resultOctree.extractOctreesWithContents();
+
+            // set the classifyId for each face
+            int octreesCount = octreesWithContents.size();
+            for (int j = 0; j < octreesCount; j++) {
+                HalfEdgeOctreeFaces octree = (HalfEdgeOctreeFaces) octreesWithContents.get(j);
+                List<HalfEdgeFace> faces = octree.getContents();
+                for (HalfEdgeFace face : faces) {
+                    face.setClassifyId(j);
+                }
+            }
+
             for (int j = 0; j < octreesCount; j++) {
                 int classifyId = j;
 

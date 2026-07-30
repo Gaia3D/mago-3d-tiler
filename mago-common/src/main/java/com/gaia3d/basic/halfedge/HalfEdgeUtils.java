@@ -213,13 +213,13 @@ public class HalfEdgeUtils {
             return null;
         }
 
-        if (halfEdgeFace.isDegenerated()) {
+        if (memSaveHalfEdges == null) {
+            memSaveHalfEdges = new ArrayList<>();
+        }
+        memSaveVertices.clear();
+        if (halfEdgeFace.isDegenerated(memSaveHalfEdges)) {
             //halfEdgeFace.isDegenerated();
             return null;
-        }
-
-        if (memSaveVertices == null) {
-            memSaveVertices = new ArrayList<>();
         }
 
         GaiaFace gaiaFace = new GaiaFace();
@@ -1168,6 +1168,40 @@ public class HalfEdgeUtils {
     }
 
     public static List<HalfEdge> getHalfEdgesOfFaces(
+            List<HalfEdgeFace> faces,
+            List<HalfEdge> resultHalfEdges
+    ) {
+        if (resultHalfEdges == null) {
+            resultHalfEdges = new ArrayList<>();
+        }
+
+        if (faces == null || faces.isEmpty()) {
+            return resultHalfEdges;
+        }
+
+        List<HalfEdge> faceHalfEdges =
+                new ArrayList<>(3);
+
+        for (HalfEdgeFace face : faces) {
+            if (face == null) {
+                continue;
+            }
+
+            faceHalfEdges.clear();
+
+            face.getHalfEdgesLoop(
+                    faceHalfEdges
+            );
+
+            resultHalfEdges.addAll(
+                    faceHalfEdges
+            );
+        }
+
+        return resultHalfEdges;
+    }
+
+    public static List<HalfEdge> getHalfEdgesOfFaces_original(
             List<HalfEdgeFace> faces,
             List<HalfEdge> resultHalfEdges
     ) {

@@ -12,12 +12,17 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReadParam;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Iterator;
 
 /**
  * A class that represents a texture of a Gaia object.
@@ -62,6 +67,124 @@ public class GaiaTexture extends TextureStructure implements Serializable {
                 this.width = bufferedImage.getWidth();
                 this.height = bufferedImage.getHeight();
                 this.format = bufferedImage.getType();
+            }
+        }
+    }
+
+    public boolean hasBufferedImage() {
+        return this.bufferedImage != null;
+    }
+
+    public void deleteBufferedImage() {
+        if(this.bufferedImage != null) {
+            this.bufferedImage.flush();
+            this.bufferedImage = null;
+        }
+    }
+
+    public BufferedImage readImageScaled(
+            Path imagePath,
+            int dimensionLimit
+    ) throws IOException {
+
+        if (imagePath == null) {
+            throw new IllegalArgumentException(
+                    "imagePath must not be null"
+            );
+        }
+
+        if (dimensionLimit <= 0) {
+            throw new IllegalArgumentException(
+                    "dimensionLimit must be greater than zero"
+            );
+        }
+
+        if (!Files.isRegularFile(imagePath)) {
+            return null;
+        }
+
+        try (ImageInputStream inputStream =
+                     ImageIO.createImageInputStream(
+                             imagePath.toFile()
+                     )) {
+
+            if (inputStream == null) {
+                throw new IOException(
+                        "Could not create ImageInputStream for: "
+                                + imagePath
+                );
+            }
+
+            Iterator<ImageReader> readers =
+                    ImageIO.getImageReaders(inputStream);
+
+            if (!readers.hasNext()) {
+                throw new IOException(
+                        "No compatible ImageReader found for: "
+                                + imagePath
+                );
+            }
+
+            ImageReader reader =
+                    readers.next();
+
+            try {
+                reader.setInput(
+                        inputStream,
+                        true,
+                        true
+                );
+
+                int originalWidth =
+                        reader.getWidth(0);
+
+                int originalHeight =
+                        reader.getHeight(0);
+
+                boolean exceedsLimit =
+                        originalWidth > dimensionLimit
+                                || originalHeight > dimensionLimit;
+
+                int subsampling =
+                        exceedsLimit ? 2 : 1;
+
+                ImageReadParam readParam =
+                        reader.getDefaultReadParam();
+
+                if (subsampling > 1) {
+                    readParam.setSourceSubsampling(
+                            subsampling,
+                            subsampling,
+                            0,
+                            0
+                    );
+                }
+
+                BufferedImage result =
+                        reader.read(
+                                0,
+                                readParam
+                        );
+
+                if (result == null) {
+                    throw new IOException(
+                            "Could not decode image: "
+                                    + imagePath
+                    );
+                }
+
+                if (result != null) {
+                    this.bufferedImage = result;
+                    this.bufferedImageLod = LevelOfDetail.NONE;
+                    this.width = result.getWidth();
+                    this.height = result.getHeight();
+                    this.format = result.getType();
+                }
+
+                return result;
+
+            } finally {
+                reader.dispose();
             }
         }
     }
@@ -253,6 +376,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         }
         if (bufferedImage != null) {
             bufferedImage.flush();
+            bufferedImage = null;
         }
     }
 

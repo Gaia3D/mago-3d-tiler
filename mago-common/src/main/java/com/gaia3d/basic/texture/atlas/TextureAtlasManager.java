@@ -29,10 +29,7 @@ public class TextureAtlasManager {
         return expanded;
     }
 
-    public static void dilateBackgroundColor(
-            BufferedImage image,
-            Color backgroundColor
-    ) {
+    public static void dilateBackgroundColor(BufferedImage image, Color backgroundColor) {
         if (image == null || backgroundColor == null) {
             return;
         }
@@ -49,26 +46,17 @@ public class TextureAtlasManager {
         /*
          * Evitar overflow en width * height.
          */
-        final long pixelCountLong =
-                (long) width * height;
+        final long pixelCountLong = (long) width * height;
 
         if (pixelCountLong > Integer.MAX_VALUE) {
-            throw new IllegalArgumentException(
-                    "Image is too large: "
-                            + width
-                            + " x "
-                            + height
-            );
+            throw new IllegalArgumentException("Image is too large: " + width + " x " + height);
         }
 
-        final int pixelCount =
-                (int) pixelCountLong;
+        final int pixelCount = (int) pixelCountLong;
 
-        final int rgbMask =
-                0x00FFFFFF;
+        final int rgbMask = 0x00FFFFFF;
 
-        final int backgroundRGB =
-                backgroundColor.getRGB() & rgbMask;
+        final int backgroundRGB = backgroundColor.getRGB() & rgbMask;
 
         /*
          * Intentamos acceder directamente al int[] interno.
@@ -79,24 +67,11 @@ public class TextureAtlasManager {
         int[] pixels = null;
         boolean directPixelAccess = false;
 
-        int imageType =
-                image.getType();
+        int imageType = image.getType();
 
-        WritableRaster raster =
-                image.getRaster();
+        WritableRaster raster = image.getRaster();
 
-        if ((imageType == BufferedImage.TYPE_INT_ARGB
-                || imageType == BufferedImage.TYPE_INT_RGB)
-                && raster.getDataBuffer()
-                instanceof DataBufferInt dataBuffer
-                && dataBuffer.getNumBanks() == 1
-                && raster.getSampleModel()
-                instanceof SinglePixelPackedSampleModel sampleModel
-                && sampleModel.getScanlineStride() == width
-                && raster.getSampleModelTranslateX() == 0
-                && raster.getSampleModelTranslateY() == 0
-                && dataBuffer.getOffset() == 0
-                && dataBuffer.getData().length >= pixelCount) {
+        if ((imageType == BufferedImage.TYPE_INT_ARGB || imageType == BufferedImage.TYPE_INT_RGB) && raster.getDataBuffer() instanceof DataBufferInt dataBuffer && dataBuffer.getNumBanks() == 1 && raster.getSampleModel() instanceof SinglePixelPackedSampleModel sampleModel && sampleModel.getScanlineStride() == width && raster.getSampleModelTranslateX() == 0 && raster.getSampleModelTranslateY() == 0 && dataBuffer.getOffset() == 0 && dataBuffer.getData().length >= pixelCount) {
 
             pixels = dataBuffer.getData();
             directPixelAccess = true;
@@ -109,15 +84,7 @@ public class TextureAtlasManager {
          * Atención: este camino crea un int[] de pixelCount elementos.
          */
         if (!directPixelAccess) {
-            pixels = image.getRGB(
-                    0,
-                    0,
-                    width,
-                    height,
-                    null,
-                    0,
-                    width
-            );
+            pixels = image.getRGB(0, 0, width, height, null, 0, width);
         }
 
         /*
@@ -128,8 +95,7 @@ public class TextureAtlasManager {
          * byte[] anterior: aproximadamente 64 MiB
          * BitSet actual:   aproximadamente 8 MiB
          */
-        BitSet queued =
-                new BitSet(pixelCount);
+        BitSet queued = new BitSet(pixelCount);
 
         /*
          * El frente de propagación suele parecerse más al perímetro
@@ -137,23 +103,11 @@ public class TextureAtlasManager {
          *
          * La cola crecerá automáticamente cuando sea necesario.
          */
-        long suggestedCapacity =
-                Math.max(
-                        1024L,
-                        2L * (width + (long) height)
-                );
+        long suggestedCapacity = Math.max(1024L, 2L * (width + (long) height));
 
-        int initialQueueCapacity =
-                (int) Math.min(
-                        pixelCountLong,
-                        suggestedCapacity
-                );
+        int initialQueueCapacity = (int) Math.min(pixelCountLong, suggestedCapacity);
 
-        IntCircularQueue queue =
-                new IntCircularQueue(
-                        initialQueueCapacity,
-                        pixelCount
-                );
+        IntCircularQueue queue = new IntCircularQueue(initialQueueCapacity, pixelCount);
 
         int dilatedPixels = 0;
 
@@ -164,15 +118,12 @@ public class TextureAtlasManager {
          * algún píxel coloreado.
          */
         for (int y = 0; y < height; y++) {
-            int rowStart =
-                    y * width;
+            int rowStart = y * width;
 
             for (int x = 0; x < width; x++) {
-                int index =
-                        rowStart + x;
+                int index = rowStart + x;
 
-                if ((pixels[index] & rgbMask)
-                        != backgroundRGB) {
+                if ((pixels[index] & rgbMask) != backgroundRGB) {
                     continue;
                 }
 
@@ -184,33 +135,25 @@ public class TextureAtlasManager {
                  */
 
                 // Derecha.
-                if (x + 1 < width
-                        && (pixels[index + 1] & rgbMask)
-                        != backgroundRGB) {
+                if (x + 1 < width && (pixels[index + 1] & rgbMask) != backgroundRGB) {
 
                     touchesColoredPixel = true;
                 }
 
                 // Izquierda.
-                else if (x > 0
-                        && (pixels[index - 1] & rgbMask)
-                        != backgroundRGB) {
+                else if (x > 0 && (pixels[index - 1] & rgbMask) != backgroundRGB) {
 
                     touchesColoredPixel = true;
                 }
 
                 // Abajo.
-                else if (index + width < pixelCount
-                        && (pixels[index + width] & rgbMask)
-                        != backgroundRGB) {
+                else if (index + width < pixelCount && (pixels[index + width] & rgbMask) != backgroundRGB) {
 
                     touchesColoredPixel = true;
                 }
 
                 // Arriba.
-                else if (index >= width
-                        && (pixels[index - width] & rgbMask)
-                        != backgroundRGB) {
+                else if (index >= width && (pixels[index - width] & rgbMask) != backgroundRGB) {
 
                     touchesColoredPixel = true;
                 }
@@ -228,15 +171,13 @@ public class TextureAtlasManager {
          * Propagación BFS desde los píxeles frontera.
          */
         while (!queue.isEmpty()) {
-            int index =
-                    queue.remove();
+            int index = queue.remove();
 
             /*
              * Solo necesitamos x para comprobar los límites
              * izquierdo y derecho.
              */
-            int x =
-                    index % width;
+            int x = index % width;
 
             int replacement;
 
@@ -247,42 +188,28 @@ public class TextureAtlasManager {
              */
 
             // Derecha.
-            if (x + 1 < width
-                    && (pixels[index + 1] & rgbMask)
-                    != backgroundRGB) {
+            if (x + 1 < width && (pixels[index + 1] & rgbMask) != backgroundRGB) {
 
-                replacement =
-                        pixels[index + 1];
+                replacement = pixels[index + 1];
             }
 
             // Izquierda.
-            else if (x > 0
-                    && (pixels[index - 1] & rgbMask)
-                    != backgroundRGB) {
+            else if (x > 0 && (pixels[index - 1] & rgbMask) != backgroundRGB) {
 
-                replacement =
-                        pixels[index - 1];
+                replacement = pixels[index - 1];
             }
 
             // Abajo.
-            else if (index + width < pixelCount
-                    && (pixels[index + width] & rgbMask)
-                    != backgroundRGB) {
+            else if (index + width < pixelCount && (pixels[index + width] & rgbMask) != backgroundRGB) {
 
-                replacement =
-                        pixels[index + width];
+                replacement = pixels[index + width];
             }
 
             // Arriba.
-            else if (index >= width
-                    && (pixels[index - width] & rgbMask)
-                    != backgroundRGB) {
+            else if (index >= width && (pixels[index - width] & rgbMask) != backgroundRGB) {
 
-                replacement =
-                        pixels[index - width];
-            }
-
-            else {
+                replacement = pixels[index - width];
+            } else {
                 /*
                  * En condiciones normales no debería ocurrir.
                  *
@@ -295,8 +222,7 @@ public class TextureAtlasManager {
             /*
              * Dilatar el color sobre el píxel de fondo.
              */
-            pixels[index] =
-                    replacement;
+            pixels[index] = replacement;
 
             dilatedPixels++;
 
@@ -307,12 +233,9 @@ public class TextureAtlasManager {
 
             // Derecha.
             if (x + 1 < width) {
-                int neighborIndex =
-                        index + 1;
+                int neighborIndex = index + 1;
 
-                if (!queued.get(neighborIndex)
-                        && (pixels[neighborIndex] & rgbMask)
-                        == backgroundRGB) {
+                if (!queued.get(neighborIndex) && (pixels[neighborIndex] & rgbMask) == backgroundRGB) {
 
                     queued.set(neighborIndex);
                     queue.add(neighborIndex);
@@ -321,12 +244,9 @@ public class TextureAtlasManager {
 
             // Izquierda.
             if (x > 0) {
-                int neighborIndex =
-                        index - 1;
+                int neighborIndex = index - 1;
 
-                if (!queued.get(neighborIndex)
-                        && (pixels[neighborIndex] & rgbMask)
-                        == backgroundRGB) {
+                if (!queued.get(neighborIndex) && (pixels[neighborIndex] & rgbMask) == backgroundRGB) {
 
                     queued.set(neighborIndex);
                     queue.add(neighborIndex);
@@ -335,12 +255,9 @@ public class TextureAtlasManager {
 
             // Abajo.
             if (index + width < pixelCount) {
-                int neighborIndex =
-                        index + width;
+                int neighborIndex = index + width;
 
-                if (!queued.get(neighborIndex)
-                        && (pixels[neighborIndex] & rgbMask)
-                        == backgroundRGB) {
+                if (!queued.get(neighborIndex) && (pixels[neighborIndex] & rgbMask) == backgroundRGB) {
 
                     queued.set(neighborIndex);
                     queue.add(neighborIndex);
@@ -349,12 +266,9 @@ public class TextureAtlasManager {
 
             // Arriba.
             if (index >= width) {
-                int neighborIndex =
-                        index - width;
+                int neighborIndex = index - width;
 
-                if (!queued.get(neighborIndex)
-                        && (pixels[neighborIndex] & rgbMask)
-                        == backgroundRGB) {
+                if (!queued.get(neighborIndex) && (pixels[neighborIndex] & rgbMask) == backgroundRGB) {
 
                     queued.set(neighborIndex);
                     queue.add(neighborIndex);
@@ -367,30 +281,13 @@ public class TextureAtlasManager {
          * hay que copiar el resultado de vuelta a la imagen.
          */
         if (!directPixelAccess) {
-            image.setRGB(
-                    0,
-                    0,
-                    width,
-                    height,
-                    pixels,
-                    0,
-                    width
-            );
+            image.setRGB(0, 0, width, height, pixels, 0, width);
         }
 
-        log.debug(
-                "--- end dilate - Background - Color. "
-                        + "Dilated pixels: {}, "
-                        + "maximum queue size: {} ---",
-                dilatedPixels,
-                queue.getMaximumObservedSize()
-        );
+        log.debug("--- end dilate - Background - Color. " + "Dilated pixels: {}, " + "maximum queue size: {} ---", dilatedPixels, queue.getMaximumObservedSize());
     }
 
-    public static void dilateBackgroundColor_original(
-            BufferedImage image,
-            Color backgroundColor
-    ) {
+    public static void dilateBackgroundColor_original(BufferedImage image, Color backgroundColor) {
         if (image == null || backgroundColor == null) {
             return;
         }
@@ -423,16 +320,7 @@ public class TextureAtlasManager {
         int imageType = image.getType();
         WritableRaster raster = image.getRaster();
 
-        if ((imageType == BufferedImage.TYPE_INT_ARGB
-                || imageType == BufferedImage.TYPE_INT_RGB)
-                && raster.getDataBuffer() instanceof DataBufferInt dataBuffer
-                && raster.getSampleModel()
-                instanceof SinglePixelPackedSampleModel sampleModel
-                && sampleModel.getScanlineStride() == width
-                && raster.getSampleModelTranslateX() == 0
-                && raster.getSampleModelTranslateY() == 0
-                && dataBuffer.getOffset() == 0
-                && dataBuffer.getData().length >= pixelCount) {
+        if ((imageType == BufferedImage.TYPE_INT_ARGB || imageType == BufferedImage.TYPE_INT_RGB) && raster.getDataBuffer() instanceof DataBufferInt dataBuffer && raster.getSampleModel() instanceof SinglePixelPackedSampleModel sampleModel && sampleModel.getScanlineStride() == width && raster.getSampleModelTranslateX() == 0 && raster.getSampleModelTranslateY() == 0 && dataBuffer.getOffset() == 0 && dataBuffer.getData().length >= pixelCount) {
 
             pixels = dataBuffer.getData();
             directPixelAccess = true;
@@ -443,15 +331,7 @@ public class TextureAtlasManager {
          * por ejemplo TYPE_3BYTE_BGR.
          */
         if (!directPixelAccess) {
-            pixels = image.getRGB(
-                    0,
-                    0,
-                    width,
-                    height,
-                    null,
-                    0,
-                    width
-            );
+            pixels = image.getRGB(0, 0, width, height, null, 0, width);
         }
 
         /*
@@ -490,23 +370,19 @@ public class TextureAtlasManager {
                 boolean touchesColoredPixel = false;
 
                 // Derecha.
-                if (x + 1 < width
-                        && (pixels[index + 1] & rgbMask) != backgroundRGB) {
+                if (x + 1 < width && (pixels[index + 1] & rgbMask) != backgroundRGB) {
                     touchesColoredPixel = true;
                 }
                 // Izquierda.
-                else if (x > 0
-                        && (pixels[index - 1] & rgbMask) != backgroundRGB) {
+                else if (x > 0 && (pixels[index - 1] & rgbMask) != backgroundRGB) {
                     touchesColoredPixel = true;
                 }
                 // Abajo.
-                else if (index + width < pixelCount
-                        && (pixels[index + width] & rgbMask) != backgroundRGB) {
+                else if (index + width < pixelCount && (pixels[index + width] & rgbMask) != backgroundRGB) {
                     touchesColoredPixel = true;
                 }
                 // Arriba.
-                else if (index >= width
-                        && (pixels[index - width] & rgbMask) != backgroundRGB) {
+                else if (index >= width && (pixels[index - width] & rgbMask) != backgroundRGB) {
                     touchesColoredPixel = true;
                 }
 
@@ -536,23 +412,19 @@ public class TextureAtlasManager {
              * Conservamos el mismo orden que el código original:
              * derecha, izquierda, abajo, arriba.
              */
-            if (x + 1 < width
-                    && (pixels[index + 1] & rgbMask) != backgroundRGB) {
+            if (x + 1 < width && (pixels[index + 1] & rgbMask) != backgroundRGB) {
 
                 replacement = pixels[index + 1];
 
-            } else if (x > 0
-                    && (pixels[index - 1] & rgbMask) != backgroundRGB) {
+            } else if (x > 0 && (pixels[index - 1] & rgbMask) != backgroundRGB) {
 
                 replacement = pixels[index - 1];
 
-            } else if (index + width < pixelCount
-                    && (pixels[index + width] & rgbMask) != backgroundRGB) {
+            } else if (index + width < pixelCount && (pixels[index + width] & rgbMask) != backgroundRGB) {
 
                 replacement = pixels[index + width];
 
-            } else if (index >= width
-                    && (pixels[index - width] & rgbMask) != backgroundRGB) {
+            } else if (index >= width && (pixels[index - width] & rgbMask) != backgroundRGB) {
 
                 replacement = pixels[index - width];
 
@@ -575,8 +447,7 @@ public class TextureAtlasManager {
             if (x + 1 < width) {
                 int neighborIndex = index + 1;
 
-                if (queued[neighborIndex] == 0
-                        && (pixels[neighborIndex] & rgbMask) == backgroundRGB) {
+                if (queued[neighborIndex] == 0 && (pixels[neighborIndex] & rgbMask) == backgroundRGB) {
 
                     queued[neighborIndex] = 1;
                     queue[tail++] = neighborIndex;
@@ -587,8 +458,7 @@ public class TextureAtlasManager {
             if (x > 0) {
                 int neighborIndex = index - 1;
 
-                if (queued[neighborIndex] == 0
-                        && (pixels[neighborIndex] & rgbMask) == backgroundRGB) {
+                if (queued[neighborIndex] == 0 && (pixels[neighborIndex] & rgbMask) == backgroundRGB) {
 
                     queued[neighborIndex] = 1;
                     queue[tail++] = neighborIndex;
@@ -599,8 +469,7 @@ public class TextureAtlasManager {
             if (index + width < pixelCount) {
                 int neighborIndex = index + width;
 
-                if (queued[neighborIndex] == 0
-                        && (pixels[neighborIndex] & rgbMask) == backgroundRGB) {
+                if (queued[neighborIndex] == 0 && (pixels[neighborIndex] & rgbMask) == backgroundRGB) {
 
                     queued[neighborIndex] = 1;
                     queue[tail++] = neighborIndex;
@@ -611,8 +480,7 @@ public class TextureAtlasManager {
             if (index >= width) {
                 int neighborIndex = index - width;
 
-                if (queued[neighborIndex] == 0
-                        && (pixels[neighborIndex] & rgbMask) == backgroundRGB) {
+                if (queued[neighborIndex] == 0 && (pixels[neighborIndex] & rgbMask) == backgroundRGB) {
 
                     queued[neighborIndex] = 1;
                     queue[tail++] = neighborIndex;
@@ -625,32 +493,13 @@ public class TextureAtlasManager {
          * acceder directamente al DataBufferInt.
          */
         if (!directPixelAccess) {
-            image.setRGB(
-                    0,
-                    0,
-                    width,
-                    height,
-                    pixels,
-                    0,
-                    width
-            );
+            image.setRGB(0, 0, width, height, pixels, 0, width);
         }
 
-        log.debug(
-                "--- end dilate - Background - Color. Dilated pixels: {} ---",
-                tail
-        );
+        log.debug("--- end dilate - Background - Color. Dilated pixels: {} ---", tail);
     }
 
-    private static void safeCopyPixel(
-            Raster srcRaster,
-            WritableRaster dstRaster,
-            int srcX,
-            int srcY,
-            int dstX,
-            int dstY,
-            int[] pixelBuffer
-    ) {
+    private static void safeCopyPixel(Raster srcRaster, WritableRaster dstRaster, int srcX, int srcY, int dstX, int dstY, int[] pixelBuffer) {
         int srcMinX = srcRaster.getMinX();
         int srcMinY = srcRaster.getMinY();
         int srcMaxX = srcMinX + srcRaster.getWidth() - 1;
@@ -676,6 +525,10 @@ public class TextureAtlasManager {
         return Math.max(min, Math.min(max, value));
     }
 
+    private static long bytesToMiB(long bytes) {
+        return bytes / (1024L * 1024L);
+    }
+
     public void doAtlasTextureProcessByScissorDates(List<GaiaTextureScissorData> textureScissorDates) {
         // here calculates the batchedBoundaries of each textureScissorData
         int textureScissorDatasCount = textureScissorDates.size();
@@ -689,18 +542,16 @@ public class TextureAtlasManager {
                 log.debug("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : guillotinePacker.insert() failed.");
             }
         }
+
+        guillotinePacker.clear();
     }
 
-    public void doAtlasTextureProcessByScissorDatesFull(
-            List<GaiaTextureScissorDataFull> textureScissorDatesFull
-    ) {
+    public void doAtlasTextureProcessByScissorDatesFull(List<GaiaTextureScissorDataFull> textureScissorDatesFull) {
         int textureScissorDatasCount = textureScissorDatesFull.size();
 
-        log.debug("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : textureScissorDatasCount = "
-                + textureScissorDatasCount);
+        log.debug("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : textureScissorDatasCount = " + textureScissorDatasCount);
 
-        List<GaiaTextureScissorDataFull> sortedScissors =
-                sortScissorDataAlternatingWidthHeight(textureScissorDatesFull);
+        List<GaiaTextureScissorDataFull> sortedScissors = sortScissorDataAlternatingWidthHeight(textureScissorDatesFull);
 
         GuillotinePacker guillotinePacker = new GuillotinePacker();
 
@@ -713,9 +564,7 @@ public class TextureAtlasManager {
         }
     }
 
-    private List<GaiaTextureScissorDataFull> sortScissorDataAlternatingWidthHeight(
-            List<GaiaTextureScissorDataFull> input
-    ) {
+    private List<GaiaTextureScissorDataFull> sortScissorDataAlternatingWidthHeight(List<GaiaTextureScissorDataFull> input) {
         if (input == null || input.isEmpty()) {
             return new ArrayList<>();
         }
@@ -723,15 +572,9 @@ public class TextureAtlasManager {
         List<GaiaTextureScissorDataFull> byWidth = new ArrayList<>(input);
         List<GaiaTextureScissorDataFull> byHeight = new ArrayList<>(input);
 
-        byWidth.sort((a, b) -> Integer.compare(
-                getImageWidth(b),
-                getImageWidth(a)
-        ));
+        byWidth.sort((a, b) -> Integer.compare(getImageWidth(b), getImageWidth(a)));
 
-        byHeight.sort((a, b) -> Integer.compare(
-                getImageHeight(b),
-                getImageHeight(a)
-        ));
+        byHeight.sort((a, b) -> Integer.compare(getImageHeight(b), getImageHeight(a)));
 
         List<GaiaTextureScissorDataFull> result = new ArrayList<>(input.size());
         Set<GaiaTextureScissorDataFull> used = Collections.newSetFromMap(new IdentityHashMap<>());
@@ -794,17 +637,7 @@ public class TextureAtlasManager {
         return compareImages.stream().mapToInt(textureScissorData -> (int) textureScissorData.getBatchedBoundary().getMaxY()).max().orElse(0);
     }
 
-    private static long bytesToMiB(long bytes) {
-        return bytes / (1024L * 1024L);
-    }
-
-    public List<GaiaTextureScissorData> calculateTextureScissorDates(List<List<HalfEdgeFace>> mergedWeldedFacesGroups,
-                                                                     int texWidth,
-                                                                     int texHeight,
-                                                                     boolean existPngTextures,
-                                                                     BufferedImage srcImage,
-                                                                     GaiaTexture resultTextureAtlas,
-                                                                     boolean paintUsedPixels) {
+    public void calculateTextureScissorDates(List<List<HalfEdgeFace>> mergedWeldedFacesGroups, int texWidth, int texHeight, boolean existPngTextures, BufferedImage srcImage, GaiaTexture resultTextureAtlas, boolean paintUsedPixels) {
         // now, for each faceGroup, create a scissorData
         // there are 2 types of scissorData :
         // 1- more width than height.
@@ -814,24 +647,22 @@ public class TextureAtlasManager {
         int weldedFacesGroupsCount = mergedWeldedFacesGroups.size();
 
         List<HalfEdgeVertex> faceVertices = new ArrayList<>();
-        Map<HalfEdgeVertex, HalfEdgeVertex> groupVertexMap = new HashMap<>();
-        Map<HalfEdgeVertex, HalfEdgeVertex> visitedVertexMap = new HashMap<>();
+        Set<HalfEdgeVertex> visitedVertexMap = new HashSet<>();
 
         log.debug("ScissorTextures : weldedFacesCount" + weldedFacesGroupsCount + " " + textureScissorDatasWidth.size());
         boolean invertTexCoordY = false;
         List<HalfEdgeVertex> memSaveVertices = new ArrayList<>();
-        List<HalfEdge>  memSaveEdges = new ArrayList<>();
+        List<HalfEdge> memSaveEdges = new ArrayList<>();
+        GaiaRectangle groupTexCoordBRect = new GaiaRectangle();
+        GaiaRectangle texCoordBRect = new GaiaRectangle();
         for (int i = 0; i < weldedFacesGroupsCount; i++) {
             List<HalfEdgeFace> weldedFacesGroup = mergedWeldedFacesGroups.get(i);
-            GaiaRectangle groupTexCoordBRect = new GaiaRectangle();
             int weldedFacesCount = weldedFacesGroup.size();
             for (int j = 0; j < weldedFacesCount; j++) {
-                GaiaRectangle texCoordBRect = new GaiaRectangle();
                 HalfEdgeFace face = weldedFacesGroup.get(j);
                 memSaveVertices.clear();
                 memSaveEdges.clear();
                 texCoordBRect = face.getTexCoordBoundingRectangle(texCoordBRect, invertTexCoordY, memSaveVertices, memSaveEdges);
-
                 if (j == 0) {
                     groupTexCoordBRect.copyFrom(texCoordBRect);
                 } else {
@@ -864,13 +695,13 @@ public class TextureAtlasManager {
                         int verticesCount = faceVertices.size();
                         for (int k = 0; k < verticesCount; k++) {
                             HalfEdgeVertex vertex = faceVertices.get(k);
-                            if (visitedVertexMap.containsKey(vertex)) {
+                            if (visitedVertexMap.contains(vertex)) {
                                 continue;
                             }
                             Vector2d texCoord = vertex.getTexcoords();
                             texCoord.x -= offsetX;
                             texCoord.y -= offsetY;
-                            visitedVertexMap.put(vertex, vertex);
+                            visitedVertexMap.add(vertex);
                         }
                     }
                 }
@@ -945,6 +776,9 @@ public class TextureAtlasManager {
             }
         }
 
+        textureScissorDatasWidth.clear();
+        textureScissorDatasHeight.clear();
+
         doAtlasTextureProcessByScissorDates(textureScissorDatas);
 
         // recalculate texCoords.***************************************************************************************
@@ -952,7 +786,7 @@ public class TextureAtlasManager {
         int maxHeight = getMaxHeightScissorDates(textureScissorDatas);
         if (maxWidth == 0 || maxHeight == 0) {
             log.warn("[WARN] HalfEdgeSurface.scissorTextures() : maxWidth == 0 || maxHeight == 0.");
-            return null;
+            return;
         }
 
         double originalArea = texWidth * texHeight;
@@ -965,6 +799,8 @@ public class TextureAtlasManager {
 
         visitedVertexMap.clear();
 
+        Vector2d texCoordFinal = new Vector2d();
+        Set<HalfEdgeVertex> groupVertexMap = new HashSet<>();
         int textureScissorDatasCount = textureScissorDatas.size();
         log.debug("TextureScissorDatasCount : " + textureScissorDatasCount);
         for (int i = 0; i < textureScissorDatasCount; i++) {
@@ -979,8 +815,6 @@ public class TextureAtlasManager {
             GaiaRectangle texCoordBoundary = textureScissorData.getTexCoordBoundary();
             GaiaRectangle noExpandedRect = textureScissorData.getNoExpandedBoundary();
 
-            //int badFacesCount0 = TestUtils.checkTexCoordsOfHalfEdgeFaces(faceGroup);
-
             if (texCoordBoundary == null) {
                 log.error("[ERROR] HalfEdgeSurface.scissorTextures() : texCoordBoundary == null.");
             }
@@ -988,25 +822,23 @@ public class TextureAtlasManager {
             // obtain all vertex of the faceGroup
             groupVertexMap.clear();
             int facesCount = faceGroup.size();
-            //GaiaRectangle groupTexCoordBRect = new GaiaRectangle();
             for (int j = 0; j < facesCount; j++) {
                 HalfEdgeFace face = faceGroup.get(j);
                 if (face.getStatus() == ObjectStatus.DELETED) {
 
                 }
-                //groupTexCoordBRect = face.getTexCoordBoundingRectangle(groupTexCoordBRect, invertTexCoordY);
                 faceVertices.clear();
                 memSaveEdges.clear();
-                faceVertices = face.getVertices(faceVertices,  memSaveEdges);
+                faceVertices = face.getVertices(faceVertices, memSaveEdges);
                 int verticesCount = faceVertices.size();
                 for (int k = 0; k < verticesCount; k++) {
                     HalfEdgeVertex vertex = faceVertices.get(k);
-                    groupVertexMap.put(vertex, vertex);
+                    groupVertexMap.add(vertex);
                 }
             }
 
             // now, calculate the vertex list from the map
-            List<HalfEdgeVertex> vertexList = new ArrayList<>(groupVertexMap.values());
+            List<HalfEdgeVertex> vertexList = new ArrayList<>(groupVertexMap);
             int verticesCount = vertexList.size();
             int currBoundaryWidth = currentBoundary.getWidthInt();
             int currBoundaryHeight = currentBoundary.getHeightInt();
@@ -1014,10 +846,10 @@ public class TextureAtlasManager {
 
             for (int k = 0; k < verticesCount; k++) {
                 HalfEdgeVertex vertex = vertexList.get(k);
-                if (visitedVertexMap.containsKey(vertex)) {
+                if (visitedVertexMap.contains(vertex)) {
                     continue;
                 }
-                visitedVertexMap.put(vertex, vertex);
+                visitedVertexMap.add(vertex);
                 Vector2d texCoord = vertex.getTexcoords();
 
                 // transform the texCoords to texCoordRelToCurrentBoundary
@@ -1042,7 +874,9 @@ public class TextureAtlasManager {
                     double xAtlas = (innerMinX + (originalPixelX - srcX)) / maxWidth;
                     double yAtlas = (innerMinY + (originalPixelY - srcY)) / maxHeight;
 
-                    Vector2d texCoordFinal = new Vector2d(xAtlas, yAtlas);
+                    //Vector2d texCoordFinal = new Vector2d(xAtlas, yAtlas);
+                    texCoordFinal.x = xAtlas;
+                    texCoordFinal.y = yAtlas;
                     GaiaTextureUtils.clampTextureCoordinate(texCoordFinal, texCoordClampError);
 
                     texCoord.set(texCoordFinal.x, texCoordFinal.y);
@@ -1053,39 +887,23 @@ public class TextureAtlasManager {
                 }
             }
 
+            vertexList.clear();
         }
 
         // make the atlas texture.**************************************************************************************
         int imageType = existPngTextures ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
         log.debug("[Tile][Photogrammetry][Atlas] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
-        long atlasPixels =
-                (long) maxWidth * maxHeight;
+        long atlasPixels = (long) maxWidth * maxHeight;
 
-        long atlasBytes =
-                atlasPixels * Integer.BYTES;
+        long atlasBytes = atlasPixels * Integer.BYTES;
 
-        Runtime runtime =
-                Runtime.getRuntime();
+        Runtime runtime = Runtime.getRuntime();
 
-        long usedHeap =
-                runtime.totalMemory() - runtime.freeMemory();
+        long usedHeap = runtime.totalMemory() - runtime.freeMemory();
 
-        long freeUntilMax =
-                runtime.maxMemory() - usedHeap;
+        long freeUntilMax = runtime.maxMemory() - usedHeap;
 
-        log.debug(
-                "[ATLAS ALLOCATION] thread={}, size={}x{}, "
-                        + "pixels={}, estimated={} MiB, "
-                        + "usedHeap={} MiB, freeUntilMax={} MiB, maxHeap={} MiB",
-                Thread.currentThread().getName(),
-                maxWidth,
-                maxHeight,
-                atlasPixels,
-                bytesToMiB(atlasBytes),
-                bytesToMiB(usedHeap),
-                bytesToMiB(freeUntilMax),
-                bytesToMiB(runtime.maxMemory())
-        );
+        log.debug("[ATLAS ALLOCATION] thread={}, size={}x{}, " + "pixels={}, estimated={} MiB, " + "usedHeap={} MiB, freeUntilMax={} MiB, maxHeap={} MiB", Thread.currentThread().getName(), maxWidth, maxHeight, atlasPixels, bytesToMiB(atlasBytes), bytesToMiB(usedHeap), bytesToMiB(freeUntilMax), bytesToMiB(runtime.maxMemory()));
         resultTextureAtlas.createImage(maxWidth, maxHeight, imageType);
 
         // Fill atlas background with known color
@@ -1131,8 +949,7 @@ public class TextureAtlasManager {
             int totalDstH = expanded * 2 + h;
 
             if (dstX >= atlasW || dstY >= atlasH || dstX + totalDstW <= 0 || dstY + totalDstH <= 0) {
-                log.warn("Skipping scissor fully outside atlas: dstX={}, dstY={}, totalW={}, totalH={}, atlasW={}, atlasH={}",
-                        dstX, dstY, totalDstW, totalDstH, atlasW, atlasH);
+                log.warn("Skipping scissor fully outside atlas: dstX={}, dstY={}, totalW={}, totalH={}, atlasW={}, atlasH={}", dstX, dstY, totalDstW, totalDstH, atlasW, atlasH);
                 continue;
             }
 
@@ -1141,15 +958,7 @@ public class TextureAtlasManager {
             // =========================
             for (int y = 0; y < h; y++) {
                 for (int x = 0; x < w; x++) {
-                    safeCopyPixel(
-                            srcRaster,
-                            atlasRaster,
-                            srcX + x,
-                            srcY + y,
-                            dstX + expanded + x,
-                            dstY + expanded + y,
-                            pixelBuffer
-                    );
+                    safeCopyPixel(srcRaster, atlasRaster, srcX + x, srcY + y, dstX + expanded + x, dstY + expanded + y, pixelBuffer);
                 }
             }
 
@@ -1160,60 +969,28 @@ public class TextureAtlasManager {
             // TOP
             for (int y = 0; y < expanded; y++) {
                 for (int x = 0; x < w; x++) {
-                    safeCopyPixel(
-                            srcRaster,
-                            atlasRaster,
-                            srcX + x,
-                            srcY,
-                            dstX + expanded + x,
-                            dstY + y,
-                            pixelBuffer
-                    );
+                    safeCopyPixel(srcRaster, atlasRaster, srcX + x, srcY, dstX + expanded + x, dstY + y, pixelBuffer);
                 }
             }
 
             // BOTTOM
             for (int y = 0; y < expanded; y++) {
                 for (int x = 0; x < w; x++) {
-                    safeCopyPixel(
-                            srcRaster,
-                            atlasRaster,
-                            srcX + x,
-                            srcY + h - 1,
-                            dstX + expanded + x,
-                            dstY + expanded + h + y,
-                            pixelBuffer
-                    );
+                    safeCopyPixel(srcRaster, atlasRaster, srcX + x, srcY + h - 1, dstX + expanded + x, dstY + expanded + h + y, pixelBuffer);
                 }
             }
 
             // LEFT
             for (int x = 0; x < expanded; x++) {
                 for (int y = 0; y < h; y++) {
-                    safeCopyPixel(
-                            srcRaster,
-                            atlasRaster,
-                            srcX,
-                            srcY + y,
-                            dstX + x,
-                            dstY + expanded + y,
-                            pixelBuffer
-                    );
+                    safeCopyPixel(srcRaster, atlasRaster, srcX, srcY + y, dstX + x, dstY + expanded + y, pixelBuffer);
                 }
             }
 
             // RIGHT
             for (int x = 0; x < expanded; x++) {
                 for (int y = 0; y < h; y++) {
-                    safeCopyPixel(
-                            srcRaster,
-                            atlasRaster,
-                            srcX + w - 1,
-                            srcY + y,
-                            dstX + expanded + w + x,
-                            dstY + expanded + y,
-                            pixelBuffer
-                    );
+                    safeCopyPixel(srcRaster, atlasRaster, srcX + w - 1, srcY + y, dstX + expanded + w + x, dstY + expanded + y, pixelBuffer);
                 }
             }
 
@@ -1224,77 +1001,38 @@ public class TextureAtlasManager {
             // TL
             for (int y = 0; y < expanded; y++) {
                 for (int x = 0; x < expanded; x++) {
-                    safeCopyPixel(
-                            srcRaster,
-                            atlasRaster,
-                            srcX,
-                            srcY,
-                            dstX + x,
-                            dstY + y,
-                            pixelBuffer
-                    );
+                    safeCopyPixel(srcRaster, atlasRaster, srcX, srcY, dstX + x, dstY + y, pixelBuffer);
                 }
             }
 
             // TR
             for (int y = 0; y < expanded; y++) {
                 for (int x = 0; x < expanded; x++) {
-                    safeCopyPixel(
-                            srcRaster,
-                            atlasRaster,
-                            srcX + w - 1,
-                            srcY,
-                            dstX + expanded + w + x,
-                            dstY + y,
-                            pixelBuffer
-                    );
+                    safeCopyPixel(srcRaster, atlasRaster, srcX + w - 1, srcY, dstX + expanded + w + x, dstY + y, pixelBuffer);
                 }
             }
 
             // BL
             for (int y = 0; y < expanded; y++) {
                 for (int x = 0; x < expanded; x++) {
-                    safeCopyPixel(
-                            srcRaster,
-                            atlasRaster,
-                            srcX,
-                            srcY + h - 1,
-                            dstX + x,
-                            dstY + expanded + h + y,
-                            pixelBuffer
-                    );
+                    safeCopyPixel(srcRaster, atlasRaster, srcX, srcY + h - 1, dstX + x, dstY + expanded + h + y, pixelBuffer);
                 }
             }
 
             // BR
             for (int y = 0; y < expanded; y++) {
                 for (int x = 0; x < expanded; x++) {
-                    safeCopyPixel(
-                            srcRaster,
-                            atlasRaster,
-                            srcX + w - 1,
-                            srcY + h - 1,
-                            dstX + expanded + w + x,
-                            dstY + expanded + h + y,
-                            pixelBuffer
-                    );
+                    safeCopyPixel(srcRaster, atlasRaster, srcX + w - 1, srcY + h - 1, dstX + expanded + w + x, dstY + expanded + h + y, pixelBuffer);
                 }
             }
         }
 
         if (paintUsedPixels) {
-            paintUsedFacesByGroupColorOnAtlas(
-                    atlasImage,
-                    textureScissorDatas,
-                    maxWidth,
-                    maxHeight
-            );
+            paintUsedFacesByGroupColorOnAtlas(atlasImage, textureScissorDatas, maxWidth, maxHeight);
 
         }
 
-        dilateBackgroundColor(
-                resultTextureAtlas.getBufferedImage(),
-                new Color(255, 0, 255));
+        dilateBackgroundColor(resultTextureAtlas.getBufferedImage(), new Color(255, 0, 255));
 
         // check if textureAtlas width > 8192 and or height > 8192
         if (maxWidth > 8192 || maxHeight > 8192) {
@@ -1303,23 +1041,23 @@ public class TextureAtlasManager {
             int newHeight = Math.min(maxHeight, 8192);
             BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, imageType);
             Graphics2D g2dResized = resizedImage.createGraphics();
-            g2dResized.drawImage(resultTextureAtlas.getBufferedImage(), 0, 0, newWidth, newHeight, null);
+            BufferedImage originalImage = resultTextureAtlas.getBufferedImage();
+            g2dResized.drawImage(originalImage, 0, 0, newWidth, newHeight, null);
             g2dResized.dispose();
             resultTextureAtlas.setBufferedImage(resizedImage);
             resultTextureAtlas.setWidth(newWidth);
             resultTextureAtlas.setHeight(newHeight);
+            originalImage.flush();
         }
 
-        return textureScissorDatas;
+        for (GaiaTextureScissorData scissorData : textureScissorDatas) {
+            scissorData.deleteObjects();
+        }
+
+        textureScissorDatas.clear();
     }
 
-    public List<GaiaTextureScissorData> calculateTextureScissorDates_original(List<List<HalfEdgeFace>> mergedWeldedFacesGroups,
-                                                                     int texWidth,
-                                                                     int texHeight,
-                                                                     boolean existPngTextures,
-                                                                     BufferedImage srcImage,
-                                                                     GaiaTexture resultTextureAtlas,
-                                                                     boolean paintUsedPixels) {
+    public List<GaiaTextureScissorData> calculateTextureScissorDates_original(List<List<HalfEdgeFace>> mergedWeldedFacesGroups, int texWidth, int texHeight, boolean existPngTextures, BufferedImage srcImage, GaiaTexture resultTextureAtlas, boolean paintUsedPixels) {
         // now, for each faceGroup, create a scissorData
         // there are 2 types of scissorData :
         // 1- more width than height.
@@ -1335,7 +1073,7 @@ public class TextureAtlasManager {
         log.debug("ScissorTextures : weldedFacesCount" + weldedFacesGroupsCount + " " + textureScissorDatasWidth.size());
         boolean invertTexCoordY = false;
         List<HalfEdgeVertex> memSaveVertices = new ArrayList<>();
-        List<HalfEdge>  memSaveEdges = new ArrayList<>();
+        List<HalfEdge> memSaveEdges = new ArrayList<>();
         for (int i = 0; i < weldedFacesGroupsCount; i++) {
             List<HalfEdgeFace> weldedFacesGroup = mergedWeldedFacesGroups.get(i);
             GaiaRectangle groupTexCoordBRect = new GaiaRectangle();
@@ -1512,7 +1250,7 @@ public class TextureAtlasManager {
                 //groupTexCoordBRect = face.getTexCoordBoundingRectangle(groupTexCoordBRect, invertTexCoordY);
                 faceVertices.clear();
                 memSaveEdges.clear();
-                faceVertices = face.getVertices(faceVertices,  memSaveEdges);
+                faceVertices = face.getVertices(faceVertices, memSaveEdges);
                 int verticesCount = faceVertices.size();
                 for (int k = 0; k < verticesCount; k++) {
                     HalfEdgeVertex vertex = faceVertices.get(k);
@@ -1573,7 +1311,7 @@ public class TextureAtlasManager {
         // make the atlas texture.**************************************************************************************
         int imageType = existPngTextures ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
         log.debug("[Tile][Photogrammetry][Atlas] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
-        if(maxWidth > 8192 || maxHeight > 8192) {
+        if (maxWidth > 8192 || maxHeight > 8192) {
             log.warn("[Tile][Photogrammetry][Atlas] Atlas size exceeds 8192 x 8192. maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
         }
         resultTextureAtlas.createImage(maxWidth, maxHeight, imageType);
@@ -1621,8 +1359,7 @@ public class TextureAtlasManager {
             int totalDstH = expanded * 2 + h;
 
             if (dstX >= atlasW || dstY >= atlasH || dstX + totalDstW <= 0 || dstY + totalDstH <= 0) {
-                log.warn("Skipping scissor fully outside atlas: dstX={}, dstY={}, totalW={}, totalH={}, atlasW={}, atlasH={}",
-                        dstX, dstY, totalDstW, totalDstH, atlasW, atlasH);
+                log.warn("Skipping scissor fully outside atlas: dstX={}, dstY={}, totalW={}, totalH={}, atlasW={}, atlasH={}", dstX, dstY, totalDstW, totalDstH, atlasW, atlasH);
                 continue;
             }
 
@@ -1631,15 +1368,7 @@ public class TextureAtlasManager {
             // =========================
             for (int y = 0; y < h; y++) {
                 for (int x = 0; x < w; x++) {
-                    safeCopyPixel(
-                            srcRaster,
-                            atlasRaster,
-                            srcX + x,
-                            srcY + y,
-                            dstX + expanded + x,
-                            dstY + expanded + y,
-                            pixelBuffer
-                    );
+                    safeCopyPixel(srcRaster, atlasRaster, srcX + x, srcY + y, dstX + expanded + x, dstY + expanded + y, pixelBuffer);
                 }
             }
 
@@ -1650,60 +1379,28 @@ public class TextureAtlasManager {
             // TOP
             for (int y = 0; y < expanded; y++) {
                 for (int x = 0; x < w; x++) {
-                    safeCopyPixel(
-                            srcRaster,
-                            atlasRaster,
-                            srcX + x,
-                            srcY,
-                            dstX + expanded + x,
-                            dstY + y,
-                            pixelBuffer
-                    );
+                    safeCopyPixel(srcRaster, atlasRaster, srcX + x, srcY, dstX + expanded + x, dstY + y, pixelBuffer);
                 }
             }
 
             // BOTTOM
             for (int y = 0; y < expanded; y++) {
                 for (int x = 0; x < w; x++) {
-                    safeCopyPixel(
-                            srcRaster,
-                            atlasRaster,
-                            srcX + x,
-                            srcY + h - 1,
-                            dstX + expanded + x,
-                            dstY + expanded + h + y,
-                            pixelBuffer
-                    );
+                    safeCopyPixel(srcRaster, atlasRaster, srcX + x, srcY + h - 1, dstX + expanded + x, dstY + expanded + h + y, pixelBuffer);
                 }
             }
 
             // LEFT
             for (int x = 0; x < expanded; x++) {
                 for (int y = 0; y < h; y++) {
-                    safeCopyPixel(
-                            srcRaster,
-                            atlasRaster,
-                            srcX,
-                            srcY + y,
-                            dstX + x,
-                            dstY + expanded + y,
-                            pixelBuffer
-                    );
+                    safeCopyPixel(srcRaster, atlasRaster, srcX, srcY + y, dstX + x, dstY + expanded + y, pixelBuffer);
                 }
             }
 
             // RIGHT
             for (int x = 0; x < expanded; x++) {
                 for (int y = 0; y < h; y++) {
-                    safeCopyPixel(
-                            srcRaster,
-                            atlasRaster,
-                            srcX + w - 1,
-                            srcY + y,
-                            dstX + expanded + w + x,
-                            dstY + expanded + y,
-                            pixelBuffer
-                    );
+                    safeCopyPixel(srcRaster, atlasRaster, srcX + w - 1, srcY + y, dstX + expanded + w + x, dstY + expanded + y, pixelBuffer);
                 }
             }
 
@@ -1714,77 +1411,38 @@ public class TextureAtlasManager {
             // TL
             for (int y = 0; y < expanded; y++) {
                 for (int x = 0; x < expanded; x++) {
-                    safeCopyPixel(
-                            srcRaster,
-                            atlasRaster,
-                            srcX,
-                            srcY,
-                            dstX + x,
-                            dstY + y,
-                            pixelBuffer
-                    );
+                    safeCopyPixel(srcRaster, atlasRaster, srcX, srcY, dstX + x, dstY + y, pixelBuffer);
                 }
             }
 
             // TR
             for (int y = 0; y < expanded; y++) {
                 for (int x = 0; x < expanded; x++) {
-                    safeCopyPixel(
-                            srcRaster,
-                            atlasRaster,
-                            srcX + w - 1,
-                            srcY,
-                            dstX + expanded + w + x,
-                            dstY + y,
-                            pixelBuffer
-                    );
+                    safeCopyPixel(srcRaster, atlasRaster, srcX + w - 1, srcY, dstX + expanded + w + x, dstY + y, pixelBuffer);
                 }
             }
 
             // BL
             for (int y = 0; y < expanded; y++) {
                 for (int x = 0; x < expanded; x++) {
-                    safeCopyPixel(
-                            srcRaster,
-                            atlasRaster,
-                            srcX,
-                            srcY + h - 1,
-                            dstX + x,
-                            dstY + expanded + h + y,
-                            pixelBuffer
-                    );
+                    safeCopyPixel(srcRaster, atlasRaster, srcX, srcY + h - 1, dstX + x, dstY + expanded + h + y, pixelBuffer);
                 }
             }
 
             // BR
             for (int y = 0; y < expanded; y++) {
                 for (int x = 0; x < expanded; x++) {
-                    safeCopyPixel(
-                            srcRaster,
-                            atlasRaster,
-                            srcX + w - 1,
-                            srcY + h - 1,
-                            dstX + expanded + w + x,
-                            dstY + expanded + h + y,
-                            pixelBuffer
-                    );
+                    safeCopyPixel(srcRaster, atlasRaster, srcX + w - 1, srcY + h - 1, dstX + expanded + w + x, dstY + expanded + h + y, pixelBuffer);
                 }
             }
         }
 
         if (paintUsedPixels) {
-            paintUsedFacesByGroupColorOnAtlas(
-                    atlasImage,
-                    textureScissorDatas,
-                    maxWidth,
-                    maxHeight
-            );
+            paintUsedFacesByGroupColorOnAtlas(atlasImage, textureScissorDatas, maxWidth, maxHeight);
 
         }
 
-        dilateBackgroundColor(
-                resultTextureAtlas.getBufferedImage(),
-                new Color(255, 0, 255));
+        dilateBackgroundColor(resultTextureAtlas.getBufferedImage(), new Color(255, 0, 255));
 
         // check if textureAtlas width > 8192 and or height > 8192
         if (maxWidth > 8192 || maxHeight > 8192) {
@@ -1803,22 +1461,14 @@ public class TextureAtlasManager {
         return textureScissorDatas;
     }
 
-    private void paintUsedFacesRedOnAtlas(
-            BufferedImage atlasImage,
-            List<GaiaTextureScissorData> textureScissorDatas,
-            int atlasWidth,
-            int atlasHeight
-    ) {
+    private void paintUsedFacesRedOnAtlas(BufferedImage atlasImage, List<GaiaTextureScissorData> textureScissorDatas, int atlasWidth, int atlasHeight) {
         if (atlasImage == null || textureScissorDatas == null || textureScissorDatas.isEmpty()) {
             return;
         }
 
         Graphics2D g = atlasImage.createGraphics();
         try {
-            g.setRenderingHint(
-                    RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON
-            );
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             List<HalfEdgeVertex> faceVertices = new ArrayList<>();
             List<HalfEdge> memSaveEdges = new ArrayList<>();
@@ -1884,7 +1534,7 @@ public class TextureAtlasManager {
 
                     faceVertices.clear();
                     memSaveEdges.clear();
-                    face.getVertices(faceVertices,  memSaveEdges);
+                    face.getVertices(faceVertices, memSaveEdges);
 
                     if (faceVertices.size() < 3) {
                         continue;
@@ -1916,22 +1566,14 @@ public class TextureAtlasManager {
         }
     }
 
-    private void paintUsedFacesByGroupColorOnAtlas(
-            BufferedImage atlasImage,
-            List<GaiaTextureScissorData> textureScissorDatas,
-            int atlasWidth,
-            int atlasHeight
-    ) {
+    private void paintUsedFacesByGroupColorOnAtlas(BufferedImage atlasImage, List<GaiaTextureScissorData> textureScissorDatas, int atlasWidth, int atlasHeight) {
         if (atlasImage == null || textureScissorDatas == null || textureScissorDatas.isEmpty()) {
             return;
         }
 
         Graphics2D g = atlasImage.createGraphics();
         try {
-            g.setRenderingHint(
-                    RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON
-            );
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             List<HalfEdgeVertex> faceVertices = new ArrayList<>();
             List<HalfEdge> memSaveEdges = new ArrayList<>();
@@ -2031,26 +1673,14 @@ public class TextureAtlasManager {
         }
     }
 
-    private void paintUsedFacesByCameraDirectionTypeOnAtlas(
-            BufferedImage atlasImage,
-            Map<GaiaFace, HalfEdgeFace> mapGaiaFaceToHalfEdgeFace,
-            Map<GaiaFace, CameraDirectionTypeInfo> mapGaiaFaceToCameraDirectionTypeInfo,
-            int atlasWidth,
-            int atlasHeight
-    ) {
-        if (atlasImage == null ||
-                mapGaiaFaceToHalfEdgeFace == null ||
-                mapGaiaFaceToCameraDirectionTypeInfo == null ||
-                mapGaiaFaceToCameraDirectionTypeInfo.isEmpty()) {
+    private void paintUsedFacesByCameraDirectionTypeOnAtlas(BufferedImage atlasImage, Map<GaiaFace, HalfEdgeFace> mapGaiaFaceToHalfEdgeFace, Map<GaiaFace, CameraDirectionTypeInfo> mapGaiaFaceToCameraDirectionTypeInfo, int atlasWidth, int atlasHeight) {
+        if (atlasImage == null || mapGaiaFaceToHalfEdgeFace == null || mapGaiaFaceToCameraDirectionTypeInfo == null || mapGaiaFaceToCameraDirectionTypeInfo.isEmpty()) {
             return;
         }
 
         Graphics2D g = atlasImage.createGraphics();
         try {
-            g.setRenderingHint(
-                    RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON
-            );
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             List<HalfEdgeVertex> faceVertices = new ArrayList<>();
 
@@ -2081,12 +1711,7 @@ public class TextureAtlasManager {
                 Color color = getDebugColorForCameraDirectionType(cameraDirectionType);
                 g.setColor(color);
 
-                Polygon polygon = createAtlasUvPolygon(
-                        halfEdgeFace,
-                        faceVertices,
-                        atlasWidth,
-                        atlasHeight
-                );
+                Polygon polygon = createAtlasUvPolygon(halfEdgeFace, faceVertices, atlasWidth, atlasHeight);
 
                 if (polygon != null && polygon.npoints >= 3) {
                     g.fillPolygon(polygon);
@@ -2120,12 +1745,7 @@ public class TextureAtlasManager {
                 Color color = getDebugColorForCameraDirectionType(cameraDirectionType).darker();
                 g.setColor(color);
 
-                Polygon polygon = createAtlasUvPolygon(
-                        halfEdgeFace,
-                        faceVertices,
-                        atlasWidth,
-                        atlasHeight
-                );
+                Polygon polygon = createAtlasUvPolygon(halfEdgeFace, faceVertices, atlasWidth, atlasHeight);
 
                 if (polygon != null && polygon.npoints >= 3) {
                     g.drawPolygon(polygon);
@@ -2137,12 +1757,7 @@ public class TextureAtlasManager {
         }
     }
 
-    private Polygon createAtlasUvPolygon(
-            HalfEdgeFace face,
-            List<HalfEdgeVertex> reusableVertices,
-            int atlasWidth,
-            int atlasHeight
-    ) {
+    private Polygon createAtlasUvPolygon(HalfEdgeFace face, List<HalfEdgeVertex> reusableVertices, int atlasWidth, int atlasHeight) {
         if (face == null || reusableVertices == null) {
             return null;
         }
@@ -2446,19 +2061,11 @@ public class TextureAtlasManager {
     }
 
     public int getMaxWidthScissorDataFull(List<GaiaTextureScissorDataFull> compareImages) {
-        return compareImages.stream()
-                .filter(data -> data != null && data.getBatchedBoundary() != null)
-                .mapToInt(data -> (int) Math.ceil(data.getBatchedBoundary().getMaxX()))
-                .max()
-                .orElse(0);
+        return compareImages.stream().filter(data -> data != null && data.getBatchedBoundary() != null).mapToInt(data -> (int) Math.ceil(data.getBatchedBoundary().getMaxX())).max().orElse(0);
     }
 
     public int getMaxHeightScissorDataFull(List<GaiaTextureScissorDataFull> compareImages) {
-        return compareImages.stream()
-                .filter(data -> data != null && data.getBatchedBoundary() != null)
-                .mapToInt(data -> (int) Math.ceil(data.getBatchedBoundary().getMaxY()))
-                .max()
-                .orElse(0);
+        return compareImages.stream().filter(data -> data != null && data.getBatchedBoundary() != null).mapToInt(data -> (int) Math.ceil(data.getBatchedBoundary().getMaxY())).max().orElse(0);
     }
 
     private void getGaiaVerticesOfFaceGroup(List<GaiaFace> faceGroup, List<GaiaVertex> vertices, List<GaiaVertex> resultVertices) {
@@ -2567,9 +2174,7 @@ public class TextureAtlasManager {
         }
     }
 
-    public void recalculateTexCoordsAfterTextureAtlasingObliqueCamera(HalfEdgeScene halfEdgeScene,
-                                                                      List<TexturesAtlasData> texAtlasDatasList,
-                                                                      Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapClassificationCamDirTypeFacesList) {
+    public void recalculateTexCoordsAfterTextureAtlasingObliqueCamera(HalfEdgeScene halfEdgeScene, List<TexturesAtlasData> texAtlasDatasList, Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapClassificationCamDirTypeFacesList) {
         int maxWidth = getMaxWidth(texAtlasDatasList);
         int maxHeight = getMaxHeight(texAtlasDatasList);
 
@@ -2579,7 +2184,7 @@ public class TextureAtlasManager {
 
         Map<HalfEdgeVertex, HalfEdgeVertex> groupVertexMapMemSave = new HashMap<>();
         List<HalfEdgeVertex> faceVerticesMemSave = new ArrayList<>();
-        List<HalfEdge>  memSaveEdges = new ArrayList<>();
+        List<HalfEdge> memSaveEdges = new ArrayList<>();
 
         int texAtlasDataCount = texAtlasDatasList.size();
         for (int i = 0; i < texAtlasDataCount; i++) {
@@ -2760,10 +2365,7 @@ public class TextureAtlasManager {
                 int h = subImage.getHeight();
 
                 if (x < 0 || y < 0 || x + w > maxWidth || y + h > maxHeight) {
-                    log.error(
-                            "Scissor outside atlas. index={}, x={}, y={}, w={}, h={}, x+w={}, y+h={}, atlasW={}, atlasH={}",
-                            i, x, y, w, h, x + w, y + h, maxWidth, maxHeight
-                    );
+                    log.error("Scissor outside atlas. index={}, x={}, y={}, w={}, h={}, x+w={}, y+h={}, atlasW={}, atlasH={}", i, x, y, w, h, x + w, y + h, maxWidth, maxHeight);
                     continue;
                 }
 

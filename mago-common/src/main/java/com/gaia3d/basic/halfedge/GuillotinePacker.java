@@ -20,6 +20,11 @@ public class GuillotinePacker {
         currentBoundary = new GaiaRectangle(0, 0, 0, 0);
     }
 
+    public void clear(){
+        freeRectangles.clear();
+        placedRectangles.clear();
+    }
+
     public boolean insert(GaiaTextureScissorData texScissorData) {
         GaiaRectangle bestRect = null;
 
