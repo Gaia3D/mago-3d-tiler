@@ -29,7 +29,7 @@ download the mago-3d-tiler jar file or use the Docker image to get started quick
 
 ### Using the Jar File
 You can easily run mago 3dTiler using the jar file.   
-> ⚠️ **Runs on Java versions JDK 21 and above**
+> ⚠️ **Requires JDK 21**
 
 ```
 java -jar mago-3d-tiler-x.x.x.jar -input C:\data\kml-input-dir -output C:\data\kml-output-dir
@@ -60,7 +60,7 @@ then navigate to the project directory and run:
 gradle jar
 ```
 
-###### The java version used in the release is openjdk 21
+###### The Java version used in the release is OpenJDK 21
 
 ## Example help command
 ```bash
@@ -72,75 +72,82 @@ console output:
 mago-3d-tiler(dev) by Gaia3D, Inc.
 ----------------------------------------
 Usage: command options
- -h, --help                       Print Help
- -q, --quiet                      Quiet mode/Silent mode
- -lt, --leaveTemp                 Leave temporary files
- -m, --merge                      Merge tileset.json files
- -i, --input <arg>                [Required] Input directory path
- -o, --output <arg>               [Required] Output directory path
- -t, --temp <arg>                 Temporary directory path
-                                  (default: {OUTPUT}/temp)
- -it, --inputType <arg>           Input files type
-                                  (options: kml, 3ds, fbx, obj, gltf/glb, las/laz, citygml, indoorgml, shp, geojson, gpkg)
- -ot, --outputType <arg>          Output 3DTiles Type [b3dm, i3dm, pnts]
- -l, --log <arg>                  Output log file path.
- -r, --recursive                  Tree directory deep navigation.
- -te, --terrain <arg>             GeoTiff Terrain file path, 3D Object applied as clampToGround (Supports GeoTIFF format)
- -ge, --geoid <arg>               Geoid file path for height correction,
-                                  (default: Ellipsoid)(options: Ellipsoid, EGM96 or GeoTIFF File Path)
- -if, --instance <arg>            Instance file path for I3DM
-                                  (default: {OUTPUT}/instance.dae)
- -qt, --quantize                  Quantize glTF 3DMesh via "KHR_mesh_quantization" Extension
- -tv, --tilesVersion <arg>        3DTiles Version
-                                  (default: 1.1)(options: 1.0, 1.1)
- -c, --crs <arg>                  set input data CRS(Coordinate Reference Systems)
-                                  (default: 3857)(options: 4326, 3857, 4978, 32652, 5186...)(ECEF->4978, WGS84->4326, WebMercator->3857
- -p, --proj <arg>                 Set Proj4 parameters
-                                  (ex: +proj=tmerc +la...)when this option is set, the 'crs' option is ignored.
- -xo, --xOffset <arg>             X Offset value for coordinate transformation
- -yo, --yOffset <arg>             Y Offset value for coordinate transformation
- -zo, --zOffset <arg>             Z Offset value for coordinate transformation
- -lon, --longitude <arg>          Longitude value for coordinate transformation. (The lon lat option must be used together).
- -lat, --latitude <arg>           Latitude value for coordinate transformation. (The lon lat option must be used together).
- -rx, --rotateXAxis <arg>         Rotate the X-Axis in degrees
- -ra, --refineAdd                 [Tileset] Set 3D Tiles Refine 'ADD' mode
- -mx, --maxCount <arg>            [Tileset] Maximum number of triangles per node.
- -nl, --minLod <arg>              [Tileset] min level of detail
- -xl, --maxLod <arg>              [Tileset] Max Level of detail
- -ng, --minGeometricError <arg>   [Tileset] Minimum geometric error
- -mg, --maxGeometricError <arg>   [Tileset] Maximum geometric error
- -mp, --maxPoints <arg>           [Tileset] Maximum number of points per a tile
- -pcr, --pointRatio <arg>         [PointCloud] Percentage of points from original data
- -sp, --sourcePrecision           [PointCloud] Create pointscloud tile with original precision.
- -f4, --force4ByteRGB             [PointCloud] Force 4Byte RGB for pointscloud tile.
- -fc, --flipCoordinate            [GISVector] Flip x, y coordinate for 2D Original Data.
- -af, --attributeFilter <arg>     [GISVector] Attribute filter setting for extrusion model (ex: "classification=window,door;type=building")
- -nc, --nameColumn <arg>          [GISVector] Specify the column name for the feature name.
-                                  (default: name)
- -ac, --altitudeColumn <arg>      [GISVector] Specify the column name for the altitude base height.
-                                  (default: altitude)(units: meters)
- -hd, --headingColumn <arg>       [GISVector][I3DM] Specify the column name for the heading rotation.
-                                  (default: heading)(units: degrees)
- -scl, --scaleColumn <arg>        [GISVector][I3DM] Specify the column name for the scale value.
-                                  (default: scale)(units: meters)
- -den, --densityColumn <arg>      [GISVector][I3DM] Specify the column name for the density value.
-                                  (default: density)
- -dc, --diameterColumn <arg>      [GISVector][Pipe] Specify the column name for the pipe diameter value.
-                                  (default: diameter)(units: millimeters)
- -hc, --heightColumn <arg>        [GISVector][Extrusion] Specify the column name for the reference ceil level height.
-                                  (default: height)(units: meters)
- -aa, --absoluteAltitude <arg>    [GISVector] Set absolute altitude value for all features (overrides altitude column)
- -mh, --minimumHeight <arg>       [GISVector][Extrusion] Set Building Minimum height
-                                  (default: 0.0)(units: meters)
- -sh, --skirtHeight <arg>         [GISVector][Extrusion] Set Building Skirt height
-                                  (default: 4.0)(units: meters)
- -pg, --photogrammetry            [Experimental] generate b3dm for photogrammetry model with GPU
- -sbn, --splitByNode              [Experimental] Split tiles by nodes of scene.
- -cc, --curvatureCorrection       [Experimental] Apply curvature correction for ellipsoid surface.
- -mc, --multiThreadCount <arg>    [Deprecated] set thread count
- -glb, --glb                      [Deprecated] Create glb file with B3DM.
- -igtx, --ignoreTextures          [Deprecated] Ignore diffuse textures.
- -d, --debug                      [DEBUG] More detailed log output and stops on Multi-Thread bugs.
+ -h, --help                            Print Help
+ -q, --quiet                           Quiet mode/Silent mode
+ -lt, --leaveTemp                      Leave temporary files
+ -m, --merge                           Merge tileset.json files
+ -i, --input <arg>                     [Required] Input directory path
+ -o, --output <arg>                    [Required] Output directory path
+ -t, --temp <arg>                      Temporary directory path
+                                       (default: {OUTPUT}/temp)
+ -it, --inputType <arg>                Input files type
+                                       (options: kml, 3ds, fbx, obj, gltf/glb, las/laz, citygml, indoorgml, shp, geojson, gpkg)
+ -ot, --outputType <arg>               Output 3DTiles Type [b3dm, i3dm, pnts]
+ -l, --log <arg>                       Output log file path.
+ -r, --recursive                       Tree directory deep navigation.
+ -te, --terrain <arg>                  GeoTiff Terrain file path, 3D Object applied as clampToGround (Supports GeoTIFF format)
+ -ge, --geoid <arg>                    Geoid file path for height correction,
+                                       (default: Ellipsoid)(options: Ellipsoid, EGM84, EGM96, EGM2008 or GeoTIFF File Path)
+ -if, --instance <arg>                 Instance file path for I3DM
+                                       (default: {OUTPUT}/instance.dae)
+ -qt, --quantize                       Quantize glTF 3DMesh via "KHR_mesh_quantization" Extension
+ -tv, --tilesVersion <arg>             3DTiles Version
+                                       (default: 1.1)(options: 1.0, 1.1)
+ -c, --crs <arg>                       set input data CRS(Coordinate Reference Systems)
+                                       (default: 3857)(options: 4326, 3857, 4978, 32652, 5186...)(ECEF->4978, WGS84->4326, WebMercator->3857
+ -p, --proj <arg>                      Set Proj4 parameters
+                                       (ex: +proj=tmerc +la...)when this option is set, the 'crs' option is ignored.
+ -xo, --xOffset <arg>                  X Offset value for coordinate transformation
+ -yo, --yOffset <arg>                  Y Offset value for coordinate transformation
+ -zo, --zOffset <arg>                  Z Offset value for coordinate transformation
+ -lon, --longitude <arg>               Longitude value for coordinate transformation. (The lon lat option must be used together).
+ -lat, --latitude <arg>                Latitude value for coordinate transformation. (The lon lat option must be used together).
+ -rx, --rotateXAxis <arg>              Rotate the X-Axis in degrees
+ -ra, --refineAdd                      [Tileset] Set 3D Tiles Refine 'ADD' mode
+ -mx, --maxCount <arg>                 [Tileset] Maximum number of triangles per node.
+ -nl, --minLod <arg>                   [Tileset] min level of detail
+ -xl, --maxLod <arg>                   [Tileset] Max Level of detail
+ -ng, --minGeometricError <arg>        [Tileset] Minimum geometric error
+ -mg, --maxGeometricError <arg>        [Tileset] Maximum geometric error
+ -mp, --maxPoints <arg>                [Tileset] Maximum number of points per a tile
+ -pcr, --pointRatio <arg>              [PointCloud] Percentage of points from original data
+ -sp, --sourcePrecision                [PointCloud] Create pointscloud tile with original precision.
+ -f4, --force4ByteRGB                  [PointCloud] Force 4Byte RGB for pointscloud tile.
+ -fc, --flipCoordinate                 [GISVector] Flip x, y coordinate for 2D Original Data.
+ -af, --attributeFilter <arg>          [GISVector] Attribute filter setting for extrusion model (ex: "classification=window,door;type=building")
+ -nc, --nameColumn <arg>               [GISVector] Specify the column name for the feature name.
+                                       (default: name)
+ -ac, --altitudeColumn <arg>           [GISVector] Specify the column name for the altitude base height.
+                                       (default: altitude)(units: meters)
+ -hd, --headingColumn <arg>            [GISVector][I3DM] Specify the column name for the heading rotation.
+                                       (default: heading)(units: degrees)
+ -scl, --scaleColumn <arg>             [GISVector][I3DM] Specify the column name for the scale value.
+                                       (default: scale)(units: meters)
+ -den, --densityColumn <arg>           [GISVector][I3DM] Specify the column name for the density value.
+                                       (default: density)
+ -dc, --diameterColumn <arg>           [GISVector][Pipe] Specify the column name for the pipe diameter value.
+                                       (default: diameter)(units: millimeters)
+ -hc, --heightColumn <arg>             [GISVector][Extrusion] Specify the column name for the reference ceil level height.
+                                       (default: height)(units: meters)
+ -aa, --absoluteAltitude <arg>         [GISVector] Set absolute altitude value for all features (overrides altitude column)
+ -mh, --minimumHeight <arg>            [GISVector][Extrusion] Set Building Minimum height
+                                       (default: 0.0)(units: meters)
+ -sh, --skirtHeight <arg>              [GISVector][Extrusion] Set Building Skirt height
+                                       (default: 4.0)(units: meters)
+ -pg, --photogrammetry                 [Experimental] generate b3dm for photogrammetry model with GPU
+ -sbn, --splitByNode                   [Experimental] Split tiles by nodes of scene.
+ -cc, --curvatureCorrection            [Experimental] Apply curvature correction for ellipsoid surface.
+ -urt, --updateRootTransform <arg>     [Experimental] Add 16 comma-separated transform values to the root node of tileset.json.
+ -tm, --tilingMode <arg>               [Experimental] 3DTiles hierarchy mode
+                                       (default: explicit)(options: explicit, implicit)
+ -isl, --implicitSubtreeLevels <arg>   [Experimental] Implicit tiling subtree levels
+                                       (default: 4)
+ -mc, --multiThreadCount <arg>         [Deprecated] set thread count
+ -glb, --glb                           [Deprecated] Create glb file with B3DM.
+ -igtx, --ignoreTextures               [Deprecated] Ignore diffuse textures.
+ -vr, --validationReport               [Validation] Save per-file validation JSON reports to the temp directory and write a batch summary to the output directory.
+ -v, --verbose                         [Verbose] Show debug-level logs without changing the log format or disabling async logging.
+ -d, --debug                           [DEBUG] More detailed log output and stops on Multi-Thread bugs.
 ```
 
 ## Documentation

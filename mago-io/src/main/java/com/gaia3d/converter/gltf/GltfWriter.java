@@ -636,12 +636,14 @@ public class GltfWriter {
 
         Material material = new Material();
         material.setName(gaiaMaterial.getName());
-        material.setDoubleSided(gltfOptions.isDoubleSided());
+        if (gaiaMaterial.isDoubleSided() || gltfOptions.isDoubleSided()) {
+            material.setDoubleSided(true);
+        }
 
-        // Set the alpha mode
-        boolean isOpaque = gaiaMaterial.isOpaqueMaterial();
+        // Set the alpha mode from the material state without inferring from the texture file extension.
+        boolean isBlend = gaiaMaterial.isBlend();
+        boolean isOpaque = gaiaMaterial.isOpaque() && !isBlend;
         if (!isOpaque) {
-            boolean isBlend = gaiaMaterial.isBlend();
             float alphaCutoff = gaiaMaterial.getAlphaCutoff();
             if (isBlend) {
                 material.setAlphaMode("BLEND");
@@ -758,8 +760,6 @@ public class GltfWriter {
         Sampler sampler = new Sampler();
         sampler.setMagFilter(GL20.GL_LINEAR);
         sampler.setMinFilter(GL20.GL_LINEAR_MIPMAP_LINEAR);
-        sampler.setWrapS(GL20.GL_REPEAT);
-        sampler.setWrapT(GL20.GL_REPEAT);
         return sampler;
     }
 
@@ -772,8 +772,12 @@ public class GltfWriter {
         Sampler sampler = new Sampler();
         sampler.setMagFilter(gaiaSamplers.getMagFilter());
         sampler.setMinFilter(gaiaSamplers.getMinFilter());
-        sampler.setWrapS(gaiaSamplers.getWrapS());
-        sampler.setWrapT(gaiaSamplers.getWrapT());
+        if (gaiaSamplers.getWrapS() != GL20.GL_REPEAT) {
+            sampler.setWrapS(gaiaSamplers.getWrapS());
+        }
+        if (gaiaSamplers.getWrapT() != GL20.GL_REPEAT) {
+            sampler.setWrapT(gaiaSamplers.getWrapT());
+        }
         return sampler;
     }
 

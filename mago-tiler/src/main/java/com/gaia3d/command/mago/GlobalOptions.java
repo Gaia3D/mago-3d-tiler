@@ -50,9 +50,6 @@ public class GlobalOptions {
     /* 0.2 System Info */
     private long availableProcessors = Runtime.getRuntime().availableProcessors();
     private long maxHeapMemory = Runtime.getRuntime().maxMemory();
-    //private long freeMemory = Runtime.getRuntime().freeMemory();
-    //private long totalMemory = Runtime.getRuntime().totalMemory();
-    //private long usedMemory = totalMemory - freeMemory;
     private long startTime = System.currentTimeMillis();
     private long endTime = 0;
 
@@ -131,9 +128,7 @@ public class GlobalOptions {
     /* 4.2 Validation Report */
     private boolean validationReport = false;
 
-    private GlobalOptions() {
-        // Private constructor for singleton
-    }
+    private GlobalOptions() {}
 
     public static void recreateInstance() {
         log.info("[INFO] Recreating GlobalOptions instance.");
@@ -191,7 +186,6 @@ public class GlobalOptions {
             OptionsCorrector.checkExistOutput(tempDir);
         }
         if (!instance.isLeaveTemp()) {
-            // Delete temp directory if exists
             File tempDir = new File(instance.getTempPath());
             String[] children = tempDir.list();
             if (tempDir.exists() && tempDir.isDirectory() && children != null && children.length > 0) {
@@ -272,23 +266,12 @@ public class GlobalOptions {
             String geoidPath = command.getOptionValue(ProcessOptions.GEOID_PATH.getLongName());
             if (geoidPath == null || geoidPath.isEmpty() || geoidPath.equalsIgnoreCase("Ellipsoid")) {
                 instance.setGeoidPath(null);
+            } else if (geoidPath.equalsIgnoreCase("EGM84")) {
+                instance.setGeoidPath(extractBuiltInGeoid("EGM84", "geoid/egm84_30.tif", "egm84_30-"));
             } else if (geoidPath.equalsIgnoreCase("EGM96")) {
-                log.info("Using built-in geoid model: EGM96");
-
-                String resourcePath = "geoid/egm96_15.tif";
-                ClassLoader classLoader = GlobalOptions.class.getClassLoader();
-                try (InputStream in = classLoader.getResourceAsStream(resourcePath)) {
-                    if (in == null) {
-                        throw new IllegalArgumentException("EGM96 geoid model not found in resources: " + resourcePath);
-                    }
-                    Path tmp = Files.createTempFile("egm96_15-", ".tif");
-                    Files.copy(in, tmp, StandardCopyOption.REPLACE_EXISTING);
-                    tmp.toFile().deleteOnExit();
-                    instance.setGeoidPath(tmp.toAbsolutePath().toString());
-                } catch (IOException e) {
-                    throw new IllegalStateException("Failed to extract EGM96 geoid model from classpath", e);
-                }
-                OptionsCorrector.checkExistInputPath(new File(instance.getGeoidPath()));
+                instance.setGeoidPath(extractBuiltInGeoid("EGM96", "geoid/egm96_15.tif", "egm96_15-"));
+            } else if (geoidPath.equalsIgnoreCase("EGM2008")) {
+                instance.setGeoidPath(extractBuiltInGeoid("EGM2008", "geoid/egm2008_2_5.tif", "egm2008_2_5-"));
             } else {
                 instance.setGeoidPath(geoidPath);
                 OptionsCorrector.checkExistInputPath(new File(instance.getGeoidPath()));
@@ -501,6 +484,26 @@ public class GlobalOptions {
         }
     }
 
+    private static String extractBuiltInGeoid(String modelName, String resourcePath, String tempFilePrefix) {
+        log.info("Using built-in geoid model: {}", modelName);
+
+        ClassLoader classLoader = GlobalOptions.class.getClassLoader();
+        try (InputStream in = classLoader.getResourceAsStream(resourcePath)) {
+            if (in == null) {
+                throw new IllegalArgumentException(modelName + " geoid model not found in resources: " + resourcePath);
+            }
+            Path tmp = Files.createTempFile(tempFilePrefix, ".tif");
+            Files.copy(in, tmp, StandardCopyOption.REPLACE_EXISTING);
+            tmp.toFile().deleteOnExit();
+
+            String extractedPath = tmp.toAbsolutePath().toString();
+            OptionsCorrector.checkExistInputPath(new File(extractedPath));
+            return extractedPath;
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to extract " + modelName + " geoid model from classpath", e);
+        }
+    }
+
     protected static void printDebugOptions() {
         log.info("Java Version Info: {}", instance.javaVersionInfo);
         log.info("Program Info: {}", instance.programInfo);
@@ -523,8 +526,12 @@ public class GlobalOptions {
         log.info("Terrain File Path: {}", instance.terrainPath);
         if (instance.geoidPath == null) {
             log.info("Geoid Model(Height Reference): Ellipsoid");
+        } else if (instance.geoidPath.contains("egm84")) {
+            log.info("Geoid Model(Height Reference): EGM84");
         } else if (instance.geoidPath.contains("egm96")) {
             log.info("Geoid Model(Height Reference): EGM96");
+        } else if (instance.geoidPath.contains("egm2008")) {
+            log.info("Geoid Model(Height Reference): EGM2008");
         } else {
             log.info("Geoid Model(Height Reference): Custom -, {}, ", instance.geoidPath);
         }

@@ -60,7 +60,7 @@ public class Instanced3DModelExplicitTiler extends DefaultTiler implements Tiler
         Node root = createRoot();
         root.setBoundingVolume(new BoundingVolume(globalBoundingBox, BoundingVolume.BoundingVolumeType.REGION));
         root.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
-        root.setGeometricError(instanceGeometricError);
+        root.setGeometricError(instanceGeometricError * 2);
 
         try {
             createNode(root, tileInfos, 0);
@@ -267,18 +267,15 @@ public class Instanced3DModelExplicitTiler extends DefaultTiler implements Tiler
         }
 
         if (refineAdd) {
-            lod = LevelOfDetail.LOD3;
+            lod = LevelOfDetail.LOD0;
         }
-
-        //int lodError = refineAdd ? lod.getGeometricErrorBlock() : lod.getGeometricError();
-        //lodError = lod.getGeometricError() * 8;
 
         nodeCode = nodeCode + index;
         int lodError = lod.getGeometricError();
         if (refineAdd) {
             double parentGeometricError = parentNode.getGeometricError();
-            if (parentGeometricError > 16) {
-                lodError = 16;
+            if (parentGeometricError > 8) {
+                lodError = 8;
             } else if (parentGeometricError > 1) {
                 lodError = (int) (parentGeometricError / 2);
             }

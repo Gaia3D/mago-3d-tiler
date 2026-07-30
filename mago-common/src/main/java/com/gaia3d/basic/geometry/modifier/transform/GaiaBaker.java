@@ -52,7 +52,8 @@ public class GaiaBaker extends Modifier {
 
     @Override
     protected void applyVertex(Matrix4d productTransformMatrix, GaiaVertex vertex) {
-        Matrix3d productRotationMatrix = new Matrix3d(productTransformMatrix);
+        Matrix3d normalMatrix = new Matrix3d(productTransformMatrix);
+        normalMatrix.invert().transpose();
 
         Vector3d position = vertex.getPosition();
         if (position != null) {
@@ -62,7 +63,7 @@ public class GaiaBaker extends Modifier {
 
         Vector3d normal = vertex.getNormal();
         if (normal != null) {
-            Vector3d localizedNormal = productRotationMatrix.transform(normal, new Vector3d());
+            Vector3d localizedNormal = normalMatrix.transform(normal, new Vector3d());
             localizedNormal.normalize();
             vertex.setNormal(localizedNormal);
         }

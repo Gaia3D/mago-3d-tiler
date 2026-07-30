@@ -52,6 +52,8 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
     }
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 javadoc {
@@ -168,6 +170,7 @@ clean {
 
 compileJava {
     options.encoding = "UTF-8"
+    options.release = 21
 }
 
 tasks.named("jib") {

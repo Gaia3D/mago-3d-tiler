@@ -72,18 +72,12 @@ public class GeoJsonInstanceConverter implements AttributeReader {
             }
 
             int totalFeaturesCount = featureCollection.size();
-            boolean showProgress = totalFeaturesCount >= 10000;
-            int progressInterval = Math.max(totalFeaturesCount / 100, 1);
             int featureIndex = 0;
 
             try (FeatureIterator<SimpleFeature> iterator = featureCollection.features()) {
                 while (iterator.hasNext()) {
                     featureIndex++;
-                    if (showProgress && featureIndex % progressInterval == 0) {
-                        log.info(" - Processing feature {}/{} ({}%)", featureIndex, totalFeaturesCount, (double) featureIndex / (double) totalFeaturesCount * 100.0d);
-                    } else if (!showProgress) {
-                        log.info(" - Processing feature {}/{}", featureIndex, totalFeaturesCount);
-                    }
+                    log.info(" - Processing feature {}/{}", featureIndex, totalFeaturesCount);
 
                     SimpleFeature feature = iterator.next();
                     Geometry geom = (Geometry) feature.getDefaultGeometry();

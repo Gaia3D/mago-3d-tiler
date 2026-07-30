@@ -80,7 +80,7 @@ public class Instanced3DModelImplicitTiler extends AbstractImplicitModelTiler {
     @Override
     protected LevelOfDetail lodForContent(List<TileInfo> tileInfos, int depth) {
         if (globalOptions.isRefineAdd()) {
-            return LevelOfDetail.LOD3;
+            return LevelOfDetail.LOD0;
         }
         return super.lodForContent(tileInfos, depth);
     }

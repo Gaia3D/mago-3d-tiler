@@ -1,6 +1,7 @@
 package com.gaia3d.local.release;
 
 import com.gaia3d.command.LoggingConfiguration;
+import com.gaia3d.command.mago.Mago3DTilerMain;
 import com.gaia3d.local.MagoTestConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Tag;
@@ -22,27 +23,42 @@ class DefaultReleaseTest {
     }
 
     @Test
-    void batched01() {
+    void help() {
+        String[] args = {"-help",};
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void runBatchedSampleA() {
         String path = "B01-wangsuk2-3ds";
         String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath("BatchedSampleA").getAbsolutePath(),
                 "-c", "5186",
-                //"--quantize",
-                "--tilingMode", "implicit",
-                "--leaveTemp",
+                "--quantize",
         };
         MagoTestConfig.execute(args);
     }
 
     @Test
-    void realistic00() {
+    void runBatchedSampleB() {
+        String path = "B01-wangsuk2-3ds";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath("BatchedSampleB").getAbsolutePath(),
+                "-c", "5186",
+                "--quantize",
+                "--tilingMode", "implicit",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void runPhotogrammetrySampleA() {
         String path = "R00-bansong-obj";
         String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-log", MagoTestConfig.getLogPath(path).getAbsolutePath(),
-                "-it", "obj",
+                "-o", MagoTestConfig.getOutputPath("PhotogrammetrySampleA").getAbsolutePath(),
                 "-pg",
                 "-c", "5187",
                 "-rotateX", "90",
@@ -51,11 +67,35 @@ class DefaultReleaseTest {
     }
 
     @Test
-    void pointcloud00V2() {
+    void runPointcloudSample0() {
         String path = "P00-hwangyonggak-las";
         String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-V2",
+                "-o", MagoTestConfig.getOutputPath("PointcloudSample0").getAbsolutePath(),
+                "-c", "32652",
+                "-tilesVersion", "1.0",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void runPointcloudSampleA() {
+        String path = "P00-hwangyonggak-las";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath("PointcloudSampleA").getAbsolutePath(),
+                "-c", "32652",
+                "-tilesVersion", "1.1",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void runPointcloudSampleB() {
+        String path = "P00-hwangyonggak-las";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath("PointcloudSampleB").getAbsolutePath(),
                 "-c", "32652",
                 "-tilesVersion", "1.1",
                 "--tilingMode", "implicit"
@@ -65,22 +105,39 @@ class DefaultReleaseTest {
     }
 
     @Test
-    void instanced06A() {
+    void runForestSampleA() {
         String path = "I04-forest-shp";
         String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-A",
+                "-o", MagoTestConfig.getOutputPath("ForestSampleA").getAbsolutePath(),
                 "-c", "5179",
                 "-it", "gpkg",
                 "-ot", "i3dm",
                 "-refineAdd",
-                "-instance", MagoTestConfig.getInputPath("sample-tree").getAbsolutePath() + "/broad-tree-1m.glb",
+                "-instance", MagoTestConfig.getInputPath("sample-tree/billboard-cloud-sample.glb").getAbsolutePath(),
                 "-attributeFilter", "FRTP_NM=활엽수림",
         };
         MagoTestConfig.execute(args);
     }
 
     @Test
+    void runForestSampleB() {
+        String path = "I04-forest-shp";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath("ForestSampleB").getAbsolutePath(),
+                "-c", "5179",
+                "-it", "gpkg",
+                "-ot", "i3dm",
+                "-refineAdd",
+                "-instance", MagoTestConfig.getInputPath("sample-tree/billboard-cloud-sample.glb").getAbsolutePath(),
+                "-attributeFilter", "FRTP_NM=활엽수림",
+                "--tilingMode", "implicit"
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    //@Test
     void runWithSimple() throws IOException {
         /*
             "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),

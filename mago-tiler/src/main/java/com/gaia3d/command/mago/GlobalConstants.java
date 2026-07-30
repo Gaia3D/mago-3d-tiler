@@ -21,7 +21,7 @@ public class GlobalConstants {
     public static final int DEFAULT_MAX_GEOMETRIC_ERROR = Integer.MAX_VALUE;
     public static final int DEFAULT_MAX_TRIANGLES = 65536 * 8;
     public static final int DEFAULT_MAX_NODE_DEPTH = 32;
-    public static final int DEFAULT_MAX_INSTANCE = 1024 * 64;
+    public static final int DEFAULT_MAX_INSTANCE = 1024 * 64 * 2;
     public static final int DEFAULT_MAX_I3DM_FEATURE_COUNT = 1024;
     public static final int DEFAULT_MIN_I3DM_FEATURE_COUNT = 128;
     public static final int DEFAULT_POINT_PER_TILE = 200000;
