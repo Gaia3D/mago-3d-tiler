@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 @Deprecated
 public class TreeInstanceTiler extends DefaultTiler implements Tiler {
 
-    private static final GlobalOptions globalOptions = GlobalOptions.getInstance();
+    private final GlobalOptions globalOptions = GlobalOptions.getInstance();
     private final double maximumGeometricError = 64.0;
     private final double maximumDistance = 1000.0; // 1km
     private double instanceGeometricError = 1.0;

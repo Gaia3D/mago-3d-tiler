@@ -9,27 +9,12 @@ import java.util.Objects;
 
 public final class MagoFboSet {
 
-    private final Map<CameraDirectionType, MagoFbo> fbos =
-            new EnumMap<>(CameraDirectionType.class);
+    private final Map<CameraDirectionType, MagoFbo> fbos = new EnumMap<>(CameraDirectionType.class);
 
-    public void create(
-            CameraDirectionType direction,
-            int width,
-            int height
-    ) {
-        Objects.requireNonNull(
-                direction,
-                "direction must not be null"
-        );
+    public void create(CameraDirectionType direction, int width, int height) {
+        Objects.requireNonNull(direction, "direction must not be null");
 
-        MagoFbo previous = fbos.put(
-                direction,
-                new MagoFbo(
-                        "MagoFbo-" + direction.name(),
-                        width,
-                        height
-                )
-        );
+        MagoFbo previous = fbos.put(direction, new MagoFbo("MagoFbo-" + direction.name(), width, height));
 
         if (previous != null) {
             previous.cleanup();
@@ -37,28 +22,19 @@ public final class MagoFboSet {
     }
 
     public MagoFbo get(CameraDirectionType direction) {
-        Objects.requireNonNull(
-                direction,
-                "direction must not be null"
-        );
+        Objects.requireNonNull(direction, "direction must not be null");
 
         MagoFbo fbo = fbos.get(direction);
 
         if (fbo == null) {
-            throw new IllegalStateException(
-                    "No MagoFbo exists for direction: "
-                            + direction
-            );
+            throw new IllegalStateException("No MagoFbo exists for direction: " + direction);
         }
 
         return fbo;
     }
 
     public boolean contains(CameraDirectionType direction) {
-        Objects.requireNonNull(
-                direction,
-                "direction must not be null"
-        );
+        Objects.requireNonNull(direction, "direction must not be null");
 
         return fbos.containsKey(direction);
     }
@@ -87,33 +63,19 @@ public final class MagoFboSet {
         return fbos.size();
     }
 
-    public MagoFboSet createCompatible(
-            int clearColor,
-            float clearDepth
-    ) {
-        MagoFboSet result =
-                new MagoFboSet();
+    public MagoFboSet createCompatible(int clearColor, float clearDepth) {
+        MagoFboSet result = new MagoFboSet();
 
-        for (Map.Entry<CameraDirectionType, MagoFbo> entry
-                : fbos.entrySet()) {
+        for (Map.Entry<CameraDirectionType, MagoFbo> entry : fbos.entrySet()) {
 
-            CameraDirectionType direction =
-                    entry.getKey();
+            CameraDirectionType direction = entry.getKey();
 
-            MagoFbo source =
-                    entry.getValue();
+            MagoFbo source = entry.getValue();
 
-            result.create(
-                    direction,
-                    source.getWidth(),
-                    source.getHeight()
-            );
+            result.create(direction, source.getWidth(), source.getHeight());
         }
 
-        result.clearAll(
-                clearColor,
-                clearDepth
-        );
+        result.clearAll(clearColor, clearDepth);
 
         return result;
     }

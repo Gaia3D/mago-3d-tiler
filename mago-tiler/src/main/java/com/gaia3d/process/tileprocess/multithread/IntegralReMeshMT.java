@@ -11,15 +11,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CompletionService;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 @Slf4j
@@ -36,6 +30,47 @@ public final class IntegralReMeshMT {
     ) {
         this.threadCount =
                 Math.max(1, threadCount);
+    }
+
+    private static ReMeshParameters copyReMeshParameters(
+            ReMeshParameters source
+    ) {
+        if (source == null) {
+            return new ReMeshParameters();
+        }
+
+        /*
+         * Preferiblemente:
+         *
+         * return source.copyForWorker();
+         */
+
+        ReMeshParameters result =
+                new ReMeshParameters();
+
+        /*
+         * Compartidos como estructuras de solo lectura.
+         */
+        result.setCellGrid(
+                source.getCellGrid()
+        );
+
+        result.setGlobalBoundaryAnchors(
+                source.getGlobalBoundaryAnchors()
+        );
+
+        /*
+         * Valores propios del worker.
+         */
+        result.setAngleDeg(
+                source.getAngleDeg()
+        );
+
+        result.setTexturePixelsForMeter(
+                source.getTexturePixelsForMeter()
+        );
+
+        return result;
     }
 
     public void process(
@@ -280,47 +315,6 @@ public final class IntegralReMeshMT {
                 job.node(),
                 localResultScenes.getFirst()
         );
-    }
-
-    private static ReMeshParameters copyReMeshParameters(
-            ReMeshParameters source
-    ) {
-        if (source == null) {
-            return new ReMeshParameters();
-        }
-
-        /*
-         * Preferiblemente:
-         *
-         * return source.copyForWorker();
-         */
-
-        ReMeshParameters result =
-                new ReMeshParameters();
-
-        /*
-         * Compartidos como estructuras de solo lectura.
-         */
-        result.setCellGrid(
-                source.getCellGrid()
-        );
-
-        result.setGlobalBoundaryAnchors(
-                source.getGlobalBoundaryAnchors()
-        );
-
-        /*
-         * Valores propios del worker.
-         */
-        result.setAngleDeg(
-                source.getAngleDeg()
-        );
-
-        result.setTexturePixelsForMeter(
-                source.getTexturePixelsForMeter()
-        );
-
-        return result;
     }
 
     public record NodeJob(

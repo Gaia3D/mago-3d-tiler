@@ -20,6 +20,7 @@ public class GaiaLasPoint {
     private byte r, g, b, a; // 4 bytes
     private char intensity; // 2 bytes
     private short classification; // 2 bytes
+
     public static GaiaLasPoint fromBytes(byte[] bytes) {
         ByteBuffer buf = ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN);
         //ByteBuffer buf = DIRECT_BUFFER.get();

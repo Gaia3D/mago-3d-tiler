@@ -40,7 +40,6 @@ import java.util.List;
 import java.util.concurrent.*;
 
 
-
 @Slf4j
 public class CutAndScissorMT {
     public final GlobalOptions globalOptions = GlobalOptions.getInstance();
@@ -109,6 +108,153 @@ public class CutAndScissorMT {
 
             destinationResult.add(sourceResult);
         });
+    }
+
+    private static void mergeFrontierCandidates(
+            Map<Integer, List<FrontierCandidate>> destination,
+            Map<Integer, List<FrontierCandidate>> source
+    ) {
+        if (destination == null
+                || source == null
+                || source.isEmpty()) {
+            return;
+        }
+
+        source.forEach((lod, candidates) -> {
+            if (lod == null
+                    || candidates == null
+                    || candidates.isEmpty()) {
+                return;
+            }
+
+            destination
+                    .computeIfAbsent(
+                            lod,
+                            ignored -> new ArrayList<>()
+                    )
+                    .addAll(candidates);
+        });
+    }
+
+    /**
+     * Converts PlaneCutResult cutting points from source tile-local
+     * coordinates to the root-local coordinate system used by CellGrid3D.
+     * <p>
+     * This method intentionally mutates the PlaneCutResult in place because
+     * PlaneCutResult is only used afterwards for global anchor accumulation.
+     */
+    private static PlaneCutResult translatedPlaneCutResultToCellGridCoordinates(
+            PlaneCutResult source,
+            Vector3d scenePositionRelToCellGrid
+    ) {
+        if (source == null) {
+            return new PlaneCutResult();
+        }
+
+        return source.translated(
+                scenePositionRelToCellGrid
+        );
+    }
+
+    private static List<FrontierCandidate>
+    collectFrontierCandidates(
+            GaiaScene scene,
+            int sourceTileId,
+            Vector3d scenePositionRelToCellGrid
+    ) {
+        List<FrontierCandidate> result =
+                new ArrayList<>();
+
+        if (scene == null
+                || scenePositionRelToCellGrid == null) {
+            return result;
+        }
+
+        GaiaExtractor extractor =
+                new GaiaExtractor();
+
+        List<GaiaPrimitive> primitives =
+                extractor.extractAllPrimitives(
+                        scene
+                );
+
+        if (primitives == null
+                || primitives.isEmpty()) {
+            return result;
+        }
+
+        GaiaFrontierFinder frontierFinder =
+                new GaiaFrontierFinder();
+
+        for (GaiaPrimitive primitive : primitives) {
+            if (primitive == null
+                    || primitive.getVertices() == null
+                    || primitive.getVertices().isEmpty()) {
+                continue;
+            }
+
+            List<GaiaVertex> vertices =
+                    primitive.getVertices();
+
+            List<GaiaFace> faces =
+                    primitive.extractGaiaAllFaces(
+                            null
+                    );
+
+            if (faces == null
+                    || faces.isEmpty()) {
+                continue;
+            }
+
+            int vertexCount =
+                    vertices.size();
+
+            int[] weldedIndices =
+                    new int[vertexCount];
+
+            boolean[] frontierVertices =
+                    frontierFinder.findBoundaryVertices(
+                            vertices,
+                            faces,
+                            1e-6,
+                            weldedIndices
+                    );
+
+            if (frontierVertices == null
+                    || frontierVertices.length < vertexCount) {
+                continue;
+            }
+
+            for (int i = 0; i < vertexCount; i++) {
+                if (!frontierVertices[i]) {
+                    continue;
+                }
+
+                GaiaVertex vertex =
+                        vertices.get(i);
+
+                if (vertex == null
+                        || vertex.getPosition() == null) {
+                    continue;
+                }
+
+                Vector3d positionInCellGrid =
+                        new Vector3d(
+                                vertex.getPosition()
+                        ).add(
+                                scenePositionRelToCellGrid
+                        );
+
+                result.add(
+                        new FrontierCandidate(
+                                sourceTileId,
+                                positionInCellGrid
+                        )
+                );
+            }
+        }
+
+        return result;
     }
 
     public CutAndScissorResult apply(
@@ -279,17 +425,17 @@ public class CutAndScissorMT {
                 );
 
         // delete deletable objects.
-        for(Map.Entry<Integer, PlaneCutResult> value : planeCutResultsByLod.entrySet()){
+        for (Map.Entry<Integer, PlaneCutResult> value : planeCutResultsByLod.entrySet()) {
             PlaneCutResult planeCutResult = value.getValue();
-            if(planeCutResult != null){
+            if (planeCutResult != null) {
                 planeCutResult.deleteObjects();
             }
         }
         planeCutResultsByLod.clear();
 
-        for(Map.Entry<Integer, List<FrontierCandidate>> value : frontierCandidatesByLod.entrySet()){
+        for (Map.Entry<Integer, List<FrontierCandidate>> value : frontierCandidatesByLod.entrySet()) {
             List<FrontierCandidate> frontierCandidates = value.getValue();
-            if(frontierCandidates != null){
+            if (frontierCandidates != null) {
                 frontierCandidates.clear();
             }
         }
@@ -299,70 +445,6 @@ public class CutAndScissorMT {
                 resultsByLod,
                 boundaryAnchorsByLod
         );
-    }
-
-    private static final class FrontierAccumulator {
-
-        private final Vector3d positionSum =
-                new Vector3d();
-
-        private final Set<Integer> tileIds =
-                new HashSet<>();
-
-        private int pointCount;
-
-        public void add(
-                Vector3d position,
-                int tileId
-        ) {
-            if (position == null) {
-                return;
-            }
-
-            positionSum.add(position);
-            pointCount++;
-
-            tileIds.add(tileId);
-        }
-
-        public boolean isShared() {
-            return tileIds.size() >= 2;
-        }
-
-        public Vector3d calculateAverage() {
-            if (pointCount <= 0) {
-                return null;
-            }
-
-            return new Vector3d(positionSum)
-                    .div(pointCount);
-        }
-    }
-
-    private static void mergeFrontierCandidates(
-            Map<Integer, List<FrontierCandidate>> destination,
-            Map<Integer, List<FrontierCandidate>> source
-    ) {
-        if (destination == null
-                || source == null
-                || source.isEmpty()) {
-            return;
-        }
-
-        source.forEach((lod, candidates) -> {
-            if (lod == null
-                    || candidates == null
-                    || candidates.isEmpty()) {
-                return;
-            }
-
-            destination
-                    .computeIfAbsent(
-                            lod,
-                            ignored -> new ArrayList<>()
-                    )
-                    .addAll(candidates);
-        });
     }
 
     private Map<Integer, LodBoundaryAnchors>
@@ -589,26 +671,6 @@ public class CutAndScissorMT {
         }
 
         return averageBBoxMinSize / (double) tileInfosCount;
-    }
-
-    /**
-     * Converts PlaneCutResult cutting points from source tile-local
-     * coordinates to the root-local coordinate system used by CellGrid3D.
-     *
-     * This method intentionally mutates the PlaneCutResult in place because
-     * PlaneCutResult is only used afterwards for global anchor accumulation.
-     */
-    private static PlaneCutResult translatedPlaneCutResultToCellGridCoordinates(
-            PlaneCutResult source,
-            Vector3d scenePositionRelToCellGrid
-    ) {
-        if (source == null) {
-            return new PlaneCutResult();
-        }
-
-        return source.translated(
-                scenePositionRelToCellGrid
-        );
     }
 
     private CutTaskResult processSingleTile(
@@ -949,7 +1011,7 @@ public class CutAndScissorMT {
                 }
 
                 // test clear bufferedImages of motherMaterials to save memory.*******************
-                for(GaiaMaterial motherMaterial : motherMaterials){
+                for (GaiaMaterial motherMaterial : motherMaterials) {
                     motherMaterial.deleteTextures();
                 }
                 // end test.-----------------------------------------------------------------------
@@ -1004,7 +1066,7 @@ public class CutAndScissorMT {
                         BufferedImage originalImage = null;
                         BufferedImage resizedImage = null;
 
-                        if(!texture.hasBufferedImage()) {
+                        if (!texture.hasBufferedImage()) {
                             String texPath = texture.getPath();
                             if (texPath == null || texPath.isEmpty()) {
                                 log.debug("Texture path is null or empty for texture: " + texture.getFullPath());
@@ -1499,105 +1561,42 @@ public class CutAndScissorMT {
         return new GaiaBoundingBox(minLonDegCut, minLatDegCut, geoCoordLeftDownBottom.z, maxLonDegCut, maxLatDegCut, geoCoordLeftDownUp.z, false);
     }
 
-    private static List<FrontierCandidate>
-    collectFrontierCandidates(
-            GaiaScene scene,
-            int sourceTileId,
-            Vector3d scenePositionRelToCellGrid
-    ) {
-        List<FrontierCandidate> result =
-                new ArrayList<>();
+    private static final class FrontierAccumulator {
 
-        if (scene == null
-                || scenePositionRelToCellGrid == null) {
-            return result;
+        private final Vector3d positionSum =
+                new Vector3d();
+
+        private final Set<Integer> tileIds =
+                new HashSet<>();
+
+        private int pointCount;
+
+        public void add(
+                Vector3d position,
+                int tileId
+        ) {
+            if (position == null) {
+                return;
+            }
+
+            positionSum.add(position);
+            pointCount++;
+
+            tileIds.add(tileId);
         }
 
-        GaiaExtractor extractor =
-                new GaiaExtractor();
-
-        List<GaiaPrimitive> primitives =
-                extractor.extractAllPrimitives(
-                        scene
-                );
-
-        if (primitives == null
-                || primitives.isEmpty()) {
-            return result;
+        public boolean isShared() {
+            return tileIds.size() >= 2;
         }
 
-        GaiaFrontierFinder frontierFinder =
-                new GaiaFrontierFinder();
-
-        for (GaiaPrimitive primitive : primitives) {
-            if (primitive == null
-                    || primitive.getVertices() == null
-                    || primitive.getVertices().isEmpty()) {
-                continue;
+        public Vector3d calculateAverage() {
+            if (pointCount <= 0) {
+                return null;
             }
 
-            List<GaiaVertex> vertices =
-                    primitive.getVertices();
-
-            List<GaiaFace> faces =
-                    primitive.extractGaiaAllFaces(
-                            null
-                    );
-
-            if (faces == null
-                    || faces.isEmpty()) {
-                continue;
-            }
-
-            int vertexCount =
-                    vertices.size();
-
-            int[] weldedIndices =
-                    new int[vertexCount];
-
-            boolean[] frontierVertices =
-                    frontierFinder.findBoundaryVertices(
-                            vertices,
-                            faces,
-                            1e-6,
-                            weldedIndices
-                    );
-
-            if (frontierVertices == null
-                    || frontierVertices.length < vertexCount) {
-                continue;
-            }
-
-            for (int i = 0; i < vertexCount; i++) {
-                if (!frontierVertices[i]) {
-                    continue;
-                }
-
-                GaiaVertex vertex =
-                        vertices.get(i);
-
-                if (vertex == null
-                        || vertex.getPosition() == null) {
-                    continue;
-                }
-
-                Vector3d positionInCellGrid =
-                        new Vector3d(
-                                vertex.getPosition()
-                        ).add(
-                                scenePositionRelToCellGrid
-                        );
-
-                result.add(
-                        new FrontierCandidate(
-                                sourceTileId,
-                                positionInCellGrid
-                        )
-                );
-            }
+            return new Vector3d(positionSum)
+                    .div(pointCount);
         }
-
-        return result;
     }
 
     private record CutTaskResult(

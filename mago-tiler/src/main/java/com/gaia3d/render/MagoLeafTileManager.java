@@ -31,31 +31,15 @@ import java.util.Map;
 @Slf4j
 public class MagoLeafTileManager {
 
-    public void integralLeafScene(List<SceneInfo> sceneInfos,
-                                  List<GaiaScene> resultGaiaScenes,
-                                  GaiaBoundingBox nodeBBox,
-                                  Matrix4d nodeTMatrix,
-                                  int maxScreenSize,
-                                  String outputPathString,
-                                  String nodeName,
-                                  int lod) {
+    public void integralLeafScene(List<SceneInfo> sceneInfos, List<GaiaScene> resultGaiaScenes, GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize, String outputPathString, String nodeName, int lod) {
         try {
             Matrix4d nodeMatrixInv = new Matrix4d(nodeTMatrix);
             nodeMatrixInv.invert();
-
             double weldError = 1e-6; // 1e-6 is a good value for remeshing
-
-            // render the scenes
             int scenesCount = sceneInfos.size();
 
             GaiaSceneCleaner cleaner = new GaiaSceneCleaner();
-            GaiaWeldOptions weldOptions = GaiaWeldOptions.builder()
-                    .error(weldError)
-                    .checkTexCoord(false)
-                    .checkNormal(false)
-                    .checkColor(false)
-                    .checkBatchId(false)
-                    .build();
+            GaiaWeldOptions weldOptions = GaiaWeldOptions.builder().error(weldError).checkTexCoord(false).checkNormal(false).checkColor(false).checkBatchId(false).build();
 
             List<HalfEdgeScene> halfEdgeScenes = new ArrayList<>();
             for (int i = 0; i < scenesCount; i++) {
@@ -120,9 +104,7 @@ public class MagoLeafTileManager {
         }
     }
 
-    private void atlasTextureForIntegralLeafScenes(List<HalfEdgeScene> halfEdgeScenes,
-                                                   List<GaiaScene> resultGaiaScenes,
-                                                   String outputPathString, String nodeName) {
+    private void atlasTextureForIntegralLeafScenes(List<HalfEdgeScene> halfEdgeScenes, List<GaiaScene> resultGaiaScenes, String outputPathString, String nodeName) {
         if (halfEdgeScenes == null || halfEdgeScenes.isEmpty()) {
             log.info("atlasTextureForIntegralLeafScenes: halfEdgeScenes is null or empty.");
             return;
@@ -274,10 +256,9 @@ public class MagoLeafTileManager {
 
         // resize the atlas texture if necessary.
         int lod = 0;
-        ImageResizer imageResizer = new ImageResizer();
         BufferedImage atlasBufferedImage = atlasScissoredTexture.getBufferedImage();
-        if(atlasBufferedImage.getWidth() > 1024 || atlasBufferedImage.getHeight() > 1024) {
-            BufferedImage resized = imageResizer.resizeMultiStepSmart(atlasBufferedImage, lod);
+        if (atlasBufferedImage.getWidth() > 1024 || atlasBufferedImage.getHeight() > 1024) {
+            BufferedImage resized = ImageResizer.resizeMultiStepSmart(atlasBufferedImage, lod);
             atlasBufferedImage.flush();
             atlasScissoredTexture.setBufferedImage(resized);
         }

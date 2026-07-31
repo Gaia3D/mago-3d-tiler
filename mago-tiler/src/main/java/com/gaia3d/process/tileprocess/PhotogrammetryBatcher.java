@@ -12,7 +12,6 @@ import com.gaia3d.converter.gltf.GltfWriterOptions;
 import com.gaia3d.converter.gltf.tiles.BatchedModelGltfWriter;
 import com.gaia3d.io.LittleEndianDataOutputStream;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTableMap;
-import com.gaia3d.process.postprocess.batch.GaiaBatcher;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
@@ -34,8 +33,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class PhotogrammetryBatcher {
     private static final String MAGIC = "glb";
-    private final BatchedModelGltfWriter gltfWriter;
     private static final int VERSION = 1;
+    private final BatchedModelGltfWriter gltfWriter;
 
     public PhotogrammetryBatcher() {
         GltfWriterOptions gltfOptions = GltfWriterOptions.builder()

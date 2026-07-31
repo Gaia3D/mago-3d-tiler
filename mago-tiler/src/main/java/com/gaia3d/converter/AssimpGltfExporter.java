@@ -21,7 +21,6 @@ public class AssimpGltfExporter {
         List<GaiaScene> scenes = assimpConverter.load(inputFile);
         if (scenes.isEmpty()) {
             log.warn("No scenes found in the input file: {}", inputFile.getAbsolutePath());
-            return;
         } else {
             log.info("Single scene found in the input file: {}", inputFile.getAbsolutePath());
             GaiaScene scene = scenes.get(0);
@@ -46,7 +45,6 @@ public class AssimpGltfExporter {
         List<GaiaScene> scenes = assimpConverter.load(inputFile);
         if (scenes.isEmpty()) {
             log.warn("No scenes found in the input file: {}", inputFile.getAbsolutePath());
-            return;
         } else {
             log.info("Single scene found in the input file: {}", inputFile.getAbsolutePath());
             GaiaScene scene = scenes.get(0);

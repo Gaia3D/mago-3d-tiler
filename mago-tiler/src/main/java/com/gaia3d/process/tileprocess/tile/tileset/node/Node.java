@@ -45,6 +45,44 @@ public class Node {
     private Content content;
     private ImplicitTiling implicitTiling;
 
+    @JsonIgnore
+    private static Vector3d ecefDeltaToEnu(Vector3d ecefDelta, double rootLongitudeRad, double rootLatitudeRad) {
+        if (ecefDelta == null) {
+            return null;
+        }
+
+        double sinLongitude = Math.sin(rootLongitudeRad);
+
+        double cosLongitude = Math.cos(rootLongitudeRad);
+
+        double sinLatitude = Math.sin(rootLatitudeRad);
+
+        double cosLatitude = Math.cos(rootLatitudeRad);
+
+        double east = -sinLongitude * ecefDelta.x + cosLongitude * ecefDelta.y;
+
+        double north = -sinLatitude * cosLongitude * ecefDelta.x - sinLatitude * sinLongitude * ecefDelta.y + cosLatitude * ecefDelta.z;
+
+        double up = cosLatitude * cosLongitude * ecefDelta.x + cosLatitude * sinLongitude * ecefDelta.y + sinLatitude * ecefDelta.z;
+
+        return new Vector3d(east, north, up);
+    }
+
+    private static double calculateLongitudeMidpointRad(double westRad, double eastRad) {
+        double delta = eastRad - westRad;
+
+        if (delta < 0.0) {
+            delta += Math.PI * 2.0;
+        }
+
+        double result = westRad + delta * 0.5;
+
+        if (result > Math.PI) {
+            result -= Math.PI * 2.0;
+        }
+
+        return result;
+    }
 
     public void setTransformMatrix(Matrix4d transformMatrixAux, boolean useTransform) {
         this.transformMatrixAux = transformMatrixAux;
@@ -465,10 +503,7 @@ public class Node {
         if (Math.toRadians(cartographicBBoxDegrees.getMinY()) > maxLat || Math.toRadians(cartographicBBoxDegrees.getMaxY()) < minLat) {
             return false;
         }
-        if (cartographicBBoxDegrees.getMinZ() > maxAltitude || cartographicBBoxDegrees.getMaxZ() < minAltitude) {
-            return false;
-        }
-        return true;
+        return !(cartographicBBoxDegrees.getMinZ() > maxAltitude) && !(cartographicBBoxDegrees.getMaxZ() < minAltitude);
     }
 
     public boolean intersectsCartographicPointDegree(Vector3d cartographicPointDegree) {
@@ -488,10 +523,7 @@ public class Node {
         if (latRad < minLat || latRad > maxLat) {
             return false;
         }
-        if (altitude < minAltitude || altitude > maxAltitude) {
-            return false;
-        }
-        return true;
+        return !(altitude < minAltitude) && !(altitude > maxAltitude);
     }
 
     public void getIntersectedNodesAsOctree(GaiaBoundingBox cartographicBBox, int depth, List<Node> resultIntersectedNodes) {
@@ -573,17 +605,18 @@ public class Node {
 
         return bbox;
     }
+
     @JsonIgnore
     public Node getRootNode() {
-        if(this.parent == null || this.parent == this) {
+        if (this.parent == null || this.parent == this) {
             return this;
         }
         return this.parent.getRootNode();
     }
+
     @JsonIgnore
     public Vector3d getCartesianPositionRelativeToRootNode() {
-        Node rootNode =
-                this.getRootNode();
+        Node rootNode = this.getRootNode();
 
         if (rootNode == null) {
             return null;
@@ -593,99 +626,31 @@ public class Node {
             return new Vector3d();
         }
 
-        Vector3d nodeCartographic =
-                this.getCartographicCenterDeg();
+        Vector3d nodeCartographic = this.getCartographicCenterDeg();
 
-        Vector3d rootCartographic =
-                rootNode.getCartographicCenterDeg();
+        Vector3d rootCartographic = rootNode.getCartographicCenterDeg();
 
-        if (nodeCartographic == null
-                || rootCartographic == null) {
+        if (nodeCartographic == null || rootCartographic == null) {
             return null;
         }
 
-        double[] nodeWorld = GlobeUtils.geographicToCartesianWgs84(
-                nodeCartographic.x, nodeCartographic.y, nodeCartographic.z
-        );
+        double[] nodeWorld = GlobeUtils.geographicToCartesianWgs84(nodeCartographic.x, nodeCartographic.y, nodeCartographic.z);
 
-        double[] rootWorld = GlobeUtils.geographicToCartesianWgs84(
-                rootCartographic.x, rootCartographic.y, rootCartographic.z
-        );
+        double[] rootWorld = GlobeUtils.geographicToCartesianWgs84(rootCartographic.x, rootCartographic.y, rootCartographic.z);
         Vector3d nodeEcef = new Vector3d(nodeWorld[0], nodeWorld[1], nodeWorld[2]);
         Vector3d rootEcef = new Vector3d(rootWorld[0], rootWorld[1], rootWorld[2]);
 
-        if (nodeEcef == null
-                || rootEcef == null) {
+        if (nodeEcef == null || rootEcef == null) {
             return null;
         }
 
-        Vector3d ecefDelta =
-                new Vector3d(
-                        nodeEcef
-                ).sub(
-                        rootEcef
-                );
+        Vector3d ecefDelta = new Vector3d(nodeEcef).sub(rootEcef);
 
-        return ecefDeltaToEnu(
-                ecefDelta,
-                rootCartographic.x,
-                rootCartographic.y
-        );
+        return ecefDeltaToEnu(ecefDelta, rootCartographic.x, rootCartographic.y);
     }
+
     @JsonIgnore
-    private static Vector3d ecefDeltaToEnu(
-            Vector3d ecefDelta,
-            double rootLongitudeRad,
-            double rootLatitudeRad
-    ) {
-        if (ecefDelta == null) {
-            return null;
-        }
-
-        double sinLongitude =
-                Math.sin(rootLongitudeRad);
-
-        double cosLongitude =
-                Math.cos(rootLongitudeRad);
-
-        double sinLatitude =
-                Math.sin(rootLatitudeRad);
-
-        double cosLatitude =
-                Math.cos(rootLatitudeRad);
-
-        double east =
-                -sinLongitude * ecefDelta.x
-                        + cosLongitude * ecefDelta.y;
-
-        double north =
-                -sinLatitude
-                        * cosLongitude
-                        * ecefDelta.x
-                        - sinLatitude
-                        * sinLongitude
-                        * ecefDelta.y
-                        + cosLatitude
-                        * ecefDelta.z;
-
-        double up =
-                cosLatitude
-                        * cosLongitude
-                        * ecefDelta.x
-                        + cosLatitude
-                        * sinLongitude
-                        * ecefDelta.y
-                        + sinLatitude
-                        * ecefDelta.z;
-
-        return new Vector3d(
-                east,
-                north,
-                up
-        );
-    }
-    @JsonIgnore
-    public Vector3d getCartographicCenterDeg(){
+    public Vector3d getCartographicCenterDeg() {
         Vector3d centerRad = getCartographicCenterRad();
         double RAD_TO_DEG = 180.0 / Math.PI;
         centerRad.x *= RAD_TO_DEG;
@@ -694,76 +659,38 @@ public class Node {
 
         return centerRad;
     }
+
     @JsonIgnore
     public Vector3d getCartographicCenterRad() {
         if (boundingVolume == null) {
             return null;
         }
 
-        double[] region =
-                boundingVolume.getRegion();
+        double[] region = boundingVolume.getRegion();
 
-        if (region == null
-                || region.length < 6) {
+        if (region == null || region.length < 6) {
             return null;
         }
 
-        double westRad =
-                region[0];
+        double westRad = region[0];
 
-        double southRad =
-                region[1];
+        double southRad = region[1];
 
-        double eastRad =
-                region[2];
+        double eastRad = region[2];
 
-        double northRad =
-                region[3];
+        double northRad = region[3];
 
-        double minAltitude =
-                region[4];
+        double minAltitude = region[4];
 
-        double maxAltitude =
-                region[5];
+        double maxAltitude = region[5];
 
-        double centerLongitudeRad =
-                calculateLongitudeMidpointRad(
-                        westRad,
-                        eastRad
-                );
+        double centerLongitudeRad = calculateLongitudeMidpointRad(westRad, eastRad);
 
-        double centerLatitudeRad =
-                (southRad + northRad) * 0.5;
+        double centerLatitudeRad = (southRad + northRad) * 0.5;
 
-        double centerAltitude =
-                (minAltitude + maxAltitude) * 0.5;
+        double centerAltitude = (minAltitude + maxAltitude) * 0.5;
 
-        return new Vector3d(
-                centerLongitudeRad,
-                centerLatitudeRad,
-                centerAltitude
-        );
-    }
-
-    private static double calculateLongitudeMidpointRad(
-            double westRad,
-            double eastRad
-    ) {
-        double delta =
-                eastRad - westRad;
-
-        if (delta < 0.0) {
-            delta += Math.PI * 2.0;
-        }
-
-        double result =
-                westRad + delta * 0.5;
-
-        if (result > Math.PI) {
-            result -= Math.PI * 2.0;
-        }
-
-        return result;
+        return new Vector3d(centerLongitudeRad, centerLatitudeRad, centerAltitude);
     }
 
     public GaiaBoundingBox calculateLocalBoundingBox() {

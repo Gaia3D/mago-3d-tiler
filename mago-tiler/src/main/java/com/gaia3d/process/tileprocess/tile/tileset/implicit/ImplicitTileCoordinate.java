@@ -1,22 +1,23 @@
 package com.gaia3d.process.tileprocess.tile.tileset.implicit;
 
-import java.util.Objects;
-
-public class ImplicitTileCoordinate {
-    private final int level;
-    private final int x;
-    private final int y;
-    private final int z;
-
-    public ImplicitTileCoordinate(int level, int x, int y, int z) {
-        this.level = level;
-        this.x = x;
-        this.y = y;
-        this.z = z;
-    }
+public record ImplicitTileCoordinate(int level, int x, int y, int z) {
 
     public static ImplicitTileCoordinate root() {
         return new ImplicitTileCoordinate(0, 0, 0, 0);
+    }
+
+    public static int octreeChildIndex(char childCode) {
+        return switch (childCode) {
+            case 'A' -> 0;
+            case 'B' -> 1;
+            case 'C' -> 2;
+            case 'D' -> 3;
+            case 'E' -> 4;
+            case 'F' -> 5;
+            case 'G' -> 6;
+            case 'H' -> 7;
+            default -> throw new IllegalArgumentException("Unsupported octree child code: " + childCode);
+        };
     }
 
     public ImplicitTileCoordinate child(char childCode) {
@@ -72,20 +73,6 @@ public class ImplicitTileCoordinate {
         return rootCode + "/" + level + "/" + x + "/" + y;
     }
 
-    public static int octreeChildIndex(char childCode) {
-        return switch (childCode) {
-            case 'A' -> 0;
-            case 'B' -> 1;
-            case 'C' -> 2;
-            case 'D' -> 3;
-            case 'E' -> 4;
-            case 'F' -> 5;
-            case 'G' -> 6;
-            case 'H' -> 7;
-            default -> throw new IllegalArgumentException("Unsupported octree child code: " + childCode);
-        };
-    }
-
     public int localMortonIndex(int localLevel, ImplicitTileCoordinate subtreeRoot, SubdivisionScheme subdivisionScheme) {
         int shift = level - subtreeRoot.level - localLevel;
         int localX = shift == 0 ? x : x >> shift;
@@ -110,22 +97,6 @@ public class ImplicitTileCoordinate {
         return index;
     }
 
-    public int getLevel() {
-        return level;
-    }
-
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
-    }
-
-    public int getZ() {
-        return z;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -137,8 +108,4 @@ public class ImplicitTileCoordinate {
         return level == that.level && x == that.x && y == that.y && z == that.z;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(level, x, y, z);
-    }
 }

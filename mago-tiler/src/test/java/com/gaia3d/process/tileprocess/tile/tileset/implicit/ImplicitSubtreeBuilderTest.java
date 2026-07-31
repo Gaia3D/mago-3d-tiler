@@ -33,21 +33,21 @@ class ImplicitSubtreeBuilderTest {
         assertEquals(2, artifacts.size());
 
         ImplicitSubtreeArtifact rootArtifact = artifacts.stream()
-                .filter(artifact -> artifact.getSubtreeUri().equals("subtrees/RR1/0/0/0/0.json"))
+                .filter(artifact -> artifact.subtreeUri().equals("subtrees/RR1/0/0/0/0.json"))
                 .findFirst()
                 .orElseThrow();
-        Subtree rootSubtree = rootArtifact.getSubtree();
+        Subtree rootSubtree = rootArtifact.subtree();
         assertEquals(2, rootSubtree.getTileAvailability().getAvailableCount());
         assertEquals(2, rootSubtree.getContentAvailability().getFirst().getAvailableCount());
         assertEquals(1, rootSubtree.getChildSubtreeAvailability().getAvailableCount());
-        assertFalse(rootArtifact.getAvailabilityBuffer().length == 0);
+        assertFalse(rootArtifact.availabilityBuffer().length == 0);
 
         ImplicitSubtreeArtifact childArtifact = artifacts.stream()
-                .filter(artifact -> artifact.getSubtreeUri().equals("subtrees/RR1/2/1/1/1.json"))
+                .filter(artifact -> artifact.subtreeUri().equals("subtrees/RR1/2/1/1/1.json"))
                 .findFirst()
                 .orElseThrow();
-        assertEquals(1, childArtifact.getSubtree().getTileAvailability().getAvailableCount());
-        assertEquals(1, childArtifact.getSubtree().getContentAvailability().getFirst().getAvailableCount());
+        assertEquals(1, childArtifact.subtree().getTileAvailability().getAvailableCount());
+        assertEquals(1, childArtifact.subtree().getContentAvailability().getFirst().getAvailableCount());
     }
 
     @Test
@@ -61,7 +61,7 @@ class ImplicitSubtreeBuilderTest {
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         mapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
 
-        String json = mapper.writeValueAsString(builder.build().getFirst().getSubtree());
+        String json = mapper.writeValueAsString(builder.build().getFirst().subtree());
 
         assertTrue(json.contains("\"buffer\":0"));
         assertTrue(json.contains("\"byteOffset\":0"));
@@ -75,8 +75,8 @@ class ImplicitSubtreeBuilderTest {
 
         List<ImplicitSubtreeArtifact> artifacts = builder.build();
 
-        assertEquals("subtrees/R/0/0/0.json", artifacts.getFirst().getSubtreeUri());
-        assertEquals("subtrees/R/0/0/0.bin", artifacts.getFirst().getBufferUri());
+        assertEquals("subtrees/R/0/0/0.json", artifacts.getFirst().subtreeUri());
+        assertEquals("subtrees/R/0/0/0.bin", artifacts.getFirst().bufferUri());
     }
 
     @Test

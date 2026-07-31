@@ -186,8 +186,7 @@ public class BoundingVolume implements Serializable {
             Vector3d halfVector1 = new Vector3d(halfX1, halfY1, halfZ1);
             Vector3d halfVector2 = new Vector3d(halfX2, halfY2, halfZ2);
             Vector3d halfVector3 = new Vector3d(halfX3, halfY3, halfZ3);
-            Matrix4d transformMatrix = new Matrix4d()
-                    .identity()
+            Matrix4d transformMatrix = new Matrix4d().identity()
                     .translate(centerX, centerY, centerZ)
                     .scale(halfVector1.x(), halfVector1.y(), halfVector1.z())
                     .rotateX(Math.toRadians(-90))
@@ -303,12 +302,7 @@ public class BoundingVolume implements Serializable {
 
             double maxLength = Math.max(Math.max(halfX1, halfY1), halfZ1);
             BoundingVolume boundingVolume = new BoundingVolume(BoundingVolumeType.BOX);
-            boundingVolume.setBox(new double[]{
-                    centerX, centerY, centerZ,
-                    maxLength, 0, 0,
-                    0, maxLength, 0,
-                    0, 0, maxLength
-            });
+            boundingVolume.setBox(new double[]{centerX, centerY, centerZ, maxLength, 0, 0, 0, maxLength, 0, 0, 0, maxLength});
             return boundingVolume;
         } else {
             log.error("Unsupported bounding volume type: {}", type);
@@ -317,9 +311,7 @@ public class BoundingVolume implements Serializable {
     }
 
     public enum BoundingVolumeType {
-        BOX,
-        SPHERE,
-        REGION
+        BOX, SPHERE, REGION
     }
 }
 

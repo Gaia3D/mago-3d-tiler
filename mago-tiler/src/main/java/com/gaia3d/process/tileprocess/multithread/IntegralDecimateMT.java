@@ -10,16 +10,12 @@ import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
 import com.gaia3d.render.MagoReTextureByObliqueCamera;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
-import org.joml.Vector3d;
-import org.joml.Vector3i;
 
-import java.util.*;
-import java.util.concurrent.CompletionService;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 @Slf4j
@@ -36,6 +32,54 @@ public final class IntegralDecimateMT {
     ) {
         this.threadCount =
                 Math.max(1, threadCount);
+    }
+
+    private static DecimateParameters copyDecimateParameters(
+            DecimateParameters source
+    ) {
+        if (source == null) {
+            return new DecimateParameters();
+        }
+
+        /*
+         * Requiere constructor de copia.
+         */
+        return source.clone();
+    }
+
+    private static ReMeshParameters copyReMeshParameters(
+            ReMeshParameters source
+    ) {
+        if (source == null) {
+            return new ReMeshParameters();
+        }
+
+        ReMeshParameters result =
+                new ReMeshParameters();
+
+        /*
+         * Compartidos como estructuras de solo lectura.
+         */
+        result.setCellGrid(
+                source.getCellGrid()
+        );
+
+        result.setGlobalBoundaryAnchors(
+                source.getGlobalBoundaryAnchors()
+        );
+
+        /*
+         * Valores privados de cada worker.
+         */
+        result.setAngleDeg(
+                source.getAngleDeg()
+        );
+
+        result.setTexturePixelsForMeter(
+                source.getTexturePixelsForMeter()
+        );
+
+        return result;
     }
 
     public void process(
@@ -233,54 +277,6 @@ public final class IntegralDecimateMT {
                 job.node(),
                 localResultScenes.getFirst()
         );
-    }
-
-    private static DecimateParameters copyDecimateParameters(
-            DecimateParameters source
-    ) {
-        if (source == null) {
-            return new DecimateParameters();
-        }
-
-        /*
-         * Requiere constructor de copia.
-         */
-        return source.clone();
-    }
-
-    private static ReMeshParameters copyReMeshParameters(
-            ReMeshParameters source
-    ) {
-        if (source == null) {
-            return new ReMeshParameters();
-        }
-
-        ReMeshParameters result =
-                new ReMeshParameters();
-
-        /*
-         * Compartidos como estructuras de solo lectura.
-         */
-        result.setCellGrid(
-                source.getCellGrid()
-        );
-
-        result.setGlobalBoundaryAnchors(
-                source.getGlobalBoundaryAnchors()
-        );
-
-        /*
-         * Valores privados de cada worker.
-         */
-        result.setAngleDeg(
-                source.getAngleDeg()
-        );
-
-        result.setTexturePixelsForMeter(
-                source.getTexturePixelsForMeter()
-        );
-
-        return result;
     }
 
     public record NodeJob(
