@@ -22,6 +22,18 @@ public class PlaneCutResult {
     public PlaneCutResult() {
     }
 
+    public void deleteObjects(){
+        if(cuttingPoints != null){
+            cuttingPoints.clear();
+        }
+        if(tangentPoints != null){
+            tangentPoints.clear();
+        }
+        if(coplanarPoints != null){
+            coplanarPoints.clear();
+        }
+    }
+
     public PlaneCutResult(
             List<PlaneCutPoint> cuttingPoints,
             List<PlaneCutPoint> tangentPoints,

@@ -278,6 +278,23 @@ public class CutAndScissorMT {
                         rootNodeBBoxLC
                 );
 
+        // delete deletable objects.
+        for(Map.Entry<Integer, PlaneCutResult> value : planeCutResultsByLod.entrySet()){
+            PlaneCutResult planeCutResult = value.getValue();
+            if(planeCutResult != null){
+                planeCutResult.deleteObjects();
+            }
+        }
+        planeCutResultsByLod.clear();
+
+        for(Map.Entry<Integer, List<FrontierCandidate>> value : frontierCandidatesByLod.entrySet()){
+            List<FrontierCandidate> frontierCandidates = value.getValue();
+            if(frontierCandidates != null){
+                frontierCandidates.clear();
+            }
+        }
+        frontierCandidatesByLod.clear();
+
         return new CutAndScissorResult(
                 resultsByLod,
                 boundaryAnchorsByLod
