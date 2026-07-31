@@ -42,6 +42,6 @@ javadoc {
 
 test {
     useJUnitPlatform {
-        includeTags 'release'
+        includeTags 'default'
     }
 }
