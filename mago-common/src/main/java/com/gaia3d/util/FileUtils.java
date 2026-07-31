@@ -1,5 +1,6 @@
 package com.gaia3d.util;
 
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -8,6 +9,7 @@ import java.util.List;
 
 @SuppressWarnings("ALL")
 @Slf4j
+@UtilityClass
 public class FileUtils {
 
     public static boolean isFileExists(String filePath) {

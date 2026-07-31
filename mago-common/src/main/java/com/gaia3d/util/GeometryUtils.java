@@ -5,6 +5,7 @@ import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.geometry.octree.GaiaFaceContent;
 import com.gaia3d.basic.halfedge.PlaneType;
 import com.gaia3d.basic.model.*;
+import lombok.experimental.UtilityClass;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
@@ -15,6 +16,7 @@ import java.util.List;
 /**
  * GeometryUtils
  */
+@UtilityClass
 public class GeometryUtils {
 
     /**

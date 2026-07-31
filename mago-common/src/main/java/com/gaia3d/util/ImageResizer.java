@@ -1,5 +1,6 @@
 package com.gaia3d.util;
 
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
 import java.awt.*;
@@ -11,6 +12,7 @@ import java.awt.image.Kernel;
  * Utility class for resizing images.
  */
 @Slf4j
+@UtilityClass
 public class ImageResizer {
     public final static int MAX_TEXTURE_SIZE = 8192 * 2;
     public final static int MIN_TEXTURE_SIZE = 32;

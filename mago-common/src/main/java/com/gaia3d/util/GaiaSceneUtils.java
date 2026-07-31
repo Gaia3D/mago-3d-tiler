@@ -3,6 +3,7 @@ package com.gaia3d.util;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.model.structure.GaiaFaceExplicit;
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 @Slf4j
+@UtilityClass
 public class GaiaSceneUtils {
     public static GaiaScene getSceneRectangularNet(int numCols, int numRows, double width, double height, boolean calculateTexCoords) {
         GaiaScene scene = new GaiaScene();

@@ -1,5 +1,8 @@
 package com.gaia3d.util;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class GaiaColorUtils {
     public static byte[] decodeColor4(int colorCode) {
         byte r = (byte) ((colorCode >> 24) & 0xFF);

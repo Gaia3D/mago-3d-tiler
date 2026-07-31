@@ -1,4 +1,3 @@
-
 package com.gaia3d.basic.geometry.entities;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;

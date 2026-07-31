@@ -1,10 +1,12 @@
 package com.gaia3d.util;
 
 import com.gaia3d.basic.geometry.GaiaRectangle;
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector2d;
 
 @Slf4j
+@UtilityClass
 public class VectorUtils {
     public static double cross(Vector2d v1, Vector2d v2, Vector2d v3) {
         Vector2d v1v2 = v1.sub(v2, new Vector2d());

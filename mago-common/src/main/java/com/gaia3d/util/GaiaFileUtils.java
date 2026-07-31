@@ -1,5 +1,6 @@
 package com.gaia3d.util;
 
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
@@ -7,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 
 @Slf4j
+@UtilityClass
 public class GaiaFileUtils {
     public static void deleteAll(String path) {
         FileUtils.deleteQuietly(new File(path));
