@@ -293,6 +293,24 @@ public class ForestExperimentalTest {
     }
 
     @Test
+    void garisanInstancingTest() {
+        String path = "garisan-instancing-test";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getSsdInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-c", "5187",
+                "-ot", "i3dm",
+                "--refineAdd",
+                "--scaleColumn", "TreeHeight",
+                "--tilesVersion", "1.0",
+                "-instance", "D:\\user\\znkim\\Downloads\\Export_GLB\\Triangles_200.glb",
+                "-terrain", "H:\\workspace\\mago-server\\output\\layer.json",
+                "-maxLod", "4",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
     void garisanMerge() {
         String path = "garisan";
         String[] args = new String[]{

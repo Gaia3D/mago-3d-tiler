@@ -88,18 +88,18 @@ public class InstancedFileLoader implements FileLoader {
             log.info("GeoTiff path is file. Loading only the GeoTiff file.");
             log.info(" - Loading GeoTiff file: {}", geoTiffPath.getAbsolutePath());
             GridCoverage2D coverage = loadGeoTiff(geoTiffPath);
-            Interpolation interpolation = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
-            GridCoverage2D interpolatedCoverage = Interpolator2D.create(coverage, interpolation);
-            coverages.add(interpolatedCoverage);
+            //Interpolation interpolation = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
+            //GridCoverage2D interpolatedCoverage = Interpolator2D.create(coverage, interpolation);
+            coverages.add(coverage);
         } else if (geoTiffPath.isDirectory()) {
             log.info("GeoTiff path is directory. Loading all GeoTiff files in the directory.");
             File[] files = FileUtils.listFiles(geoTiffPath, new String[]{"tif", "tiff"}, true).toArray(new File[0]);
             for (File file : files) {
                 log.info(" - Loading GeoTiff file: {}", file.getAbsolutePath());
                 GridCoverage2D coverage = loadGeoTiff(file);
-                Interpolation interpolation = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
-                GridCoverage2D interpolatedCoverage = Interpolator2D.create(coverage, interpolation);
-                coverages.add(interpolatedCoverage);
+                //Interpolation interpolation = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
+                //GridCoverage2D interpolatedCoverage = Interpolator2D.create(coverage, interpolation);
+                coverages.add(coverage);
             }
         } else {
             throw new RuntimeException("GeoTiff path is neither a file nor a directory.");

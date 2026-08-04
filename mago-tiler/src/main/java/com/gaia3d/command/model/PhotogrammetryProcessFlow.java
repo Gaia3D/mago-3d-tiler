@@ -15,6 +15,9 @@ import com.gaia3d.process.preprocess.*;
 import com.gaia3d.process.tileprocess.Pipeline;
 import com.gaia3d.process.tileprocess.TilingProcess;
 import com.gaia3d.process.tileprocess.tile.PhotogrammetryTiler;
+import com.gaia3d.terrain.GeoTiffTerrainHeightProvider;
+import com.gaia3d.terrain.QuantizedMeshTerrainHeightProvider;
+import com.gaia3d.terrain.TerrainHeightProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.coverage.grid.GridCoverage2D;
 
@@ -37,10 +40,15 @@ public class PhotogrammetryProcessFlow implements ProcessFlow {
         ExtrusionTempGenerator tempGenerator = new ExtrusionTempGenerator(converter);
         BatchedFileLoader fileLoader = new BatchedFileLoader(converter, kmlReader, tempGenerator);
 
-        List<GridCoverage2D> geoTiffs = new ArrayList<>();
+        TerrainHeightProvider terrainHeightProvider = TerrainHeightProvider.empty();
         if (globalOptions.getTerrainPath() != null) {
             File terrainPath = new File(globalOptions.getTerrainPath());
-            geoTiffs = fileLoader.loadGridCoverages(terrainPath, geoTiffs);
+            if (terrainPath.isFile() && terrainPath.getName().equalsIgnoreCase("layer.json")) {
+                terrainHeightProvider = new QuantizedMeshTerrainHeightProvider(terrainPath.toPath());
+            } else {
+                List<GridCoverage2D> geoTiffs = fileLoader.loadGridCoverages(terrainPath, new ArrayList<>());
+                terrainHeightProvider = new GeoTiffTerrainHeightProvider(geoTiffs);
+            }
         }
         List<GridCoverage2D> geoidTiffs = new ArrayList<>();
         if (globalOptions.getGeoidPath() != null) {
@@ -55,7 +63,7 @@ public class PhotogrammetryProcessFlow implements ProcessFlow {
         preProcessors.add(new GaiaScaler());
 
         preProcessors.add(new PhotogrammetryRotation());
-        preProcessors.add(new GaiaTranslationForPhotogrammetry(geoTiffs, geoidTiffs));
+        preProcessors.add(new GaiaTranslationForPhotogrammetry(terrainHeightProvider, geoidTiffs));
         PhotogrammetryMinimization gaiaMinimizer = new PhotogrammetryMinimization();
         preProcessors.add(gaiaMinimizer);
 
