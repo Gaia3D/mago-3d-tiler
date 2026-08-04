@@ -293,18 +293,72 @@ public class ForestExperimentalTest {
     }
 
     @Test
-    void garisanInstancingTest() {
+    void garisanInstancing5mTest() {
         String path = "garisan-instancing-test";
         String[] args = new String[]{
                 "-i", MagoTestConfig.getSsdInputPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-5m",
                 "-c", "5187",
                 "-ot", "i3dm",
                 "--refineAdd",
                 "--scaleColumn", "TreeHeight",
                 "--tilesVersion", "1.0",
                 "-instance", "D:\\user\\znkim\\Downloads\\Export_GLB\\Triangles_200.glb",
-                "-terrain", "H:\\workspace\\mago-server\\output\\layer.json",
+                "-terrain", "D:\\data\\mago-3d-terrainer\\release-sample\\garisan-precision.tif",
+                "-maxLod", "4",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void garisanInstancing25cmTest() {
+        String path = "garisan-instancing-test";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getSsdInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-25cm",
+                "-c", "5187",
+                "-ot", "i3dm",
+                "--refineAdd",
+                "--scaleColumn", "TreeHeight",
+                "--tilesVersion", "1.0",
+                "-instance", "D:\\user\\znkim\\Downloads\\Export_GLB\\Triangles_200.glb",
+                "-terrain", "D:\\data\\mago-3d-terrainer\\release-sample\\garisan-precision-25cm.tif",
+                "-maxLod", "4",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void testGarisanInstancingFromTerrain() {
+        String path = "garisan-instancing-test";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getSsdInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "fromTerrain",
+                "-c", "5187",
+                "-ot", "i3dm",
+                "--refineAdd",
+                "--scaleColumn", "TreeHeight",
+                "--tilesVersion", "1.0",
+                "-instance", "D:\\user\\znkim\\Downloads\\Export_GLB\\Triangles_200.glb",
+                "-terrain", "H:\\workspace\\mago-server\\output\\korea_dem_5m\\layer.json",
+                "-maxLod", "4",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void testGarisanInstancingFromGeoTiff() {
+        String path = "garisan-instancing-test";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getSsdInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "fromGeoTiff",
+                "-c", "5187",
+                "-ot", "i3dm",
+                "--refineAdd",
+                "--scaleColumn", "TreeHeight",
+                "--tilesVersion", "1.0",
+                "-instance", "D:\\user\\znkim\\Downloads\\Export_GLB\\Triangles_200.glb",
+                "-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
                 "-maxLod", "4",
         };
         MagoTestConfig.execute(args);

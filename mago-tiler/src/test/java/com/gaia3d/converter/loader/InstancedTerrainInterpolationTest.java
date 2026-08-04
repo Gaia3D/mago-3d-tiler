@@ -1,6 +1,7 @@
 package com.gaia3d.converter.loader;
 
 import com.gaia3d.util.GlobeUtils;
+import com.gaia3d.terrain.GeoTiffTerrainHeightProvider;
 import org.eclipse.imagen.Interpolation;
 import org.geotools.api.geometry.Bounds;
 import org.geotools.api.geometry.Position;
@@ -226,27 +227,30 @@ class InstancedTerrainInterpolationTest {
     }
 
     @Test
-    void instancedLoaderMatchesSingleBilinearInterpolation() throws Exception {
+    void instancedLoaderSamplesBilinearFromPixelCenters() throws Exception {
         File terrainFile = terrainFile();
-        Interpolation bilinear = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
         InstancedFileLoader loader = new InstancedFileLoader(null, null, null);
 
         List<GridCoverage2D> loadedCoverages = loader.loadGridCoverages(terrainFile, new ArrayList<>());
         assertEquals(1, loadedCoverages.size());
-        GridCoverage2D actual = loadedCoverages.get(0);
+        GeoTiffTerrainHeightProvider provider = new GeoTiffTerrainHeightProvider(loadedCoverages);
 
         GeoTiffReader reader = new GeoTiffReader(terrainFile);
         try {
             GridCoverage2D source = reader.read((GeneralParameterValue[]) null);
-            GridCoverage2D expected = (GridCoverage2D) Operations.DEFAULT.interpolate(source, bilinear);
 
             for (Position2D position : samplePositionsInWgs84(source)) {
                 assertEquals(
-                        evaluate(expected, position),
-                        evaluate(actual, position),
-                        ELEVATION_TOLERANCE,
-                        () -> "Instanced loader changed bilinear elevation at " + position);
+                        calculateBilinearFromSourcePixels(source, position, PixelOrientation.CENTER),
+                        provider.sample(position.getX(), position.getY()).orElseThrow(),
+                        1.0e-9,
+                        () -> "Terrain provider did not use pixel-center bilinear sampling at " + position);
             }
+
+            assertEquals(
+                    339.547453654,
+                    provider.sample(127.89467716, 37.74684435).orElseThrow(),
+                    1.0e-6);
         } finally {
             reader.dispose();
         }
@@ -278,6 +282,13 @@ class InstancedTerrainInterpolationTest {
     }
 
     private double calculateBilinearFromSourcePixels(GridCoverage2D source, Position2D wgs84Position) throws Exception {
+        return calculateBilinearFromSourcePixels(source, wgs84Position, PixelOrientation.UPPER_LEFT);
+    }
+
+    private double calculateBilinearFromSourcePixels(
+            GridCoverage2D source,
+            Position2D wgs84Position,
+            PixelOrientation pixelOrientation) throws Exception {
         MathTransform fromWgs84 = CRS.findMathTransform(
                 DefaultGeographicCRS.WGS84,
                 source.getCoordinateReferenceSystem(),
@@ -286,7 +297,7 @@ class InstancedTerrainInterpolationTest {
         fromWgs84.transform(wgs84Position, coveragePosition);
 
         MathTransform worldToGrid = source.getGridGeometry()
-                .getGridToCRS2D(PixelOrientation.UPPER_LEFT)
+                .getGridToCRS2D(pixelOrientation)
                 .inverse();
         Position gridPosition = worldToGrid.transform(coveragePosition, null);
         double gridX = gridPosition.getOrdinate(0);
