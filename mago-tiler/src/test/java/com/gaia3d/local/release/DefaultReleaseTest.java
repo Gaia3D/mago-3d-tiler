@@ -4,6 +4,7 @@ import com.gaia3d.command.LoggingConfiguration;
 import com.gaia3d.command.mago.Mago3DTilerMain;
 import com.gaia3d.local.MagoTestConfig;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -54,6 +55,75 @@ class DefaultReleaseTest {
     }
 
     @Test
+    void runBatchedGPKGSampleA() {
+        String path = "B09-seoul-yeouido-gpkg";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath("BatchedGPKGSampleA").getAbsolutePath(),
+                "-c", "5186",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void runBatchedGPKGSampleB() {
+        String path = "B09-seoul-yeouido-gpkg";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath("BatchedGPKGSampleB").getAbsolutePath(),
+                "-c", "5186",
+                "-terrain", "H:\\workspace\\mago-server\\output\\(Stable)\\korea_dem_5m\\layer.json",
+                "--quantize",
+                "--tilingMode", "implicit",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void runBatchedGPKGSampleC() {
+        String path = "B09-seoul-yeouido-gpkg";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath("BatchedGPKGSampleC").getAbsolutePath(),
+                "-c", "5186",
+                "-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
+                "--quantize",
+                "--tilingMode", "implicit",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void runBatchedBIMSampleA() {
+        String path = "B53-railway-citygml";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath("BatchedBIMSampleA").getAbsolutePath(),
+                "-lon", "127.0",
+                "-lat", "37.0",
+                "-xOffset", "0",
+                "-yOffset", "0",
+                "-zOffset", "0",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void runBatchedBIMSampleB() {
+        String path = "B53-railway-citygml";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath("BatchedBIMSampleB").getAbsolutePath(),
+                "-lon", "127.0",
+                "-lat", "37.0",
+                "-xOffset", "30",
+                "-yOffset", "30",
+                "-zOffset", "0",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
     void runPhotogrammetrySampleA() {
         String path = "R00-bansong-obj";
         String[] args = new String[]{
@@ -62,6 +132,19 @@ class DefaultReleaseTest {
                 "-pg",
                 "-c", "5187",
                 "-rotateX", "90",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Disabled
+    @Test
+    void runPhotogrammetrySampleB() {
+        String path = "R00-Hwangyonggak-mesh-glb";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath("PhotogrammetrySampleB").getAbsolutePath(),
+                "-pg",
+                "-c", "5187",
         };
         MagoTestConfig.execute(args);
     }
@@ -131,7 +214,7 @@ class DefaultReleaseTest {
                 "-ot", "i3dm",
                 "-refineAdd",
                 "-instance", MagoTestConfig.getInputPath("sample-tree/billboard-cloud-sample.glb").getAbsolutePath(),
-                "-attributeFilter", "FRTP_NM=활엽수림",
+                "-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
                 "--tilingMode", "implicit"
         };
         MagoTestConfig.execute(args);
