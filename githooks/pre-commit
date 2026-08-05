@@ -13,14 +13,14 @@ check_protected_path() {
 
   if echo "$CHANGED_FILES" | grep -q "^${PROTECTED_PATH}/"; then
     echo ""
-    echo "ERROR: You are trying to commit changes inside ${PROTECTED_PATH}/"
+    echo "ERROR: Direct changes to ${PROTECTED_PATH}/ cannot be committed in mago-3d-tiler."
     echo ""
     echo "This directory is managed as an OSS subtree."
-    echo "Apply OSS changes in ${PROTECTED_PATH} first, then sync with:"
+    echo "Make changes in the standalone ${PROTECTED_PATH} repository, then sync with:"
     echo ""
     echo "  git subtree pull --prefix=${PROTECTED_PATH} ${REMOTE_NAME} ${REMOTE_BRANCH} --squash"
     echo ""
-    echo "If this is an intentional subtree sync commit,"
+    echo "Only for an intentional subtree pull sync commit,"
     echo "set ALLOW_OSS_SUBTREE_COMMIT=1 before commit."
     echo ""
     return 1
