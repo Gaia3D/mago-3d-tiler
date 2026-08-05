@@ -38,5 +38,5 @@ git subtree push --prefix=mago-common https://github.com/Gaia3D/mago-common.git 
 git rm -r mago-common
 git commit -m "fix: Remove existing mago-common subtree"
 rm -rf mago-common
-git subtree add --prefix=mago-common
+git subtree add --prefix=mago-common https://github.com/Gaia3D/mago-common.git main
 ```
