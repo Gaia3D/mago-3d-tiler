@@ -1,13 +1,8 @@
 package com.gaia3d.process.tileprocess.tile.tileset;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.gaia3d.converter.gltf.ExtensionConstant;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.tileset.asset.AssetV1;
-import com.gaia3d.process.tileprocess.tile.tileset.extension.Extension3DTilesContentGltf;
-import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
-import com.gaia3d.process.tileprocess.tile.tileset.node.Properties;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;

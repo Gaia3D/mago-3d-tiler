@@ -4,7 +4,6 @@ import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.AccessorType;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.TextureType;
-import com.gaia3d.util.ImageResizer;
 import com.gaia3d.util.ImageUtils;
 import de.javagl.jgltf.impl.v2.*;
 import de.javagl.jgltf.impl.v2.Image;
@@ -13,7 +12,6 @@ import de.javagl.jgltf.model.GltfModel;
 import de.javagl.jgltf.model.GltfModels;
 import de.javagl.jgltf.model.io.GltfModelWriter;
 import de.javagl.jgltf.model.io.v2.GltfAssetV2;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.joml.Matrix4d;
@@ -44,13 +42,19 @@ import java.util.List;
  * The glTF file is written in the glTF 2.0 format.
  */
 @Slf4j
-@AllArgsConstructor
 public class GltfWriter {
 
     protected final GltfWriterOptions gltfOptions;
 
     public GltfWriter() {
-        this.gltfOptions = GltfWriterOptions.builder().build();
+        this(GltfWriterOptions.builder().build());
+    }
+
+    public GltfWriter(GltfWriterOptions gltfOptions) {
+        if (gltfOptions.isUseByteNormal() && gltfOptions.isUseShortNormal()) {
+            throw new IllegalArgumentException("Byte and short normal quantization cannot be enabled at the same time.");
+        }
+        this.gltfOptions = gltfOptions;
     }
 
 
@@ -126,12 +130,17 @@ public class GltfWriter {
         GltfBinary binary = new GltfBinary();
         GlTF gltf = new GlTF();
         gltf.setAsset(genAsset());
-        gltf.addSamplers(genSampler());
+        List<GaiaMaterial> materials = gaiaScene.getMaterials();
+        if (materials == null || materials.isEmpty()) {
+            log.error("[Error] : gaiaScene has no materials");
+        }
+        GaiaMaterial gaiaMaterial0 = gaiaScene.getMaterials().getFirst();
+        gltf.addSamplers(genSampler(gaiaMaterial0));
 
         Node rootNode = initNode();
         initScene(gltf, rootNode);
 
-        if (gltfOptions.isUseQuantization()) {
+        if (gltfOptions.isUseQuantization() || gltfOptions.isUseByteNormal() || gltfOptions.isUseShortNormal() || gltfOptions.isUseShortTexCoord()) {
             gltf.addExtensionsUsed(ExtensionConstant.MESH_QUANTIZATION.getExtensionName());
             gltf.addExtensionsRequired(ExtensionConstant.MESH_QUANTIZATION.getExtensionName());
         }
@@ -174,7 +183,13 @@ public class GltfWriter {
     }
 
     protected Byte convertNormal(Float normalValue) {
-        return (byte) (normalValue * 127);
+        float clamped = Math.clamp(normalValue, -1.0f, 1.0f);
+        return (byte) Math.round(clamped * 127.0f);
+    }
+
+    protected Short convertShortNormal(Float normalValue) {
+        float clamped = Math.clamp(normalValue, -1.0f, 1.0f);
+        return (short) Math.round(clamped * 32767.0f);
     }
 
     protected byte[] convertFloats(float[] values) {
@@ -199,14 +214,39 @@ public class GltfWriter {
 
             // Normalize the normal vector
             Vector3d vector3d = new Vector3d(x, y, z);
-            vector3d.normalize();
+            normalizeOrUseFallback(vector3d);
 
             normalBytes[i] = convertNormal((float) vector3d.x);
             normalBytes[i + 1] = convertNormal((float) vector3d.y);
             normalBytes[i + 2] = convertNormal((float) vector3d.z);
-            normalBytes[i + 3] = (byte) 1;
+            normalBytes[i + 3] = 0;
         }
         return normalBytes;
+    }
+
+    protected short[] convertShortNormals(float[] normalValues) {
+        int length = (normalValues.length / 3) * 4;
+        int index = 0;
+        short[] normalShorts = new short[length];
+        for (int i = 0; i < length; i += 4) {
+            Vector3d normal = new Vector3d(normalValues[index++], normalValues[index++], normalValues[index++]);
+            normalizeOrUseFallback(normal);
+
+            normalShorts[i] = convertShortNormal((float) normal.x);
+            normalShorts[i + 1] = convertShortNormal((float) normal.y);
+            normalShorts[i + 2] = convertShortNormal((float) normal.z);
+            normalShorts[i + 3] = 0;
+        }
+        return normalShorts;
+    }
+
+    private void normalizeOrUseFallback(Vector3d normal) {
+        if (Double.isFinite(normal.x) && Double.isFinite(normal.y) && Double.isFinite(normal.z)
+                && normal.lengthSquared() > 1.0e-20) {
+            normal.normalize();
+        } else {
+            normal.set(0.0, 0.0, 1.0);
+        }
     }
 
     protected GltfNodeBuffer convertGeometryInfo(GlTF gltf, GaiaMesh gaiaMesh, Node node) {
@@ -303,7 +343,12 @@ public class GltfWriter {
             }
         }
         if (normalsBuffer != null) {
-            if (gltfOptions.isUseByteNormal()) {
+            if (gltfOptions.isUseShortNormal()) {
+                short[] normalShorts = convertShortNormals(normals);
+                for (short normalShort : normalShorts) {
+                    normalsBuffer.putShort(normalShort);
+                }
+            } else if (gltfOptions.isUseByteNormal()) {
                 byte[] normalBytes = convertNormals(normals);
                 for (byte normalByte : normalBytes) {
                     normalsBuffer.put(normalByte);
@@ -355,8 +400,11 @@ public class GltfWriter {
             }
         }
         if (normalsBufferViewId > -1 && normals.length > 0) {
-            if (gltfOptions.isUseByteNormal()) {
-                int normalsAccessorId = createAccessor(gltf, normalsBufferViewId, 0, normals.length / 4, GltfConstants.GL_BYTE, AccessorType.VEC4, true);
+            if (gltfOptions.isUseShortNormal()) {
+                int normalsAccessorId = createAccessor(gltf, normalsBufferViewId, 0, normals.length / 3, GltfConstants.GL_SHORT, AccessorType.VEC3, true);
+                nodeBuffer.setNormalsAccessorId(normalsAccessorId);
+            } else if (gltfOptions.isUseByteNormal()) {
+                int normalsAccessorId = createAccessor(gltf, normalsBufferViewId, 0, normals.length / 3, GltfConstants.GL_BYTE, AccessorType.VEC3, true);
                 nodeBuffer.setNormalsAccessorId(normalsAccessorId);
             } else {
                 int normalsAccessorId = createAccessor(gltf, normalsBufferViewId, 0, normals.length / 3, GltfConstants.GL_FLOAT, AccessorType.VEC3, false);
@@ -412,7 +460,10 @@ public class GltfWriter {
             positionsCapacity = paddedPositionsCount * SHORT_SIZE;
         }
         int normalsCapacity = gaiaMesh.getNormalsCount() * FLOAT_SIZE;
-        if (gltfOptions.isUseByteNormal()) {
+        if (gltfOptions.isUseShortNormal()) {
+            int paddedNormalsCount = gaiaMesh.getNormalsCount() / 3 * 4;
+            normalsCapacity = paddedNormalsCount * SHORT_SIZE;
+        } else if (gltfOptions.isUseByteNormal()) {
             int paddedNormalsCount = gaiaMesh.getNormalsCount() / 3 * 4;
             normalsCapacity = paddedNormalsCount * BYTE_SIZE;
         }
@@ -540,7 +591,14 @@ public class GltfWriter {
             }
         }
         if (nodeBuffer.getNormalsBuffer() != null) {
-            if (gltfOptions.isUseByteNormal()) {
+            if (gltfOptions.isUseShortNormal()) {
+                ByteBuffer normalsBuffer = nodeBuffer.getNormalsBuffer();
+                int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, normalsBuffer.capacity(), 8, GL20.GL_ARRAY_BUFFER);
+                nodeBuffer.setNormalsBufferViewId(bufferViewId);
+                BufferView bufferView = gltf.getBufferViews().get(bufferViewId);
+                bufferView.setName("normals");
+                bufferOffset += normalsBuffer.capacity();
+            } else if (gltfOptions.isUseByteNormal()) {
                 ByteBuffer normalsBuffer = nodeBuffer.getNormalsBuffer();
                 int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, normalsBuffer.capacity(), 4, GL20.GL_ARRAY_BUFFER);
                 nodeBuffer.setNormalsBufferViewId(bufferViewId);
@@ -631,12 +689,14 @@ public class GltfWriter {
 
         Material material = new Material();
         material.setName(gaiaMaterial.getName());
-        material.setDoubleSided(gltfOptions.isDoubleSided());
+        if (gaiaMaterial.isDoubleSided() || gltfOptions.isDoubleSided()) {
+            material.setDoubleSided(true);
+        }
 
-        // Set the alpha mode
-        boolean isOpaque = gaiaMaterial.isOpaqueMaterial();
+        // Set the alpha mode from the material state without inferring from the texture file extension.
+        boolean isBlend = gaiaMaterial.isBlend();
+        boolean isOpaque = gaiaMaterial.isOpaque() && !isBlend;
         if (!isOpaque) {
-            boolean isBlend = gaiaMaterial.isBlend();
             float alphaCutoff = gaiaMaterial.getAlphaCutoff();
             if (isBlend) {
                 material.setAlphaMode("BLEND");
@@ -749,11 +809,28 @@ public class GltfWriter {
     }
 
     protected Sampler genSampler() {
+        // deprecated.
         Sampler sampler = new Sampler();
         sampler.setMagFilter(GL20.GL_LINEAR);
         sampler.setMinFilter(GL20.GL_LINEAR_MIPMAP_LINEAR);
-        sampler.setWrapS(GL20.GL_REPEAT);
-        sampler.setWrapT(GL20.GL_REPEAT);
+        return sampler;
+    }
+
+    protected Sampler genSampler(GaiaMaterial gaiaMaterial) {
+        GaiaSamplers gaiaSamplers = gaiaMaterial.getSamplers();
+        if (gaiaSamplers == null) {
+            // create with default values.
+            gaiaSamplers = new GaiaSamplers();
+        }
+        Sampler sampler = new Sampler();
+        sampler.setMagFilter(gaiaSamplers.getMagFilter());
+        sampler.setMinFilter(gaiaSamplers.getMinFilter());
+        if (gaiaSamplers.getWrapS() != GL20.GL_REPEAT) {
+            sampler.setWrapS(gaiaSamplers.getWrapS());
+        }
+        if (gaiaSamplers.getWrapT() != GL20.GL_REPEAT) {
+            sampler.setWrapT(gaiaSamplers.getWrapT());
+        }
         return sampler;
     }
 
@@ -797,17 +874,9 @@ public class GltfWriter {
     }
 
     private byte[] convertBufferedImageToBytes(BufferedImage bufferedImage, String mimeType) {
-        ImageResizer imageResizer = new ImageResizer();
         String formatName = ImageUtils.getFormatNameByMimeType(mimeType);
         byte[] imageBytes = null;
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            int width = bufferedImage.getWidth();
-            int height = bufferedImage.getHeight();
-            int powerOfTwoWidth = ImageUtils.getNearestPowerOfTwo(width);
-            int powerOfTwoHeight = ImageUtils.getNearestPowerOfTwo(height);
-            if (width != powerOfTwoWidth || height != powerOfTwoHeight) {
-                bufferedImage = imageResizer.resizeImageGraphic2D(bufferedImage, powerOfTwoWidth, powerOfTwoHeight, true);
-            }
             assert formatName != null;
 
             if (gltfOptions.isForceJpeg() || mimeType.equals("image/jpeg")) {
@@ -832,17 +901,9 @@ public class GltfWriter {
     }
 
     private String convertBufferedImageToURI(BufferedImage bufferedImage, String mimeType) {
-        ImageResizer imageResizer = new ImageResizer();
         String formatName = ImageUtils.getFormatNameByMimeType(mimeType);
         String imageString = null;
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            int width = bufferedImage.getWidth();
-            int height = bufferedImage.getHeight();
-            int powerOfTwoWidth = ImageUtils.getNearestPowerOfTwo(width);
-            int powerOfTwoHeight = ImageUtils.getNearestPowerOfTwo(height);
-            if (width != powerOfTwoWidth || height != powerOfTwoHeight) {
-                bufferedImage = imageResizer.resizeImageGraphic2D(bufferedImage, powerOfTwoWidth, powerOfTwoHeight, true);
-            }
             assert formatName != null;
 
             if (gltfOptions.isForceJpeg() || mimeType.equals("image/jpeg")) {

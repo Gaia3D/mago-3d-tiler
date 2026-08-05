@@ -3,17 +3,17 @@ package com.gaia3d.command.model;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
+import com.gaia3d.converter.Parametric3DOptions;
 import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.assimp.AssimpConverterOptions;
-import com.gaia3d.converter.kml.AttributeReader;
-import com.gaia3d.converter.kml.FastKmlReader;
-import com.gaia3d.converter.loader.BatchedFileLoader;
-import com.gaia3d.converter.parametric.ExtrusionTempGenerator;
-import com.gaia3d.converter.Parametric3DOptions;
 import com.gaia3d.converter.citygml.CityGmlConverter;
 import com.gaia3d.converter.geojson.GeoJsonConverter;
 import com.gaia3d.converter.geopackage.GeoPackageConverter;
 import com.gaia3d.converter.indoorgml.IndoorGmlConverter;
+import com.gaia3d.converter.kml.AttributeReader;
+import com.gaia3d.converter.kml.FastKmlReader;
+import com.gaia3d.converter.loader.BatchedFileLoader;
+import com.gaia3d.converter.parametric.ExtrusionTempGenerator;
 import com.gaia3d.converter.shape.ShapeConverter;
 import com.gaia3d.process.TilingPipeline;
 import com.gaia3d.process.postprocess.GaiaMaximizer;
@@ -25,6 +25,9 @@ import com.gaia3d.process.preprocess.*;
 import com.gaia3d.process.tileprocess.Pipeline;
 import com.gaia3d.process.tileprocess.TilingProcess;
 import com.gaia3d.process.tileprocess.tile.Batched3DModelTiler;
+import com.gaia3d.terrain.GeoTiffTerrainHeightProvider;
+import com.gaia3d.terrain.QuantizedMeshTerrainHeightProvider;
+import com.gaia3d.terrain.TerrainHeightProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.coverage.grid.GridCoverage2D;
 
@@ -50,10 +53,15 @@ public class BatchedModelProcessFlow implements ProcessFlow {
         ExtrusionTempGenerator tempGenerator = new ExtrusionTempGenerator(converter);
         BatchedFileLoader fileLoader = new BatchedFileLoader(converter, kmlReader, tempGenerator);
 
-        List<GridCoverage2D> geoTiffs = new ArrayList<>();
+        TerrainHeightProvider terrainHeightProvider = TerrainHeightProvider.empty();
         if (globalOptions.getTerrainPath() != null) {
             File terrainPath = new File(globalOptions.getTerrainPath());
-            geoTiffs = fileLoader.loadGridCoverages(terrainPath, geoTiffs);
+            if (terrainPath.isFile() && terrainPath.getName().equalsIgnoreCase("layer.json")) {
+                terrainHeightProvider = new QuantizedMeshTerrainHeightProvider(terrainPath.toPath());
+            } else {
+                List<GridCoverage2D> geoTiffs = fileLoader.loadGridCoverages(terrainPath, new ArrayList<>());
+                terrainHeightProvider = new GeoTiffTerrainHeightProvider(geoTiffs);
+            }
         }
         List<GridCoverage2D> geoidTiffs = new ArrayList<>();
         if (globalOptions.getGeoidPath() != null) {
@@ -71,7 +79,7 @@ public class BatchedModelProcessFlow implements ProcessFlow {
         preProcessors.add(new GaiaTransformBaker());
 
         preProcessors.add(new GaiaCoordinateExtractor());
-        preProcessors.add(new GaiaTranslator(geoTiffs, geoidTiffs));
+        preProcessors.add(new GaiaTranslator(terrainHeightProvider, geoidTiffs));
         preProcessors.add(new GaiaTexCoordCorrection());
         preProcessors.add(new GaiaTransformBaker());
 
@@ -85,7 +93,7 @@ public class BatchedModelProcessFlow implements ProcessFlow {
         postProcessors.add(new GaiaMaximizer());
         postProcessors.add(new GaiaRelocator());
 
-        if (globalOptions.getTilesVersion().equals("1.0")) {
+        if ("1.0".equals(globalOptions.getTilesVersion())) {
             postProcessors.add(new Batched3DModel());
         } else {
             postProcessors.add(new Batched3DModelV2());
@@ -96,7 +104,6 @@ public class BatchedModelProcessFlow implements ProcessFlow {
     }
 
     private Converter getConverter(FormatType formatType) {
-
         Parametric3DOptions vectorOptions = Parametric3DOptions.builder()
                 .attributeFilters(globalOptions.getAttributeFilters())
                 .sourceCrs(globalOptions.getSourceCrs())
@@ -107,6 +114,7 @@ public class BatchedModelProcessFlow implements ProcessFlow {
                 .scaleColumnName(globalOptions.getScaleColumn())
                 .densityColumnName(globalOptions.getDensityColumn())
                 .headingColumnName(globalOptions.getHeadingColumn())
+                .randomHeading(false)
                 .absoluteAltitudeValue(globalOptions.getAbsoluteAltitude())
                 .minimumHeightValue(globalOptions.getMinimumHeight())
                 .skirtHeight(globalOptions.getSkirtHeight())

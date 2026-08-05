@@ -1,8 +1,10 @@
 package com.gaia3d.local.release;
 
 import com.gaia3d.local.MagoTestConfig;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
+@Slf4j
 public class VectorReleaseTest {
 
     @Test
@@ -22,11 +24,11 @@ public class VectorReleaseTest {
 
     private void testByFormat(String format) {
         String[] epsg = new String[]{
-                //"4326",
+                "4326",
                 "3857",
                 "5179",
                 "5186",
-                //"32652"
+                "32652"
         };
 
         for (String code : epsg) {

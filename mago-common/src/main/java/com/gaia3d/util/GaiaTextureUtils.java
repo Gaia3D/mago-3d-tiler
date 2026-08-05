@@ -1,11 +1,13 @@
 package com.gaia3d.util;
 
 import com.gaia3d.basic.model.GaiaTexture;
+import lombok.experimental.UtilityClass;
 import org.joml.Vector2d;
 import org.joml.Vector4d;
 
 import java.awt.image.BufferedImage;
 
+@UtilityClass
 public class GaiaTextureUtils {
     public static Vector2d getTexCoordPositiveQuadrant(Vector2d texCoord) {
         Vector2d positiveQuadrantTexCoord = new Vector2d(texCoord);
@@ -93,14 +95,14 @@ public class GaiaTextureUtils {
 
         minTexCoord.set(texCoord0);
         maxTexCoord.set(texCoord0);
-        if (texCoord1.x < minTexCoord.x) minTexCoord.x = texCoord1.x;
-        if (texCoord1.y < minTexCoord.y) minTexCoord.y = texCoord1.y;
-        if (texCoord1.x > maxTexCoord.x) maxTexCoord.x = texCoord1.x;
-        if (texCoord1.y > maxTexCoord.y) maxTexCoord.y = texCoord1.y;
-        if (texCoord2.x < minTexCoord.x) minTexCoord.x = texCoord2.x;
-        if (texCoord2.y < minTexCoord.y) minTexCoord.y = texCoord2.y;
-        if (texCoord2.x > maxTexCoord.x) maxTexCoord.x = texCoord2.x;
-        if (texCoord2.y > maxTexCoord.y) maxTexCoord.y = texCoord2.y;
+        if (texCoord1.x < minTexCoord.x) {minTexCoord.x = texCoord1.x;}
+        if (texCoord1.y < minTexCoord.y) {minTexCoord.y = texCoord1.y;}
+        if (texCoord1.x > maxTexCoord.x) {maxTexCoord.x = texCoord1.x;}
+        if (texCoord1.y > maxTexCoord.y) {maxTexCoord.y = texCoord1.y;}
+        if (texCoord2.x < minTexCoord.x) {minTexCoord.x = texCoord2.x;}
+        if (texCoord2.y < minTexCoord.y) {minTexCoord.y = texCoord2.y;}
+        if (texCoord2.x > maxTexCoord.x) {maxTexCoord.x = texCoord2.x;}
+        if (texCoord2.y > maxTexCoord.y) {maxTexCoord.y = texCoord2.y;}
 
         Vector4d averageColor = new Vector4d();
 

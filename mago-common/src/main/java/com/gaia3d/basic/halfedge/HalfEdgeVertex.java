@@ -9,11 +9,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Setter
@@ -21,7 +21,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class HalfEdgeVertex implements Serializable {
-    public String note = null;
+    private static final int MAX_OUTGOING_HALF_EDGES = 50;
     private Vector2d texcoords;
     private Vector3d position;
     private Vector3d normal;
@@ -31,12 +31,25 @@ public class HalfEdgeVertex implements Serializable {
     private ObjectStatus status = ObjectStatus.ACTIVE;
     private PositionType positionType = null;
     private int id = -1;
-    private int outingHalfEdgeId = -1;
     private int classifyId = -1; // auxiliary variable
-    private double roughness = 0.0; // auxiliary variable
+    private float roughness = 0.0f; // auxiliary variable
 
     public HalfEdgeVertex(GaiaVertex vertex) {
         copyFromGaiaVertex(vertex);
+    }
+
+    private static boolean containsIdentity(
+            List<HalfEdge> halfEdges,
+            int startIndex,
+            HalfEdge target
+    ) {
+        for (int i = startIndex; i < halfEdges.size(); i++) {
+            if (halfEdges.get(i) == target) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void deleteObjects() {
@@ -72,7 +85,7 @@ public class HalfEdgeVertex implements Serializable {
         this.status = vertex.status;
         this.positionType = vertex.positionType;
         this.id = vertex.id;
-        this.outingHalfEdgeId = vertex.outingHalfEdgeId;
+        //this.outingHalfEdgeId = vertex.outingHalfEdgeId;
         this.classifyId = vertex.classifyId;
     }
 
@@ -157,6 +170,179 @@ public class HalfEdgeVertex implements Serializable {
         return resultHalfEdges;
     }
 
+    public List<HalfEdge> getOutingHalfEdges_new(
+            List<HalfEdge> resultHalfEdges
+    ) {
+        if (resultHalfEdges == null) {
+            resultHalfEdges = new ArrayList<>(8);
+        }
+
+        HalfEdge startEdge = this.outingHalfEdge;
+
+        if (startEdge == null) {
+            return resultHalfEdges;
+        }
+
+        if (startEdge.getStatus() == ObjectStatus.DELETED) {
+            log.warn(
+                    "HalfEdgeVertex.getOutingHalfEdges(): "
+                            + "outingHalfEdge is deleted."
+            );
+            return resultHalfEdges;
+        }
+
+        /*
+         * La lista recibida puede contener resultados anteriores.
+         * Solo buscamos ciclos entre las aristas añadidas por esta llamada.
+         */
+        final int resultStartIndex = resultHalfEdges.size();
+
+        resultHalfEdges.add(startEdge);
+
+        /*
+         * Primera dirección:
+         *
+         * outgoingEdge
+         *     -> twin
+         *     -> next outgoing edge alrededor del vértice
+         */
+        HalfEdge currentEdge = startEdge;
+        boolean boundaryFound = false;
+
+        while (true) {
+            HalfEdge twin = currentEdge.getTwin();
+
+            if (twin == null) {
+                boundaryFound = true;
+                break;
+            }
+
+            HalfEdge nextOutgoingEdge = twin.getNext();
+
+            if (nextOutgoingEdge == null) {
+                log.warn(
+                        "HalfEdgeVertex.getOutingHalfEdges(): "
+                                + "twin.getNext() is null."
+                );
+                boundaryFound = true;
+                break;
+            }
+
+            /*
+             * Hemos dado una vuelta completa en un vértice interior.
+             */
+            if (nextOutgoingEdge == startEdge) {
+                break;
+            }
+
+            /*
+             * Protección ante topología corrupta o ciclos inesperados.
+             */
+            if (containsIdentity(
+                    resultHalfEdges,
+                    resultStartIndex,
+                    nextOutgoingEdge
+            )) {
+                log.warn(
+                        "HalfEdgeVertex.getOutingHalfEdges(): "
+                                + "unexpected half-edge cycle detected."
+                );
+                break;
+            }
+
+            if (nextOutgoingEdge.getStatus() == ObjectStatus.DELETED) {
+//                log.warn(
+//                        "HalfEdgeVertex.getOutingHalfEdges(): "
+//                                + "encountered a deleted half-edge."
+//                );
+                break;
+            }
+
+            resultHalfEdges.add(nextOutgoingEdge);
+
+            if (resultHalfEdges.size() - resultStartIndex
+                    >= MAX_OUTGOING_HALF_EDGES) {
+
+                log.error(
+                        "HalfEdgeVertex.getOutingHalfEdges(): "
+                                + "outgoing half-edge count reached {}.",
+                        MAX_OUTGOING_HALF_EDGES
+                );
+                return resultHalfEdges;
+            }
+
+            currentEdge = nextOutgoingEdge;
+        }
+
+        /*
+         * En un vértice interior, la primera búsqueda ya recorrió
+         * todas las aristas.
+         */
+        if (!boundaryFound) {
+            return resultHalfEdges;
+        }
+
+        /*
+         * Segunda dirección para un vértice de borde:
+         *
+         * start outgoing
+         *     -> previous incoming
+         *     -> twin outgoing
+         */
+        HalfEdge incomingEdge = startEdge.getPrev();
+
+        if (incomingEdge == null) {
+            return resultHalfEdges;
+        }
+
+        HalfEdge reverseOutgoingEdge = incomingEdge.getTwin();
+
+        while (reverseOutgoingEdge != null) {
+            if (reverseOutgoingEdge == startEdge) {
+                break;
+            }
+
+            if (containsIdentity(
+                    resultHalfEdges,
+                    resultStartIndex,
+                    reverseOutgoingEdge
+            )) {
+                break;
+            }
+
+            if (reverseOutgoingEdge.getStatus() == ObjectStatus.DELETED) {
+                log.warn(
+                        "HalfEdgeVertex.getOutingHalfEdges(): "
+                                + "encountered a deleted reverse half-edge."
+                );
+                break;
+            }
+
+            resultHalfEdges.add(reverseOutgoingEdge);
+
+            if (resultHalfEdges.size() - resultStartIndex
+                    >= MAX_OUTGOING_HALF_EDGES) {
+
+                log.error(
+                        "HalfEdgeVertex.getOutingHalfEdges(): "
+                                + "outgoing half-edge count reached {}.",
+                        MAX_OUTGOING_HALF_EDGES
+                );
+                break;
+            }
+
+            HalfEdge previousEdge = reverseOutgoingEdge.getPrev();
+
+            if (previousEdge == null) {
+                break;
+            }
+
+            reverseOutgoingEdge = previousEdge.getTwin();
+        }
+
+        return resultHalfEdges;
+    }
+
     public List<HalfEdge> getOutingHalfEdges(List<HalfEdge> resultHalfEdges) {
         if (this.outingHalfEdge == null) {
             return resultHalfEdges;
@@ -170,18 +356,26 @@ public class HalfEdgeVertex implements Serializable {
             resultHalfEdges = new ArrayList<>();
         }
 
+        Set<HalfEdge> visited = new HashSet<>();
+
         boolean isInterior = true; // init as true
         HalfEdge currentEdge = this.outingHalfEdge;
         resultHalfEdges.add(currentEdge);
         HalfEdge currTwin = currentEdge.getTwin();
+        visited.add(currentEdge);
         if (currTwin == null) {
             isInterior = false;
         } else {
             HalfEdge nextOutingEdge = currTwin.getNext();
             while (nextOutingEdge != this.outingHalfEdge) {
+                if (visited.contains(nextOutingEdge)) {
+                    break;
+                }
+                visited.add(nextOutingEdge);
                 resultHalfEdges.add(nextOutingEdge);
-                if (resultHalfEdges.size() > 100) {
-                    log.info("Error: HalfEdgeVertex.getOutingHalfEdges() : resultHalfEdges.size() > 100");
+                if (resultHalfEdges.size() > 50) {
+                    log.error("Error: HalfEdgeVertex.getOutingHalfEdges() : outingHalfEdges.size() > 50");
+                    return resultHalfEdges;
                 }
                 currTwin = nextOutingEdge.getTwin();
                 if (currTwin == null) {
@@ -205,6 +399,10 @@ public class HalfEdgeVertex implements Serializable {
             HalfEdge prevEdge = outingEdge.getPrev();
             HalfEdge prevTwin = prevEdge.getTwin();
             while (prevTwin != null && prevTwin != outingEdge) {
+                if (visited.contains(prevTwin)) {
+                    break;
+                }
+                visited.add(prevTwin);
                 resultHalfEdges.add(prevTwin);
                 prevEdge = prevTwin.getPrev();
                 if (prevEdge == null) {
@@ -233,7 +431,6 @@ public class HalfEdgeVertex implements Serializable {
                 return true;
             }
         }
-
 
         return true;
     }
@@ -279,96 +476,6 @@ public class HalfEdgeVertex implements Serializable {
         }
 
         return resultFaces;
-    }
-
-    public void writeFile(ObjectOutputStream outputStream) {
-
-        try {
-            // position
-            if (position != null) {
-                outputStream.writeBoolean(true);
-                outputStream.writeObject(position);
-            } else {
-                outputStream.writeBoolean(false);
-            }
-            // texcoords
-            if (texcoords != null) {
-                outputStream.writeBoolean(true);
-                outputStream.writeObject(texcoords);
-            } else {
-                outputStream.writeBoolean(false);
-            }
-            // normal
-            if (normal != null) {
-                outputStream.writeBoolean(true);
-                outputStream.writeObject(normal);
-            } else {
-                outputStream.writeBoolean(false);
-            }
-            // color
-            if (color != null) {
-                outputStream.writeBoolean(true);
-                outputStream.writeInt(color.length);
-                outputStream.write(color);
-            } else {
-                outputStream.writeBoolean(false);
-            }
-            // batchId
-            outputStream.writeFloat(batchId);
-
-            // status
-            outputStream.writeObject(status);
-
-            // outingHalfEdgeId
-            int outingHalfEdgeId = -1;
-            if (outingHalfEdge != null) {
-                outingHalfEdgeId = outingHalfEdge.getId();
-            }
-            outputStream.writeInt(outingHalfEdgeId);
-        } catch (Exception e) {
-            log.error("[ERROR] : ", e);
-        }
-    }
-
-    public void readFile(ObjectInputStream inputStream) {
-        try {
-            // position
-            if (inputStream.readBoolean()) {
-                position = (Vector3d) inputStream.readObject();
-            } else {
-                position = null;
-            }
-            // texcoords
-            if (inputStream.readBoolean()) {
-                texcoords = (Vector2d) inputStream.readObject();
-            } else {
-                texcoords = null;
-            }
-            // normal
-            if (inputStream.readBoolean()) {
-                normal = (Vector3d) inputStream.readObject();
-            } else {
-                normal = null;
-            }
-            // color
-            if (inputStream.readBoolean()) {
-                int colorLength = inputStream.readInt();
-                color = new byte[colorLength];
-                inputStream.readFully(color);
-            } else {
-                color = null;
-            }
-            // batchId
-            batchId = inputStream.readFloat();
-
-            // status
-            status = (ObjectStatus) inputStream.readObject();
-
-            // outingHalfEdgeId
-            outingHalfEdgeId = inputStream.readInt();
-        } catch (Exception e) {
-            log.error("[ERROR] : ", e);
-        }
     }
 
     public boolean isWeldable(HalfEdgeVertex vertex2, double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {

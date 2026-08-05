@@ -12,12 +12,17 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReadParam;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Iterator;
 
 /**
  * A class that represents a texture of a Gaia object.
@@ -42,6 +47,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
 
     private int byteLength;
     private transient BufferedImage bufferedImage;
+    private transient LevelOfDetail bufferedImageLod = LevelOfDetail.NONE;
     private ByteBuffer byteBuffer;
 
     private int textureId = -1;
@@ -57,6 +63,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
             BufferedImage bufferedImage = readImage(imagePath);
             if (bufferedImage != null) {
                 this.bufferedImage = bufferedImage;
+                this.bufferedImageLod = LevelOfDetail.NONE;
                 this.width = bufferedImage.getWidth();
                 this.height = bufferedImage.getHeight();
                 this.format = bufferedImage.getType();
@@ -64,15 +71,153 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         }
     }
 
-    public void saveImage(String savePath) {
-        try {
-            String imageExtension = savePath.substring(savePath.lastIndexOf(".") + 1);
-            File file = new File(savePath);
-            ImageIO.setUseCache(false);
-            ImageIO.write(bufferedImage, imageExtension, file);
-        } catch (IOException e) {
-            log.error("[ERROR] :", e);
+    public boolean hasBufferedImage() {
+        return this.bufferedImage != null;
+    }
+
+    public void deleteBufferedImage() {
+        if (this.bufferedImage != null) {
+            this.bufferedImage.flush();
+            this.bufferedImage = null;
         }
+    }
+
+    public BufferedImage readImageScaled(
+            Path imagePath,
+            int dimensionLimit
+    ) throws IOException {
+
+        if (imagePath == null) {
+            throw new IllegalArgumentException(
+                    "imagePath must not be null"
+            );
+        }
+
+        if (dimensionLimit <= 0) {
+            throw new IllegalArgumentException(
+                    "dimensionLimit must be greater than zero"
+            );
+        }
+
+        if (!Files.isRegularFile(imagePath)) {
+            return null;
+        }
+
+        try (ImageInputStream inputStream =
+                     ImageIO.createImageInputStream(
+                             imagePath.toFile()
+                     )) {
+
+            if (inputStream == null) {
+                throw new IOException(
+                        "Could not create ImageInputStream for: "
+                                + imagePath
+                );
+            }
+
+            Iterator<ImageReader> readers =
+                    ImageIO.getImageReaders(inputStream);
+
+            if (!readers.hasNext()) {
+                throw new IOException(
+                        "No compatible ImageReader found for: "
+                                + imagePath
+                );
+            }
+
+            ImageReader reader =
+                    readers.next();
+
+            try {
+                reader.setInput(
+                        inputStream,
+                        true,
+                        true
+                );
+
+                int originalWidth =
+                        reader.getWidth(0);
+
+                int originalHeight =
+                        reader.getHeight(0);
+
+                boolean exceedsLimit =
+                        originalWidth > dimensionLimit
+                                || originalHeight > dimensionLimit;
+
+                int subsampling =
+                        exceedsLimit ? 2 : 1;
+
+                ImageReadParam readParam =
+                        reader.getDefaultReadParam();
+
+                if (subsampling > 1) {
+                    readParam.setSourceSubsampling(
+                            subsampling,
+                            subsampling,
+                            0,
+                            0
+                    );
+                }
+
+                BufferedImage result =
+                        reader.read(
+                                0,
+                                readParam
+                        );
+
+                if (result == null) {
+                    throw new IOException(
+                            "Could not decode image: "
+                                    + imagePath
+                    );
+                }
+
+                if (result != null) {
+                    this.bufferedImage = result;
+                    this.bufferedImageLod = LevelOfDetail.NONE;
+                    this.width = result.getWidth();
+                    this.height = result.getHeight();
+                    this.format = result.getType();
+                }
+
+                return result;
+
+            } finally {
+                reader.dispose();
+            }
+        }
+    }
+
+    public void saveImage(String savePath) {
+        saveImage(savePath, true, 0.90f);
+    }
+
+    /**
+     * @param savePath Ruta de destino.
+     * @param fastPng true para priorizar velocidad sobre tamaño del PNG.
+     * @param jpegQuality Calidad JPEG entre 0.0 y 1.0.
+     * @return true cuando la imagen se escribió correctamente.
+     */
+    public boolean saveImage(
+            String savePath,
+            boolean fastPng,
+            float jpegQuality
+    ) {
+        if (bufferedImage == null) {
+            log.warn("GaiaTexture.saveImage(): bufferedImage is null.");
+            return false;
+        }
+
+        if (savePath == null || savePath.isBlank()) {
+            log.warn("GaiaTexture.saveImage(): savePath is null or empty.");
+            return false;
+        }
+
+        //ImageUtils.saveBufferedImage(bufferedImage, savePath, fastPng, jpegQuality);
+        ImageUtils.saveBufferedImageControlled(bufferedImage, savePath, fastPng, jpegQuality);
+
+        return true;
     }
 
     public void flipImageY() {
@@ -154,13 +299,14 @@ public class GaiaTexture extends TextureStructure implements Serializable {
                 BufferedImage bufferedImage = readImage(lodImageFile.getAbsolutePath());
                 if (bufferedImage != null) {
                     this.bufferedImage = bufferedImage;
+                    this.bufferedImageLod = lod;
                     this.width = bufferedImage.getWidth();
                     this.height = bufferedImage.getHeight();
                     this.format = bufferedImage.getType();
                 }
             }
         } else {
-            log.warn("[WARN] LOD file not found : {}, loading original image and resizing.", lodImageFile.getAbsolutePath());
+            log.debug("[WARN] LOD file not found : {}, loading original image and resizing.", lodImageFile.getAbsolutePath());
             float scaleFactor = lod.getTextureScale();
             loadImage();
             if (this.bufferedImage != null) {
@@ -170,8 +316,8 @@ public class GaiaTexture extends TextureStructure implements Serializable {
                 resizeHeight = ImageUtils.getNearestPowerOfTwo(resizeHeight);
                 this.width = resizeWidth;
                 this.height = resizeHeight;
-                ImageResizer imageResizer = new ImageResizer();
-                this.bufferedImage = imageResizer.resizeImageGraphic2D(this.bufferedImage, resizeWidth, resizeHeight);
+                this.bufferedImage = ImageResizer.resizeImageGraphic2D(this.bufferedImage, resizeWidth, resizeHeight);
+                this.bufferedImageLod = lod;
             }
         }
     }
@@ -183,8 +329,8 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         if (this.bufferedImage == null) {
             return;
         }
-        ImageResizer imageResizer = new ImageResizer();
-        this.bufferedImage = imageResizer.resizeImageGraphic2D(this.bufferedImage, width, height);
+        this.bufferedImage = ImageResizer.resizeImageGraphic2D(this.bufferedImage, width, height);
+        this.bufferedImageLod = LevelOfDetail.NONE;
         this.width = width;
         this.height = height;
     }
@@ -204,7 +350,11 @@ public class GaiaTexture extends TextureStructure implements Serializable {
 
     // getBufferedImage
     public BufferedImage getBufferedImage(LevelOfDetail lod) {
-        if (this.bufferedImage == null) {
+        if (this.bufferedImage == null || this.bufferedImageLod != lod) {
+            if (this.bufferedImage != null) {
+                this.bufferedImage.flush();
+                this.bufferedImage = null;
+            }
             loadImage(lod);
         }
         return this.bufferedImage;
@@ -216,6 +366,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         }
         if (bufferedImage != null) {
             bufferedImage.flush();
+            bufferedImage = null;
         }
     }
 
@@ -308,6 +459,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         if (this.bufferedImage != null) {
             this.bufferedImage.flush();
             this.bufferedImage = null;
+            this.bufferedImageLod = LevelOfDetail.NONE;
         }
         if (this.byteBuffer != null) {
             this.byteBuffer.clear();

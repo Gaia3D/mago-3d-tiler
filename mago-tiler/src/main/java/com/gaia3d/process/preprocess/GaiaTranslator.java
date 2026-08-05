@@ -6,8 +6,8 @@ import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
-import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
+import com.gaia3d.terrain.GeoTiffTerrainHeightProvider;
+import com.gaia3d.terrain.TerrainHeightProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.api.geometry.Position;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -19,11 +19,19 @@ import org.joml.Vector3d;
 import java.util.List;
 
 @Slf4j
-@RequiredArgsConstructor
 public class GaiaTranslator implements PreProcess {
-    private final List<GridCoverage2D> terrains;
+    private final TerrainHeightProvider terrainHeightProvider;
     private final List<GridCoverage2D> geoids;
     private GaiaScene recentScene = null;
+
+    public GaiaTranslator(List<GridCoverage2D> terrains, List<GridCoverage2D> geoids) {
+        this(new GeoTiffTerrainHeightProvider(terrains), geoids);
+    }
+
+    public GaiaTranslator(TerrainHeightProvider terrainHeightProvider, List<GridCoverage2D> geoids) {
+        this.terrainHeightProvider = terrainHeightProvider;
+        this.geoids = geoids;
+    }
 
     @Override
     public TileInfo run(TileInfo tileInfo) {
@@ -62,27 +70,7 @@ public class GaiaTranslator implements PreProcess {
     private double getTerrainHeightFromCartographic(Vector3d cartographic) {
         Vector3d center = new Vector3d(cartographic.x, cartographic.y, 0.0);
         Position position = new Position2D(DefaultGeographicCRS.WGS84, center.x, center.y);
-        double resultHeight = 0.0d;
-        if (terrains != null && !terrains.isEmpty()) {
-            for (GridCoverage2D coverage : terrains) {
-                double[] altitude = new double[1];
-                altitude[0] = 0.0d;
-
-                try {
-                    coverage.evaluate(position, altitude);
-                } catch (Exception e) {
-                    log.debug("[DEBUG] Failed to load terrain height. Out of range");
-                }
-
-                if (Double.isInfinite(altitude[0])) {
-                    log.debug("[DEBUG] Failed to load terrain height. Infinite value encountered");
-                } else if (Double.isNaN(altitude[0])) {
-                    log.debug("[DEBUG] Failed to load terrain height. NaN value encountered");
-                } else {
-                    resultHeight += altitude[0];
-                }
-            }
-        }
+        double resultHeight = terrainHeightProvider.sample(center.x, center.y).orElse(0.0d);
 
         if (geoids != null && !geoids.isEmpty()) {
             for (GridCoverage2D coverage : geoids) {

@@ -10,15 +10,14 @@ import com.gaia3d.converter.kml.FastKmlReader;
 import com.gaia3d.converter.loader.BatchedFileLoader;
 import com.gaia3d.converter.parametric.ExtrusionTempGenerator;
 import com.gaia3d.process.TilingPipeline;
-import com.gaia3d.process.postprocess.GaiaMaximizer;
-import com.gaia3d.process.postprocess.GaiaRelocator;
 import com.gaia3d.process.postprocess.PostProcess;
-import com.gaia3d.process.postprocess.batch.Batched3DModel;
-import com.gaia3d.process.postprocess.batch.Batched3DModelV2;
 import com.gaia3d.process.preprocess.*;
 import com.gaia3d.process.tileprocess.Pipeline;
 import com.gaia3d.process.tileprocess.TilingProcess;
 import com.gaia3d.process.tileprocess.tile.PhotogrammetryTiler;
+import com.gaia3d.terrain.GeoTiffTerrainHeightProvider;
+import com.gaia3d.terrain.QuantizedMeshTerrainHeightProvider;
+import com.gaia3d.terrain.TerrainHeightProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.coverage.grid.GridCoverage2D;
 
@@ -41,10 +40,15 @@ public class PhotogrammetryProcessFlow implements ProcessFlow {
         ExtrusionTempGenerator tempGenerator = new ExtrusionTempGenerator(converter);
         BatchedFileLoader fileLoader = new BatchedFileLoader(converter, kmlReader, tempGenerator);
 
-        List<GridCoverage2D> geoTiffs = new ArrayList<>();
+        TerrainHeightProvider terrainHeightProvider = TerrainHeightProvider.empty();
         if (globalOptions.getTerrainPath() != null) {
             File terrainPath = new File(globalOptions.getTerrainPath());
-            geoTiffs = fileLoader.loadGridCoverages(terrainPath, geoTiffs);
+            if (terrainPath.isFile() && terrainPath.getName().equalsIgnoreCase("layer.json")) {
+                terrainHeightProvider = new QuantizedMeshTerrainHeightProvider(terrainPath.toPath());
+            } else {
+                List<GridCoverage2D> geoTiffs = fileLoader.loadGridCoverages(terrainPath, new ArrayList<>());
+                terrainHeightProvider = new GeoTiffTerrainHeightProvider(geoTiffs);
+            }
         }
         List<GridCoverage2D> geoidTiffs = new ArrayList<>();
         if (globalOptions.getGeoidPath() != null) {
@@ -59,7 +63,7 @@ public class PhotogrammetryProcessFlow implements ProcessFlow {
         preProcessors.add(new GaiaScaler());
 
         preProcessors.add(new PhotogrammetryRotation());
-        preProcessors.add(new GaiaTranslationForPhotogrammetry(geoTiffs, geoidTiffs));
+        preProcessors.add(new GaiaTranslationForPhotogrammetry(terrainHeightProvider, geoidTiffs));
         PhotogrammetryMinimization gaiaMinimizer = new PhotogrammetryMinimization();
         preProcessors.add(gaiaMinimizer);
 
@@ -68,15 +72,8 @@ public class PhotogrammetryProcessFlow implements ProcessFlow {
 
         // postProcess
         List<PostProcess> postProcessors = new ArrayList<>();
-        postProcessors.add(new GaiaMaximizer());
-        postProcessors.add(new GaiaRelocator());
-        if (globalOptions.getTilesVersion()
-                .equals("1.0")) {
-            postProcessors.add(new Batched3DModel());
-        } else {
-            postProcessors.add(new Batched3DModelV2());
-        }
 
+        // In photogrammetry there are no post-processes.
         Pipeline processPipeline = new TilingPipeline(preProcessors, tilingProcess, postProcessors);
         processPipeline.process(fileLoader);
     }

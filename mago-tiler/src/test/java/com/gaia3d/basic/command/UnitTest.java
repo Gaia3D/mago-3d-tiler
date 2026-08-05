@@ -1,11 +1,7 @@
 package com.gaia3d.basic.command;
 
-import com.gaia3d.command.LoggingConfiguration;
 import com.gaia3d.command.mago.Mago3DTilerMain;
-import com.gaia3d.modifier.billboard.plane.TreeBillBoardOptions;
-import com.gaia3d.modifier.billboard.plane.TreeBillboardCreator;
 import com.gaia3d.util.GlobeUtils;
-import com.gaia3d.util.ImageUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 import org.junit.jupiter.api.Test;
@@ -13,12 +9,6 @@ import org.locationtech.proj4j.BasicCoordinateTransform;
 import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
-
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 
 @SuppressWarnings("ALL")
 @Deprecated
@@ -609,8 +599,8 @@ class UnitTest {
 
     @Test
     void test_RealisticMesh_LeeDongHun_Data_BANSONG_someBuildings() {
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\BANSONG_someBuildings\\";
-        String outputPath = "D:\\data\\mago-server\\output\\BANSONG_someBuildings\\";
+        String inputPath = "E:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\BANSONG_someBuildings\\";
+        String outputPath = "E:\\data\\mago-server\\output\\BANSONG_someBuildings_20260427\\";
 
         String[] args = new String[]{
                 "-i", inputPath,
@@ -627,8 +617,8 @@ class UnitTest {
 
     @Test
     void test_RealisticMesh_LeeDongHun_Data_SANGCHEON() {
-        String inputPath = "E:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\SANGCHEON\\";
-        String outputPath = "C:\\data\\mago-server\\output\\SANGCHEON_20260212_B\\";
+        String inputPath = "E:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\SANGCHEON_2_buildings\\";
+        String outputPath = "E:\\data\\mago-server\\output\\SANGCHEON_2_buildings_20260417\\";
 
         String[] args = new String[]{
                 "-i", inputPath,
@@ -644,7 +634,7 @@ class UnitTest {
     @Test
     void test_RealisticMesh_LeeDongHun_Data_GILCHEON() {
         String inputPath = "E:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\GILCHEON\\";
-        String outputPath = "D:\\magoOutput\\GILCHEON_20260219_TESTDELETE\\";
+        String outputPath = "E:\\data\\mago-server\\output\\GILCHEON_20260417\\";
 
         String[] args = new String[]{
                 "-i", inputPath,
@@ -718,8 +708,8 @@ class UnitTest {
     @Test
     void SangAm() {
         // someTiles
-        String inputPath = "E:\\data\\mago3dtiler_TESTDATA\\SangAm_JoGoNi\\Production_2\\L22\\";
-        String outputPath = "C:\\data\\mago-server\\output\\SangAm_20260306\\";
+        String inputPath = "F:\\disk_E\\data\\mago3dtiler_TESTDATA\\SangAm_JoGoNi\\Production_2\\L22_35_buildings\\";
+        String outputPath = "E:\\data\\mago-server\\output\\SangAm_35_20260716_NOPOR_ST\\";
 
         String[] args = new String[]{
                 "-i", inputPath,
@@ -736,13 +726,9 @@ class UnitTest {
     @Test
     void SangAmSomeBuildings
             () {
-        // someTiles
-//        "-lon", "126.638872",
-//                "-lat", "37.5329178",
         String inputPath = "E:\\data\\mago3dtiler_TESTDATA\\SangAm_JoGoNi\\Production_2\\L22_284_buildings\\";
         String outputPath = "E:\\data\\mago-server\\output\\SangAm_284_buildings_20260416\\";
         //String outputPath = "E:\\temp\\";
-
 
         String[] args = new String[]{
                 "-i", inputPath,
@@ -758,11 +744,38 @@ class UnitTest {
     }
 
     @Test
+    void scivile() {
+        String INPUT_PATH = "E:/data/mago3dtiler_TESTDATA/scivile/scivile_20260327";
+        String OUTPUT_PATH = "E:\\data\\mago-server\\output\\scivile_20260327";
+        String path = "scivile_20260327";
+        String[] args = new String[]{
+                "-i", INPUT_PATH,
+                "-o", OUTPUT_PATH,
+                "-it", "obj",
+                "-pg",
+                "-c", "5187",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void Chuncheon08x09x12Kml() {
+        // Chuncheon_08_09_12_16Buildings -> 13min 30sec
+        String INPUT_PATH = "F:\\disk_E\\data\\mago3dtiler_TESTDATA\\ChunCheon\\smalls\\Chuncheon_08_09_12_66Buildings\\";
+        String OUTPUT_PATH = "E:\\data\\mago-server\\output\\Chuncheon_08_09_12_66Buildings_NOPOR\\";
+        String[] args = new String[]{
+                "-i", INPUT_PATH,
+                "-it", "kml",
+                "-o", OUTPUT_PATH,
+                "-pg"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
     void test_zhuangZhang_userData
             () {
-        // someTiles
-//        "-lon", "126.638872",
-//                "-lat", "37.5329178",
         String inputPath = "E:\\data\\mago3dtiler_TESTDATA\\zhuangZhang_userData\\objE\\";
         String outputPath = "C:\\data\\mago-server\\output\\zhuangZhang_userData_objE\\";
         //String outputPath = "E:\\temp\\";
@@ -828,22 +841,6 @@ class UnitTest {
     }
 
     @Test
-    void ThailandDataNBuildings() {
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\RealisticMesh_Thailand_multiTiles\\OBJ25sqkm\\Data_1building\\";
-        String outputPath = "D:\\data\\mago-server\\output\\Data_1building\\";
-
-        String[] args = new String[]{
-                "-i", inputPath,
-                "-it", "obj",
-                "-o", outputPath,
-                "-crs", "32648",
-                "-xOffset", "268943",
-                "-yOffset", "1818915"
-        };
-        Mago3DTilerMain.main(args);
-    }
-
-    @Test
     void test_airPollutionGlb() {
         // hwal-0, jat-0, nak-0, tree-0
         String inputPath = "D:\\data\\simulation-data\\AIRPOLLUTION\\newAirPollution_20241008\\B_NO2\\glbs\\";
@@ -856,28 +853,5 @@ class UnitTest {
                 "-rx", "-90"
         };
         Mago3DTilerMain.main(args);
-    }
-
-    @Test
-    void test_treeBillBoard() {
-        // hwal-0, jat-0, nak-0, tree-0
-        //String inputPath = "D:\\user\\znkim\\Downloads\\11.잣나무(PK)\\PK_KS_220712_0006\\PK_KS_220712_0006.fbx";
-        String inputPath = "D:\\user\\znkim\\Desktop\\sample.glb";
-        //String inputPath = "D:\\data\\korea-forest-service\\birch.glb";
-        String outputPath = "D:\\user\\znkim\\Downloads\\11.잣나무(PK)\\PK_KS_220712_0006\\";
-
-//        String[] args = new String[]{
-//                "-i", inputPath,
-//                "-it", "glb",
-//                "-o", outputPath
-//        };
-//        Mago3DTilerMain.main(args);
-
-        TreeBillBoardOptions treeBillBoardParameters = new TreeBillBoardOptions();
-        treeBillBoardParameters.setVerticalRectanglesCount(3);
-        treeBillBoardParameters.setHorizontalRectanglesCount(5);
-
-        TreeBillboardCreator treeCreator = new TreeBillboardCreator();
-        treeCreator.createTreeBillBoard(treeBillBoardParameters, inputPath, outputPath);
     }
 }

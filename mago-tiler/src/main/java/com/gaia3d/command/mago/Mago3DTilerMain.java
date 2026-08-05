@@ -3,7 +3,10 @@ package com.gaia3d.command.mago;
 import com.gaia3d.command.LoggingConfiguration;
 import com.gaia3d.util.DecimalUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.cli.*;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.logging.log4j.Level;
 
 import java.io.IOException;
@@ -27,7 +30,9 @@ public class Mago3DTilerMain {
             boolean isQuiet = command.hasOption(ProcessOptions.QUIET.getLongName());
             boolean hasLogPath = command.hasOption(ProcessOptions.LOG_PATH.getLongName());
             boolean isDebug = command.hasOption(ProcessOptions.DEBUG.getLongName());
+            boolean isVerbose = command.hasOption(ProcessOptions.VERBOSE.getLongName());
             boolean isMerge = command.hasOption(ProcessOptions.MERGE.getLongName());
+            boolean isUpdateRootTransform = command.hasOption(ProcessOptions.UPDATE_ROOT_TRANSFORM.getLongName());
 
             // Logging configuration
             if (isQuiet) {
@@ -37,6 +42,12 @@ public class Mago3DTilerMain {
                 LoggingConfiguration.initConsoleLogger("[%p][%d{HH:mm:ss}][%C{2}(%M:%L)]::%message%n");
                 if (hasLogPath) {
                     LoggingConfiguration.initFileLogger("[%p][%d{HH:mm:ss}][%C{2}(%M:%L)]::%message%n", command.getOptionValue(ProcessOptions.LOG_PATH.getLongName()));
+                }
+                LoggingConfiguration.setLevel(Level.DEBUG);
+            } else if (isVerbose) {
+                LoggingConfiguration.initConsoleLogger();
+                if (hasLogPath) {
+                    LoggingConfiguration.initFileLogger(null, command.getOptionValue(ProcessOptions.LOG_PATH.getLongName()));
                 }
                 LoggingConfiguration.setLevel(Level.DEBUG);
             } else {
@@ -59,14 +70,16 @@ public class Mago3DTilerMain {
                 formatter.printHelp("command options", options);
                 return;
             }
-            GlobalOptions.init(command);
             Mago3DTiler mago3DTiler = new Mago3DTiler();
-            if (isMerge) {
+            if (isUpdateRootTransform) {
+                mago3DTiler.updateRootTransform(command);
+            } else if (isMerge) {
+                GlobalOptions.init(command);
                 mago3DTiler.merge();
             } else {
+                GlobalOptions.init(command);
                 mago3DTiler.execute();
             }
-
 
         } catch (ParseException e) {
             log.error("[ERROR] Failed to parse command line options, Please check the arguments.", e);

@@ -13,7 +13,7 @@ import java.util.TreeMap;
 @Setter
 @NoArgsConstructor
 public class LegendColors {
-    private TreeMap<Double,GaiaColor> colorMap = new TreeMap<>();
+    private TreeMap<Double, GaiaColor> colorMap = new TreeMap<>();
 
     public void clear() {
         colorMap.clear();
@@ -27,7 +27,7 @@ public class LegendColors {
     }
 
     public void setValueAndColor(double value, double r, double g, double b, double a) {
-        GaiaColor color = new GaiaColor((float)r, (float)g, (float)b, (float)a);
+        GaiaColor color = new GaiaColor((float) r, (float) g, (float) b, (float) a);
         setValueAndColor(value, color);
     }
 

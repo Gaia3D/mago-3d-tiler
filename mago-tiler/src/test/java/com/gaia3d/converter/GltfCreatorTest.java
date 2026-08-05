@@ -15,6 +15,7 @@ import org.geotools.api.parameter.GeneralParameterValue;
 import org.geotools.api.parameter.ParameterValue;
 import org.geotools.api.referencing.FactoryException;
 import org.geotools.api.referencing.NoSuchAuthorityCodeException;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.util.ProgressListener;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridCoverageFactory;
@@ -38,7 +39,6 @@ import org.geotools.referencing.CRS;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 import javax.imageio.ImageIO;
 import java.awt.*;

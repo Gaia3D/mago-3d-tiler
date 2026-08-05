@@ -6,10 +6,10 @@ import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.model.GaiaMaterial;
 import com.gaia3d.basic.model.GaiaTexture;
 import com.gaia3d.basic.types.AttributeType;
+import com.gaia3d.basic.types.LevelOfDetail;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.basic.types.LevelOfDetail;
 import com.gaia3d.util.ImageResizer;
 import com.gaia3d.util.ImageUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -279,7 +279,8 @@ public class GaiaTextureCoordinator {
             return null;
         }
 
-        Graphics graphics = this.atlasImage.getGraphics();
+        Graphics2D graphics = this.atlasImage.createGraphics();
+        graphics.setComposite(AlphaComposite.Src);
 
         for (GaiaBatchImage splitImage : splitImages) {
             GaiaRectangle splitRectangle = splitImage.getBatchedBoundary();
@@ -288,12 +289,13 @@ public class GaiaTextureCoordinator {
             Map<TextureType, List<GaiaTexture>> textureMap = material.getTextures();
             List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
             if (!textures.isEmpty()) {
-                GaiaTexture texture = textures.get(0);
-                BufferedImage source = texture.getBufferedImage();
+                GaiaTexture texture = textures.getFirst();
+                BufferedImage source = isPhotorealistic ? texture.getBufferedImage() : texture.getBufferedImage(lod);
                 graphics.drawImage(source, (int) splitRectangle.getMinX(), (int) splitRectangle.getMinY(), null); // original code
                 //graphics.drawImage(randomColoredImage, (int) splitRectangle.getMinX(), (int) splitRectangle.getMinY(), null); // test code
             }
         }
+        graphics.dispose();
 
         for (GaiaBatchImage target : splitImages) {
             GaiaRectangle splitRectangle = target.getBatchedBoundary();
@@ -436,6 +438,11 @@ public class GaiaTextureCoordinator {
 
             BufferedImage clamped = this.atlasImage;
             clamped = ImageUtils.changeBackgroundColor(clamped, CLAMP_COLOR, BACKGROUND_COLOR);
+            // New way to eliminate backGround color.**********************************************************
+            // activate code for test.***
+            // TextureAtlasManager textureAtlasManager = new TextureAtlasManager();
+            // textureAtlasManager.dilateBackgroundColor(clamped, CLAMP_COLOR);
+            // End new way to eliminate backGround color.------------------------------------------------------
             Graphics2D graphics2D = this.atlasImage.createGraphics();
             graphics2D.drawImage(clamped, 0, 0, null);
             graphics2D.dispose();
@@ -453,8 +460,7 @@ public class GaiaTextureCoordinator {
                 log.debug(" - scaleFactor : {}", scaleFactor);
                 log.debug(" - lodLevel : {}", lodLevel);
                 log.debug("==================================");
-                ImageResizer imageResizer = new ImageResizer();
-                this.atlasImage = imageResizer.resizeMultiStepSmart(this.atlasImage, imageWidth, imageHeight);
+                this.atlasImage = ImageResizer.resizeMultiStepSmart(this.atlasImage, imageWidth, imageHeight);
 //                if (lodLevel == 0) {
 //                    this.atlasImage = imageResizer.resizeImageGraphic2D(this.atlasImage, imageWidth, imageHeight, true);
 //                } else {
@@ -462,7 +468,11 @@ public class GaiaTextureCoordinator {
 //                    this.atlasImage = imageResizer.resizeImageGraphic2D(this.atlasImage, imageWidth, imageHeight, true);
 //                }
             }
+        } else {
+            limitAtlasSize(GlobalConstants.DEFAULT_BATCH_ATLAS_MAX_TEXTURE_SIZE);
         }
+
+        updateAtlasTextureMetadata(maxWidth, maxHeight);
 
         /* debug */
         if (globalOptions.isDebug()) {
@@ -470,6 +480,40 @@ public class GaiaTextureCoordinator {
         }
 
         return this.atlasImage;
+    }
+
+    private void limitAtlasSize(int maximumSize) {
+        if (this.atlasImage == null || maximumSize <= 0) {
+            return;
+        }
+        int width = this.atlasImage.getWidth();
+        int height = this.atlasImage.getHeight();
+        int longestSide = Math.max(width, height);
+        if (longestSide <= maximumSize) {
+            return;
+        }
+
+        double scale = maximumSize / (double) longestSide;
+        int resizeWidth = Math.max(1, (int) Math.round(width * scale));
+        int resizeHeight = Math.max(1, (int) Math.round(height * scale));
+        log.debug("Resize batched atlas: {}x{} -> {}x{}", width, height, resizeWidth, resizeHeight);
+        this.atlasImage = ImageResizer.resizeMultiStepSmart(this.atlasImage, resizeWidth, resizeHeight);
+    }
+
+    private void updateAtlasTextureMetadata(int fallbackWidth, int fallbackHeight) {
+        int width = this.atlasImage != null ? this.atlasImage.getWidth() : fallbackWidth;
+        int height = this.atlasImage != null ? this.atlasImage.getHeight() : fallbackHeight;
+        for (GaiaMaterial material : materials) {
+            Map<TextureType, List<GaiaTexture>> textureMap = material.getTextures();
+            List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
+            if (textures == null || textures.isEmpty()) {
+                continue;
+            }
+            GaiaTexture texture = textures.get(0);
+            texture.setBufferedImage(this.atlasImage);
+            texture.setWidth(width);
+            texture.setHeight(height);
+        }
     }
 
     private void writeAtlasImageForTest(boolean existPngTextures, LevelOfDetail lod, String suffix) {
@@ -482,7 +526,7 @@ public class GaiaTextureCoordinator {
     }
 
     private void writeBatchedImage(String imageName, String imageExtension) {
-        File tempPath = new File(globalOptions.getTempPath(), "altras");
+        File tempPath = new File(globalOptions.getTempPath(), "atlas");
         if (!tempPath.exists()) {
             if (!tempPath.mkdirs()) {
                 log.error("[ERROR] Failed to create directory");

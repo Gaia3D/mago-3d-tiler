@@ -42,7 +42,7 @@ public class Batched3DModel implements ContentModel {
         GltfWriterOptions gltfOptions = GltfWriterOptions.builder()
                 .build();
         GlobalOptions globalOptions = GlobalOptions.getInstance();
-        if (globalOptions.getTilesVersion().equals("1.0")) {
+        if ("1.0".equals(globalOptions.getTilesVersion())) {
             gltfOptions.setUriImage(true);
         }
         if (globalOptions.isUseQuantization()) {
@@ -131,8 +131,7 @@ public class Batched3DModel implements ContentModel {
 
         byte[] glbBytes;
         if (globalOptions.isGlb()) {
-            String glbFileName = nodeCode + ".glb";
-            File glbOutputFile = outputRoot.resolve(glbFileName).toFile();
+            File glbOutputFile = contentInfo.resolveContentFile(outputRoot, "glb");
             this.gltfWriter.writeGlb(scene, glbOutputFile);
             glbBytes = readGlb(glbOutputFile);
         } else {
@@ -210,7 +209,7 @@ public class Batched3DModel implements ContentModel {
             byteLength += lastPadLength;
         }
 
-        File b3dmOutputFile = outputRoot.resolve(nodeCode + "." + MAGIC).toFile();
+        File b3dmOutputFile = contentInfo.resolveContentFile(outputRoot, MAGIC);
         try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(b3dmOutputFile)))) {
             // 28-byte header (first 20 bytes)
             stream.writePureText(MAGIC);

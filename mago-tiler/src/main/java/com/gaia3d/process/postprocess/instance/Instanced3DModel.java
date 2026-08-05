@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exchangable.GaiaSet;
-import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
@@ -48,7 +47,7 @@ public class Instanced3DModel implements ContentModel {
         if (globalOptions.isUseQuantization()) {
             gltfOptions.setUseQuantization(true);
         }
-        if (globalOptions.getTilesVersion().equals("1.0")) {
+        if ("1.0".equals(globalOptions.getTilesVersion())) {
             gltfOptions.setUriImage(true);
         }
 
@@ -229,7 +228,7 @@ public class Instanced3DModel implements ContentModel {
 
         File gltfOutputFile = outputRoot.resolve(gltfUrl).toFile();
         if (!gltfOutputFile.exists()) {
-            createInstance(gltfOutputFile, contentInfo, tileInfos.get(0));
+            createInstance(gltfOutputFile, contentInfo, tileInfos.getFirst());
         }
 
         boolean isFeatureTableAligned = (32 + featureTableJSONByteLength) % 8 == 0;
@@ -263,7 +262,7 @@ public class Instanced3DModel implements ContentModel {
             byteLength += lastPadLength;
         }
 
-        File i3dmOutputFile = outputRoot.resolve(nodeCode + "." + MAGIC).toFile();
+        File i3dmOutputFile = contentInfo.resolveContentFile(outputRoot, MAGIC);
         try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(i3dmOutputFile)))) {
             // 32-byte header (first 20 bytes)
             stream.writePureText(MAGIC);
@@ -336,8 +335,7 @@ public class Instanced3DModel implements ContentModel {
                 GaiaBatcher gaiaBatcher = new GaiaBatcher();
                 GaiaSet gaiaSet = gaiaBatcher.runBatching(batchTileInfos, contentInfo.getNodeCode(), contentInfo.getLod());
                 GaiaScene resultGaiaScene = new GaiaScene(gaiaSet);
-
-                GaiaBoundingBox boundingBox = resultGaiaScene.updateBoundingBox();
+                resultGaiaScene.updateBoundingBox();
                 gltfWriter.writeGlb(resultGaiaScene, file);
             }
         } catch (Exception e) {

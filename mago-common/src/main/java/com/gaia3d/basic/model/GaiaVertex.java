@@ -1,5 +1,7 @@
 package com.gaia3d.basic.model;
 
+import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.geometry.octree.GeometryContent;
 import com.gaia3d.basic.model.structure.VertexStructure;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,14 +20,13 @@ import java.io.Serializable;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaVertex extends VertexStructure implements Serializable {
+public class GaiaVertex extends VertexStructure implements Serializable, GeometryContent {
     private Vector3d position;
     private Vector3d normal;
     private Vector2d texcoords;
     private byte[] color;
     private float batchId;
 
-    // TODO: PointCloud Required
     private short[] quantizedPosition;
     private char intensity;
     private short classification;
@@ -58,34 +59,35 @@ public class GaiaVertex extends VertexStructure implements Serializable {
         return vertex;
     }
 
-    public boolean isWeldable(GaiaVertex vertex2, double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
+    @Deprecated
+    public boolean isWeldable(GaiaVertex compare, double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
         // 1rst, check position.
-        double distance = position.distance(vertex2.position);
+        double distance = position.distance(compare.position);
         if (distance > error) {
             return false;
         }
 
         // 2nd, check texCoord.
-        if (checkTexCoord && texcoords != null && vertex2.texcoords != null) {
+        if (checkTexCoord && texcoords != null && compare.texcoords != null) {
             double texError = 1e-8;
-            double texCoordDist = texcoords.distance(vertex2.texcoords);
+            double texCoordDist = texcoords.distance(compare.texcoords);
             if (texCoordDist > texError) {
                 return false;
             }
         }
 
         // 3rd, check normal.
-        if (checkNormal && normal != null && vertex2.normal != null) {
-            double dot = normal.dot(vertex2.normal);
+        if (checkNormal && normal != null && compare.normal != null) {
+            double dot = normal.dot(compare.normal);
             if ((1.0 - dot) > error) {
                 return false;
             }
         }
 
         // 4th, check color.
-        if (checkColor && color != null && vertex2.color != null) {
+        if (checkColor && color != null && compare.color != null) {
             for (int i = 0; i < color.length; i++) {
-                if (Math.abs(color[i] - vertex2.color[i]) > error) {
+                if (Math.abs(color[i] - compare.color[i]) > error) {
                     return false;
                 }
             }
@@ -93,8 +95,20 @@ public class GaiaVertex extends VertexStructure implements Serializable {
 
         // 5th, check batchId.
         if (checkBatchId) {
-            return batchId == vertex2.batchId;
+            return batchId == compare.batchId;
         }
         return true;
+    }
+
+    @Override
+    public GaiaBoundingBox getBoundingBox() {
+        GaiaBoundingBox bbox = new GaiaBoundingBox();
+        bbox.addPoint(position);
+        return bbox;
+    }
+
+    @Override
+    public Vector3d getCenterPoint() {
+        return position;
     }
 }

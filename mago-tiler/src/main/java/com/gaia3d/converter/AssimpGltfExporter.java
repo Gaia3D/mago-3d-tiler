@@ -1,9 +1,9 @@
 package com.gaia3d.converter;
 
+import com.gaia3d.basic.geometry.modifier.texcoord.FlipYTexCoordinate;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.gltf.GltfWriter;
-import com.gaia3d.basic.geometry.modifier.texcoord.FlipYTexCoordinate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,7 +21,6 @@ public class AssimpGltfExporter {
         List<GaiaScene> scenes = assimpConverter.load(inputFile);
         if (scenes.isEmpty()) {
             log.warn("No scenes found in the input file: {}", inputFile.getAbsolutePath());
-            return;
         } else {
             log.info("Single scene found in the input file: {}", inputFile.getAbsolutePath());
             GaiaScene scene = scenes.get(0);
@@ -46,7 +45,6 @@ public class AssimpGltfExporter {
         List<GaiaScene> scenes = assimpConverter.load(inputFile);
         if (scenes.isEmpty()) {
             log.warn("No scenes found in the input file: {}", inputFile.getAbsolutePath());
-            return;
         } else {
             log.info("Single scene found in the input file: {}", inputFile.getAbsolutePath());
             GaiaScene scene = scenes.get(0);

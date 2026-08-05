@@ -1,0 +1,41 @@
+#!/bin/sh
+
+if [ "$ALLOW_OSS_SUBTREE_COMMIT" = "1" ]; then
+  exit 0
+fi
+
+CHANGED_FILES=$(git diff --cached --name-only)
+
+check_protected_path() {
+  PROTECTED_PATH="$1"
+  REMOTE_NAME="$2"
+  REMOTE_BRANCH="$3"
+
+  if echo "$CHANGED_FILES" | grep -q "^${PROTECTED_PATH}/"; then
+    echo ""
+    echo "ERROR: Direct changes to ${PROTECTED_PATH}/ cannot be committed in mago-3d-tiler."
+    echo ""
+    echo "This directory is managed as an OSS subtree."
+    echo "Make changes in the standalone ${PROTECTED_PATH} repository, then sync with:"
+    echo ""
+    echo "  git subtree pull --prefix=${PROTECTED_PATH} ${REMOTE_NAME} ${REMOTE_BRANCH} --squash"
+    echo ""
+    echo "Only for an intentional subtree pull sync commit,"
+    echo "set ALLOW_OSS_SUBTREE_COMMIT=1 before commit."
+    echo ""
+    return 1
+  fi
+
+  return 0
+}
+
+FAILED=0
+
+check_protected_path "mago-common" "common" "main" || FAILED=1
+check_protected_path "mago-io" "mago-io" "main" || FAILED=1
+
+if [ "$FAILED" = "1" ]; then
+  exit 1
+fi
+
+exit 0

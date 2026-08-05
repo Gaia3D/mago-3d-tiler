@@ -16,7 +16,7 @@ abstract public class HalfEdgeModifier {
         }
     }
 
-    protected void applyNode(Matrix4d parentTransformMatrix, HalfEdgeNode node) {
+    public void applyNode(Matrix4d parentTransformMatrix, HalfEdgeNode node) {
         Matrix4d localTransformMatrix = node.getTransformMatrix();
         Matrix4d productTransformMatrix = new Matrix4d(parentTransformMatrix);
         productTransformMatrix.mul(localTransformMatrix);
@@ -33,14 +33,14 @@ abstract public class HalfEdgeModifier {
         }
     }
 
-    protected void applyMesh(Matrix4d productTransformMatrix, HalfEdgeMesh mesh) {
+    public void applyMesh(Matrix4d productTransformMatrix, HalfEdgeMesh mesh) {
         List<HalfEdgePrimitive> primitives = mesh.getPrimitives();
         for (HalfEdgePrimitive primitive : primitives) {
             applyPrimitive(productTransformMatrix, primitive);
         }
     }
 
-    protected void applyPrimitive(Matrix4d productTransformMatrix, HalfEdgePrimitive primitive) {
+    public void applyPrimitive(Matrix4d productTransformMatrix, HalfEdgePrimitive primitive) {
         List<HalfEdgeVertex> vertices = primitive.getVertices();
         for (HalfEdgeVertex vertex : vertices) {
             applyVertex(productTransformMatrix, vertex);
@@ -54,18 +54,18 @@ abstract public class HalfEdgeModifier {
         }
     }
 
-    protected void applyVertex(Matrix4d productTransformMatrix, HalfEdgeVertex vertex) {
+    public void applyVertex(Matrix4d productTransformMatrix, HalfEdgeVertex vertex) {
 
     }
 
-    protected void applySurface(Matrix4d productTransformMatrix, List<HalfEdgeVertex> vertices, HalfEdgeSurface surface) {
+    public void applySurface(Matrix4d productTransformMatrix, List<HalfEdgeVertex> vertices, HalfEdgeSurface surface) {
         List<HalfEdgeFace> faces = surface.getFaces();
         for (HalfEdgeFace face : faces) {
             applyFace(productTransformMatrix, vertices, face);
         }
     }
 
-    protected void applyFace(Matrix4d productTransformMatrix, List<HalfEdgeVertex> vertices, HalfEdgeFace face) {
+    public void applyFace(Matrix4d productTransformMatrix, List<HalfEdgeVertex> vertices, HalfEdgeFace face) {
 
     }
 }

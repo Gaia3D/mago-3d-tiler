@@ -4,7 +4,12 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.modifier.Modifier;
 import com.gaia3d.basic.geometry.octree.GaiaOctree;
 import com.gaia3d.basic.geometry.octree.GaiaOctreeVertices;
-import com.gaia3d.basic.model.*;
+import com.gaia3d.basic.geometry.octree.GeometryContent;
+import com.gaia3d.basic.halfedge.UnionFind;
+import com.gaia3d.basic.model.GaiaFace;
+import com.gaia3d.basic.model.GaiaPrimitive;
+import com.gaia3d.basic.model.GaiaSurface;
+import com.gaia3d.basic.model.GaiaVertex;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
@@ -14,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class GaiaWelder extends Modifier {
@@ -38,166 +44,256 @@ public class GaiaWelder extends Modifier {
 
     public void weldVertices(GaiaPrimitive primitive) {
         GaiaBoundingBox boundingBox = primitive.getBoundingBox(null);
-        if (boundingBox == null) {
-            return;
-        }
+        if (boundingBox == null) {return;}
+
         GaiaBoundingBox cubeBoundingBox = boundingBox.createCubeFromMinPosition();
+
         GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null, cubeBoundingBox);
-        octreeVertices.addContents(primitive.getVertices());
+        List<GeometryContent> gaiaContents = primitive.getVertices().stream().map(v -> (GeometryContent) v).collect(Collectors.toList());
+        octreeVertices.addContents(gaiaContents);
         octreeVertices.setLimitDepth(10);
-        octreeVertices.setLimitBoxSize(1.0);
+        octreeVertices.setLimitBoxSize(0.2);
         octreeVertices.makeTreeByMinVertexCount(50);
 
-        List<GaiaOctree<GaiaVertex>> octreesWithContents = octreeVertices.extractOctreesWithContents();
-        Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster = new HashMap<>();
+        List<GaiaOctree<GeometryContent>> octrees = octreeVertices.extractOctreesWithContents();
 
-        for (GaiaOctree<GaiaVertex> octree : octreesWithContents) {
-            List<GaiaVertex> vertices = octree.getContents();
-            getWeldableVertexMap(mapVertexToVertexMaster, vertices);
+        if (octrees == null || octrees.isEmpty()) {
+            log.debug("Welding : no octree cells with vertices. skipping welding.");
+            return;
+        }
+        GaiaOctree<GeometryContent> octreeSample = octrees.getFirst();
+        log.debug("Welding : octree depth : " + octreeSample.getDepth());
+
+        // 🔥 1. Union-Find
+        UnionFind<GaiaVertex> uf = new UnionFind<>();
+
+        log.debug("Welding : Union-Find");
+        for (GaiaVertex v : primitive.getVertices()) {
+            uf.makeSet(v);
         }
 
-        Map<GaiaVertex, GaiaVertex> mapVertexMasters = new HashMap<>();
-        for (GaiaVertex vertexMaster : mapVertexToVertexMaster.values()) {
-            mapVertexMasters.put(vertexMaster, vertexMaster);
+        // 🔥 2. Weld dentro de cada celda
+        log.debug("Welding : Checking weldable vertices in octree cells");
+        int octreesCount = octrees.size();
+        log.debug("Welding : octrees count: " + octreesCount);
+        int currOct = 0;
+        for (GaiaOctree<GeometryContent> octree : octrees) {
+            currOct++;
+
+            List<GaiaVertex> vertices = octree.getContents().stream()
+                    .map(c -> (GaiaVertex) c)
+                    .toList();
+            int n = vertices.size();
+
+            if (currOct % 2000 == 0 || currOct == octreesCount) {
+                log.debug("Welding : current octree {} / {}", currOct, octreesCount);
+                log.debug("Welding : vertices count in octree : " + n);
+            }
+
+            for (int i = 0; i < n; i++) {
+                GaiaVertex v1 = vertices.get(i);
+
+                for (int j = i + 1; j < n; j++) {
+                    GaiaVertex v2 = vertices.get(j);
+
+                    if (isWeldable(v1, v2)) {
+                        uf.union(v1, v2);
+                    }
+                }
+            }
         }
 
-        List<GaiaVertex> newVerticesArray = new ArrayList<>(mapVertexMasters.values());
+        // 🔥 3. Crear mapa vertex → master
+        log.debug("Welding : making vertex-master map");
+        Map<GaiaVertex, GaiaVertex> vertexToMaster = new HashMap<>();
+        Map<GaiaVertex, Integer> masterToIndex = new HashMap<>();
+        List<GaiaVertex> newVertices = new ArrayList<>();
 
-        Map<GaiaVertex, Integer> vertexIdxMap = new HashMap<>();
-        int verticesCount = newVerticesArray.size();
-        for (int i = 0; i < verticesCount; i++) {
-            vertexIdxMap.put(newVerticesArray.get(i), i);
+        for (GaiaVertex v : primitive.getVertices()) {
+            GaiaVertex root = uf.find(v);
+
+            vertexToMaster.put(v, root);
+
+            if (!masterToIndex.containsKey(root)) {
+                int index = newVertices.size();
+                masterToIndex.put(root, index);
+                newVertices.add(root);
+            }
         }
 
-        // update the indices of the faces
-        Map<GaiaFace, GaiaFace> mapDeleteFaces = new HashMap<>();
+        // 🔥 4. Reindexar caras + eliminar degeneradas
+        log.debug("Welding : reIndexing face vertices idx");
         for (GaiaSurface surface : primitive.getSurfaces()) {
-            int facesCount = surface.getFaces().size();
-            for (int j = 0; j < facesCount; j++) {
-                GaiaFace face = surface.getFaces().get(j);
+
+            List<GaiaFace> newFaces = new ArrayList<>();
+
+            for (GaiaFace face : surface.getFaces()) {
                 int[] indices = face.getIndices();
-                for (int k = 0; k < indices.length; k++) {
-                    GaiaVertex vertex = primitive.getVertices().get(indices[k]);
-                    GaiaVertex vertexMaster = mapVertexToVertexMaster.get(vertex);
-                    int index = vertexIdxMap.get(vertexMaster);
-                    indices[k] = index;
+                boolean degenerate = false;
+
+                for (int i = 0; i < indices.length; i++) {
+                    GaiaVertex v = primitive.getVertices().get(indices[i]);
+                    GaiaVertex master = vertexToMaster.get(v);
+                    indices[i] = masterToIndex.get(master);
                 }
 
-                // check indices
-                for (int k = 0; k < indices.length; k++) {
-                    int index = indices[k];
-                    for (int m = k + 1; m < indices.length; m++) {
-                        if (index == indices[m]) {
-                            // must remove the face
-                            mapDeleteFaces.put(face, face);
+                // comprobar degeneración
+                for (int i = 0; i < indices.length; i++) {
+                    for (int j = i + 1; j < indices.length; j++) {
+                        if (indices[i] == indices[j]) {
+                            degenerate = true;
+                            break;
                         }
                     }
+                    if (degenerate) {break;}
+                }
+
+                if (!degenerate) {
+                    newFaces.add(face);
                 }
             }
 
-            if (!mapDeleteFaces.isEmpty()) {
-                List<GaiaFace> newFaces = new ArrayList<>();
-                for (int j = 0; j < facesCount; j++) {
-                    GaiaFace face = surface.getFaces().get(j);
-                    if (!mapDeleteFaces.containsKey(face)) {
-                        newFaces.add(face);
-                    }
-                }
-                surface.setFaces(newFaces);
-            }
+            surface.setFaces(newFaces);
         }
 
-        // delete no used vertices
-        for (GaiaVertex vertex : primitive.getVertices()) {
-            if (!mapVertexMasters.containsKey(vertex)) {
-                vertex.clear();
-            }
-        }
+        // 🔥 5. Reemplazar vertices
         primitive.getVertices().clear();
-        primitive.setVertices(newVerticesArray);
-    }
-
-    private void getWeldableVertexMap(Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster, List<GaiaVertex> vertices) {
-        Map<GaiaVertex, GaiaVertex> visitedMap = new HashMap<>();
-        int verticesCount = vertices.size();
-        for (int i = 0; i < verticesCount; i++) {
-            GaiaVertex vertex = vertices.get(i);
-            if (visitedMap.containsKey(vertex)) {
-                continue;
-            }
-
-            mapVertexToVertexMaster.put(vertex, vertex);
-
-            for (int j = i + 1; j < verticesCount; j++) {
-                GaiaVertex vertex2 = vertices.get(j);
-                if (visitedMap.containsKey(vertex2)) {
-                    continue;
-                }
-                if (isWeldable(vertex, vertex2)) {
-                    mapVertexToVertexMaster.put(vertex2, vertex);
-                    visitedMap.put(vertex, vertex);
-                    visitedMap.put(vertex2, vertex2);
-                }
-            }
-        }
+        primitive.setVertices(newVertices);
     }
 
     public void deleteUnusedVertices(GaiaPrimitive primitive) {
-        // Sometimes, there are no used vertices
-        // The no used vertices must be deleted (vertex indices of the faces will be modified!)
-        Map<GaiaVertex, Integer> vertexIdxMap = new HashMap<>();
-        int surfacesCount = primitive.getSurfaces().size();
-        for (int i = 0; i < surfacesCount; i++) {
-            GaiaSurface surface = primitive.getSurfaces().get(i);
-            List<GaiaFace> faces = surface.getFaces();
-            for (GaiaFace face : faces) {
-                int[] indices = face.getIndices();
-                for (int index : indices) {
-                    GaiaVertex vertex = primitive.getVertices().get(index);
-                    vertexIdxMap.put(vertex, index);
+        if (primitive == null) {
+            return;
+        }
+
+        List<GaiaVertex> vertices = primitive.getVertices();
+        List<GaiaSurface> surfaces = primitive.getSurfaces();
+
+        if (vertices == null || vertices.isEmpty()) {
+            return;
+        }
+
+        if (surfaces == null || surfaces.isEmpty()) {
+            vertices.clear();
+            return;
+        }
+        log.debug("Welding : deleting no used vertices");
+
+        final int vertexCount = vertices.size();
+
+        // 1) Marcar vértices usados
+        boolean[] used = new boolean[vertexCount];
+
+        log.debug("Deleting NO-Used vertices : marking used vertices");
+        for (GaiaSurface surface : surfaces) {
+            if (surface == null || surface.getFaces() == null) {
+                continue;
+            }
+
+            for (GaiaFace face : surface.getFaces()) {
+                if (face == null || face.getIndices() == null) {
+                    continue;
                 }
-            }
-        }
 
-        int vertexCount = primitive.getVertices().size();
-        for (int i = 0; i < vertexCount; i++) {
-            GaiaVertex vertex = primitive.getVertices().get(i);
-            if (!vertexIdxMap.containsKey(vertex)) {
-                vertex.clear();
-            }
-        }
+                int[] indices = face.getIndices();
 
-        vertexCount = primitive.getVertices().size();
-        int usedVertexCount = vertexIdxMap.size();
-        if (vertexCount != usedVertexCount) {
-            // Exists no used vertices
-            List<GaiaVertex> usedVertices = new ArrayList<>();
-            int idx = 0;
-            Map<GaiaVertex, Integer> vertexIdxMap2 = new HashMap<>();
-            for (GaiaVertex vertex : vertexIdxMap.keySet()) {
-                usedVertices.add(vertex);
-                vertexIdxMap2.put(vertex, idx);
-                idx++;
-            }
-
-            // now, update the indices of the faces
-            for (int i = 0; i < surfacesCount; i++) {
-                GaiaSurface surface = primitive.getSurfaces().get(i);
-                List<GaiaFace> faces = surface.getFaces();
-                for (GaiaFace face : faces) {
-                    int[] indices = face.getIndices();
-                    for (int j = 0; j < indices.length; j++) {
-                        GaiaVertex vertex = primitive.getVertices().get(indices[j]);
-                        idx = vertexIdxMap2.get(vertex);
-                        indices[j] = idx;
+                for (int index : indices) {
+                    if (index >= 0 && index < vertexCount) {
+                        used[index] = true;
                     }
                 }
             }
-
-            // Finally, update the vertices
-            primitive.getVertices().clear();
-            primitive.setVertices(usedVertices);
         }
+
+        // 2) Contar usados
+        int usedVertexCount = 0;
+        for (boolean b : used) {
+            if (b) {
+                usedVertexCount++;
+            }
+        }
+
+        // Si todos están usados, no hay nada que hacer
+        if (usedVertexCount == vertexCount) {
+            return;
+        }
+
+        // Si ninguno está usado
+        if (usedVertexCount == 0) {
+            vertices.clear();
+            return;
+        }
+
+        // 3) Crear oldIndex -> newIndex
+        int[] oldToNew = new int[vertexCount];
+
+        log.debug("Deleting NO-Used vertices : creating oldIdx -> newIdx");
+        int newIndex = 0;
+        for (int oldIndex = 0; oldIndex < vertexCount; oldIndex++) {
+            if (used[oldIndex]) {
+                oldToNew[oldIndex] = newIndex++;
+            } else {
+                oldToNew[oldIndex] = -1;
+
+                // Opcional. Si GaiaVertex tiene buffers grandes, esto ayuda antes de liberar referencias.
+                GaiaVertex unusedVertex = vertices.get(oldIndex);
+                if (unusedVertex != null) {
+                    unusedVertex.clear();
+                }
+            }
+        }
+
+        // 4) Compactar lista de vértices manteniendo el orden original
+        List<GaiaVertex> compactedVertices = new ArrayList<>(usedVertexCount);
+
+        for (int oldIndex = 0; oldIndex < vertexCount; oldIndex++) {
+            if (used[oldIndex]) {
+                compactedVertices.add(vertices.get(oldIndex));
+            }
+        }
+
+        // 5) Actualizar índices de las caras
+        log.debug("Deleting NO-Used vertices : updating face vertex indices");
+        int surfacesCount = surfaces.size();
+        log.debug("SurfacesCount : " + surfacesCount);
+        int s = 0;
+        for (GaiaSurface surface : surfaces) {
+            s++;
+            log.debug("Surface : " + surface);
+            if (surface == null || surface.getFaces() == null) {
+                continue;
+            }
+            int f = 0;
+            int facesCount = surface.getFaces().size();
+            for (GaiaFace face : surface.getFaces()) {
+                f++;
+                if (face == null || face.getIndices() == null) {
+                    continue;
+                }
+
+                if (f % 50000 == 0) {
+                    log.debug("upDating face Idx : " + f + " / " + facesCount);
+                }
+
+                int[] indices = face.getIndices();
+
+                for (int i = 0; i < indices.length; i++) {
+                    int oldIndex = indices[i];
+
+                    if (oldIndex >= 0 && oldIndex < vertexCount) {
+                        indices[i] = oldToNew[oldIndex];
+                    } else {
+                        indices[i] = -1; // índice inválido
+                    }
+                }
+            }
+        }
+
+        int compactedVerticesCount = compactedVertices.size();
+        log.debug("Welding : vertices welded : " + compactedVerticesCount + " / " + vertexCount);
+
+        // 6) Sustituir vertices
+        primitive.setVertices(compactedVertices);
     }
 
     private boolean isWeldable(GaiaVertex source, GaiaVertex target) {

@@ -153,6 +153,10 @@ public class GaiaNode extends NodeStructure implements Serializable {
 
     public GaiaBoundingBox getBoundingBox(Matrix4d parentTransformMatrix) {
         GaiaBoundingBox boundingBox = null;
+        if (this.transformMatrix == null) {
+            this.transformMatrix = new Matrix4d();
+            this.transformMatrix.identity();
+        }
         Matrix4d transformMatrix = new Matrix4d(this.transformMatrix);
         if (parentTransformMatrix != null) {
             parentTransformMatrix.mul(transformMatrix, transformMatrix);
@@ -196,6 +200,19 @@ public class GaiaNode extends NodeStructure implements Serializable {
     }
 
     public void toGaiaBufferSets(List<GaiaBufferDataSet> bufferSets, Matrix4d parentTransformMatrix) {
+        Matrix4d sumTransformMatrix = new Matrix4d(this.transformMatrix);
+        if (parentTransformMatrix != null) {
+            parentTransformMatrix.mul(sumTransformMatrix, sumTransformMatrix);
+        }
+        for (GaiaMesh mesh : this.getMeshes()) {
+            mesh.toGaiaBufferSets(bufferSets, sumTransformMatrix);
+        }
+        for (GaiaNode child : this.getChildren()) {
+            child.toGaiaBufferSets(bufferSets, sumTransformMatrix);
+        }
+    }
+
+    public void toGaiaBufferSets_original(List<GaiaBufferDataSet> bufferSets, Matrix4d parentTransformMatrix) {
         Matrix4d sumTransformMatrix = new Matrix4d(this.transformMatrix);
         if (parentTransformMatrix != null) {
             parentTransformMatrix.mul(sumTransformMatrix, sumTransformMatrix);

@@ -1,36 +1,34 @@
 package com.gaia3d.converter.shape;
 
 import com.gaia3d.converter.AttributeFilter;
+import com.gaia3d.converter.Parametric3DOptions;
 import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.converter.kml.TileTransformInfo;
-import com.gaia3d.converter.Parametric3DOptions;
 import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.api.data.Query;
 import org.geotools.api.data.SimpleFeatureSource;
 import org.geotools.api.feature.simple.SimpleFeature;
-import org.geotools.api.feature.type.FeatureType;
-import org.geotools.api.feature.type.PropertyDescriptor;
 import org.geotools.api.filter.Filter;
-import org.geotools.api.referencing.FactoryException;
-import org.geotools.api.referencing.operation.TransformException;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.files.ShpFiles;
 import org.geotools.data.shapefile.shp.ShapefileReader;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.util.factory.Hints;
-import org.joml.Vector3d;
-import org.locationtech.jts.geom.*;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
-import org.locationtech.proj4j.ProjCoordinate;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * KmlReader is a class that reads kml files.
@@ -51,21 +49,27 @@ public class ShapeInstanceConverter implements AttributeReader {
 
     @Override
     public List<TileTransformInfo> readAll(File file) {
+        List<TileTransformInfo> result = new ArrayList<>();
+        readEach(file, result::add);
+        return result;
+    }
 
+    @Override
+    public void readEach(File file, Consumer<TileTransformInfo> consumer) {
         List<AttributeFilter> attributeFilters = parametricOptions.getAttributeFilters();
-        boolean isDefaultCrs = parametricOptions.getSourceCrs().equals(new CRSFactory().createFromName("EPSG:3857"));
+        boolean isDefaultCrs = Objects.equals(parametricOptions.getSourceCrs(), new CRSFactory().createFromName("EPSG:3857"));
         String altitudeColumnName = parametricOptions.getAltitudeColumnName();
         String headingColumnName = parametricOptions.getHeadingColumnName();
         String scaleColumnName = parametricOptions.getScaleColumnName();
         String densityColumnName = parametricOptions.getDensityColumnName();
 
-        List<TileTransformInfo> result = new ArrayList<>();
-        ShpFiles shpFiles;
-        ShapefileReader reader;
+        ShpFiles shpFiles = null;
+        ShapefileReader reader = null;
+        ShapefileDataStore dataStore = null;
         try {
             shpFiles = new ShpFiles(file);
             reader = new ShapefileReader(shpFiles, true, true, new GeometryFactory());
-            ShapefileDataStore dataStore = new ShapefileDataStore(file.toURI().toURL());
+            dataStore = new ShapefileDataStore(file.toURI().toURL());
 
             ShapeEncodingFix shapeEncodingFix = new ShapeEncodingFix();
             dataStore.setCharset(shapeEncodingFix.detectCharset(file));
@@ -76,8 +80,6 @@ public class ShapeInstanceConverter implements AttributeReader {
             query.getHints().add(new Hints(Hints.FEATURE_2D, true));
 
             SimpleFeatureCollection features = source.getFeatures(query);
-            FeatureIterator<SimpleFeature> iterator = features.features();
-
             var coordinateReferenceSystem = features.getSchema().getCoordinateReferenceSystem();
             if (isDefaultCrs && coordinateReferenceSystem != null) {
                 CoordinateReferenceSystem crs = GlobeUtils.convertProj4jCrsFromGeotoolsCrs(coordinateReferenceSystem);
@@ -85,128 +87,67 @@ public class ShapeInstanceConverter implements AttributeReader {
                 parametricOptions.setSourceCrs(crs);
             }
 
-            int count = 1;
+            int featureIndex = 0;
             int featuresCount = source.getCount(query);
-            while (iterator.hasNext()) {
-                SimpleFeature feature = iterator.next();
-                Geometry geom = (Geometry) feature.getDefaultGeometry();
+            try (FeatureIterator<SimpleFeature> iterator = features.features()) {
+                while (iterator.hasNext()) {
+                    featureIndex++;
+                    log.info(" - Processing feature {}/{}", featureIndex, featuresCount);
 
-                double heading = getNumberAttribute(feature, headingColumnName, parametricOptions.getDefaultHeading());
-                double altitude = getNumberAttribute(feature, altitudeColumnName, parametricOptions.getAbsoluteAltitudeValue());
-                double scale = getNumberAttribute(feature, scaleColumnName, parametricOptions.getDefaultScale());
-                double density = getNumberAttribute(feature, densityColumnName, parametricOptions.getDefaultDensity());
+                    SimpleFeature feature = iterator.next();
+                    Geometry geom = (Geometry) feature.getDefaultGeometry();
 
-                if (!attributeFilters.isEmpty()) {
-                    boolean filterFlag = false;
-                    for (AttributeFilter attributeFilter : attributeFilters) {
-                        String columnName = attributeFilter.getAttributeName();
-                        String filterValue = attributeFilter.getAttributeValue();
-                        String attributeValue = castStringFromObject(feature.getAttribute(columnName), "null");
-                        if (filterValue.equals(attributeValue)) {
-                            filterFlag = true;
-                            break;
+                    double defaultHeading = parametricOptions.getDefaultHeading();
+                    if (parametricOptions.isRandomHeading()) {
+                        defaultHeading = Math.random() * 360.0;
+                    }
+                    double heading = getNumberAttribute(feature, headingColumnName, defaultHeading);
+                    double altitude = getNumberAttribute(feature, altitudeColumnName, parametricOptions.getAbsoluteAltitudeValue());
+                    double scale = getNumberAttribute(feature, scaleColumnName, parametricOptions.getDefaultScale());
+                    double density = getNumberAttribute(feature, densityColumnName, parametricOptions.getDefaultDensity());
+
+                    if (!attributeFilters.isEmpty()) {
+                        boolean filterFlag = false;
+                        for (AttributeFilter attributeFilter : attributeFilters) {
+                            String columnName = attributeFilter.getAttributeName();
+                            String filterValue = attributeFilter.getAttributeValue();
+                            String attributeValue = castStringFromObject(feature.getAttribute(columnName), "null");
+                            if (filterValue.equals(attributeValue)) {
+                                filterFlag = true;
+                                break;
+                            }
+                        }
+                        if (!filterFlag) {
+                            continue;
                         }
                     }
-                    if (!filterFlag) {
+
+                    if (geom == null) {
                         continue;
                     }
-                }
 
-                log.info("[pre][{}/{}] Loading file : {}", count++, featuresCount, file.getName());
-                List<Point> points = new ArrayList<>();
-                if (geom instanceof MultiPolygon multiPolygon) {
-                    int numGeometries = multiPolygon.getNumGeometries();
-                    for (int i = 0; i < numGeometries; i++) {
-                        Polygon polygon = (Polygon) multiPolygon.getGeometryN(i);
-                        try {
-                            int calculatePointCount = calculatePointCount(polygon, coordinateReferenceSystem, density, scale);
-                            points.addAll(getRandomPointsWithDensity(polygon, calculatePointCount));
-                        } catch (FactoryException | TransformException e) {
-                            log.error("Error transforming geometry:", e);
-                            throw new RuntimeException(e);
-                        }
-                    }
-                } else if (geom instanceof Polygon polygon) {
-                    try {
-                        int calculatePointCount = calculatePointCount(polygon, coordinateReferenceSystem, density, scale);
-                        points.addAll(getRandomPointsWithDensity(polygon, calculatePointCount));
-                    } catch (FactoryException | TransformException e) {
-                        log.error("Error transforming geometry: ", e);
-                        throw new RuntimeException(e);
-                    }
-                } else if (geom instanceof MultiPoint) {
-                    GeometryFactory factory = geom.getFactory();
-                    Coordinate[] coordinates = geom.getCoordinates();
-                    for (Coordinate coordinate : coordinates) {
-                        Point point = factory.createPoint(coordinate);
-                        points.add(point);
-                    }
-                } else if (geom instanceof Point point) {
-                    points.add(point);
-                } else {
-                    log.error("[ERROR] Geometry type is not supported.");
-                    continue;
-                }
-
-                for (Point point : points) {
-                    Map<String, String> attributes = new HashMap<>();
-                    FeatureType featureType = feature.getFeatureType();
-                    Collection<PropertyDescriptor> featureDescriptors = featureType.getDescriptors();
-                    AtomicInteger index = new AtomicInteger(0);
-                    featureDescriptors.forEach(attributeDescriptor -> {
-                        Object attribute = feature.getAttribute(index.getAndIncrement());
-                        if (attribute instanceof Geometry) {
-                            return;
-                        }
-                        String attributeString = castStringFromObject(attribute, "null");
-
-                        // check attribute name start with digit
-                        String attributeName = attributeDescriptor.getName().getLocalPart();
-                        if (Character.isDigit(attributeName.charAt(0))) {
-                            attributeName = "_" + attributeName;
-                        }
-                        attributes.put(attributeName, attributeString);
-                    });
-
-                    double x = point.getX();
-                    double y = point.getY();
-
-                    Vector3d position;
-                    CoordinateReferenceSystem crs = parametricOptions.getSourceCrs();
-                    if (crs != null) {
-                        ProjCoordinate projCoordinate = new ProjCoordinate(x, y, 0.0d);
-                        ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
-                        position = new Vector3d(centerWgs84.x, centerWgs84.y, altitude);
-                    } else {
-                        position = new Vector3d(x, y, altitude);
-                    }
-
-                    TileTransformInfo tileTransformInfo = TileTransformInfo.builder()
-                            .name("I3dmFromShape")
-                            .position(position)
-                            .heading(heading)
-                            .tilt(0.0d)
-                            .roll(0.0d)
-                            .scaleX(scale)
-                            .scaleY(scale)
-                            .scaleZ(scale)
-                            .properties(attributes)
-                            .build();
-                    result.add(tileTransformInfo);
+                    Map<String, String> attributes = extractAttributes(feature);
+                    emitTileTransformInfos("I3dmFromShape", geom, coordinateReferenceSystem, density, scale, altitude, heading, attributes, parametricOptions.getSourceCrs(), consumer);
                 }
             }
-
-            iterator.close();
-            reader.close();
-            shpFiles.dispose();
-            dataStore.dispose();
-            reader.close();
         } catch (IOException e) {
             log.error("[ERROR] :", e);
             throw new RuntimeException(e);
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    log.debug("Failed to close shapefile reader.", e);
+                }
+            }
+            if (shpFiles != null) {
+                shpFiles.dispose();
+            }
+            if (dataStore != null) {
+                dataStore.dispose();
+            }
         }
-        shpFiles.dispose();
-        return result;
     }
 
     private double getNumberAttribute(SimpleFeature feature, String column, double defaultValue) {
@@ -234,23 +175,4 @@ public class ShapeInstanceConverter implements AttributeReader {
         return result;
     }
 
-    private String castStringFromObject(Object object, String defaultValue) {
-        String result;
-        if (object == null) {
-            result = defaultValue;
-        } else if (object instanceof String) {
-            result = (String) object;
-        } else if (object instanceof Integer) {
-            result = String.valueOf((int) object);
-        } else if (object instanceof Long) {
-            result = String.valueOf(object);
-        } else if (object instanceof Double) {
-            result = String.valueOf((double) object);
-        } else if (object instanceof Short) {
-            result = String.valueOf((short) object);
-        } else {
-            result = object.toString();
-        }
-        return result;
-    }
 }

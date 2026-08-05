@@ -67,7 +67,7 @@ public class PointCloudProcessFlow implements ProcessFlow {
         /* Post-process */
         List<PostProcess> postProcessors = new ArrayList<>();
 
-        if (globalOptions.getTilesVersion().equals("1.0")) {
+        if ("1.0".equals(globalOptions.getTilesVersion())) {
             postProcessors.add(new PointCloudModel());
         } else {
             postProcessors.add(new PointCloudModelV2());

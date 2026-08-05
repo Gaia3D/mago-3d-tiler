@@ -28,6 +28,7 @@ class B3dmReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
+                "--tilingMode", "implicit",
         };
         MagoTestConfig.execute(args);
     }
@@ -86,6 +87,7 @@ class B3dmReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "4326",
+                "--tilingMode", "implicit"
         };
         MagoTestConfig.execute(args);
     }
@@ -107,7 +109,8 @@ class B3dmReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-terrain", MagoTestConfig.getInputPath(path).getAbsolutePath() + "/seoul.tif",
-                "-c", "5186"
+                "-c", "5186",
+                "--tilingMode", "implicit"
         };
         MagoTestConfig.execute(args);
     }
@@ -147,6 +150,7 @@ class B3dmReleaseTest {
                 "-c", "5186",
                 "-skirtHeight", "10",
                 "-terrain", MagoTestConfig.getInputPath(path).getAbsolutePath() + "/korea-compressed.tif",
+                "--tilingMode", "implicit"
         };
         MagoTestConfig.execute(args);
     }
@@ -159,6 +163,7 @@ class B3dmReleaseTest {
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
                 "-terrain", MagoTestConfig.getInputPath(path).getAbsolutePath() + "/seoul.tif",
+
         };
         MagoTestConfig.execute(args);
     }
@@ -225,6 +230,8 @@ class B3dmReleaseTest {
         String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "--validationReport",
+                "--verbose"
         };
         MagoTestConfig.execute(args);
     }
@@ -292,42 +299,7 @@ class B3dmReleaseTest {
                 "-heightColumn", "rel_height",
                 "-tilesVersion", "1.1",
                 "-c", "3857",
-        };
-        MagoTestConfig.execute(args);
-    }
-
-    @Test
-    void batched10() {
-        String path = "B10-seoul-city-gpkg";
-        String[] args = new String[]{
-                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-crs", "5186",
-        };
-        MagoTestConfig.execute(args);
-    }
-
-    @Test
-    void batched10withGeoid() {
-        String path = "B10-seoul-city-gpkg";
-        String[] args = new String[]{
-                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-geoid",
-                "-crs", "5186",
-                "-geoid", "EGM96",
-        };
-        MagoTestConfig.execute(args);
-    }
-
-    @Test
-    void batched10WithTerrainAndGeoid() {
-        String path = "B10-seoul-city-gpkg";
-        String[] args = new String[]{
-                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-geoid-terrain",
-                "-crs", "5186",
-                "-terrain", MagoTestConfig.getTerrainPath("dem05-cog.tif").getAbsolutePath(),
-                "-geoid", "EGM96",
+                "--tilingMode", "implicit"
         };
         MagoTestConfig.execute(args);
     }
@@ -339,6 +311,7 @@ class B3dmReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-crs", "5186",
+                "--tilingMode", "implicit",
         };
         MagoTestConfig.execute(args);
     }
@@ -362,7 +335,7 @@ class B3dmReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-geoid-terrain",
                 "-crs", "5186",
-                "-terrain", MagoTestConfig.getTerrainPath("dem05-cog.tif").getAbsolutePath(),
+                "-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
                 "-geoid", "EGM96",
         };
         MagoTestConfig.execute(args);

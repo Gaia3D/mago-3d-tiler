@@ -1,6 +1,6 @@
 subprojects {
     group "com.gaia3d"
-    version "1.15.6"
+    version "1.16.0"
     apply plugin: 'java'
     project.ext.lwjglVersion = "3.3.6"
 
@@ -69,6 +69,13 @@ subprojects {
         toolchain {
             languageVersion = JavaLanguageVersion.of(21)
         }
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        options.release = 21
+        options.encoding = "UTF-8"
     }
 }
 
@@ -86,21 +93,6 @@ project(':mago-tiler') {
     dependencies {
         implementation project(':mago-common')
         implementation project(':mago-io')
-        implementation project(':mago-tiler-extension')
-    }
-}
-
-// Extension module build configuration
-project(':mago-tiler-extension') {
-    dependencies {
-        implementation project(':mago-common')
-    }
-}
-
-// Extension module build configuration
-project(':mago-tiler-non-extension') {
-    dependencies {
-        implementation project(':mago-common')
     }
 }
 
@@ -118,11 +110,10 @@ tasks.register('all-javadoc', Javadoc) {
             project(':mago-tiler'),
             project(':mago-common'),
             project(':mago-io'),
-            project(':mago-tiler-extension')
     ]
     source = files(includedProjects.collect { it.sourceSets.main.allJava })
     classpath = files(includedProjects.collect { it.sourceSets.main.compileClasspath })
-    destinationDir = file("/docs/")
+    destinationDir = file("${rootDir}/docs")
     options.encoding = 'UTF-8'
     options.memberLevel = JavadocMemberLevel.PUBLIC
     options.addStringOption('Xdoclint:none', '-quiet')

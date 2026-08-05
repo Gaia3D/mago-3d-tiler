@@ -2,11 +2,8 @@ package com.gaia3d.local.release;
 
 import com.gaia3d.local.MagoTestConfig;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-
-import java.nio.file.Path;
 
 @Tag("release")
 @Slf4j
@@ -19,7 +16,7 @@ class PntsReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "32652",
-                "--geoid", "EGM96",
+                //"--geoid", "EGM96",
         };
         MagoTestConfig.execute(args);
     }

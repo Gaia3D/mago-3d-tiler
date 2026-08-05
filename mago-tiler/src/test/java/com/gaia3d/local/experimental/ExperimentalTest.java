@@ -1,5 +1,6 @@
 package com.gaia3d.local.experimental;
 
+import com.gaia3d.command.LoggingConfiguration;
 import com.gaia3d.local.MagoTestConfig;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
@@ -9,6 +10,47 @@ import java.io.File;
 
 @Tag("experimental")
 public class ExperimentalTest {
+
+    static {
+        LoggingConfiguration.initConsoleLogger();
+    }
+
+    @Test
+    void transform() {
+        double[] rootTransform = new double[]{
+                1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 200, 1
+        };
+
+        String transformString = String.join(",",
+                String.valueOf(rootTransform[0]), String.valueOf(rootTransform[1]), String.valueOf(rootTransform[2]), String.valueOf(rootTransform[3]),
+                String.valueOf(rootTransform[4]), String.valueOf(rootTransform[5]), String.valueOf(rootTransform[6]), String.valueOf(rootTransform[7]),
+                String.valueOf(rootTransform[8]), String.valueOf(rootTransform[9]), String.valueOf(rootTransform[10]), String.valueOf(rootTransform[11]),
+                String.valueOf(rootTransform[12]), String.valueOf(rootTransform[13]), String.valueOf(rootTransform[14]), String.valueOf(rootTransform[15])
+        );
+
+
+        String path = "B01-wangsuk2-3ds";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getOutputPath(path).getAbsolutePath() + File.separator + "tileset.json",
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + File.separator + "tileset.json",
+                "--updateRootTransform", transformString,
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void problemseoul() {
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getTempPath("problemseoul.geojson").getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath("problemseoul").getAbsolutePath(),
+                "-c", "4326",
+                "-heightColumn", "A16"
+        };
+        MagoTestConfig.execute(args);
+    }
 
     @Test
     void validateShape() {
@@ -491,7 +533,7 @@ public class ExperimentalTest {
                 "-ot", "i3dm",
                 "-refineAdd",
                 "-instance", MagoTestConfig.getInputPath(path).getAbsolutePath() + "/lite.glb",
-                "-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                "-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
         };
         MagoTestConfig.execute(args);
     }
@@ -504,7 +546,7 @@ public class ExperimentalTest {
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5179",
                 "-it", "geojson",
-                "-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                "-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
         };
         MagoTestConfig.execute(args);
     }

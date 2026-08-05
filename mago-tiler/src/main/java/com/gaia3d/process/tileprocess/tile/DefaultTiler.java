@@ -19,6 +19,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.List;
 public abstract class DefaultTiler {
 
     protected double calcGeometricError(List<TileInfo> tileInfos) {
+        validateTileInfos(tileInfos, "calcGeometricError");
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         double minimumGeometricError = globalOptions.getMinGeometricError();
         double maximumGeometricError = globalOptions.getMaxGeometricError();
@@ -38,6 +40,7 @@ public abstract class DefaultTiler {
     }
 
     protected GaiaBoundingBox calcCartographicBoundingBox(List<TileInfo> tileInfos) {
+        validateTileInfos(tileInfos, "calcCartographicBoundingBox");
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
         tileInfos.forEach(tileInfo -> {
             TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
@@ -51,6 +54,7 @@ public abstract class DefaultTiler {
     }
 
     protected GaiaBoundingBox calcCartesianBoundingBox(List<TileInfo> tileInfos) {
+        validateTileInfos(tileInfos, "calcCartesianBoundingBox");
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
         tileInfos.forEach(tileInfo -> {
             TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
@@ -123,6 +127,12 @@ public abstract class DefaultTiler {
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
+        try {
+            Files.createDirectories(outputPath);
+        } catch (IOException e) {
+            log.error("[ERROR] Failed to create output directory: {}", outputPath, e);
+            throw new TileProcessingException("Failed to create output directory: " + outputPath, e);
+        }
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(tilesetFile))) {
             String result = objectMapper.writeValueAsString(tileset);
             log.info("[Tile][Tileset] write 'tileset.json' file.");
@@ -134,5 +144,44 @@ public abstract class DefaultTiler {
         }
 
         return tilesetFile;
+    }
+
+    protected void validateTileInfos(List<TileInfo> tileInfos, String context) {
+        if (tileInfos == null) {
+            throw new TileProcessingException(context + " requires at least one tile info.");
+        }
+        for (int i = 0; i < tileInfos.size(); i++) {
+            TileInfo tileInfo = tileInfos.get(i);
+            if (tileInfo == null) {
+                throw new TileProcessingException(context + " has null tile info at index " + i + ".");
+            }
+            if (tileInfo.getTileTransformInfo() == null) {
+                throw new TileProcessingException(context + " missing tile transform info at index " + i + " (" + tileInfo.getName() + ").");
+            }
+            if (tileInfo.getTileTransformInfo().getPosition() == null) {
+                throw new TileProcessingException(context + " missing tile transform position at index " + i + " (" + tileInfo.getName() + ").");
+            }
+            if (tileInfo.getBoundingBox() == null) {
+                throw new TileProcessingException(context + " missing bounding box at index " + i + " (" + tileInfo.getName() + ").");
+            }
+        }
+    }
+
+    protected void validatePointCloudTileInfos(List<TileInfo> tileInfos, String context) {
+        if (tileInfos == null || tileInfos.isEmpty()) {
+            throw new TileProcessingException(context + " requires at least one tile info.");
+        }
+        for (int i = 0; i < tileInfos.size(); i++) {
+            TileInfo tileInfo = tileInfos.get(i);
+            if (tileInfo == null) {
+                throw new TileProcessingException(context + " has null tile info at index " + i + ".");
+            }
+            if (tileInfo.getPointCloud() == null) {
+                throw new TileProcessingException(context + " missing point cloud at index " + i + " (" + tileInfo.getName() + ").");
+            }
+            if (tileInfo.getPointCloud().getGaiaBoundingBox() == null) {
+                throw new TileProcessingException(context + " missing point cloud bounding box at index " + i + " (" + tileInfo.getName() + ").");
+            }
+        }
     }
 }

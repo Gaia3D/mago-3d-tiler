@@ -5,12 +5,17 @@ public class MapVertexAllFacesIndices {
     // Note: this function supplies Map<HalfEdgeVertex, List<HalfEdgeFace>> vertexFacesMap in a compact form.
     // vertexOffsets is the array of offsets for each vertex, and vertexFaces is the array of face indices for all vertices.
     //******************************************************************************************************************
-    private final int[] vertexOffsets;
-    private final int[] vertexFaces;
+    private int[] vertexOffsets;
+    private int[] vertexFaces;
 
     public MapVertexAllFacesIndices(int[] vertexOffsets, int[] vertexFaces) {
         this.vertexOffsets = vertexOffsets;
         this.vertexFaces = vertexFaces;
+    }
+
+    public void deleteObjects() {
+        vertexOffsets = null;
+        vertexFaces = null;
     }
 
     public int getVertexCount() {
@@ -45,7 +50,7 @@ public class MapVertexAllFacesIndices {
 
     public int[] getFaceIndices(int vertexIdx) {
         int start = getStart(vertexIdx);
-        int end   = getEnd(vertexIdx);
+        int end = getEnd(vertexIdx);
 
         int faceCount = end - start;
         int[] faceIndices = new int[faceCount];
@@ -58,7 +63,7 @@ public class MapVertexAllFacesIndices {
 
     public void forEachFace(int vertexIdx, java.util.function.IntConsumer consumer) {
         int start = vertexOffsets[vertexIdx];
-        int end   = vertexOffsets[vertexIdx + 1];
+        int end = vertexOffsets[vertexIdx + 1];
 
         for (int i = start; i < end; i++) {
             consumer.accept(vertexFaces[i]);

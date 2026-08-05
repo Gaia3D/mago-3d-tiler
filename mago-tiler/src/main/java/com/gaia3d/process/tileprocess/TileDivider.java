@@ -21,7 +21,7 @@ import java.util.List;
 @Slf4j
 public class TileDivider {
 
-    private static final GlobalOptions globalOptions = GlobalOptions.getInstance();
+    private final GlobalOptions globalOptions = GlobalOptions.getInstance();
     private final ObjectMapper mapper = new ObjectMapper();
     private long subtreeIdCounter = 0;
 
@@ -83,8 +83,7 @@ public class TileDivider {
 
     private void splitChildren(Node node, int baseDepth, int chunkDepth, File outputDir) throws Exception {
 
-        if (node.getChildren() == null || node.getChildren().isEmpty())
-            return;
+        if (node.getChildren() == null || node.getChildren().isEmpty()) {return;}
 
         List<Node> children = new ArrayList<>(node.getChildren());
 

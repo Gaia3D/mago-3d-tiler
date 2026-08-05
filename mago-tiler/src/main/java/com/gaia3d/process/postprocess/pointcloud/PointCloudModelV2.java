@@ -1,7 +1,6 @@
 package com.gaia3d.process.postprocess.pointcloud;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.model.GaiaVertex;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.gltf.tiles.PointCloudGltfWriter;
 import com.gaia3d.converter.pointcloud.GaiaLasPoint;
@@ -17,10 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix3d;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
-import org.locationtech.proj4j.BasicCoordinateTransform;
-import org.locationtech.proj4j.CoordinateReferenceSystem;
-import org.locationtech.proj4j.InvalidValueException;
-import org.locationtech.proj4j.ProjCoordinate;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -144,8 +139,7 @@ public class PointCloudModelV2 implements ContentModel {
 
         GaiaBatchTable batchTable = new GaiaBatchTable();
         String nodeCode = contentInfo.getNodeCode();
-        String glbFileName = nodeCode + "." + MAGIC;
-        File glbOutputFile = outputRoot.resolve(glbFileName).toFile();
+        File glbOutputFile = contentInfo.resolveContentFile(outputRoot, MAGIC);
 
         if (pointCloudBuffer.getPositions().length == 0) {
             log.warn("[WARN] Point cloud has no position data. Skip writing glb file for node : {}", nodeCode);

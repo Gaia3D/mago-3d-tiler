@@ -5,6 +5,7 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.util.List;
 
+@Deprecated
 public class FileFilter {
 
     public List<File> getFiles(File file, boolean isRecursive) {

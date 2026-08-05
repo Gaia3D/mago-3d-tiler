@@ -9,8 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.api.data.*;
 import org.geotools.api.feature.simple.SimpleFeature;
-import org.geotools.api.feature.type.FeatureType;
-import org.geotools.api.feature.type.PropertyDescriptor;
 import org.geotools.api.filter.Filter;
 import org.geotools.api.filter.FilterFactory;
 import org.geotools.api.referencing.FactoryException;
@@ -20,21 +18,14 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.geopkg.FeatureEntry;
 import org.geotools.geopkg.GeoPackage;
 import org.geotools.referencing.CRS;
-import org.joml.Vector3d;
-import org.locationtech.jts.geom.*;
+import org.locationtech.jts.geom.Geometry;
 import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
-import org.locationtech.proj4j.ProjCoordinate;
 
-import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 /**
  * KmlReader is a class that reads kml files.
@@ -54,23 +45,27 @@ public class GeoPackageInstanceConverter implements AttributeReader {
 
     @Override
     public List<TileTransformInfo> readAll(File file) {
-
-        List<AttributeFilter> attributeFilters = parametricOptions.getAttributeFilters();
         List<TileTransformInfo> result = new ArrayList<>();
-        boolean isDefaultCrs = parametricOptions.getSourceCrs().equals(new CRSFactory().createFromName("EPSG:3857"));
+        readEach(file, result::add);
+        return result;
+    }
+
+    @Override
+    public void readEach(File file, Consumer<TileTransformInfo> consumer) {
+        List<AttributeFilter> attributeFilters = parametricOptions.getAttributeFilters();
+        boolean isDefaultCrs = Objects.equals(parametricOptions.getSourceCrs(), new CRSFactory().createFromName("EPSG:3857"));
         String altitudeColumnName = parametricOptions.getAltitudeColumnName();
         String headingColumnName = parametricOptions.getHeadingColumnName();
         String heightColumnName = parametricOptions.getHeightColumnName();
         String scaleColumnName = parametricOptions.getScaleColumnName();
         String densityColumnName = parametricOptions.getDensityColumnName();
 
-        GeoPackage geoPackage = null;
-        try {
-            geoPackage = new GeoPackage(file);
+        try (GeoPackage geoPackage = new GeoPackage(file)) {
             List<FeatureEntry> features = geoPackage.features();
             for (FeatureEntry featureEntry : features) {
-
-                var coordinateReferenceSystem = featureEntry.getBounds().getCoordinateReferenceSystem();
+                org.geotools.api.referencing.crs.CoordinateReferenceSystem coordinateReferenceSystem = featureEntry.getBounds() != null
+                        ? featureEntry.getBounds().getCoordinateReferenceSystem()
+                        : null;
                 if (isDefaultCrs && coordinateReferenceSystem != null) {
                     CoordinateReferenceSystem crs = GlobeUtils.convertProj4jCrsFromGeotoolsCrs(coordinateReferenceSystem);
                     log.info(" - Coordinate Reference System : {}", crs.getName());
@@ -84,166 +79,98 @@ public class GeoPackageInstanceConverter implements AttributeReader {
                 params.put("dbtype", "geopkg");
                 params.put("database", file.getAbsolutePath());
                 DataStore dataStore = DataStoreFinder.getDataStore(params);
-                SimpleFeatureSource featureSource = dataStore.getFeatureSource(featureEntry.getTableName());
+                try {
+                    SimpleFeatureSource featureSource = dataStore.getFeatureSource(featureEntry.getTableName());
 
-                long totalFeaturesCount;
-                boolean hasEnvelope = false;
-                if (hasEnvelope) {
-                    double minX = 128.4546;
-                    double minY = 37.3259;
-                    double maxX = 128.5076;
-                    double maxY = 37.3792;
-                    org.geotools.api.referencing.crs.CoordinateReferenceSystem queryCrs = null;
-                    org.geotools.api.referencing.crs.CoordinateReferenceSystem dataCrs = featureEntry.getBounds().getCoordinateReferenceSystem();
-                    try {
-                        queryCrs = CRS.decode("EPSG:4326", true);
-                    } catch (FactoryException e) {
-                        throw new RuntimeException(e);
-                    }
-                    ReferencedEnvelope queryEnv = new ReferencedEnvelope(minX, maxX, minY, maxY, queryCrs);
-
-                    ReferencedEnvelope dataEnv;
-                    try {
-                        dataEnv = queryEnv.transform(dataCrs, true);
-                    } catch (TransformException | FactoryException e) {
-                        log.error("Error transforming envelope:", e);
-                        throw new RuntimeException(e);
-                    }
-                    FilterFactory ff = CommonFactoryFinder.getFilterFactory();
-                    String geomField = featureSource.getFeatures().getSchema().getGeometryDescriptor().getLocalName();
-                    filter = ff.bbox(ff.property(geomField), dataEnv);
-                } else {
-                    filter = Filter.INCLUDE;
-                }
-                totalFeaturesCount = featureSource.getCount(new Query(featureEntry.getTableName(), filter));
-                log.info(" - Total Features Count: {}", totalFeaturesCount);
-                boolean showProgress = totalFeaturesCount >= 10000;
-                int progressInterval = (int) (totalFeaturesCount / 100);
-                if (progressInterval == 0) {
-                    progressInterval = 1;
-                }
-
-                long featureIndex = 0;
-                SimpleFeatureReader simpleFeatureReader = geoPackage.reader(featureEntry, filter, transaction);
-                while (simpleFeatureReader.hasNext()) {
-                    featureIndex++;
-                    if (showProgress && featureIndex % progressInterval == 0) {
-                        log.info(" - Processing feature {}/{} ({}%)", featureIndex, totalFeaturesCount, (double) featureIndex / (double) totalFeaturesCount * 100.0d);
-                    }
-
-                    SimpleFeature feature = simpleFeatureReader.next();
-                    Geometry geom = (Geometry) feature.getDefaultGeometry();
-
-                    double heading = getNumberAttribute(feature, headingColumnName, parametricOptions.getDefaultHeading());
-                    double altitude = getNumberAttribute(feature, altitudeColumnName, parametricOptions.getAbsoluteAltitudeValue());
-                    double scale = getNumberAttribute(feature, scaleColumnName, parametricOptions.getDefaultScale());
-                    double density = getNumberAttribute(feature, densityColumnName, parametricOptions.getDefaultDensity());
-                    //double height = getNumberAttribute(feature, heightColumnName, parametricOptions.getMinimumHeightValue());
-
-                    if (!attributeFilters.isEmpty()) {
-                        boolean filterFlag = false;
-                        for (AttributeFilter attributeFilter : attributeFilters) {
-                            String columnName = attributeFilter.getAttributeName();
-                            String filterValue = attributeFilter.getAttributeValue();
-                            String attributeValue = castStringFromObject(feature.getAttribute(columnName), "null");
-                            if (filterValue.equals(attributeValue)) {
-                                filterFlag = true;
-                                break;
-                            }
-                        }
-                        if (!filterFlag) {
-                            continue;
-                        }
-                    }
-                    List<Point> points = new ArrayList<>();
-                    if (geom instanceof MultiPolygon multiPolygon) {
-                        for (int i = 0; i < multiPolygon.getNumGeometries(); i++) {
-                            Polygon polygon = (Polygon) multiPolygon.getGeometryN(i);
-                            try {
-                                int calculatePointCount = calculatePointCount(polygon, coordinateReferenceSystem, density, scale);
-                                points.addAll(getRandomPointsWithDensity(polygon, calculatePointCount));
-                            } catch (FactoryException | TransformException e) {
-                                log.error("Error transforming geometry:", e);
-                                throw new RuntimeException(e);
-                            }
-                        }
-                    } else if (geom instanceof Polygon polygon) {
+                    long totalFeaturesCount;
+                    boolean hasEnvelope = false;
+                    if (hasEnvelope) {
+                        double minX = 128.4546;
+                        double minY = 37.3259;
+                        double maxX = 128.5076;
+                        double maxY = 37.3792;
+                        org.geotools.api.referencing.crs.CoordinateReferenceSystem queryCrs = null;
+                        org.geotools.api.referencing.crs.CoordinateReferenceSystem dataCrs = featureEntry.getBounds().getCoordinateReferenceSystem();
                         try {
-                            int calculatePointCount = calculatePointCount(polygon, coordinateReferenceSystem, density, scale);
-                            points.addAll(getRandomPointsWithDensity(polygon, calculatePointCount));
-                        } catch (FactoryException | TransformException e) {
-                            log.error("Error transforming geometry:", e);
+                            queryCrs = CRS.decode("EPSG:4326", true);
+                        } catch (FactoryException e) {
                             throw new RuntimeException(e);
                         }
-                    } else if (geom instanceof MultiPoint) {
-                        GeometryFactory factory = geom.getFactory();
-                        Coordinate[] coordinates = geom.getCoordinates();
-                        for (Coordinate coordinate : coordinates) {
-                            Point point = factory.createPoint(coordinate);
-                            points.add(point);
+                        ReferencedEnvelope queryEnv = new ReferencedEnvelope(minX, maxX, minY, maxY, queryCrs);
+
+                        ReferencedEnvelope dataEnv;
+                        try {
+                            dataEnv = queryEnv.transform(dataCrs, true);
+                        } catch (TransformException | FactoryException e) {
+                            log.error("Error transforming envelope:", e);
+                            throw new RuntimeException(e);
                         }
-                    } else if (geom instanceof Point point) {
-                        points.add(point);
+                        FilterFactory ff = CommonFactoryFinder.getFilterFactory();
+                        String geomField = featureSource.getFeatures().getSchema().getGeometryDescriptor().getLocalName();
+                        filter = ff.bbox(ff.property(geomField), dataEnv);
                     } else {
-                        log.error("Geometry type is not supported.");
-                        continue;
+                        filter = Filter.INCLUDE;
                     }
+                    totalFeaturesCount = featureSource.getCount(new Query(featureEntry.getTableName(), filter));
+                    log.info(" - Total Features Count: {}", totalFeaturesCount);
 
-                    Map<String, String> attributes = new HashMap<>();
-                    FeatureType featureType = feature.getFeatureType();
-                    Collection<PropertyDescriptor> featureDescriptors = featureType.getDescriptors();
-                    AtomicInteger index = new AtomicInteger(0);
-                    featureDescriptors.forEach(attributeDescriptor -> {
-                        Object attribute = feature.getAttribute(index.getAndIncrement());
-                        if (attribute instanceof Geometry) {
-                            return;
+                    long featureIndex = 0;
+                    try (SimpleFeatureReader simpleFeatureReader = geoPackage.reader(featureEntry, filter, transaction)) {
+                        while (simpleFeatureReader.hasNext()) {
+                            featureIndex++;
+                            log.info(" - Processing feature {}/{}", featureIndex, totalFeaturesCount);
+
+                            SimpleFeature feature = simpleFeatureReader.next();
+                            Geometry geom = (Geometry) feature.getDefaultGeometry();
+
+                            double defaultHeading = parametricOptions.getDefaultHeading();
+                            if (parametricOptions.isRandomHeading()) {
+                                defaultHeading = Math.random() * 360.0;
+                            }
+                            double heading = getNumberAttribute(feature, headingColumnName, defaultHeading);
+                            double altitude = getNumberAttribute(feature, altitudeColumnName, parametricOptions.getAbsoluteAltitudeValue());
+                            double scale = getNumberAttribute(feature, scaleColumnName, parametricOptions.getDefaultScale());
+                            double density = getNumberAttribute(feature, densityColumnName, parametricOptions.getDefaultDensity());
+
+                            if (!attributeFilters.isEmpty()) {
+                                boolean filterFlag = false;
+                                for (AttributeFilter attributeFilter : attributeFilters) {
+                                    String columnName = attributeFilter.getAttributeName();
+                                    String filterValue = attributeFilter.getAttributeValue();
+                                    String attributeValue = castStringFromObject(feature.getAttribute(columnName), "null");
+                                    if (filterValue.equals(attributeValue)) {
+                                        filterFlag = true;
+                                        break;
+                                    }
+                                }
+                                if (!filterFlag) {
+                                    continue;
+                                }
+                            }
+
+                            if (geom == null) {
+                                continue;
+                            }
+
+                            Map<String, String> attributes = extractAttributes(feature);
+                            try {
+                                emitTileTransformInfos("i3dm", geom, coordinateReferenceSystem, density, scale, altitude, heading, attributes, parametricOptions.getSourceCrs(), consumer);
+                            } catch (RuntimeException e) {
+                                log.error("Error processing geometry:", e);
+                                throw e;
+                            }
                         }
-                        String attributeString = castStringFromObject(attribute, "null");
-                        // check attribute name start with digit
-                        String attributeName = attributeDescriptor.getName().getLocalPart();
-                        if (Character.isDigit(attributeName.charAt(0))) {
-                            attributeName = "_" + attributeName;
-                        }
-                        attributes.put(attributeName, attributeString);
-                    });
-
-                    for (Point point : points) {
-                        double x = point.getX();
-                        double y = point.getY();
-
-                        Vector3d position;
-                        CoordinateReferenceSystem crs = parametricOptions.getSourceCrs();
-                        if (crs != null) {
-                            ProjCoordinate projCoordinate = new ProjCoordinate(x, y, 0.0d);
-                            ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
-                            position = new Vector3d(centerWgs84.x, centerWgs84.y, altitude);
-                        } else {
-                            position = new Vector3d(x, y, altitude);
-                        }
-
-                        TileTransformInfo tileTransformInfo = TileTransformInfo.builder().name("i3dm")
-                                .position(position)
-                                .heading(heading)
-                                .tilt(0.0d)
-                                .roll(0.0d)
-                                .scaleX(scale)
-                                .scaleY(scale)
-                                .scaleZ(scale)
-                                .properties(attributes)
-                                .build();
-                        result.add(tileTransformInfo);
+                    }
+                } finally {
+                    if (dataStore != null) {
+                        dataStore.dispose();
                     }
                 }
             }
-            geoPackage.close();
         } catch (IOException e) {
-            if (geoPackage != null) {
-                geoPackage.close();
-            }
             log.error("[ERROR] :", e);
             throw new RuntimeException(e);
         }
-        return result;
     }
 
     private double getNumberAttribute(SimpleFeature feature, String column, double defaultValue) {
@@ -271,23 +198,4 @@ public class GeoPackageInstanceConverter implements AttributeReader {
         return result;
     }
 
-    private String castStringFromObject(Object object, String defaultValue) {
-        String result;
-        if (object == null) {
-            result = defaultValue;
-        } else if (object instanceof String) {
-            result = (String) object;
-        } else if (object instanceof Integer) {
-            result = String.valueOf((int) object);
-        } else if (object instanceof Long) {
-            result = String.valueOf(object);
-        } else if (object instanceof Double) {
-            result = String.valueOf((double) object);
-        } else if (object instanceof Short) {
-            result = String.valueOf((short) object);
-        } else {
-            result = object.toString();
-        }
-        return result;
-    }
 }

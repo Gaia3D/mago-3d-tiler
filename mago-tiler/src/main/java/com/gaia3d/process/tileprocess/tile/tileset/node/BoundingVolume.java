@@ -25,16 +25,14 @@ import java.util.List;
 @NoArgsConstructor
 public class BoundingVolume implements Serializable {
     private static final float GOLDEN_RATIO = 1.61803398875f;
-
-    @JsonIgnore
-    private BoundingVolumeType type;
-
     // minx, miny, maxx, maxy, minz, maxz
     double[] region;
     // centerX, centerY, centerZ, halfX1, halfX2, halfX3, halfY1, halfY2, halfY3, halfZ1, halfZ2, halfZ3
     double[] box;
     // centerX, centerY, centerZ, radius
     double[] sphere;
+    @JsonIgnore
+    private BoundingVolumeType type;
 
     public BoundingVolume(BoundingVolumeType type) {
         this.type = type;
@@ -70,9 +68,6 @@ public class BoundingVolume implements Serializable {
             // minZ, maxZ (altitude)
             region[4] = boundingBox.getMinZ();
             region[5] = boundingBox.getMaxZ();
-            for (int i = 0; i < region.length; i++) {
-                region[i] = DecimalUtils.cutFast(region[i]);
-            }
         } else if (BoundingVolumeType.BOX == type) {
             box = new double[12];
             // center
@@ -97,9 +92,6 @@ public class BoundingVolume implements Serializable {
             sphere[1] = center.y;
             sphere[2] = center.z;
             sphere[3] = boundingBox.getLongestDistance();
-            for (int i = 0; i < sphere.length; i++) {
-                sphere[i] = DecimalUtils.cutFast(sphere[i]);
-            }
         } else {
             log.error("Unsupported bounding volume type: {}", type);
         }
@@ -107,6 +99,18 @@ public class BoundingVolume implements Serializable {
 
     public BoundingVolume(BoundingVolume boundingVolume) {
         this.type = boundingVolume.type;
+        if (this.type == null) {
+            if (boundingVolume.region != null) {
+                this.type = BoundingVolumeType.REGION;
+            } else if (boundingVolume.box != null) {
+                this.type = BoundingVolumeType.BOX;
+            } else if (boundingVolume.sphere != null) {
+                this.type = BoundingVolumeType.SPHERE;
+            } else {
+                log.error("Bounding volume type is not specified and cannot be inferred from the bounding volume data.");
+                throw new IllegalArgumentException("Bounding volume type is not specified and cannot be inferred from the bounding volume data.");
+            }
+        }
         if (BoundingVolumeType.REGION == type) {
             region = new double[6];
             System.arraycopy(boundingVolume.region, 0, region, 0, 6);
@@ -119,10 +123,14 @@ public class BoundingVolume implements Serializable {
         }
     }
 
-    public enum BoundingVolumeType {
-        BOX,
-        SPHERE,
-        REGION
+    public void cutFastRegionDecimals() {
+        if (this.region == null) {return;}
+        this.region[0] = DecimalUtils.cutFast(this.region[0]);
+        this.region[1] = DecimalUtils.cutFast(this.region[1]);
+        this.region[2] = DecimalUtils.cutFast(this.region[2]);
+        this.region[3] = DecimalUtils.cutFast(this.region[3]);
+        this.region[4] = DecimalUtils.cutFast(this.region[4]);
+        this.region[5] = DecimalUtils.cutFast(this.region[5]);
     }
 
     public List<List<TileInfo>> distributeScene(List<TileInfo> tileInfos) {
@@ -178,8 +186,7 @@ public class BoundingVolume implements Serializable {
             Vector3d halfVector1 = new Vector3d(halfX1, halfY1, halfZ1);
             Vector3d halfVector2 = new Vector3d(halfX2, halfY2, halfZ2);
             Vector3d halfVector3 = new Vector3d(halfX3, halfY3, halfZ3);
-            Matrix4d transformMatrix = new Matrix4d()
-                    .identity()
+            Matrix4d transformMatrix = new Matrix4d().identity()
                     .translate(centerX, centerY, centerZ)
                     .scale(halfVector1.x(), halfVector1.y(), halfVector1.z())
                     .rotateX(Math.toRadians(-90))
@@ -295,17 +302,16 @@ public class BoundingVolume implements Serializable {
 
             double maxLength = Math.max(Math.max(halfX1, halfY1), halfZ1);
             BoundingVolume boundingVolume = new BoundingVolume(BoundingVolumeType.BOX);
-            boundingVolume.setBox(new double[]{
-                    centerX, centerY, centerZ,
-                    maxLength, 0, 0,
-                    0, maxLength, 0,
-                    0, 0, maxLength
-            });
+            boundingVolume.setBox(new double[]{centerX, centerY, centerZ, maxLength, 0, 0, 0, maxLength, 0, 0, 0, maxLength});
             return boundingVolume;
         } else {
             log.error("Unsupported bounding volume type: {}", type);
             throw new IllegalArgumentException("Unsupported bounding volume type: " + type);
         }
+    }
+
+    public enum BoundingVolumeType {
+        BOX, SPHERE, REGION
     }
 }
 

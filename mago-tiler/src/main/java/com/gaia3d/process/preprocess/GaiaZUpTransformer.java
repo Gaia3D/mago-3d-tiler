@@ -1,11 +1,10 @@
 package com.gaia3d.process.preprocess;
 
+import com.gaia3d.basic.geometry.modifier.transform.UpAxisTransformer;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.basic.geometry.modifier.transform.UpAxisTransformer;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
-import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix3d;
@@ -21,8 +20,6 @@ import java.util.List;
  */
 public class GaiaZUpTransformer implements PreProcess {
 
-    private GaiaScene recentScene = null;
-
     /*
      * Z-Up axis matrix:
      * 1.0, 0.0, 0.0,
@@ -34,7 +31,6 @@ public class GaiaZUpTransformer implements PreProcess {
             0.0, 1.0, 0.0,
             0.0, 0.0, 1.0
     );
-
     /*
      * Y-Up axis matrix:
      * 1.0, 0.0, 0.0,
@@ -46,6 +42,22 @@ public class GaiaZUpTransformer implements PreProcess {
             0.0, 0.0, -1.0,
             0.0, 1.0, 0.0
     );
+    private GaiaScene recentScene = null;
+
+    public static double clampEpsilon(double value, double epsilon) {
+        if (Math.abs(value) < epsilon) {
+            return 0.0f;
+        } else if (Math.abs(value - 1.0f) < epsilon) {
+            return 1.0f;
+        } else if (Math.abs(value + 1.0f) < epsilon) {
+            return -1.0f;
+        } else if (value > 1.0f) {
+            return 1.0f;
+        } else if (value < -1.0f) {
+            return -1.0f;
+        }
+        return value;
+    }
 
     @Override
     public TileInfo run(TileInfo tileInfo) {
@@ -56,7 +68,6 @@ public class GaiaZUpTransformer implements PreProcess {
             return tileInfo;
         }
         recentScene = scene;
-
 
         try {
             if (globalOptions.isParametric()) {
@@ -99,7 +110,6 @@ public class GaiaZUpTransformer implements PreProcess {
         tileInfo.updateSceneInfo();
         return tileInfo;
     }
-
 
     private Matrix3d createNormalMatrix3d(GaiaScene scene) {
         List<GaiaNode> nodes = scene.getNodes();
@@ -146,21 +156,6 @@ public class GaiaZUpTransformer implements PreProcess {
         clampedMatrix.m22(clampEpsilon(matrix.m22(), epsilon));
 
         return clampedMatrix;
-    }
-
-    public static double clampEpsilon(double value, double epsilon) {
-        if (Math.abs(value) < epsilon) {
-            return 0.0f;
-        } else if (Math.abs(value - 1.0f) < epsilon) {
-            return 1.0f;
-        } else if (Math.abs(value + 1.0f) < epsilon) {
-            return -1.0f;
-        } else if (value > 1.0f) {
-            return 1.0f;
-        } else if (value < -1.0f) {
-            return -1.0f;
-        }
-        return value;
     }
 
     public void printMatrix(Matrix3d matrix) {

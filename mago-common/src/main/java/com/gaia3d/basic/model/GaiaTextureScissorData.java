@@ -10,13 +10,13 @@ import java.util.List;
 @Setter
 @Getter
 public class GaiaTextureScissorData {
-    private GaiaRectangle originBoundary;
-    private GaiaRectangle currentBoundary;
-    private GaiaRectangle batchedBoundary;
-    private GaiaRectangle texCoordBoundary;
-    private List<HalfEdgeFace> faces;
-    private int expandedPixel;
-    private GaiaRectangle noExpandedBoundary;
+    protected GaiaRectangle originBoundary;
+    protected GaiaRectangle currentBoundary;
+    protected GaiaRectangle batchedBoundary;
+    protected GaiaRectangle texCoordBoundary;
+    protected List<HalfEdgeFace> faces;
+    protected int expandedPixel = 0;
+    protected GaiaRectangle noExpandedBoundary;
 
     public GaiaRectangle getOriginBoundary() {
         if (originBoundary == null) {
@@ -27,11 +27,32 @@ public class GaiaTextureScissorData {
         return originBoundary;
     }
 
+    public void deleteObjects(){
+        originBoundary = null;
+        currentBoundary = null;
+        batchedBoundary = null;
+        texCoordBoundary = null;
+        if(faces != null){
+            faces.clear();
+        }
+        faces = null;
+        expandedPixel = 0;
+        noExpandedBoundary = null;
+    }
+
     public boolean mergeIfMergeable(GaiaTextureScissorData other) {
         if (!isMergeable(other)) {
             return false;
         }
 
+        texCoordBoundary.addBoundingRectangle(other.texCoordBoundary);
+        faces.addAll(other.faces);
+        other.faces.clear(); // clear the faces of the other.
+
+        return true;
+    }
+
+    public boolean merge(GaiaTextureScissorData other) {
         texCoordBoundary.addBoundingRectangle(other.texCoordBoundary);
         faces.addAll(other.faces);
         other.faces.clear(); // clear the faces of the other.

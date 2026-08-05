@@ -1,7 +1,5 @@
 package com.gaia3d.basic.halfedge;
 
-import com.gaia3d.basic.model.GaiaTextureScissorData;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -50,6 +48,9 @@ public class WeldedFacesFinder {
 
         boolean finished = false;
         int counter = 0;
+        List<HalfEdgeFace> memSaveAdjacentFaces = new ArrayList<>();
+        List<HalfEdgeVertex> memSaveVertices = new ArrayList<>();
+        List<HalfEdge> memSaveHalfEdges = new ArrayList<>();
         while (!finished)// && counter < 10000000)
         {
             List<HalfEdgeFace> newAddedfaces = new ArrayList<>();
@@ -67,8 +68,11 @@ public class WeldedFacesFinder {
                 resultWeldedFaces.add(currFace);
                 mapVisitedFaces.add(currFace);
                 weldedFacesAux.clear();
+                memSaveAdjacentFaces.clear();
+                memSaveVertices.clear();
+                memSaveHalfEdges.clear();
                 currFace.getWeldedFaces(weldedFacesAux, mapVisitedFaces, mapVertexAllFacesIndices,
-                        surface.getFaces());
+                        surface.getFaces(), memSaveAdjacentFaces, memSaveVertices, memSaveHalfEdges);
                 newAddedfaces.addAll(weldedFacesAux);
             }
 

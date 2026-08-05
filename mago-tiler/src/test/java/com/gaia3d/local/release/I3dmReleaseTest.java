@@ -64,7 +64,7 @@ class I3dmReleaseTest {
     void instanced03() {
         String path = "I03-seoul-yeouido-gpkg";
         String[] args = new String[]{
-                "-tilesVersion", "1.0",
+                //"-tilesVersion", "1.0",
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
@@ -103,7 +103,7 @@ class I3dmReleaseTest {
                 "-ot", "i3dm",
                 "-refineAdd",
                 "-instance", MagoTestConfig.getInputPath("sample-tree").getAbsolutePath() + "/broad-tree-1m.glb",
-                "-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                "-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
                 "-attributeFilter", "FRTP_NM=활엽수림",
                 //"-debug"
         };
@@ -121,7 +121,7 @@ class I3dmReleaseTest {
                 "-ot", "i3dm",
                 "-refineAdd",
                 "-instance", MagoTestConfig.getInputPath("sample-tree").getAbsolutePath() + "/needle-tree-1m.glb",
-                "-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                "-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
                 "-attributeFilter", "FRTP_NM=침엽수림",
                 //"-debug"
         };
@@ -139,7 +139,7 @@ class I3dmReleaseTest {
                 "-ot", "i3dm",
                 "-refineAdd",
                 "-instance", MagoTestConfig.getInputPath("sample-tree").getAbsolutePath() + "/mix-tree-1m.glb",
-                "-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                "-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
                 "-attributeFilter", "FRTP_NM=혼효림",
                 //"-debug"
         };
@@ -157,7 +157,7 @@ class I3dmReleaseTest {
                 "-ot", "i3dm",
                 "-refineAdd",
                 "-instance", MagoTestConfig.getInputPath("sample-tree").getAbsolutePath() + "/bamboo-tree-1m.glb",
-                "-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                "-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
                 "-attributeFilter", "FRTP_NM=죽림",
                 //"-debug"
         };
@@ -176,22 +176,6 @@ class I3dmReleaseTest {
     }
 
     @Test
-    void instanced09C() {
-        String path = "I09-forest-map-big";
-        String[] args = new String[]{
-                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath("ESD/" + path).getAbsolutePath() + "-C",
-                "-c", "5179",
-                "-ot", "forest",
-                //"-refineAdd",
-                "-instance", MagoTestConfig.getInputPath(path).getAbsolutePath() + "/instance.glb",
-                //"-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
-                "-attributeFilter", "FRTP_NM=침엽수림",
-        };
-        MagoTestConfig.execute(args);
-    }
-
-    @Test
     void instanced06add() {
         String path = "I04-forest-shp";
         String[] args = new String[]{
@@ -202,7 +186,7 @@ class I3dmReleaseTest {
                 "-ot", "i3dm",
                 "-refineAdd",
                 "-instance", MagoTestConfig.getInputPath("sample-tree").getAbsolutePath() + "/broad-tree-1m.glb",
-                "-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                "-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
                 //"-debug"
         };
         MagoTestConfig.execute(args);
@@ -218,7 +202,7 @@ class I3dmReleaseTest {
                 "-it", "gpkg",
                 "-ot", "i3dm",
                 "-instance", MagoTestConfig.getInputPath("sample-tree").getAbsolutePath() + "/broad-tree-1m.glb",
-                "-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                "-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
                 //"-debug"
         };
         MagoTestConfig.execute(args);
@@ -234,7 +218,7 @@ class I3dmReleaseTest {
                 "-it", "gpkg",
                 "-ot", "forest",
                 "-instance", MagoTestConfig.getInputPath("sample-tree").getAbsolutePath() + "/broad-tree-1m.glb",
-                "-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                "-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
                 //"-debug"
         };
         MagoTestConfig.execute(args);

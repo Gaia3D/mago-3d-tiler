@@ -1,7 +1,9 @@
 package com.gaia3d.basic.geometry.modifier.transform;
 
 import com.gaia3d.basic.geometry.modifier.Modifier;
-import com.gaia3d.basic.model.*;
+import com.gaia3d.basic.model.GaiaNode;
+import com.gaia3d.basic.model.GaiaScene;
+import com.gaia3d.basic.model.GaiaVertex;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix3d;
 import org.joml.Matrix4d;
@@ -20,7 +22,6 @@ public class GaiaBaker extends Modifier {
 
     /**
      * Bakes the transformation of a GaiaScene.
-     *
      * @param scene the GaiaScene to bake
      */
     @Override
@@ -34,7 +35,6 @@ public class GaiaBaker extends Modifier {
 
     /**
      * Bakes the transformation of aGaiaNode.
-     *
      * @param node the GaiaNode to bake
      */
     public void apply(GaiaNode node) {
@@ -52,7 +52,8 @@ public class GaiaBaker extends Modifier {
 
     @Override
     protected void applyVertex(Matrix4d productTransformMatrix, GaiaVertex vertex) {
-        Matrix3d productRotationMatrix = new Matrix3d(productTransformMatrix);
+        Matrix3d normalMatrix = new Matrix3d(productTransformMatrix);
+        normalMatrix.invert().transpose();
 
         Vector3d position = vertex.getPosition();
         if (position != null) {
@@ -62,7 +63,7 @@ public class GaiaBaker extends Modifier {
 
         Vector3d normal = vertex.getNormal();
         if (normal != null) {
-            Vector3d localizedNormal = productRotationMatrix.transform(normal, new Vector3d());
+            Vector3d localizedNormal = normalMatrix.transform(normal, new Vector3d());
             localizedNormal.normalize();
             vertex.setNormal(localizedNormal);
         }

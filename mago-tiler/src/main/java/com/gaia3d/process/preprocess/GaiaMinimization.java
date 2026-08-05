@@ -2,8 +2,8 @@ package com.gaia3d.process.preprocess;
 
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.model.GaiaScene;
-import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.basic.types.LevelOfDetail;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +37,9 @@ public class GaiaMinimization implements PreProcess {
                 int maximumLod = globalOptions.getMaxLod();
                 for (int index = minimumLod; index <= maximumLod; index++) {
                     LevelOfDetail lod = LevelOfDetail.getByLevel(index);
-                    lodList.add(lod);
+                    if (lod != LevelOfDetail.NONE) {
+                        lodList.add(lod);
+                    }
                 }
             }
 

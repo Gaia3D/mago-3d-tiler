@@ -1,16 +1,16 @@
 package com.gaia3d.converter.indoorgml;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.geometry.modifier.DefaultSceneFactory;
+import com.gaia3d.basic.geometry.parametric.GaiaSurfaceModel;
 import com.gaia3d.basic.geometry.tessellator.Vector3dOnlyHashEquals;
 import com.gaia3d.basic.model.GaiaMesh;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaPrimitive;
 import com.gaia3d.basic.model.GaiaScene;
-import com.gaia3d.converter.Converter;
-import com.gaia3d.basic.geometry.modifier.DefaultSceneFactory;
-import com.gaia3d.converter.AbstractGeometryConverter;
 import com.gaia3d.basic.temp.GaiaSceneTempGroup;
-import com.gaia3d.basic.geometry.parametric.GaiaSurfaceModel;
+import com.gaia3d.converter.AbstractGeometryConverter;
+import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.Parametric3DOptions;
 import com.gaia3d.util.GlobeUtils;
 import edu.stem.indoor.IndoorFeatures;

@@ -1,7 +1,8 @@
 package com.gaia3d.converter.pointcloud;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.converter.pointcloud.shuffler.*;
+import com.gaia3d.converter.pointcloud.shuffler.OptimizedCardShuffler;
+import com.gaia3d.converter.pointcloud.shuffler.Shuffler;
 import com.gaia3d.util.GlobeUtils;
 import com.github.mreutegg.laszip4j.*;
 import lombok.extern.slf4j.Slf4j;
@@ -191,7 +192,7 @@ public class LasConverter {
 
     private CoordinateReferenceSystem getProjCRS(LASHeader header, boolean isForceCrs) {
         AtomicReference<CoordinateReferenceSystem> atomicCrs = new AtomicReference<>(options.getSourceCrs());
-        boolean isDefaultCrs = options.getSourceCrs().equals(GlobeUtils.wgs84);
+        boolean isDefaultCrs = java.util.Objects.equals(options.getSourceCrs(), GlobeUtils.wgs84);
         if (!isForceCrs && isDefaultCrs) {
             try {
                 Iterable<LASVariableLengthRecord> records = header.getVariableLengthRecords();

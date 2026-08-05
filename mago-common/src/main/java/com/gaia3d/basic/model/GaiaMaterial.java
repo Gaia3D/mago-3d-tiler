@@ -39,6 +39,7 @@ public class GaiaMaterial extends MaterialStructure implements Serializable {
     private boolean isRepeat = false;
     private boolean isBlend = false;
     private boolean isOpaque = true;
+    private boolean doubleSided = false;
 
     public boolean isOpaqueMaterial() {
         this.isOpaque = true;
@@ -89,7 +90,9 @@ public class GaiaMaterial extends MaterialStructure implements Serializable {
         if (textures != null) {
             textures.forEach((key, value) -> {
                 value.forEach(GaiaTexture::clear);
+                value.clear();
             });
+            textures.clear();
         }
         this.diffuseColor = null;
         this.ambientColor = null;
@@ -98,6 +101,7 @@ public class GaiaMaterial extends MaterialStructure implements Serializable {
         this.isRepeat = false;
         this.isBlend = false;
         this.isOpaque = false;
+        this.samplers = null;
     }
 
     public GaiaMaterial clone() {
@@ -110,9 +114,11 @@ public class GaiaMaterial extends MaterialStructure implements Serializable {
         newMaterial.setRepeat(isRepeat);
         newMaterial.setBlend(isBlend);
         newMaterial.setOpaque(isOpaque);
+        newMaterial.setDoubleSided(doubleSided);
         newMaterial.setAlphaCutoff(this.alphaCutoff);
         newMaterial.setId(this.id);
         newMaterial.setName(this.name);
+        newMaterial.setSamplers(this.samplers.clone());
         for (Map.Entry<TextureType, List<GaiaTexture>> entry : this.textures.entrySet()) {
             TextureType textureType = entry.getKey();
             List<GaiaTexture> gaiaTextures = entry.getValue();

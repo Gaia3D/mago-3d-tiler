@@ -39,7 +39,7 @@ public class Instanced3DModelV2 implements ContentModel {
         GltfWriterOptions gltfOptions = GltfWriterOptions.builder()
                 .build();
         GlobalOptions globalOptions = GlobalOptions.getInstance();
-        if (globalOptions.getTilesVersion().equals("1.0")) {
+        if ("1.0".equals(globalOptions.getTilesVersion())) {
             gltfOptions.setUriImage(true);
         }
         if (globalOptions.isUseQuantization()) {
@@ -189,8 +189,7 @@ public class Instanced3DModelV2 implements ContentModel {
             }
         });
 
-        String glbFileName = nodeCode + "." + MAGIC;
-        File i3dmOutputFile = outputRoot.resolve(glbFileName).toFile();
+        File i3dmOutputFile = contentInfo.resolveContentFile(outputRoot, MAGIC);
         createInstance(i3dmOutputFile, contentInfo, tileInfos.get(0), featureTable, batchTableMap);
         return contentInfo;
     }

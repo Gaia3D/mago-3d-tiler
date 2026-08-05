@@ -8,10 +8,12 @@ import org.locationtech.proj4j.CoordinateReferenceSystem;
  */
 public class GlobalConstants {
     public static final String DEFAULT_TILES_VERSION = "1.1";
+    public static final TilingMode DEFAULT_TILING_MODE = TilingMode.EXPLICIT;
+    public static final int DEFAULT_IMPLICIT_SUBTREE_LEVELS = 4;
     public static final String DEFAULT_INPUT_FORMAT = "kml";
     public static final String DEFAULT_INSTANCE_FILE = "instance.dae";
     public static final String DEFAULT_TEMP_FOLDER = "temp";
-    public static final long DEFAULT_RECOMMENDED_MEMORY = 64L * 1024 * 1024 * 1024;;
+    public static final long DEFAULT_RECOMMENDED_MEMORY = 64L * 1024 * 1024 * 1024;
 
     public static final int DEFAULT_MIN_LOD = 0;
     public static final int DEFAULT_MAX_LOD = 3;
@@ -19,17 +21,14 @@ public class GlobalConstants {
     public static final int DEFAULT_MAX_GEOMETRIC_ERROR = Integer.MAX_VALUE;
     public static final int DEFAULT_MAX_TRIANGLES = 65536 * 8;
     public static final int DEFAULT_MAX_NODE_DEPTH = 32;
-    public static final int DEFAULT_MAX_INSTANCE = 1024 * 64;
+    public static final int DEFAULT_MAX_INSTANCE = 1024 * 64 * 2;
     public static final int DEFAULT_MAX_I3DM_FEATURE_COUNT = 1024;
     public static final int DEFAULT_MIN_I3DM_FEATURE_COUNT = 128;
     public static final int DEFAULT_POINT_PER_TILE = 200000;
     public static final float DEFAULT_POINT_RATIO = 100;
     public static final float POINTSCLOUD_HORIZONTAL_GRID = 500.0f; // in meters
     public static final float POINTSCLOUD_VERTICAL_GRID = 500.0f; // in meters
-    public static final float POINTSCLOUD_HORIZONTAL_ARC = (1.0f / 60.0f / 60.0f) * 20.0f;
-    public static final float POINTSCLOUD_VERTICAL_ARC = (1.0f / 60.0f / 60.0f) * 20.0f;
     public static final String DEFAULT_SOURCE_CRS_CODE = "3857";
-    // The default target CRS is WGS 84 / ECEF (EPSG:4978)
     public static final String DEFAULT_TARGET_CRS_CODE = "4978";
     public static final CoordinateReferenceSystem DEFAULT_SOURCE_CRS = new CRSFactory().createFromName("EPSG:" + DEFAULT_SOURCE_CRS_CODE);
     public static final CoordinateReferenceSystem DEFAULT_TARGET_CRS = new CRSFactory().createFromName("EPSG:" + DEFAULT_TARGET_CRS_CODE);
@@ -51,6 +50,7 @@ public class GlobalConstants {
     public static final double DEFAULT_HEADING = 0.0d;
 
     public static final boolean DEFAULT_USE_QUANTIZATION = false;
+    public static final int DEFAULT_BATCH_ATLAS_MAX_TEXTURE_SIZE = 1024;
     public static final int REALISTIC_LOD0_MAX_TEXTURE_SIZE = 1024;
     public static final int REALISTIC_MAX_TEXTURE_SIZE = 512;
     public static final int REALISTIC_MIN_TEXTURE_SIZE = 32;

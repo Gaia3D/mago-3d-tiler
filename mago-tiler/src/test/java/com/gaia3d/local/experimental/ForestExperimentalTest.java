@@ -19,7 +19,7 @@ public class ForestExperimentalTest {
                 "-c", "5179",
                 "-ot", "i3dm",
                 "-instance", MagoTestConfig.getTempPath(path).getAbsolutePath() + "/instance.glb",
-                "-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                "-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
         };
         MagoTestConfig.execute(args);
     }
@@ -36,7 +36,7 @@ public class ForestExperimentalTest {
                 "--refineAdd",
                 "--tilesVersion", "1.0",
                 "-instance", MagoTestConfig.getSsdInputPath(path).getAbsolutePath() + "/instance.glb",
-                "-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                "-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
         };
         MagoTestConfig.execute(args);
     }
@@ -52,7 +52,7 @@ public class ForestExperimentalTest {
                 "-it", "gpkg",
                 "--tilesVersion", "1.0",
                 "-instance", MagoTestConfig.getSsdInputPath(path).getAbsolutePath() + "/instance.glb",
-                //"-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                //"-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
         };
         MagoTestConfig.execute(args);
     }
@@ -69,7 +69,7 @@ public class ForestExperimentalTest {
                 "--refineAdd",
                 "--tilesVersion", "1.0",
                 "-instance", MagoTestConfig.getSsdInputPath(path).getAbsolutePath() + "/instance.glb",
-                //"-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                //"-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
         };
         MagoTestConfig.execute(args);
     }
@@ -87,7 +87,7 @@ public class ForestExperimentalTest {
                 //"--refineAdd",
                 "--tilesVersion", "1.0",
                 "-instance", MagoTestConfig.getSsdInputPath(path).getAbsolutePath() + "/instance.glb",
-                //"-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                //"-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
         };
         MagoTestConfig.execute(args);
     }
@@ -104,7 +104,7 @@ public class ForestExperimentalTest {
                 "--refineAdd",
                 "--tilesVersion", "1.0",
                 "-instance", MagoTestConfig.getSsdInputPath(path).getAbsolutePath() + "/instance.glb",
-                //"-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                //"-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
         };
         MagoTestConfig.execute(args);
     }
@@ -121,15 +121,10 @@ public class ForestExperimentalTest {
                 "--refineAdd",
                 "--tilesVersion", "1.0",
                 "-instance", MagoTestConfig.getSsdInputPath(path).getAbsolutePath() + "/instance.glb",
-                //"-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                //"-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
         };
         MagoTestConfig.execute(args);
     }
-
-
-
-
-
 
 
     /*
@@ -147,7 +142,7 @@ public class ForestExperimentalTest {
                 "--refineAdd",
                 "--tilesVersion", "1.0",
                 "-instance", MagoTestConfig.getSsdInputPath(path).getAbsolutePath() + "/instance.glb",
-                //"-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                //"-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
         };
         MagoTestConfig.execute(args);
     }
@@ -163,7 +158,7 @@ public class ForestExperimentalTest {
                 "-it", "gpkg",
                 "--tilesVersion", "1.0",
                 "-instance", MagoTestConfig.getSsdInputPath(path).getAbsolutePath() + "/instance.glb",
-                //"-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                //"-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
         };
         MagoTestConfig.execute(args);
     }
@@ -179,7 +174,7 @@ public class ForestExperimentalTest {
                 "-it", "gpkg",
                 "--tilesVersion", "1.0",
                 "-instance", MagoTestConfig.getSsdInputPath(path).getAbsolutePath() + "/instance.glb",
-                //"-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                //"-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
         };
         MagoTestConfig.execute(args);
     }
@@ -196,7 +191,7 @@ public class ForestExperimentalTest {
                 "--refineAdd",
                 "--tilesVersion", "1.0",
                 "-instance", MagoTestConfig.getSsdInputPath(path).getAbsolutePath() + "/instance.glb",
-                //"-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                //"-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
         };
         MagoTestConfig.execute(args);
     }
@@ -212,7 +207,7 @@ public class ForestExperimentalTest {
                 "-it", "gpkg",
                 "--tilesVersion", "1.0",
                 "-instance", MagoTestConfig.getSsdInputPath(path).getAbsolutePath() + "/instance.glb",
-                //"-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                //"-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
         };
         MagoTestConfig.execute(args);
     }
@@ -228,11 +223,10 @@ public class ForestExperimentalTest {
                 "-it", "gpkg",
                 "--tilesVersion", "1.0",
                 "-instance", MagoTestConfig.getSsdInputPath(path).getAbsolutePath() + "/instance.glb",
-                //"-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                //"-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
         };
         MagoTestConfig.execute(args);
     }
-
 
 
     @Test
@@ -247,7 +241,7 @@ public class ForestExperimentalTest {
                 "--refineAdd",
                 "--tilesVersion", "1.0",
                 "-instance", MagoTestConfig.getSsdInputPath(path).getAbsolutePath() + "/instance.glb",
-                //"-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                //"-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
         };
         MagoTestConfig.execute(args);
     }
@@ -263,7 +257,7 @@ public class ForestExperimentalTest {
                 "-it", "gpkg",
                 "--tilesVersion", "1.0",
                 "-instance", MagoTestConfig.getSsdInputPath(path).getAbsolutePath() + "/instance.glb",
-                //"-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                //"-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
         };
         MagoTestConfig.execute(args);
     }
@@ -279,7 +273,7 @@ public class ForestExperimentalTest {
                 "-it", "gpkg",
                 "--tilesVersion", "1.0",
                 "-instance", MagoTestConfig.getSsdInputPath(path).getAbsolutePath() + "/instance.glb",
-                //"-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                //"-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
         };
         MagoTestConfig.execute(args);
     }
@@ -294,6 +288,80 @@ public class ForestExperimentalTest {
         garisanJat();
         GlobalOptions.recreateInstance();
         garisanNak();
+
+        garisanMerge();
+    }
+
+    @Test
+    void garisanInstancing5mTest() {
+        String path = "garisan-instancing-test";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getSsdInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-5m",
+                "-c", "5187",
+                "-ot", "i3dm",
+                "--refineAdd",
+                "--scaleColumn", "TreeHeight",
+                "--tilesVersion", "1.0",
+                "-instance", "D:\\user\\znkim\\Downloads\\Export_GLB\\Triangles_200.glb",
+                "-terrain", "D:\\data\\mago-3d-terrainer\\release-sample\\garisan-precision.tif",
+                "-maxLod", "4",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void garisanInstancing25cmTest() {
+        String path = "garisan-instancing-test";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getSsdInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-25cm",
+                "-c", "5187",
+                "-ot", "i3dm",
+                "--refineAdd",
+                "--scaleColumn", "TreeHeight",
+                "--tilesVersion", "1.0",
+                "-instance", "D:\\user\\znkim\\Downloads\\Export_GLB\\Triangles_200.glb",
+                "-terrain", "D:\\data\\mago-3d-terrainer\\release-sample\\garisan-precision-25cm.tif",
+                "-maxLod", "4",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void testGarisanInstancingFromTerrain() {
+        String path = "garisan-instancing-test";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getSsdInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "fromTerrain",
+                "-c", "5187",
+                "-ot", "i3dm",
+                "--refineAdd",
+                "--scaleColumn", "TreeHeight",
+                "--tilesVersion", "1.0",
+                "-instance", "D:\\user\\znkim\\Downloads\\Export_GLB\\Triangles_200.glb",
+                "-terrain", "H:\\workspace\\mago-server\\output\\korea_dem_5m\\layer.json",
+                "-maxLod", "4",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void testGarisanInstancingFromGeoTiff() {
+        String path = "garisan-instancing-test";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getSsdInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "fromGeoTiff",
+                "-c", "5187",
+                "-ot", "i3dm",
+                "--refineAdd",
+                "--scaleColumn", "TreeHeight",
+                "--tilesVersion", "1.0",
+                "-instance", "D:\\user\\znkim\\Downloads\\Export_GLB\\Triangles_200.glb",
+                "-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
+                "-maxLod", "4",
+        };
+        MagoTestConfig.execute(args);
     }
 
     @Test
@@ -302,6 +370,7 @@ public class ForestExperimentalTest {
         String[] args = new String[]{
                 "-i", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-recursive",
                 "-merge",
         };
         MagoTestConfig.execute(args);
@@ -315,11 +384,13 @@ public class ForestExperimentalTest {
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5187",
                 "-ot", "i3dm",
-                "-refineAdd",
+                "--refineAdd",
                 "--scaleColumn", "TreeHeight",
                 "--tilesVersion", "1.0",
-                "-instance", MagoTestConfig.getSsdInputPath("garisan").getAbsolutePath() + "/chim.glb",
-                "-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                //"-instance", MagoTestConfig.getSsdInputPath("garisan").getAbsolutePath() + "/chim.glb",
+                "-instance", "D:\\user\\znkim\\Downloads\\Export_GLB\\Triangles_200.glb",
+                "-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
+                "-maxLod", "4",
         };
         MagoTestConfig.execute(args);
     }
@@ -332,11 +403,13 @@ public class ForestExperimentalTest {
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5187",
                 "-ot", "i3dm",
-                "-refineAdd",
+                "--refineAdd",
                 "--scaleColumn", "TreeHeight",
                 "--tilesVersion", "1.0",
-                "-instance", MagoTestConfig.getSsdInputPath("garisan").getAbsolutePath() + "/hwal.glb",
-                "-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                //"-instance", MagoTestConfig.getSsdInputPath("garisan").getAbsolutePath() + "/hwal.glb",
+                "-instance", "D:\\user\\znkim\\Downloads\\Export_GLB\\Triangles_200.glb",
+                "-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
+                "-maxLod", "4",
         };
         MagoTestConfig.execute(args);
     }
@@ -349,11 +422,13 @@ public class ForestExperimentalTest {
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5187",
                 "-ot", "i3dm",
-                "-refineAdd",
+                "--refineAdd",
                 "--scaleColumn", "TreeHeight",
                 "--tilesVersion", "1.0",
-                "-instance", MagoTestConfig.getSsdInputPath("garisan").getAbsolutePath() + "/jat.glb",
-                "-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                //"-instance", MagoTestConfig.getSsdInputPath("garisan").getAbsolutePath() + "/jat.glb",
+                "-instance", "D:\\user\\znkim\\Downloads\\Export_GLB\\Triangles_200.glb",
+                "-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
+                "-maxLod", "4",
         };
         MagoTestConfig.execute(args);
     }
@@ -366,11 +441,13 @@ public class ForestExperimentalTest {
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5187",
                 "-ot", "i3dm",
-                "-refineAdd",
+                "--refineAdd",
                 "--scaleColumn", "TreeHeight",
                 "--tilesVersion", "1.0",
-                "-instance", MagoTestConfig.getSsdInputPath("garisan").getAbsolutePath() + "/nak.glb",
-                "-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
+                //"-instance", MagoTestConfig.getSsdInputPath("garisan").getAbsolutePath() + "/nak.glb",
+                "-instance", "D:\\user\\znkim\\Downloads\\Export_GLB\\Triangles_200.glb",
+                "-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
+                "-maxLod", "4",
         };
         MagoTestConfig.execute(args);
     }

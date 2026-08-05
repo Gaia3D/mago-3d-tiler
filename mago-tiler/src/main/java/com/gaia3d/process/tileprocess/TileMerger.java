@@ -11,8 +11,12 @@ import com.gaia3d.process.tileprocess.tile.tileset.asset.AssetV2;
 import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Content;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
+import com.gaia3d.util.DecimalUtils;
+import com.gaia3d.util.GlobeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.joml.Matrix4d;
+import org.joml.Vector3d;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,9 +28,116 @@ import java.util.Map;
 @Slf4j
 public class TileMerger {
 
-    private static final GlobalOptions globalOptions = GlobalOptions.getInstance();
     private final int MINIMUM_DEPTH = 2;
     private final int MAXIMUM_DEPTH = 16;
+    private final GlobalOptions globalOptions = GlobalOptions.getInstance();
+
+    static BoundingVolume toRegionBoundingVolume(BoundingVolume boundingVolume, float[] transformArray) {
+        if (boundingVolume == null) {
+            return null;
+        }
+        if (boundingVolume.getRegion() != null) {
+            return new BoundingVolume(boundingVolume);
+        }
+
+        Matrix4d transform = toMatrix4d(transformArray);
+        if (boundingVolume.getBox() != null) {
+            return cartesianPointsToRegion(boxCorners(boundingVolume.getBox()), transform);
+        }
+        if (boundingVolume.getSphere() != null) {
+            return cartesianPointsToRegion(sphereSamplePoints(boundingVolume.getSphere()), transform);
+        }
+        return null;
+    }
+
+    private static Matrix4d toMatrix4d(float[] transformArray) {
+        if (transformArray == null || transformArray.length != 16) {
+            return null;
+        }
+        return new Matrix4d().set(transformArray);
+    }
+
+    private static List<Vector3d> boxCorners(double[] box) {
+        Vector3d center = new Vector3d(box[0], box[1], box[2]);
+        Vector3d halfAxisX = new Vector3d(box[3], box[4], box[5]);
+        Vector3d halfAxisY = new Vector3d(box[6], box[7], box[8]);
+        Vector3d halfAxisZ = new Vector3d(box[9], box[10], box[11]);
+
+        List<Vector3d> corners = new ArrayList<>(8);
+        int[] signs = {-1, 1};
+        for (int xSign : signs) {
+            for (int ySign : signs) {
+                for (int zSign : signs) {
+                    Vector3d corner = new Vector3d(center)
+                            .add(new Vector3d(halfAxisX).mul(xSign))
+                            .add(new Vector3d(halfAxisY).mul(ySign))
+                            .add(new Vector3d(halfAxisZ).mul(zSign));
+                    corners.add(corner);
+                }
+            }
+        }
+        return corners;
+    }
+
+    private static List<Vector3d> sphereSamplePoints(double[] sphere) {
+        double cx = sphere[0];
+        double cy = sphere[1];
+        double cz = sphere[2];
+        double radius = sphere[3];
+
+        List<Vector3d> points = new ArrayList<>(7);
+        points.add(new Vector3d(cx, cy, cz));
+        points.add(new Vector3d(cx + radius, cy, cz));
+        points.add(new Vector3d(cx - radius, cy, cz));
+        points.add(new Vector3d(cx, cy + radius, cz));
+        points.add(new Vector3d(cx, cy - radius, cz));
+        points.add(new Vector3d(cx, cy, cz + radius));
+        points.add(new Vector3d(cx, cy, cz - radius));
+        return points;
+    }
+
+    private static BoundingVolume cartesianPointsToRegion(List<Vector3d> cartesianPoints, Matrix4d transform) {
+        if (cartesianPoints == null || cartesianPoints.isEmpty()) {
+            return null;
+        }
+
+        double minLonRad = Double.MAX_VALUE;
+        double minLatRad = Double.MAX_VALUE;
+        double maxLonRad = -Double.MAX_VALUE;
+        double maxLatRad = -Double.MAX_VALUE;
+        double minAlt = Double.MAX_VALUE;
+        double maxAlt = -Double.MAX_VALUE;
+
+        for (Vector3d point : cartesianPoints) {
+            Vector3d transformedPoint = new Vector3d(point);
+            if (transform != null) {
+                transformedPoint.mulPosition(transform);
+            }
+
+            Vector3d geographic = GlobeUtils.cartesianToGeographicWgs84(transformedPoint);
+            double lonRad = Math.toRadians(geographic.x);
+            double latRad = Math.toRadians(geographic.y);
+            double alt = geographic.z;
+
+            minLonRad = Math.min(minLonRad, lonRad);
+            minLatRad = Math.min(minLatRad, latRad);
+            maxLonRad = Math.max(maxLonRad, lonRad);
+            maxLatRad = Math.max(maxLatRad, latRad);
+            minAlt = Math.min(minAlt, alt);
+            maxAlt = Math.max(maxAlt, alt);
+        }
+
+        BoundingVolume regionBoundingVolume = new BoundingVolume(BoundingVolume.BoundingVolumeType.REGION);
+        regionBoundingVolume.setRegion(new double[]{
+                DecimalUtils.cutFast(minLonRad),
+                DecimalUtils.cutFast(minLatRad),
+                DecimalUtils.cutFast(maxLonRad),
+                DecimalUtils.cutFast(maxLatRad),
+                DecimalUtils.cutFast(minAlt),
+                DecimalUtils.cutFast(maxAlt)
+        });
+        return regionBoundingVolume;
+    }
 
     public void merge() {
         log.info("[Merge] Starting tileset merging.");
@@ -39,11 +150,7 @@ public class TileMerger {
         // find all tileset.json files
         log.info("[Merge] searching for tileset.json files in {}.", inputPath);
         List<File> tilesetJsons;
-        if (globalOptions.isRecursive()) {
-            tilesetJsons = findAllTilesetJsons(inputPath);
-        } else {
-            tilesetJsons = findAllTilesetJsons(inputPath, MINIMUM_DEPTH);
-        }
+        tilesetJsons = findAllTilesetJsons(inputPath);
         log.info("[Merge] found {} tileset.json files.", tilesetJsons.size());
         if (tilesetJsons.isEmpty()) {
             log.warn("[Merge] No tileset.json files found.");
@@ -94,7 +201,7 @@ public class TileMerger {
 
         for (File tilesetJson : tilesetJsons) {
             try {
-                if (globalOptions.getTilesVersion().equals("1.0")) {
+                if ("1.0".equals(globalOptions.getTilesVersion())) {
                     Tileset tileset = objectMapper.readValue(tilesetJson, Tileset.class);
                     tilesetMap.put(tilesetJson, tileset);
                 } else {
@@ -142,24 +249,20 @@ public class TileMerger {
             newChildNode.setRefine(Node.RefineType.REPLACE);
             newChildNode.setGeometricError(tilesetGeometricError);
             if (tilesetRoot.getTransform() != null) {newChildNode.setTransform(tilesetRoot.getTransform());}
-            if (tilesetRoot.getBoundingVolume() != null) {newChildNode.setBoundingVolume(tilesetRoot.getBoundingVolume());}
+            BoundingVolume normalizedBoundingVolume = toRegionBoundingVolume(tilesetRoot.getBoundingVolume(), tilesetRoot.getTransform());
+            newChildNode.setBoundingVolume(normalizedBoundingVolume);
 
-            BoundingVolume boundingVolume = tilesetRoot.getBoundingVolume();
-            //BoundingVolume.BoundingVolumeType boundingVolumeType = boundingVolume.getType();
-
-            if (boundingVolume.getBox() != null) {
-                // calculate bounding box
-            } else if (boundingVolume.getSphere() != null) {
-                // calculate bounding sphere
-            } else if (boundingVolume.getRegion() != null) {
-                // calculate bounding region
-                double[] boundingBox = boundingVolume.getRegion();
+            if (normalizedBoundingVolume != null && normalizedBoundingVolume.getRegion() != null) {
+                double[] boundingBox = normalizedBoundingVolume.getRegion();
                 globalBoundingRegion[0] = Math.min(globalBoundingRegion[0], boundingBox[0]); // minX
                 globalBoundingRegion[1] = Math.min(globalBoundingRegion[1], boundingBox[1]); // minY
                 globalBoundingRegion[2] = Math.max(globalBoundingRegion[2], boundingBox[2]); // maxX
                 globalBoundingRegion[3] = Math.max(globalBoundingRegion[3], boundingBox[3]); // maxY
                 globalBoundingRegion[4] = Math.min(globalBoundingRegion[4], boundingBox[4]); // minZ
                 globalBoundingRegion[5] = Math.max(globalBoundingRegion[5], boundingBox[5]); // maxZ
+            } else {
+                log.warn("[Merge] Skipping tileset with unsupported or empty bounding volume: {}", tilesetFile.getAbsolutePath());
+                continue;
             }
 
             String uri = getRelativePath(inputPath, tilesetFile);
@@ -177,7 +280,7 @@ public class TileMerger {
 
         geometricError = Math.min(geometricError, globalOptions.getMaxGeometricError());
 
-        if (globalOptions.getTilesVersion().equals("1.0")) {
+        if ("1.0".equals(globalOptions.getTilesVersion())) {
             AssetV1 asset = new AssetV1();
             mergedTileset.setAsset(asset);
         } else {

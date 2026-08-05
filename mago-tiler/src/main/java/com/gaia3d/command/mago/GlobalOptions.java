@@ -1,6 +1,5 @@
 package com.gaia3d.command.mago;
 
-import com.gaia3d.TilerExtensionModule;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.converter.AttributeFilter;
 import lombok.Getter;
@@ -37,6 +36,8 @@ public class GlobalOptions {
 
     /* 0.1 Analysis Info */
     private String tilesVersion;
+    private TilingMode tilingMode = GlobalConstants.DEFAULT_TILING_MODE;
+    private int implicitSubtreeLevels = GlobalConstants.DEFAULT_IMPLICIT_SUBTREE_LEVELS;
     private String version;
     private String javaVersionInfo;
     private String programInfo;
@@ -49,9 +50,6 @@ public class GlobalOptions {
     /* 0.2 System Info */
     private long availableProcessors = Runtime.getRuntime().availableProcessors();
     private long maxHeapMemory = Runtime.getRuntime().maxMemory();
-    //private long freeMemory = Runtime.getRuntime().freeMemory();
-    //private long totalMemory = Runtime.getRuntime().totalMemory();
-    //private long usedMemory = totalMemory - freeMemory;
     private long startTime = System.currentTimeMillis();
     private long endTime = 0;
 
@@ -127,9 +125,10 @@ public class GlobalOptions {
     private boolean isLeaveTemp = false;
     private byte multiThreadCount = 3;
 
-    private GlobalOptions() {
-        // Private constructor for singleton
-    }
+    /* 4.2 Validation Report */
+    private boolean validationReport = false;
+
+    private GlobalOptions() {}
 
     public static void recreateInstance() {
         log.info("[INFO] Recreating GlobalOptions instance.");
@@ -187,7 +186,6 @@ public class GlobalOptions {
             OptionsCorrector.checkExistOutput(tempDir);
         }
         if (!instance.isLeaveTemp()) {
-            // Delete temp directory if exists
             File tempDir = new File(instance.getTempPath());
             String[] children = tempDir.list();
             if (tempDir.exists() && tempDir.isDirectory() && children != null && children.length > 0) {
@@ -201,6 +199,16 @@ public class GlobalOptions {
             instance.setTilesVersion(tilesVersion);
         } else {
             instance.setTilesVersion(GlobalConstants.DEFAULT_TILES_VERSION);
+        }
+        if (command.hasOption(ProcessOptions.TILING_MODE.getLongName())) {
+            instance.setTilingMode(TilingMode.fromOption(command.getOptionValue(ProcessOptions.TILING_MODE.getLongName())));
+        } else {
+            instance.setTilingMode(GlobalConstants.DEFAULT_TILING_MODE);
+        }
+        if (command.hasOption(ProcessOptions.IMPLICIT_SUBTREE_LEVELS.getLongName())) {
+            instance.setImplicitSubtreeLevels(Integer.parseInt(command.getOptionValue(ProcessOptions.IMPLICIT_SUBTREE_LEVELS.getLongName())));
+        } else {
+            instance.setImplicitSubtreeLevels(GlobalConstants.DEFAULT_IMPLICIT_SUBTREE_LEVELS);
         }
 
         boolean isRecursive;
@@ -218,9 +226,9 @@ public class GlobalOptions {
             if (inputType == null || StringUtils.isEmpty(inputType)) {
                 inputFormat = OptionsCorrector.findInputFormatType(new File(instance.getInputPath()), isRecursive);
             } else {
-                inputFormat = FormatType.fromExtension(inputType);
+                inputFormat = FormatType.requireFromExtension(inputType);
             }
-            inputFormat = inputFormat == null ? FormatType.fromExtension(GlobalConstants.DEFAULT_INPUT_FORMAT) : inputFormat;
+            inputFormat = inputFormat == null ? FormatType.requireFromExtension(GlobalConstants.DEFAULT_INPUT_FORMAT) : inputFormat;
             instance.setInputFormat(inputFormat);
 
             FormatType outputFormat;
@@ -228,7 +236,7 @@ public class GlobalOptions {
             if (outputType == null) {
                 outputFormat = OptionsCorrector.findOutputFormatType(instance.getInputFormat());
             } else {
-                outputFormat = FormatType.fromExtension(outputType);
+                outputFormat = FormatType.requireFromExtension(outputType);
             }
             if (outputFormat == null) {
                 throw new IllegalArgumentException("Invalid output format: " + outputType);
@@ -258,33 +266,16 @@ public class GlobalOptions {
             String geoidPath = command.getOptionValue(ProcessOptions.GEOID_PATH.getLongName());
             if (geoidPath == null || geoidPath.isEmpty() || geoidPath.equalsIgnoreCase("Ellipsoid")) {
                 instance.setGeoidPath(null);
+            } else if (geoidPath.equalsIgnoreCase("EGM84")) {
+                instance.setGeoidPath(extractBuiltInGeoid("EGM84", "geoid/egm84_30.tif", "egm84_30-"));
             } else if (geoidPath.equalsIgnoreCase("EGM96")) {
-                log.info("Using built-in geoid model: EGM96");
-
-                String resourcePath = "geoid/egm96_15.tif";
-                ClassLoader classLoader = GlobalOptions.class.getClassLoader();
-                try (InputStream in = classLoader.getResourceAsStream(resourcePath)) {
-                    if (in == null) {
-                        throw new IllegalArgumentException("EGM96 geoid model not found in resources: " + resourcePath);
-                    }
-                    Path tmp = Files.createTempFile("egm96_15-", ".tif");
-                    Files.copy(in, tmp, StandardCopyOption.REPLACE_EXISTING);
-                    tmp.toFile().deleteOnExit();
-                    instance.setGeoidPath(tmp.toAbsolutePath().toString());
-                } catch (IOException e) {
-                    throw new IllegalStateException("Failed to extract EGM96 geoid model from classpath", e);
-                }
-                /*try {
-                    File egm96File = new File(classLoader.getResource("./geoid/egm96_15.tif").getFile());
-                    instance.setGeoidPath(egm96File.getAbsolutePath());
-                } catch (NullPointerException e) {
-                    log.error("[ERROR] EGM96 geoid model file not found in classpath resources.");
-                    throw new IllegalArgumentException("EGM96 geoid model file not found in classpath resources.");
-                }*/
+                instance.setGeoidPath(extractBuiltInGeoid("EGM96", "geoid/egm96_15.tif", "egm96_15-"));
+            } else if (geoidPath.equalsIgnoreCase("EGM2008")) {
+                instance.setGeoidPath(extractBuiltInGeoid("EGM2008", "geoid/egm2008_2_5.tif", "egm2008_2_5-"));
             } else {
                 instance.setGeoidPath(geoidPath);
+                OptionsCorrector.checkExistInputPath(new File(instance.getGeoidPath()));
             }
-            OptionsCorrector.checkExistInputPath(new File(instance.getGeoidPath()));
         } else {
             instance.setGeoidPath(null);
         }
@@ -407,10 +398,8 @@ public class GlobalOptions {
         }
 
         instance.setDebug(command.hasOption(ProcessOptions.DEBUG.getLongName()));
-        boolean isRefineAdd = false;
-        if (command.hasOption(ProcessOptions.REFINE_ADD.getLongName())) {
-            isRefineAdd = true;
-        }
+        instance.setValidationReport(command.hasOption(ProcessOptions.VALIDATION_REPORT.getLongName()));
+        boolean isRefineAdd = command.hasOption(ProcessOptions.REFINE_ADD.getLongName());
 
         double rotateXAxis = command.hasOption(ProcessOptions.ROTATE_X_AXIS.getLongName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.ROTATE_X_AXIS.getLongName())) : 0;
 
@@ -427,6 +416,7 @@ public class GlobalOptions {
         if (outputFormat.equals(FormatType.FOREST)) {
             isRefineAdd = true;
             instance.setTilesVersion("1.0");
+            instance.setTilingMode(TilingMode.EXPLICIT);
         }
 
         if (isParametric) {
@@ -452,16 +442,10 @@ public class GlobalOptions {
             System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", String.valueOf(threadCount));
         }
 
-        instance.printDebugOptions();
+        printDebugOptions();
 
-        TilerExtensionModule extensionModule = new TilerExtensionModule();
-        extensionModule.executePhotogrammetry(null, null);
         if (instance.isPhotogrammetry()) {
             instance.setUseQuantization(true);
-            if (!extensionModule.isSupported()) {
-                log.error("[ERROR] *** Extension is not supported ***");
-                throw new IllegalArgumentException("Extension is not supported.");
-            }
         }
 
         instance.setCurvatureCorrection(command.hasOption(ProcessOptions.CURVATURE_CORRECTION.getLongName()));
@@ -497,11 +481,24 @@ public class GlobalOptions {
         }
     }
 
-    public long getProcessTimeMillis() {
-        long endTimeMillis = System.currentTimeMillis();
-        long processTimeMillis = endTimeMillis - startTimeMillis;
-        this.endTimeMillis = endTimeMillis;
-        return processTimeMillis;
+    private static String extractBuiltInGeoid(String modelName, String resourcePath, String tempFilePrefix) {
+        log.info("Using built-in geoid model: {}", modelName);
+
+        ClassLoader classLoader = GlobalOptions.class.getClassLoader();
+        try (InputStream in = classLoader.getResourceAsStream(resourcePath)) {
+            if (in == null) {
+                throw new IllegalArgumentException(modelName + " geoid model not found in resources: " + resourcePath);
+            }
+            Path tmp = Files.createTempFile(tempFilePrefix, ".tif");
+            Files.copy(in, tmp, StandardCopyOption.REPLACE_EXISTING);
+            tmp.toFile().deleteOnExit();
+
+            String extractedPath = tmp.toAbsolutePath().toString();
+            OptionsCorrector.checkExistInputPath(new File(extractedPath));
+            return extractedPath;
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to extract " + modelName + " geoid model from classpath", e);
+        }
     }
 
     protected static void printDebugOptions() {
@@ -513,6 +510,8 @@ public class GlobalOptions {
 
         Mago3DTilerMain.drawLine();
         log.info("3DTiles Version: {}", instance.tilesVersion);
+        log.info("Tiling Mode: {}", instance.tilingMode);
+        log.info("Implicit Subtree Levels: {}", instance.implicitSubtreeLevels);
         log.info("Input Path: {}", instance.inputPath);
         log.info("Output Path: {}", instance.outputPath);
         log.info("Temp path: {}", instance.tempPath);
@@ -524,8 +523,12 @@ public class GlobalOptions {
         log.info("Terrain File Path: {}", instance.terrainPath);
         if (instance.geoidPath == null) {
             log.info("Geoid Model(Height Reference): Ellipsoid");
+        } else if (instance.geoidPath.contains("egm84")) {
+            log.info("Geoid Model(Height Reference): EGM84");
         } else if (instance.geoidPath.contains("egm96")) {
             log.info("Geoid Model(Height Reference): EGM96");
+        } else if (instance.geoidPath.contains("egm2008")) {
+            log.info("Geoid Model(Height Reference): EGM2008");
         } else {
             log.info("Geoid Model(Height Reference): Custom -, {}, ", instance.geoidPath);
         }
@@ -577,5 +580,12 @@ public class GlobalOptions {
         log.info("Minimum Height: {}", instance.minimumHeight);
         log.info("Skirt Height: {}", instance.skirtHeight);
         Mago3DTilerMain.drawLine();
+    }
+
+    public long getProcessTimeMillis() {
+        long endTimeMillis = System.currentTimeMillis();
+        long processTimeMillis = endTimeMillis - startTimeMillis;
+        this.endTimeMillis = endTimeMillis;
+        return processTimeMillis;
     }
 }

@@ -4,15 +4,16 @@ import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
+import com.gaia3d.converter.Parametric3DOptions;
 import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.assimp.AssimpConverterOptions;
+import com.gaia3d.converter.geojson.GeoJsonInstanceConverter;
+import com.gaia3d.converter.geopackage.GeoPackageInstanceConverter;
 import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.converter.kml.JacksonKmlReader;
 import com.gaia3d.converter.loader.FileLoader;
 import com.gaia3d.converter.loader.InstancedFileLoader;
-import com.gaia3d.converter.Parametric3DOptions;
-import com.gaia3d.converter.geojson.GeoJsonInstanceConverter;
-import com.gaia3d.converter.geopackage.GeoPackageInstanceConverter;
+import com.gaia3d.converter.loader.InstancedTempGenerator;
 import com.gaia3d.converter.shape.ShapeInstanceConverter;
 import com.gaia3d.process.TilingPipeline;
 import com.gaia3d.process.postprocess.PostProcess;
@@ -21,8 +22,11 @@ import com.gaia3d.process.postprocess.instance.Instanced3DModelV2;
 import com.gaia3d.process.preprocess.*;
 import com.gaia3d.process.tileprocess.Pipeline;
 import com.gaia3d.process.tileprocess.TilingProcess;
-import com.gaia3d.process.tileprocess.tile.Instanced3DModelTiler;
 import com.gaia3d.process.tileprocess.tile.ForestInstanceTiler;
+import com.gaia3d.process.tileprocess.tile.Instanced3DModelTiler;
+import com.gaia3d.terrain.GeoTiffTerrainHeightProvider;
+import com.gaia3d.terrain.QuantizedMeshTerrainHeightProvider;
+import com.gaia3d.terrain.TerrainHeightProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -47,12 +51,18 @@ public class InstancedProcessFlow implements ProcessFlow {
         FormatType inputFormat = globalOptions.getInputFormat();
         Converter converter = getConverter(inputFormat);
         AttributeReader kmlReader = getAttributeReader(inputFormat);
-        FileLoader fileLoader = new InstancedFileLoader(converter, kmlReader);
+        InstancedTempGenerator tempGenerator = new InstancedTempGenerator(kmlReader);
+        FileLoader fileLoader = new InstancedFileLoader(converter, kmlReader, tempGenerator);
 
-        List<GridCoverage2D> geoTiffs = new ArrayList<>();
+        TerrainHeightProvider terrainHeightProvider = TerrainHeightProvider.empty();
         if (globalOptions.getTerrainPath() != null) {
             File terrainPath = new File(globalOptions.getTerrainPath());
-            geoTiffs = fileLoader.loadGridCoverages(terrainPath, geoTiffs);
+            if (terrainPath.isFile() && terrainPath.getName().equalsIgnoreCase("layer.json")) {
+                terrainHeightProvider = new QuantizedMeshTerrainHeightProvider(terrainPath.toPath());
+            } else {
+                List<GridCoverage2D> geoTiffs = fileLoader.loadGridCoverages(terrainPath, new ArrayList<>());
+                terrainHeightProvider = new GeoTiffTerrainHeightProvider(geoTiffs);
+            }
         }
         List<GridCoverage2D> geoidTiffs = new ArrayList<>();
         if (globalOptions.getGeoidPath() != null) {
@@ -70,12 +80,12 @@ public class InstancedProcessFlow implements ProcessFlow {
         preProcessors.add(new GaiaTransformBaker());
 
         preProcessors.add(new GaiaTexCoordCorrection());
-        preProcessors.add(new InstanceTranslation(geoTiffs));
+        preProcessors.add(new InstanceTranslation(terrainHeightProvider));
         preProcessors.add(new GaiaTransformBaker());
 
         /* Main-process */
         TilingProcess tilingProcess;
-        if (isForest)  {
+        if (isForest) {
             tilingProcess = new ForestInstanceTiler();
         } else {
             tilingProcess = new Instanced3DModelTiler();
@@ -83,7 +93,7 @@ public class InstancedProcessFlow implements ProcessFlow {
 
         /* Post-process */
         List<PostProcess> postProcessors = new ArrayList<>();
-        if (globalOptions.getTilesVersion().equals("1.0")) {
+        if ("1.0".equals(globalOptions.getTilesVersion())) {
             postProcessors.add(new Instanced3DModel());
         } else {
             postProcessors.add(new Instanced3DModelV2());
@@ -103,6 +113,7 @@ public class InstancedProcessFlow implements ProcessFlow {
                 .diameterColumnName(globalOptions.getDiameterColumn())
                 .scaleColumnName(globalOptions.getScaleColumn())
                 .densityColumnName(globalOptions.getDensityColumn())
+                .randomHeading(false)
                 .headingColumnName(globalOptions.getHeadingColumn())
                 .absoluteAltitudeValue(globalOptions.getAbsoluteAltitude())
                 .minimumHeightValue(globalOptions.getMinimumHeight())
@@ -114,6 +125,10 @@ public class InstancedProcessFlow implements ProcessFlow {
                 .defaultScale(GlobalConstants.DEFAULT_SCALE)
                 .defaultHeading(GlobalConstants.DEFAULT_HEADING)
                 .build();
+
+        if (isForest) {
+            vectorOptions.setRandomHeading(true);
+        }
 
         AttributeReader reader = null;
         if (formatType == FormatType.SHP) {

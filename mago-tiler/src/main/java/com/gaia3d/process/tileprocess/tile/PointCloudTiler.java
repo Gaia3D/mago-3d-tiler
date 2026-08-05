@@ -7,13 +7,16 @@ import com.gaia3d.basic.exception.TileProcessingException;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.types.LevelOfDetail;
 import com.gaia3d.command.mago.GlobalOptions;
+import com.gaia3d.command.mago.TilingMode;
 import com.gaia3d.converter.pointcloud.GaiaLasPoint;
 import com.gaia3d.converter.pointcloud.GaiaPointCloud;
 import com.gaia3d.process.tileprocess.Tiler;
+import com.gaia3d.process.tileprocess.TilesetBuildResult;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
 import com.gaia3d.process.tileprocess.tile.tileset.TilesetV2;
 import com.gaia3d.process.tileprocess.tile.tileset.asset.AssetV1;
 import com.gaia3d.process.tileprocess.tile.tileset.asset.AssetV2;
+import com.gaia3d.process.tileprocess.tile.tileset.implicit.*;
 import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Content;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
@@ -27,7 +30,9 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,6 +42,51 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
     private final int MAXIMUM_DEPTH = 20;
     private final float POINT_EXPANSION_FACTOR = 3.0f;
     private GaiaBoundingBox globalFitBoundingBox = null;
+    private List<ImplicitSubtreeArtifact> implicitSubtreeArtifacts = Collections.emptyList();
+
+    private static GaiaBoundingBox toCube(GaiaBoundingBox box) {
+        // degree with height
+        Vector3d min = box.getMinPosition();
+        Vector3d max = box.getMaxPosition();
+        Vector3d center = box.getFloorCenter();
+
+        // degree -> world coordinate
+        Vector3d minPosition = GlobeUtils.geographicToCartesianWgs84(min);
+        Vector3d maxPosition = GlobeUtils.geographicToCartesianWgs84(max);
+        Vector3d centerCartesian = GlobeUtils.geographicToCartesianWgs84(center);
+        Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerCartesian);
+        Matrix4d transformMatrixInv = new Matrix4d(transformMatrix).invert();
+
+        minPosition = transformMatrixInv.transformPosition(minPosition, new Vector3d());
+        maxPosition = transformMatrixInv.transformPosition(maxPosition, new Vector3d());
+
+        double deltaX = Math.abs(maxPosition.x - minPosition.x);
+        double deltaY = Math.abs(maxPosition.y - minPosition.y);
+        double deltaZ = Math.abs(maxPosition.z - minPosition.z);
+
+        double maxDelta = Math.max(deltaX, Math.max(deltaY, deltaZ));
+        double halfSize = maxDelta / 2.0;
+
+        double xOffset = maxDelta - deltaX;
+        double yOffset = maxDelta - deltaY;
+        double zOffset = maxDelta - deltaZ;
+
+        Vector3d newMin = new Vector3d(minPosition.x, minPosition.y, minPosition.z);
+        Vector3d newMax = new Vector3d(maxPosition.x + xOffset, maxPosition.y + yOffset, maxPosition.z + zOffset);
+
+        box = new GaiaBoundingBox();
+        // world coordinate -> degree
+        Vector3d transformedMin = transformMatrix.transformPosition(newMin);
+        Vector3d transformedMax = transformMatrix.transformPosition(newMax);
+
+        Vector3d cubeLonLatMin = GlobeUtils.cartesianToGeographicWgs84(transformedMin);
+        Vector3d cubeLonLatMax = GlobeUtils.cartesianToGeographicWgs84(transformedMax);
+
+        box.addPoint(cubeLonLatMin);
+        box.addPoint(cubeLonLatMax);
+
+        return box;
+    }
 
     @Override
     public Tileset run(List<TileInfo> tileInfos) {
@@ -57,7 +107,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         root.setGeometricError(geographicError);
         BoundingVolume boundingVolume = new BoundingVolume(globalBoundingBox, BoundingVolume.BoundingVolumeType.REGION);
 
-        // root만 큐브로
+        // Fit the root bounding volume to the cube.
         root.setBoundingVolume(boundingVolume);
         root.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
         try {
@@ -68,7 +118,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         }
 
         Tileset tileset;
-        if (globalOptions.getTilesVersion().equals("1.0")) {
+        if ("1.0".equals(globalOptions.getTilesVersion())) {
             tileset = new Tileset();
             AssetV1 asset = new AssetV1();
             tileset.setAsset(asset);
@@ -80,6 +130,19 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         tileset.setGeometricError(geographicError);
         tileset.setRoot(root);
         return tileset;
+    }
+
+    @Override
+    public TilesetBuildResult runWithResult(List<TileInfo> tileInfos) {
+        Tileset tileset = run(tileInfos);
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        if (globalOptions.getTilingMode() != TilingMode.IMPLICIT) {
+            return new TilesetBuildResult(tileset, tileset.findAllContentInfo());
+        }
+        if (!"1.1".equals(globalOptions.getTilesVersion())) {
+            throw new TileProcessingException("Implicit tiling requires 3D Tiles 1.1.");
+        }
+        return prepareImplicitPointCloudTileset(tileset);
     }
 
     public void writeTileset(Tileset tileset) {
@@ -108,6 +171,12 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
+        try {
+            java.nio.file.Files.createDirectories(outputPath.toPath());
+        } catch (IOException e) {
+            log.error("[ERROR] Failed to create output directory: {}", outputPath, e);
+            throw new TileProcessingException("Failed to create output directory: " + outputPath, e);
+        }
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(tilesetFile))) {
             String result = objectMapper.writeValueAsString(tileset);
             log.info("[Tile][Tileset] write 'tileset.json' file.");
@@ -116,6 +185,124 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         } catch (IOException e) {
             log.error("[ERROR] :", e);
             throw new TileProcessingException(e.getMessage());
+        }
+
+        if (globalOptions.getTilingMode() == TilingMode.IMPLICIT) {
+            writeImplicitSubtrees(outputPath, objectMapper);
+        }
+    }
+
+    private TilesetBuildResult prepareImplicitPointCloudTileset(Tileset tileset) {
+        Node root = tileset.getRoot();
+        if (root == null || root.getChildren() == null || root.getChildren().isEmpty()) {
+            throw new TileProcessingException("Implicit point cloud tileset requires explicit root children.");
+        }
+
+        root.refineDepth();
+        root.refineParentNode();
+
+        List<ContentInfo> contentInfos = new ArrayList<>();
+        List<ImplicitSubtreeArtifact> subtreeArtifacts = new ArrayList<>();
+        for (Node implicitRoot : root.getChildren()) {
+            subtreeArtifacts.addAll(prepareImplicitRoot(implicitRoot, contentInfos));
+        }
+        implicitSubtreeArtifacts = subtreeArtifacts;
+        return new TilesetBuildResult(tileset, contentInfos);
+    }
+
+    private List<ImplicitSubtreeArtifact> prepareImplicitRoot(Node implicitRoot, List<ContentInfo> contentInfos) {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        String rootCode = implicitRoot.getNodeCode();
+        int subtreeLevels = globalOptions.getImplicitSubtreeLevels();
+
+        ImplicitSubtreeBuilder subtreeBuilder = new ImplicitSubtreeBuilder(rootCode, subtreeLevels);
+        int maxLevel = collectImplicitContent(implicitRoot, rootCode, ImplicitTileCoordinate.root(), subtreeBuilder, contentInfos);
+        adjustImplicitRootGeometricError(implicitRoot);
+
+        Content contentTemplate = new Content();
+        contentTemplate.setUri("data/" + rootCode + "/{level}/{x}/{y}/{z}.glb");
+        implicitRoot.setContent(contentTemplate);
+        implicitRoot.setChildren(null);
+
+        ImplicitTiling implicitTiling = new ImplicitTiling();
+        implicitTiling.setSubdivisionScheme(SubdivisionScheme.OCTREE);
+        implicitTiling.setAvailableLevels(maxLevel + 1);
+        implicitTiling.setSubtreeLevels(subtreeLevels);
+        implicitTiling.setSubtrees(new TemplateUri("subtrees/" + rootCode + "/{level}/{x}/{y}/{z}.json"));
+        implicitRoot.setImplicitTiling(implicitTiling);
+
+        return subtreeBuilder.build();
+    }
+
+    private void adjustImplicitRootGeometricError(Node implicitRoot) {
+        List<Node> children = implicitRoot.getChildren();
+        if (children == null || children.isEmpty()) {
+            return;
+        }
+
+        double maxChildGeometricError = children.stream()
+                .mapToDouble(Node::getGeometricError)
+                .max()
+                .orElse(0.0d);
+        if (maxChildGeometricError <= 0.0d) {
+            return;
+        }
+
+        double adjustedGeometricError = maxChildGeometricError * 2.0d;
+        log.debug("[Tile][Implicit] Adjust root geometricError: {} -> {} ({})",
+                implicitRoot.getGeometricError(),
+                adjustedGeometricError,
+                implicitRoot.getNodeCode());
+        implicitRoot.setGeometricError(adjustedGeometricError);
+    }
+
+    private int collectImplicitContent(Node node, String rootCode, ImplicitTileCoordinate coordinate, ImplicitSubtreeBuilder subtreeBuilder, List<ContentInfo> contentInfos) {
+        int maxLevel = coordinate.level();
+        Content content = node.getContent();
+        if (content != null && content.getContentInfo() != null) {
+            ContentInfo contentInfo = content.getContentInfo();
+            contentInfo.setContentPath(coordinate.toContentPath(rootCode));
+            contentInfos.add(contentInfo);
+            subtreeBuilder.addContent(coordinate);
+        }
+
+        if (node.getChildren() == null) {
+            return maxLevel;
+        }
+
+        for (Node child : node.getChildren()) {
+            char childCode = getPointCloudChildCode(node, child);
+            ImplicitTileCoordinate childCoordinate = coordinate.child(childCode);
+            maxLevel = Math.max(maxLevel, collectImplicitContent(child, rootCode, childCoordinate, subtreeBuilder, contentInfos));
+        }
+        return maxLevel;
+    }
+
+    private char getPointCloudChildCode(Node parent, Node child) {
+        String parentCode = parent.getNodeCode();
+        String childCode = child.getNodeCode();
+        if (childCode == null || parentCode == null || !childCode.startsWith(parentCode) || childCode.length() <= parentCode.length()) {
+            throw new TileProcessingException("Cannot derive implicit child code from node: " + childCode);
+        }
+        char code = childCode.charAt(parentCode.length());
+        if (code < 'A' || code > 'H') {
+            throw new TileProcessingException("Point cloud implicit tiling only supports A-H octree children. Node: " + childCode);
+        }
+        return code;
+    }
+
+    private void writeImplicitSubtrees(File outputPath, ObjectMapper objectMapper) {
+        for (ImplicitSubtreeArtifact artifact : implicitSubtreeArtifacts) {
+            try {
+                File subtreeFile = new File(outputPath, artifact.subtreeUri());
+                File bufferFile = new File(outputPath, artifact.bufferUri());
+                Files.createDirectories(subtreeFile.toPath().getParent());
+                Files.createDirectories(bufferFile.toPath().getParent());
+                objectMapper.writeValue(subtreeFile, artifact.subtree());
+                Files.write(bufferFile.toPath(), artifact.availabilityBuffer());
+            } catch (IOException e) {
+                throw new TileProcessingException("Failed to write implicit subtree: " + artifact.subtreeUri(), e);
+            }
         }
     }
 
@@ -151,6 +338,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
 
     @Override
     protected double calcGeometricError(List<TileInfo> tileInfos) {
+        validatePointCloudTileInfos(tileInfos, "PointCloudTiler.calcGeometricError");
         return tileInfos.stream().mapToDouble(tileInfo -> {
             GaiaBoundingBox boundingBox = tileInfo.getPointCloud().getGaiaBoundingBox();
             return boundingBox.getLongestDistance();
@@ -159,6 +347,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
 
     @Override
     protected GaiaBoundingBox calcCartographicBoundingBox(List<TileInfo> tileInfos) {
+        validatePointCloudTileInfos(tileInfos, "PointCloudTiler.calcCartographicBoundingBox");
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
         tileInfos.forEach(tileInfo -> {
             GaiaBoundingBox localBoundingBox = tileInfo.getPointCloud().getGaiaBoundingBox();
@@ -204,8 +393,6 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
                     expandNode(index, firstChildNode, rootTile, chunk, rootPointLimit, 0);
                 }
 
-                //log.info("[Tile][{}/{}][{}/{}][Chunk {}/{}]", index, maximumIndex, index, maximumIndex, (i + 1), chunkCount);
-                //printDebugAllNodeCount(rootTile, "", 0);
                 List<GaiaPointCloud> childrenPointClouds = rootTile.getAllLeaves();
                 minimizeAllPointCloud(index, maximumIndex, childrenPointClouds);
                 chunk.clearPoints();
@@ -368,6 +555,9 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         GaiaBoundingBox cubeBoundingBox = pointCloud.getGaiaBoundingBox();
         //GaiaBoundingBox fitBoundingBox = calcFitBoundingBox(pointCloud);
         GaiaBoundingBox fitBoundingBox = calcFitBoundingBox(cubeBoundingBox);
+        if (fitBoundingBox == null) {
+            return pointCloud;
+        }
         double dimensionRatio = calcDimensionRatio(fitBoundingBox, cubeBoundingBox);
         int chunkPointLimit = (int) (pointLimit * dimensionRatio);
         if (chunkPointLimit < 1) {
@@ -452,7 +642,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         contentInfo.setTileInfos(tileInfos);
 
         Content content = new Content();
-        if (globalOptions.getTilesVersion().equals("1.0")) {
+        if ("1.0".equals(globalOptions.getTilesVersion())) {
             content.setUri("data/" + childNode.getNodeCode() + ".pnts");
         } else {
             content.setUri("data/" + childNode.getNodeCode() + ".glb");
@@ -468,6 +658,14 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         return childNode;
     }
 
+    /*private GaiaBoundingBox calcRealFitBoundingBox(GaiaPointCloud pointCloud) {
+        GaiaBoundingBox fitBoundingBox = new GaiaBoundingBox();
+        pointCloud.getLasPoints().forEach(point -> {
+            fitBoundingBox.addPoint(point.getPosition());
+        });
+        return fitBoundingBox;
+    }*/
+
     private double calcDimensionRatio(GaiaBoundingBox fitBoundingBox, GaiaBoundingBox cubeBoundingBox) {
         Vector3d fitVolumeSize = fitBoundingBox.getSize();
         if (fitVolumeSize.x == 0 && fitVolumeSize.y == 0 && fitVolumeSize.z == 0) {
@@ -477,60 +675,8 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         return (fitVolumeSize.x * fitVolumeSize.y) / (cubeVolumeSize.x * cubeVolumeSize.y);
     }
 
-    /*private GaiaBoundingBox calcRealFitBoundingBox(GaiaPointCloud pointCloud) {
-        GaiaBoundingBox fitBoundingBox = new GaiaBoundingBox();
-        pointCloud.getLasPoints().forEach(point -> {
-            fitBoundingBox.addPoint(point.getPosition());
-        });
-        return fitBoundingBox;
-    }*/
-
     private GaiaBoundingBox calcFitBoundingBox(GaiaBoundingBox cubeBoundingBox) {
         return globalFitBoundingBox.createIntersection(cubeBoundingBox);
-    }
-
-    private static GaiaBoundingBox toCube(GaiaBoundingBox box) {
-        // degree with height
-        Vector3d min = box.getMinPosition();
-        Vector3d max = box.getMaxPosition();
-        Vector3d center = box.getFloorCenter();
-
-        // degree -> world coordinate
-        Vector3d minPosition = GlobeUtils.geographicToCartesianWgs84(min);
-        Vector3d maxPosition = GlobeUtils.geographicToCartesianWgs84(max);
-        Vector3d centerCartesian = GlobeUtils.geographicToCartesianWgs84(center);
-        Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerCartesian);
-        Matrix4d transformMatrixInv = new Matrix4d(transformMatrix).invert();
-
-        minPosition = transformMatrixInv.transformPosition(minPosition, new Vector3d());
-        maxPosition = transformMatrixInv.transformPosition(maxPosition, new Vector3d());
-
-        double deltaX = Math.abs(maxPosition.x - minPosition.x);
-        double deltaY = Math.abs(maxPosition.y - minPosition.y);
-        double deltaZ = Math.abs(maxPosition.z - minPosition.z);
-
-        double maxDelta = Math.max(deltaX, Math.max(deltaY, deltaZ));
-        double halfSize = maxDelta / 2.0;
-
-        double xOffset = maxDelta - deltaX;
-        double yOffset = maxDelta - deltaY;
-        double zOffset = maxDelta - deltaZ;
-
-        Vector3d newMin = new Vector3d(minPosition.x, minPosition.y, minPosition.z);
-        Vector3d newMax = new Vector3d(maxPosition.x + xOffset, maxPosition.y + yOffset, maxPosition.z + zOffset);
-
-        box = new GaiaBoundingBox();
-        // world coordinate -> degree
-        Vector3d transformedMin = transformMatrix.transformPosition(newMin);
-        Vector3d transformedMax = transformMatrix.transformPosition(newMax);
-
-        Vector3d cubeLonLatMin = GlobeUtils.cartesianToGeographicWgs84(transformedMin);
-        Vector3d cubeLonLatMax = GlobeUtils.cartesianToGeographicWgs84(transformedMax);
-
-        box.addPoint(cubeLonLatMin);
-        box.addPoint(cubeLonLatMax);
-
-        return box;
     }
 
     private void minimizeAllPointCloud(int index, int maximumIndex, List<GaiaPointCloud> allPointClouds) {

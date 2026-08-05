@@ -1,7 +1,6 @@
 package com.gaia3d.basic.geometry.octree;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.model.GaiaVertex;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -12,11 +11,11 @@ import java.util.List;
 @Slf4j
 @Setter
 @Getter
-public class GaiaOctreeVertices extends GaiaOctree<GaiaVertex> {
+public class GaiaOctreeVertices extends GaiaOctree<GeometryContent> {
     private int limitDepth = 5;
     private double limitBoxSize = 1.0;
 
-    public GaiaOctreeVertices(GaiaOctree<GaiaVertex> parent, GaiaBoundingBox boundingBox) {
+    public GaiaOctreeVertices(GaiaOctree<GeometryContent> parent, GaiaBoundingBox boundingBox) {
         super(parent, boundingBox);
 
         if (parent != null) {
@@ -27,7 +26,7 @@ public class GaiaOctreeVertices extends GaiaOctree<GaiaVertex> {
     }
 
     @Override
-    protected GaiaOctree<GaiaVertex> createChild(GaiaBoundingBox boundingBox) {
+    protected GaiaOctree<GeometryContent> createChild(GaiaBoundingBox boundingBox) {
         return new GaiaOctreeVertices(this, boundingBox);
     }
 
@@ -36,7 +35,7 @@ public class GaiaOctreeVertices extends GaiaOctree<GaiaVertex> {
             return;
         }
 
-        List<GaiaVertex> contents = this.getContents();
+        List<GeometryContent> contents = this.getContents();
         if (contents.isEmpty()) {
             return;
         }
@@ -58,15 +57,25 @@ public class GaiaOctreeVertices extends GaiaOctree<GaiaVertex> {
         createChildren();
         distributeContents();
 
-        List<GaiaOctree<GaiaVertex>> children = this.getChildren();
-        for (GaiaOctree<GaiaVertex> child : children) {
+        List<GaiaOctree<GeometryContent>> children = this.getChildren();
+        for (GaiaOctree<GeometryContent> child : children) {
             GaiaOctreeVertices childVertex = (GaiaOctreeVertices) child;
             childVertex.makeTreeByMinVertexCount(minVertexCount);
         }
     }
 
+    public boolean intersects(GeometryContent vertex) {
+        GaiaBoundingBox bbox = this.getBoundingBox();
+        Vector3d position = vertex.getCenterPoint();
+        if (position == null) {
+            log.warn("Vertex position is null.");
+            return false;
+        }
+        return bbox.intersectsPoint(position);
+    }
+
     public void distributeContents() {
-        List<GaiaVertex> contents = this.getContents();
+        List<GeometryContent> contents = this.getContents();
         if (contents.isEmpty()) {
             return;
         }
@@ -83,10 +92,10 @@ public class GaiaOctreeVertices extends GaiaOctree<GaiaVertex> {
         double midY = (minY + maxY) / 2.0;
         double midZ = (minZ + maxZ) / 2.0;
 
-        List<GaiaOctree<GaiaVertex>> children = this.getChildren();
+        List<GaiaOctree<GeometryContent>> children = this.getChildren();
 
-        for (GaiaVertex vertex : contents) {
-            Vector3d position = vertex.getPosition();
+        for (GeometryContent vertex : contents) {
+            Vector3d position = vertex.getCenterPoint();
             if (position.x < midX) {
                 if (position.y < midY) {
                     if (position.z < midZ) {

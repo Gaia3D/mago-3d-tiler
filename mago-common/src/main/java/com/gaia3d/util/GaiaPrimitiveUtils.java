@@ -4,6 +4,7 @@ import com.gaia3d.basic.model.GaiaFace;
 import com.gaia3d.basic.model.GaiaPrimitive;
 import com.gaia3d.basic.model.GaiaSurface;
 import com.gaia3d.basic.model.GaiaVertex;
+import lombok.experimental.UtilityClass;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
@@ -11,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@UtilityClass
 public class GaiaPrimitiveUtils {
 
     public static void mergePrimitives(GaiaPrimitive primitiveMaster, GaiaPrimitive primitive) {

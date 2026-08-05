@@ -1,9 +1,9 @@
 package com.gaia3d.basic.halfedge;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.geometry.entities.GaiaPlane;
 import com.gaia3d.basic.geometry.octree.GaiaOctree;
 import com.gaia3d.basic.geometry.octree.GaiaOctreeVertices;
+import com.gaia3d.basic.geometry.octree.GeometryContent;
 import com.gaia3d.basic.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
@@ -12,6 +12,7 @@ import org.joml.Vector3d;
 
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class HalfEdgeUtils {
@@ -40,7 +41,8 @@ public class HalfEdgeUtils {
     }
 
 
-    public static GaiaScene gaiaSceneFromHalfEdgeFaces(List<HalfEdgeFace> halfEdgeFaces, Map<GaiaFace, HalfEdgeFace> mapGaiaFaceToHalfEdgeFace) {
+    public static GaiaScene gaiaSceneFromHalfEdgeFaces(List<HalfEdgeFace> halfEdgeFaces,
+                                                       Map<GaiaFace, HalfEdgeFace> mapGaiaFaceToHalfEdgeFace) {
         GaiaScene gaiaScene = new GaiaScene();
         GaiaNode gaiaRootNode = new GaiaNode();
         gaiaScene.getNodes().add(gaiaRootNode);
@@ -56,10 +58,12 @@ public class HalfEdgeUtils {
 
         // make halfEdgeVertices
         List<HalfEdgeVertex> halfEdgeVertices = new ArrayList<>();
+        List<HalfEdge> memSaveHalfEdges = new ArrayList<>();
         Map<HalfEdgeVertex, HalfEdgeVertex> mapUniqueHalfEdgeVertex = new HashMap<>();
         for (HalfEdgeFace halfEdgeFace : halfEdgeFaces) {
             halfEdgeVertices.clear();
-            halfEdgeFace.getVertices(halfEdgeVertices);
+            memSaveHalfEdges.clear();
+            halfEdgeFace.getVertices(halfEdgeVertices, memSaveHalfEdges);
 
             for (HalfEdgeVertex halfEdgeVertex : halfEdgeVertices) {
                 mapUniqueHalfEdgeVertex.put(halfEdgeVertex, halfEdgeVertex);
@@ -83,9 +87,12 @@ public class HalfEdgeUtils {
         }
 
         // make faces
+        List<HalfEdgeVertex> faceVertices  = new ArrayList<>();
         for (HalfEdgeFace halfEdgeFace : halfEdgeFaces) {
             GaiaFace gaiaFace = new GaiaFace();
-            List<HalfEdgeVertex> faceVertices = halfEdgeFace.getVertices(null);
+            faceVertices.clear();
+            memSaveHalfEdges.clear();
+            halfEdgeFace.getVertices(faceVertices, memSaveHalfEdges);
             int verticesCount = faceVertices.size();
             int[] indices = new int[verticesCount];
             for (int i = 0; i < verticesCount; i++) {
@@ -175,11 +182,15 @@ public class HalfEdgeUtils {
                                                              Map<HalfEdgeVertex, GaiaVertex> mapHalfEdgeVertexToGaiaVertex,
                                                              Map<GaiaVertex, Integer> mapGaiaVertexToIndex) {
         GaiaSurface gaiaSurface = new GaiaSurface();
+        List<HalfEdgeVertex> memSaveVertices = new ArrayList<>();
 
         // faces
         List<HalfEdgeFace> halfEdgeFaces = halfEdgeSurface.getFaces();
+        List<HalfEdge> memSaveHalfEdges = new ArrayList<>();
         for (HalfEdgeFace halfEdgeFace : halfEdgeFaces) {
-            GaiaFace gaiaFace = gaiaFaceFromHalfEdgeFace(halfEdgeFace, mapHalfEdgeVertexToGaiaVertex, mapGaiaVertexToIndex);
+            memSaveVertices.clear();
+            memSaveHalfEdges.clear();
+            GaiaFace gaiaFace = gaiaFaceFromHalfEdgeFace(halfEdgeFace, mapHalfEdgeVertexToGaiaVertex, mapGaiaVertexToIndex, memSaveVertices, memSaveHalfEdges);
             if (gaiaFace == null) {
                 continue;
             }
@@ -189,7 +200,11 @@ public class HalfEdgeUtils {
         return gaiaSurface;
     }
 
-    public static GaiaFace gaiaFaceFromHalfEdgeFace(HalfEdgeFace halfEdgeFace, Map<HalfEdgeVertex, GaiaVertex> mapHalfEdgeVertexToGaiaVertex, Map<GaiaVertex, Integer> mapGaiaVertexToIndex) {
+    public static GaiaFace gaiaFaceFromHalfEdgeFace(HalfEdgeFace halfEdgeFace,
+                                                    Map<HalfEdgeVertex, GaiaVertex> mapHalfEdgeVertexToGaiaVertex,
+                                                    Map<GaiaVertex, Integer> mapGaiaVertexToIndex,
+                                                    List<HalfEdgeVertex> memSaveVertices,
+                                                    List<HalfEdge> memSaveHalfEdges) {
         if (halfEdgeFace == null) {
             return null;
         }
@@ -198,18 +213,24 @@ public class HalfEdgeUtils {
             return null;
         }
 
-        if (halfEdgeFace.isDegenerated()) {
+        if (memSaveHalfEdges == null) {
+            memSaveHalfEdges = new ArrayList<>();
+        }
+        memSaveVertices.clear();
+        if (halfEdgeFace.isDegenerated(memSaveHalfEdges)) {
             //halfEdgeFace.isDegenerated();
             return null;
         }
 
         GaiaFace gaiaFace = new GaiaFace();
-        List<HalfEdgeVertex> halfEdgeVertices = halfEdgeFace.getVertices(null);
-        int verticesCount = halfEdgeVertices.size();
+        memSaveVertices.clear();
+        memSaveHalfEdges.clear();
+        memSaveVertices = halfEdgeFace.getVertices(memSaveVertices, memSaveHalfEdges);
+        int verticesCount = memSaveVertices.size();
         int[] indices = new int[verticesCount];
         int indicesCount = 0;
         for (int i = 0; i < verticesCount; i++) {
-            HalfEdgeVertex halfEdgeVertex = halfEdgeVertices.get(i);
+            HalfEdgeVertex halfEdgeVertex = memSaveVertices.get(i);
             GaiaVertex gaiaVertex = mapHalfEdgeVertexToGaiaVertex.get(halfEdgeVertex);
             if (gaiaVertex == null) {
                 continue;
@@ -228,8 +249,22 @@ public class HalfEdgeUtils {
         return gaiaFace;
     }
 
-    private static HalfEdgeSurface getHalfEdgeSurfaceRegularNetWithSkirt(int numCols, int numRows, float[][] depthValues, GaiaBoundingBox bbox) {
+    private static HalfEdgeSurface getHalfEdgeSurfaceRegularNetWithSkirt(
+            int numCols,
+            int numRows,
+            float[][] depthValues,
+            GaiaBoundingBox bbox) {
+
+        if (numCols < 2 || numRows < 2) {
+            return null;
+        }
+
+        if (depthValues == null || bbox == null) {
+            return null;
+        }
+
         HalfEdgeSurface halfEdgeSurface = new HalfEdgeSurface();
+
         double minX = bbox.getMinX();
         double minY = bbox.getMinY();
         double maxX = bbox.getMaxX();
@@ -237,149 +272,230 @@ public class HalfEdgeUtils {
         double minZ = bbox.getMinZ();
         double maxZ = bbox.getMaxZ();
 
-        double skirtZ = minZ - 5.0;
+        /*
+         * El skirt baja esta distancia desde la altura local
+         * del vértice original.
+         *
+         * Antes todos los vértices bajaban hasta minZ - 5.0,
+         * creando paredes enormes en tiles con mucho rango vertical.
+         */
+        double skirtDepth = 5.0;
 
         double xStep = (maxX - minX) / (numCols - 1);
         double yStep = (maxY - minY) / (numRows - 1);
 
-        // calculate real columnsCount and real rowsCount when exist skirt.
+        // Una fila y una columna extra en cada lado.
         int withSkirtCols = numCols + 2;
         int withSkirtRows = numRows + 2;
 
-        // create vertices adding a skirt when needed
-        int realC;
-        int realR;
-        boolean isSkirt = false;
-        double x, y, z;
+        /*
+         * Create vertices.
+         *
+         * La corona exterior duplica las posiciones XY de los
+         * vértices del borde, pero desplazando su Z hacia abajo.
+         */
         for (int r = 0; r < withSkirtRows; r++) {
             for (int c = 0; c < withSkirtCols; c++) {
-                isSkirt = false;
 
-                // check if skirt
-                if (c == 0 || c == withSkirtCols - 1 || r == 0 || r == withSkirtRows - 1) {
-                    isSkirt = true;
-                }
+                boolean isSkirt =
+                        c == 0 ||
+                                c == withSkirtCols - 1 ||
+                                r == 0 ||
+                                r == withSkirtRows - 1;
 
-                realC = c - 1;
-                realR = r - 1;
-                if (realC < 0) realC = 0;
-                if (realR < 0) realR = 0;
+                /*
+                 * Convertimos el índice de la malla ampliada
+                 * al índice correspondiente de la malla original.
+                 */
+                int realC = c - 1;
+                int realR = r - 1;
 
-                if (c == withSkirtCols - 1) {
-                    realC = numCols - 1;
-                }
+                realC = Math.max(0, Math.min(numCols - 1, realC));
+                realR = Math.max(0, Math.min(numRows - 1, realR));
 
-                if (r == withSkirtRows - 1) {
-                    realR = numRows - 1;
-                }
+                double x = minX + realC * xStep;
+                double y = minY + realR * yStep;
 
-                x = minX + realC * xStep;
-                y = minY + realR * yStep;
-                int rInv = numRows - 1 - realR; // here uses the original row index "numRows - 1 - r" to get the depth value
+                /*
+                 * Conservamos la inversión de filas de tu implementación.
+                 */
+                int rInv = numRows - 1 - realR;
+
                 double depthValue = depthValues[realC][rInv];
-                double depthValueInv = 1.0 - depthValue;
-                z = minZ + (maxZ - minZ) * depthValueInv;
 
-                // calculate texCoords
+                boolean isNoData =
+                        !Double.isFinite(depthValue) ||
+                                depthValue >= 1.0;
+
+                /*
+                 * Evita generar posiciones NaN o fuera del bbox.
+                 * Aunque el vértice sea noData, le damos una posición válida
+                 * antes de marcarlo como eliminado.
+                 */
+                double safeDepthValue;
+
+                if (isNoData) {
+                    safeDepthValue = 1.0;
+                } else {
+                    safeDepthValue = Math.max(0.0, Math.min(1.0, depthValue));
+                }
+
+                double depthValueInv = 1.0 - safeDepthValue;
+
+                double z = minZ + (maxZ - minZ) * depthValueInv;
+
+                // Texture coordinates based on the original regular net.
                 double s = (double) realC / (double) (numCols - 1);
                 double t = (double) realR / (double) (numRows - 1);
 
                 HalfEdgeVertex halfEdgeVertex = new HalfEdgeVertex();
 
                 if (isSkirt) {
-                    halfEdgeVertex.setPosition(new Vector3d(x, y, skirtZ));
+                    /*
+                     * Corrección principal:
+                     * el skirt baja desde la altura local del borde.
+                     */
+                    halfEdgeVertex.setPosition(
+                            new Vector3d(x, y, z - skirtDepth)
+                    );
                 } else {
-                    // the real net vertex
-                    halfEdgeVertex.setPosition(new Vector3d(x, y, z));
+                    halfEdgeVertex.setPosition(
+                            new Vector3d(x, y, z)
+                    );
                 }
 
-                halfEdgeVertex.setTexcoords(new Vector2d(s, 1.0 - t));
-                if (depthValue >= 1.0) {
-                    // this is noData
+                halfEdgeVertex.setTexcoords(
+                        new Vector2d(s, 1.0 - t)
+                );
+
+                if (isNoData) {
                     halfEdgeVertex.setStatus(ObjectStatus.DELETED);
                 }
+
                 halfEdgeSurface.getVertices().add(halfEdgeVertex);
             }
         }
 
-        // check if some vertices are created
         if (halfEdgeSurface.getVertices().isEmpty()) {
             return null;
         }
 
-        // create halfEdges & halfEdgeFaces
+        /*
+         * Create faces and half-edges.
+         */
         for (int r = 0; r < withSkirtRows - 1; r++) {
             for (int c = 0; c < withSkirtCols - 1; c++) {
-                HalfEdgeFace faceA = new HalfEdgeFace();
-                HalfEdgeFace faceB = new HalfEdgeFace();
-                int cNext = c + 1;
-                int rNext = r + 1;
+
                 int index1 = r * withSkirtCols + c;
                 int index2 = r * withSkirtCols + c + 1;
                 int index3 = (r + 1) * withSkirtCols + c + 1;
                 int index4 = (r + 1) * withSkirtCols + c;
 
-                if (c == 0 || c == withSkirtCols - 1 || r == 0 || r == withSkirtRows - 1 ||
-                        cNext == withSkirtCols - 1 || rNext == withSkirtRows - 1) {
-                    // this is skirt face
-                    faceA.setFaceType(FaceType.SKIRT);
-                    faceB.setFaceType(FaceType.SKIRT);
-                } else {
-                    faceA.setFaceType(FaceType.NORMAL);
-                    faceB.setFaceType(FaceType.NORMAL);
-                }
+                /*
+                 * Una celda pertenece al skirt si está en cualquiera
+                 * de las cuatro bandas exteriores.
+                 */
+                boolean isSkirtCell =
+                        c == 0 ||
+                                c == withSkirtCols - 2 ||
+                                r == 0 ||
+                                r == withSkirtRows - 2;
 
-                HalfEdgeVertex vertex1 = halfEdgeSurface.getVertices().get(index1);
-                HalfEdgeVertex vertex2 = halfEdgeSurface.getVertices().get(index2);
-                HalfEdgeVertex vertex3 = halfEdgeSurface.getVertices().get(index3);
-                HalfEdgeVertex vertex4 = halfEdgeSurface.getVertices().get(index4);
+                FaceType faceType = isSkirtCell
+                        ? FaceType.SKIRT
+                        : FaceType.NORMAL;
 
-                if (vertex1.getStatus() != ObjectStatus.DELETED && vertex2.getStatus() != ObjectStatus.DELETED && vertex3.getStatus() != ObjectStatus.DELETED) {
-                    // face A
+                HalfEdgeVertex vertex1 =
+                        halfEdgeSurface.getVertices().get(index1);
+
+                HalfEdgeVertex vertex2 =
+                        halfEdgeSurface.getVertices().get(index2);
+
+                HalfEdgeVertex vertex3 =
+                        halfEdgeSurface.getVertices().get(index3);
+
+                HalfEdgeVertex vertex4 =
+                        halfEdgeSurface.getVertices().get(index4);
+
+                /*
+                 * Triangle A:
+                 *
+                 * vertex1 -> vertex2 -> vertex3
+                 */
+                if (vertex1.getStatus() != ObjectStatus.DELETED &&
+                        vertex2.getStatus() != ObjectStatus.DELETED &&
+                        vertex3.getStatus() != ObjectStatus.DELETED) {
+
+                    HalfEdgeFace faceA = new HalfEdgeFace();
+                    faceA.setFaceType(faceType);
+
                     HalfEdge halfEdgeA1 = new HalfEdge();
                     HalfEdge halfEdgeA2 = new HalfEdge();
                     HalfEdge halfEdgeA3 = new HalfEdge();
+
                     halfEdgeA1.setStartVertex(vertex1);
                     halfEdgeA2.setStartVertex(vertex2);
                     halfEdgeA3.setStartVertex(vertex3);
+
                     halfEdgeA1.setNext(halfEdgeA2);
                     halfEdgeA2.setNext(halfEdgeA3);
                     halfEdgeA3.setNext(halfEdgeA1);
+
                     halfEdgeA1.setFace(faceA);
                     halfEdgeA2.setFace(faceA);
                     halfEdgeA3.setFace(faceA);
+
                     vertex1.setOutingHalfEdge(halfEdgeA1);
                     vertex2.setOutingHalfEdge(halfEdgeA2);
                     vertex3.setOutingHalfEdge(halfEdgeA3);
+
                     faceA.setHalfEdge(halfEdgeA1);
+
                     halfEdgeSurface.getHalfEdges().add(halfEdgeA1);
                     halfEdgeSurface.getHalfEdges().add(halfEdgeA2);
                     halfEdgeSurface.getHalfEdges().add(halfEdgeA3);
+
                     halfEdgeSurface.getFaces().add(faceA);
                 }
 
-                if (vertex1.getStatus() != ObjectStatus.DELETED && vertex3.getStatus() != ObjectStatus.DELETED && vertex4.getStatus() != ObjectStatus.DELETED) {
+                /*
+                 * Triangle B:
+                 *
+                 * vertex1 -> vertex3 -> vertex4
+                 */
+                if (vertex1.getStatus() != ObjectStatus.DELETED &&
+                        vertex3.getStatus() != ObjectStatus.DELETED &&
+                        vertex4.getStatus() != ObjectStatus.DELETED) {
 
-                    // face B
+                    HalfEdgeFace faceB = new HalfEdgeFace();
+                    faceB.setFaceType(faceType);
+
                     HalfEdge halfEdgeB1 = new HalfEdge();
                     HalfEdge halfEdgeB2 = new HalfEdge();
                     HalfEdge halfEdgeB3 = new HalfEdge();
+
                     halfEdgeB1.setStartVertex(vertex1);
                     halfEdgeB2.setStartVertex(vertex3);
                     halfEdgeB3.setStartVertex(vertex4);
+
                     halfEdgeB1.setNext(halfEdgeB2);
                     halfEdgeB2.setNext(halfEdgeB3);
                     halfEdgeB3.setNext(halfEdgeB1);
+
                     halfEdgeB1.setFace(faceB);
                     halfEdgeB2.setFace(faceB);
                     halfEdgeB3.setFace(faceB);
+
                     vertex1.setOutingHalfEdge(halfEdgeB1);
                     vertex3.setOutingHalfEdge(halfEdgeB2);
                     vertex4.setOutingHalfEdge(halfEdgeB3);
+
                     faceB.setHalfEdge(halfEdgeB1);
+
                     halfEdgeSurface.getHalfEdges().add(halfEdgeB1);
                     halfEdgeSurface.getHalfEdges().add(halfEdgeB2);
                     halfEdgeSurface.getHalfEdges().add(halfEdgeB3);
+
                     halfEdgeSurface.getFaces().add(faceB);
                 }
             }
@@ -388,15 +504,18 @@ public class HalfEdgeUtils {
         halfEdgeSurface.setTwins();
         halfEdgeSurface.removeDeletedObjects();
 
-        // check if exist geometry
-        if (halfEdgeSurface.getVertices().isEmpty() || halfEdgeSurface.getHalfEdges().isEmpty() || halfEdgeSurface.getFaces().isEmpty()) {
+        if (halfEdgeSurface.getVertices().isEmpty() ||
+                halfEdgeSurface.getHalfEdges().isEmpty() ||
+                halfEdgeSurface.getFaces().isEmpty()) {
+
             return null;
         }
 
         return halfEdgeSurface;
     }
 
-    private static HalfEdgeSurface getHalfEdgeSurfaceRegularNet(int numCols, int numRows, float[][] depthValues, GaiaBoundingBox bbox) {
+    private static HalfEdgeSurface getHalfEdgeSurfaceRegularNet(int numCols, int numRows, float[][] depthValues,
+                                                                GaiaBoundingBox bbox) {
         HalfEdgeSurface halfEdgeSurface = new HalfEdgeSurface();
         double minX = bbox.getMinX();
         double minY = bbox.getMinY();
@@ -415,6 +534,10 @@ public class HalfEdgeUtils {
                 double y = minY + r * yStep;
                 int rInv = numRows - 1 - r;
                 double depthValue = depthValues[c][rInv];
+
+                if (c == 0 || c == numCols - 1) {
+                    int hola = 0;
+                }
 
                 double depthValueInv = 1.0 - depthValue;
                 double z = minZ + (maxZ - minZ) * depthValueInv;
@@ -517,7 +640,297 @@ public class HalfEdgeUtils {
         return halfEdgeSurface;
     }
 
-    public static HalfEdgeScene getHalfEdgeSceneRectangularNet(int numCols, int numRows, float[][] depthValues, GaiaBoundingBox bbox, boolean makeVerticalSkirt) {
+    public static boolean verifyDepthGrid(
+            float[][] depthGrid,
+            float nearZeroEpsilon,
+            int maxValuesToPrint
+    ) {
+        if (depthGrid == null || depthGrid.length == 0) {
+            throw new IllegalArgumentException(
+                    "depthGrid must not be null or empty."
+            );
+        }
+
+        if (depthGrid[0] == null
+                || depthGrid[0].length == 0) {
+
+            throw new IllegalArgumentException(
+                    "depthGrid height must be greater than zero."
+            );
+        }
+
+        if (nearZeroEpsilon < 0.0f
+                || !Float.isFinite(nearZeroEpsilon)) {
+
+            throw new IllegalArgumentException(
+                    "nearZeroEpsilon must be finite and non-negative."
+            );
+        }
+
+        int width =
+                depthGrid.length;
+
+        int height =
+                depthGrid[0].length;
+
+        for (int x = 0; x < width; x++) {
+            if (depthGrid[x] == null
+                    || depthGrid[x].length != height) {
+
+                throw new IllegalArgumentException(
+                        "depthGrid must be rectangular. Invalid column x="
+                                + x
+                );
+            }
+        }
+
+        int exactZeroCount =
+                0;
+
+        int nearZeroCount =
+                0;
+
+        int nonFiniteCount =
+                0;
+
+        int outOfRangeCount =
+                0;
+
+        int printedCount =
+                0;
+
+        float minDepth =
+                Float.POSITIVE_INFINITY;
+
+        float maxDepth =
+                Float.NEGATIVE_INFINITY;
+
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+
+                float depth =
+                        depthGrid[x][y];
+
+                if (!Float.isFinite(depth)) {
+                    nonFiniteCount++;
+
+                    if (printedCount < maxValuesToPrint) {
+                        System.out.println(
+                                "[NON-FINITE DEPTH]"
+                                        + " x=" + x
+                                        + ", y=" + y
+                                        + ", value=" + depth
+                        );
+
+                        printedCount++;
+                    }
+
+                    continue;
+                }
+
+                minDepth =
+                        Math.min(
+                                minDepth,
+                                depth
+                        );
+
+                maxDepth =
+                        Math.max(
+                                maxDepth,
+                                depth
+                        );
+
+                boolean isExactZero =
+                        depth == 0.0f;
+
+                boolean isNearZero =
+                        !isExactZero
+                                && Math.abs(depth)
+                                <= nearZeroEpsilon;
+
+                if (isExactZero) {
+                    exactZeroCount++;
+
+                    if (printedCount < maxValuesToPrint) {
+                        System.out.println(
+                                "[EXACT ZERO DEPTH]"
+                                        + " x=" + x
+                                        + ", y=" + y
+                                        + ", value=" + depth
+                                        + ", rawBits=0x"
+                                        + Integer.toHexString(
+                                        Float.floatToRawIntBits(
+                                                depth
+                                        )
+                                )
+                        );
+
+                        printedCount++;
+                    }
+                } else if (isNearZero) {
+                    nearZeroCount++;
+
+                    if (printedCount < maxValuesToPrint) {
+                        System.out.println(
+                                "[NEAR-ZERO DEPTH]"
+                                        + " x=" + x
+                                        + ", y=" + y
+                                        + ", value=" + depth
+                        );
+
+                        printedCount++;
+                    }
+                }
+
+                if (depth < 0.0f || depth > 1.0f) {
+                    outOfRangeCount++;
+
+                    if (printedCount < maxValuesToPrint) {
+                        System.out.println(
+                                "[OUT-OF-RANGE DEPTH]"
+                                        + " x=" + x
+                                        + ", y=" + y
+                                        + ", value=" + depth
+                        );
+
+                        printedCount++;
+                    }
+                }
+            }
+        }
+
+        int totalValues =
+                Math.multiplyExact(
+                        width,
+                        height
+                );
+
+        System.out.println(
+                "========== DepthGrid verification =========="
+        );
+
+        System.out.println(
+                "Size             : "
+                        + width
+                        + " x "
+                        + height
+        );
+
+        System.out.println(
+                "Total values     : "
+                        + totalValues
+        );
+
+        System.out.println(
+                "Exact zeros      : "
+                        + exactZeroCount
+        );
+
+        System.out.println(
+                "Near zeros       : "
+                        + nearZeroCount
+                        + " (epsilon="
+                        + nearZeroEpsilon
+                        + ")"
+        );
+
+        System.out.println(
+                "Non-finite       : "
+                        + nonFiniteCount
+        );
+
+        System.out.println(
+                "Out of range     : "
+                        + outOfRangeCount
+        );
+
+        System.out.println(
+                "Minimum depth    : "
+                        + minDepth
+        );
+
+        System.out.println(
+                "Maximum depth    : "
+                        + maxDepth
+        );
+
+        System.out.println(
+                "============================================"
+        );
+
+        return exactZeroCount == 0
+                && nearZeroCount == 0
+                && nonFiniteCount == 0
+                && outOfRangeCount == 0;
+    }
+
+    public static boolean hasNearZeroDepthOnPerimeter(
+            float[][] depthGrid,
+            float epsilon
+    ) {
+        if (depthGrid == null
+                || depthGrid.length == 0
+                || depthGrid[0] == null
+                || depthGrid[0].length == 0) {
+
+            throw new IllegalArgumentException(
+                    "depthGrid must not be null or empty."
+            );
+        }
+
+        int width = depthGrid.length;
+        int height = depthGrid[0].length;
+
+        /*
+         * Filas inferior y superior.
+         */
+        for (int x = 0; x < width; x++) {
+            if (isNearZero(depthGrid[x][0], epsilon)) {
+                return true;
+            }
+
+            if (height > 1
+                    && isNearZero(
+                    depthGrid[x][height - 1],
+                    epsilon
+            )) {
+
+                return true;
+            }
+        }
+
+        /*
+         * Columnas izquierda y derecha.
+         * Las esquinas ya se comprobaron antes.
+         */
+        for (int y = 1; y < height - 1; y++) {
+            if (isNearZero(depthGrid[0][y], epsilon)) {
+                return true;
+            }
+
+            if (width > 1
+                    && isNearZero(
+                    depthGrid[width - 1][y],
+                    epsilon
+            )) {
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean isNearZero(
+            float value,
+            float epsilon
+    ) {
+        return Float.isFinite(value)
+                && Math.abs(value) <= epsilon;
+    }
+
+    public static HalfEdgeScene getHalfEdgeSceneRectangularNet(int numCols, int numRows, float[][] depthValues,
+                                                               GaiaBoundingBox bbox, boolean makeVerticalSkirt) {
         // Create halfEdgeScene
         HalfEdgeScene halfEdgeScene = new HalfEdgeScene();
         GaiaAttribute gaiaAttribute = new GaiaAttribute();
@@ -635,7 +1048,6 @@ public class HalfEdgeUtils {
             halfEdgeNode.getChildren().add(halfEdgeChild);
         }
 
-
         return halfEdgeNode;
     }
 
@@ -674,12 +1086,7 @@ public class HalfEdgeUtils {
             halfEdgePrimitive.getSurfaces().add(halfEdgeSurface);
         }
 
-        // make vertices of the primitive
-        List<HalfEdgeSurface> halfEdgeSurfaces = halfEdgePrimitive.getSurfaces();
-        for (HalfEdgeSurface halfEdgeSurface : halfEdgeSurfaces) {
-            List<HalfEdgeVertex> halfEdgeVertices = halfEdgeSurface.getVertices();
-            halfEdgePrimitive.getVertices().addAll(halfEdgeVertices);
-        }
+        halfEdgePrimitive.calculateVertices();
 
         return halfEdgePrimitive;
     }
@@ -695,11 +1102,15 @@ public class HalfEdgeUtils {
         // 1- count incidents.
         int numVertices = surface.getVertices().size();
         int[] counts = new int[numVertices];
+        List<HalfEdgeVertex> resultVertices = new ArrayList<>();
+        List<HalfEdge> memSaveHalfEdges = new ArrayList<>();
 
         for (HalfEdgeFace face : surface.getFaces()) {
             int fIdx = face.getId();
-            List<HalfEdgeVertex> faceVertices = face.getVertices(null);
-            for (HalfEdgeVertex v : faceVertices) {
+            resultVertices.clear();
+            memSaveHalfEdges.clear();
+            resultVertices = face.getVertices(resultVertices, memSaveHalfEdges);
+            for (HalfEdgeVertex v : resultVertices) {
                 counts[v.getId()]++;
             }
         }
@@ -715,75 +1126,19 @@ public class HalfEdgeUtils {
         int[] cursor = vertexOffsets.clone();
         for (HalfEdgeFace face : surface.getFaces()) {
             int fIdx = face.getId();
-
-            for (HalfEdgeVertex v : face.getVertices(null)) {
+            resultVertices.clear();
+            memSaveHalfEdges.clear();
+            resultVertices = face.getVertices(resultVertices, memSaveHalfEdges);
+            for (HalfEdgeVertex v : resultVertices) {
                 int vIdx = v.getId();
                 vertexFaces[cursor[vIdx]++] = fIdx;
             }
         }
 
+        resultVertices.clear();
+
         MapVertexAllFacesIndices resultMapVertexAllFacesIndices = new MapVertexAllFacesIndices(vertexOffsets, vertexFaces);
         return resultMapVertexAllFacesIndices;
-    }
-
-    public boolean getWeldedFacesWithFace(HalfEdgeSurface surface, HalfEdgeFace face, List<HalfEdgeFace> resultWeldedFaces,
-                                          Set<HalfEdgeFace> mapVisitedFaces,
-                                          MapVertexAllFacesIndices mapVertexAllFacesIndices) {
-        List<HalfEdgeFace> weldedFacesAux = new ArrayList<>();
-        List<HalfEdgeFace> faces = new ArrayList<>();
-        faces.add(face);
-
-//        Map<HalfEdgeFace, HalfEdgeFace> weldedUniqueFacesMap = new HashMap<>();
-//        // get the faces connected with the face by vertex
-//        List<HalfEdgeVertex> faceVertices = face.getVertices(null);
-//        for (HalfEdgeVertex vertex : faceVertices) {
-//            List<HalfEdgeFace> vertexFaces = vertexFacesMap.get(vertex);
-//            if (vertexFaces != null) {
-//                for (HalfEdgeFace vertexFace : vertexFaces) {
-//                    if (vertexFace.getStatus() == ObjectStatus.DELETED) {
-//                        continue;
-//                    }
-//                    weldedUniqueFacesMap.put(vertexFace, vertexFace);
-//                }
-//            }
-//        }
-
-        boolean finished = false;
-        int counter = 0;
-        while (!finished)// && counter < 10000000)
-        {
-            List<HalfEdgeFace> newAddedfaces = new ArrayList<>();
-            int facesCount = faces.size();
-            for (int i = 0; i < facesCount; i++) {
-                HalfEdgeFace currFace = faces.get(i);
-                if (currFace.getStatus() == ObjectStatus.DELETED) {
-                    continue;
-                }
-
-                if (mapVisitedFaces.contains(currFace)) {
-                    continue;
-                }
-
-                resultWeldedFaces.add(currFace);
-                //weldedUniqueFacesMap.put(currFace, currFace);
-                mapVisitedFaces.add(currFace);
-                weldedFacesAux.clear();
-                currFace.getWeldedFaces(weldedFacesAux, mapVisitedFaces, mapVertexAllFacesIndices,
-                        surface.getFaces());
-                newAddedfaces.addAll(weldedFacesAux);
-            }
-
-            if (newAddedfaces.isEmpty()) {
-                finished = true;
-            } else {
-                faces.clear();
-                faces.addAll(newAddedfaces);
-            }
-
-            counter++;
-        }
-
-        return true;
     }
 
     public static List<HalfEdgeVertex> getVerticesOfFaces(List<HalfEdgeFace> faces, List<HalfEdgeVertex> resultVertices) {
@@ -791,11 +1146,15 @@ public class HalfEdgeUtils {
         if (resultVertices == null) {
             resultVertices = new ArrayList<>();
         }
+        List<HalfEdgeVertex> faceVertices = new ArrayList<>();
+        List<HalfEdge>  memSaveHalfEdges = new ArrayList<>();
         for (HalfEdgeFace face : faces) {
             if (face.getStatus() == ObjectStatus.DELETED) {
                 continue;
             }
-            List<HalfEdgeVertex> faceVertices = face.getVertices(null);
+            faceVertices.clear();
+            memSaveHalfEdges.clear();
+            faceVertices = face.getVertices(faceVertices, memSaveHalfEdges);
             for (HalfEdgeVertex vertex : faceVertices) {
                 if (MapVertices.containsKey(vertex)) {
                     continue;
@@ -805,49 +1164,106 @@ public class HalfEdgeUtils {
             }
         }
 
-        //resultVertices.addAll(MapVertices.values());
         return resultVertices;
     }
 
-    public static List<HalfEdge> getHalfEdgesOfFaces(List<HalfEdgeFace> faces, List<HalfEdge> resultHalfEdges) {
-        Map<HalfEdge, HalfEdge> MapHalfEdges = new HashMap<>();
+    public static List<HalfEdge> getHalfEdgesOfFaces(
+            List<HalfEdgeFace> faces,
+            List<HalfEdge> resultHalfEdges
+    ) {
         if (resultHalfEdges == null) {
             resultHalfEdges = new ArrayList<>();
         }
-        List<HalfEdge> faceHalfEdges = new ArrayList<>();
-        for (HalfEdgeFace face : faces) {
-            faceHalfEdges.clear();
-            faceHalfEdges = face.getHalfEdgesLoop(faceHalfEdges);
-            for (HalfEdge halfEdge : faceHalfEdges) {
-                if (MapHalfEdges.containsKey(halfEdge)) {
-                    continue;
-                }
-                resultHalfEdges.add(halfEdge);
-                MapHalfEdges.put(halfEdge, halfEdge);
-            }
+
+        if (faces == null || faces.isEmpty()) {
+            return resultHalfEdges;
         }
 
-        //resultHalfEdges.addAll(MapHalfEdges.values());
+        List<HalfEdge> faceHalfEdges =
+                new ArrayList<>(3);
+
+        for (HalfEdgeFace face : faces) {
+            if (face == null) {
+                continue;
+            }
+
+            faceHalfEdges.clear();
+
+            face.getHalfEdgesLoop(
+                    faceHalfEdges
+            );
+
+            resultHalfEdges.addAll(
+                    faceHalfEdges
+            );
+        }
+
         return resultHalfEdges;
     }
 
-    public static HalfEdgeSurface halfEdgeSurfaceFromGaiaSurface(GaiaSurface gaiaSurface, List<GaiaVertex> gaiaVertices) {
+    public static List<HalfEdge> getHalfEdgesOfFaces_original(
+            List<HalfEdgeFace> faces,
+            List<HalfEdge> resultHalfEdges
+    ) {
+        Set<HalfEdge> halfEdgesSet =
+                new HashSet<>();
+
+        if (resultHalfEdges == null) {
+            resultHalfEdges =
+                    new ArrayList<>();
+        } else {
+            halfEdgesSet.addAll(resultHalfEdges);
+        }
+
+        List<HalfEdge> faceHalfEdges =
+                new ArrayList<>();
+
+        for (HalfEdgeFace face : faces) {
+            faceHalfEdges.clear();
+
+            face.getHalfEdgesLoop(
+                    faceHalfEdges
+            );
+
+            for (HalfEdge halfEdge : faceHalfEdges) {
+                if (halfEdgesSet.add(halfEdge)) {
+                    resultHalfEdges.add(halfEdge);
+                }
+            }
+        }
+
+        return resultHalfEdges;
+    }
+
+    public static HalfEdgeSurface halfEdgeSurfaceFromGaiaSurface(GaiaSurface gaiaSurface,
+                                                                 List<GaiaVertex> gaiaVertices) {
         HalfEdgeSurface halfEdgeSurface = new HalfEdgeSurface();
         Map<GaiaVertex, HalfEdgeVertex> mapGaiaVertexToHalfEdgeVertex = new HashMap<>();
 
         // faces
+        List<GaiaFace> memSaveGaiaFaces = new ArrayList<>();
+        List<HalfEdge> memSaveHalfEdges = new ArrayList<>();
         List<GaiaFace> gaiaFaces = gaiaSurface.getFaces();
         for (GaiaFace gaiaFace : gaiaFaces) {
             if (gaiaFace == null) {
                 log.error("[ERROR] gaiaFace == null");
                 continue;
             }
-            List<GaiaFace> gaiaTriangleFaces = new HalfEdgeUtils().getGaiaTriangleFacesFromGaiaFace(gaiaFace);
-            for (GaiaFace gaiaTriangleFace : gaiaTriangleFaces) {
-                if (gaiaTriangleFace == null) {
-                    continue;
+
+            if (gaiaFace.getIndices().length > 3) {
+                memSaveGaiaFaces.clear();
+                memSaveGaiaFaces = HalfEdgeUtils.getGaiaTriangleFacesFromGaiaFace(gaiaFace, memSaveGaiaFaces);
+                for (GaiaFace gaiaTriangleFace : memSaveGaiaFaces) {
+                    if (gaiaTriangleFace == null) {
+                        continue;
+                    }
+                    memSaveHalfEdges.clear();
+                    HalfEdgeFace halfEdgeFace = HalfEdgeUtils.halfEdgeFaceFromGaiaFace(gaiaTriangleFace, gaiaVertices, halfEdgeSurface, mapGaiaVertexToHalfEdgeVertex, memSaveHalfEdges);
+                    halfEdgeSurface.getFaces().add(halfEdgeFace);
                 }
-                HalfEdgeFace halfEdgeFace = HalfEdgeUtils.halfEdgeFaceFromGaiaFace(gaiaTriangleFace, gaiaVertices, halfEdgeSurface, mapGaiaVertexToHalfEdgeVertex);
+            } else {
+                memSaveHalfEdges.clear();
+                HalfEdgeFace halfEdgeFace = HalfEdgeUtils.halfEdgeFaceFromGaiaFace(gaiaFace, gaiaVertices, halfEdgeSurface, mapGaiaVertexToHalfEdgeVertex, memSaveHalfEdges);
                 halfEdgeSurface.getFaces().add(halfEdgeFace);
             }
         }
@@ -857,16 +1273,22 @@ public class HalfEdgeUtils {
 
         // set twins
         halfEdgeSurface.setTwins();
-        halfEdgeSurface.checkSandClockFaces();
 
         return halfEdgeSurface;
     }
 
-    public static HalfEdgeFace halfEdgeFaceFromGaiaFace(GaiaFace gaiaFace, List<GaiaVertex> gaiaVertices, HalfEdgeSurface halfEdgeSurfaceOwner, Map<GaiaVertex, HalfEdgeVertex> mapGaiaVertexToHalfEdgeVertex) {
+    public static HalfEdgeFace halfEdgeFaceFromGaiaFace(GaiaFace gaiaFace,
+                                                        List<GaiaVertex> gaiaVertices,
+                                                        HalfEdgeSurface halfEdgeSurfaceOwner,
+                                                        Map<GaiaVertex, HalfEdgeVertex> mapGaiaVertexToHalfEdgeVertex,
+                                                        List<HalfEdge> memSaveHalfEdges) {
         HalfEdgeFace halfEdgeFace = new HalfEdgeFace();
 
         // indices
-        List<HalfEdge> currHalfEdges = new ArrayList<>();
+        if (memSaveHalfEdges == null) {
+            memSaveHalfEdges = new ArrayList<>();
+        }
+        memSaveHalfEdges.clear();
         int[] indices = gaiaFace.getIndices();
         for (int index : indices) {
             if (index >= gaiaVertices.size()) {
@@ -885,34 +1307,21 @@ public class HalfEdgeUtils {
             halfEdge.setFace(halfEdgeFace);
             halfEdgeFace.setHalfEdge(halfEdge);
 
-            currHalfEdges.add(halfEdge);
+            memSaveHalfEdges.add(halfEdge);
             halfEdgeSurfaceOwner.getHalfEdges().add(halfEdge);
         }
 
         // now set nextHalfEdges
-        int currHalfEdgesCount = currHalfEdges.size();
+        int currHalfEdgesCount = memSaveHalfEdges.size();
         for (int i = 0; i < currHalfEdgesCount; i++) {
-            HalfEdge currHalfEdge = currHalfEdges.get(i);
-            HalfEdge nextHalfEdge = currHalfEdges.get((i + 1) % currHalfEdgesCount);
+            HalfEdge currHalfEdge = memSaveHalfEdges.get(i);
+            HalfEdge nextHalfEdge = memSaveHalfEdges.get((i + 1) % currHalfEdgesCount);
             currHalfEdge.setNext(nextHalfEdge);
         }
 
         halfEdgeFace.setId(gaiaFace.getId());
 
         return halfEdgeFace;
-    }
-
-    private static HalfEdgePrimitive getCopyHalfEdgePrimitive(HalfEdgePrimitive halfEdgePrimitive) {
-        HalfEdgePrimitive copyHalfEdgePrimitive = new HalfEdgePrimitive();
-
-        // copy surfaces
-        List<HalfEdgeSurface> halfEdgeSurfaces = halfEdgePrimitive.getSurfaces();
-        for (HalfEdgeSurface halfEdgeSurface : halfEdgeSurfaces) {
-            HalfEdgeSurface newHalfEdgeSurface = getCopyHalfEdgeSurface(halfEdgeSurface);
-            copyHalfEdgePrimitive.getSurfaces().add(newHalfEdgeSurface);
-        }
-
-        return copyHalfEdgePrimitive;
     }
 
     private static HalfEdgeSurface getCopyHalfEdgeSurface(HalfEdgeSurface halfEdgeSurface) {
@@ -999,82 +1408,8 @@ public class HalfEdgeUtils {
         return copyHalfEdgeSurface;
     }
 
-    public static List<HalfEdgeScene> getCopyHalfEdgeScenesByFaceClassifyId(HalfEdgeScene halfEdgeScene, List<HalfEdgeScene> resultHalfEdgeScenes) {
-        // TEST FUNCTION
-        if (resultHalfEdgeScenes == null) {
-            resultHalfEdgeScenes = new ArrayList<>();
-        }
-
-        Map<Integer, HalfEdgeScene> mapClassifyIdToHalfEdgeScene = new HashMap<>();
-        GaiaAttribute gaiaAttribute = halfEdgeScene.getAttribute();
-
-        // test : delete faces with classifyId = 1
-        HalfEdgeScene halfEdgeScene1 = halfEdgeScene.clone();
-        HalfEdgeScene halfEdgeScene2 = halfEdgeScene.clone();
-
-        halfEdgeScene1.deleteFacesWithClassifyId(2);
-        halfEdgeScene2.deleteFacesWithClassifyId(1);
-
-        if (halfEdgeScene1.getTrianglesCount() > 0) {
-            resultHalfEdgeScenes.add(halfEdgeScene1);
-        }
-
-        if (halfEdgeScene2.getTrianglesCount() > 0) {
-            resultHalfEdgeScenes.add(halfEdgeScene2);
-        }
-
-        return resultHalfEdgeScenes;
-    }
-
-    public static List<HalfEdgeScene> getCopyHalfEdgeScenesByFaceClassifyId_original(HalfEdgeScene halfEdgeScene, List<HalfEdgeScene> resultHalfEdgeScenes) {
-        if (resultHalfEdgeScenes == null) {
-            resultHalfEdgeScenes = new ArrayList<>();
-        }
-
-        Map<Integer, HalfEdgeScene> mapClassifyIdToHalfEdgeScene = new HashMap<>();
-        GaiaAttribute gaiaAttribute = halfEdgeScene.getAttribute();
-
-        int nodesCount = halfEdgeScene.getNodes().size();
-        for (int j = 0; j < nodesCount; j++) {
-            HalfEdgeNode rootNode = halfEdgeScene.getNodes().get(j);
-            Map<Integer, HalfEdgeNode> mapClassifyIdToNode = getMapHalfEdgeNodeByFaceClassifyId(rootNode, null);
-            for (Integer key : mapClassifyIdToNode.keySet()) {
-                int faceClassifyId = key;
-                HalfEdgeNode halfEdgeNode = mapClassifyIdToNode.get(faceClassifyId);
-                HalfEdgeScene halfEdgeSceneCopy = mapClassifyIdToHalfEdgeScene.get(faceClassifyId);
-                if (halfEdgeSceneCopy == null) {
-                    halfEdgeSceneCopy = new HalfEdgeScene();
-
-                    // copy original path
-                    halfEdgeSceneCopy.setOriginalPath(halfEdgeScene.getOriginalPath());
-
-                    // copy gaiaAttributes
-                    GaiaAttribute newGaiaAttribute = gaiaAttribute.getCopy();
-                    halfEdgeSceneCopy.setAttribute(newGaiaAttribute);
-
-                    mapClassifyIdToHalfEdgeScene.put(faceClassifyId, halfEdgeSceneCopy);
-                }
-                halfEdgeSceneCopy.getNodes().add(halfEdgeNode);
-            }
-
-        }
-
-        for (Integer key : mapClassifyIdToHalfEdgeScene.keySet()) {
-            HalfEdgeScene halfEdgeSceneCopy = mapClassifyIdToHalfEdgeScene.get(key);
-
-            // copy materials
-            List<GaiaMaterial> gaiaMaterials = halfEdgeScene.getMaterials();
-            for (GaiaMaterial gaiaMaterial : gaiaMaterials) {
-                GaiaMaterial newGaiaMaterial = gaiaMaterial.clone();
-                halfEdgeSceneCopy.getMaterials().add(newGaiaMaterial);
-            }
-            resultHalfEdgeScenes.add(halfEdgeSceneCopy);
-        }
-
-        return resultHalfEdgeScenes;
-    }
-
-    private static Map<Integer, HalfEdgeNode> getMapHalfEdgeNodeByFaceClassifyId(HalfEdgeNode halfEdgeNode, Map<Integer, HalfEdgeNode> resultClassifyIdToNode) {
+    private static Map<Integer, HalfEdgeNode> getMapHalfEdgeNodeByFaceClassifyId(HalfEdgeNode halfEdgeNode,
+                                                                                 Map<Integer, HalfEdgeNode> resultClassifyIdToNode) {
         if (resultClassifyIdToNode == null) {
             resultClassifyIdToNode = new HashMap<>();
         }
@@ -1127,11 +1462,11 @@ public class HalfEdgeUtils {
         return resultClassifyIdToNode;
     }
 
-    private static Map<Integer, HalfEdgeMesh> getMapHalfEdgeMeshByFaceClassifyId(HalfEdgeMesh halfEdgeMesh, Map<Integer, HalfEdgeMesh> resultMap) {
+    private static Map<Integer, HalfEdgeMesh> getMapHalfEdgeMeshByFaceClassifyId(HalfEdgeMesh halfEdgeMesh,
+                                                                                 Map<Integer, HalfEdgeMesh> resultMap) {
         if (resultMap == null) {
             resultMap = new HashMap<>();
         }
-
 
         List<HalfEdgePrimitive> halfEdgePrimitives = halfEdgeMesh.getPrimitives();
         for (HalfEdgePrimitive halfEdgePrimitive : halfEdgePrimitives) {
@@ -1152,7 +1487,8 @@ public class HalfEdgeUtils {
         return resultMap;
     }
 
-    private static Map<Integer, HalfEdgePrimitive> getMapHalfEdgePrimitiveByFaceClassifyId(HalfEdgePrimitive halfEdgePrimitive, Map<Integer, HalfEdgePrimitive> resultMap) {
+    private static Map<Integer, HalfEdgePrimitive> getMapHalfEdgePrimitiveByFaceClassifyId(HalfEdgePrimitive halfEdgePrimitive,
+                                                                                           Map<Integer, HalfEdgePrimitive> resultMap) {
         if (resultMap == null) {
             resultMap = new HashMap<>();
         }
@@ -1181,7 +1517,8 @@ public class HalfEdgeUtils {
 
     }
 
-    private static Map<Integer, HalfEdgeSurface> getMapHalfEdgeSurfaceByFaceClassifyId(HalfEdgeSurface halfEdgeSurface, Map<Integer, HalfEdgeSurface> resultHalfEdgeSurfaces) {
+    private static Map<Integer, HalfEdgeSurface> getMapHalfEdgeSurfaceByFaceClassifyId(HalfEdgeSurface halfEdgeSurface,
+                                                                                       Map<Integer, HalfEdgeSurface> resultHalfEdgeSurfaces) {
         if (resultHalfEdgeSurfaces == null) {
             resultHalfEdgeSurfaces = new HashMap<>();
         }
@@ -1316,7 +1653,13 @@ public class HalfEdgeUtils {
         return longest / height;
     }
 
-    private static void getWeldableVertexMap(Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster, List<GaiaVertex> vertices, double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
+    private static void getWeldableVertexMap(Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster,
+                                             List<GaiaVertex> vertices,
+                                             double error,
+                                             boolean checkTexCoord,
+                                             boolean checkNormal,
+                                             boolean checkColor,
+                                             boolean checkBatchId) {
         Map<GaiaVertex, GaiaVertex> visitedMap = new HashMap<>();
         int verticesCount = vertices.size();
         for (int i = 0; i < verticesCount; i++) {
@@ -1340,7 +1683,13 @@ public class HalfEdgeUtils {
         }
     }
 
-    public static void weldVerticesGaiaSurface(GaiaSurface gaiaSurface, List<GaiaVertex> gaiaVertices, double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
+    public static void weldVerticesGaiaSurface(GaiaSurface gaiaSurface,
+                                               List<GaiaVertex> gaiaVertices,
+                                               double error,
+                                               boolean checkTexCoord,
+                                               boolean checkNormal,
+                                               boolean checkColor,
+                                               boolean checkBatchId) {
         // Weld the vertices
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
         gaiaVertices.forEach(gaiaVertex -> {
@@ -1350,17 +1699,20 @@ public class HalfEdgeUtils {
         // make bbox as cube
         GaiaBoundingBox cubeBoundingBox = boundingBox.createCubeFromMinPosition();
         GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null, cubeBoundingBox);
-        octreeVertices.addContents(gaiaVertices);
+        List<GeometryContent> gaiaContents = gaiaVertices.stream().map(v -> (GeometryContent) v).collect(Collectors.toList());
+        octreeVertices.addContents(gaiaContents);
+
         octreeVertices.setLimitDepth(10);
         octreeVertices.setLimitBoxSize(1.0); // 1m
         octreeVertices.makeTreeByMinVertexCount(50);
 
-        List<GaiaOctree<GaiaVertex>> octreesWithContents = octreeVertices.extractOctreesWithContents();
-
+        List<GaiaOctree<GeometryContent>> octreesWithContents = octreeVertices.extractOctreesWithContents();
         Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster = new HashMap<>();
 
-        for (GaiaOctree<GaiaVertex> octree : octreesWithContents) {
-            List<GaiaVertex> vertices = octree.getContents();
+        for (GaiaOctree<GeometryContent> octree : octreesWithContents) {
+            List<GaiaVertex> vertices = octree.getContents().stream()
+                    .map(c -> (GaiaVertex) c)
+                    .collect(Collectors.toList());
             getWeldableVertexMap(mapVertexToVertexMaster, vertices, error, checkTexCoord, checkNormal, checkColor, checkBatchId);
         }
 
@@ -1424,35 +1776,6 @@ public class HalfEdgeUtils {
         gaiaVertices.addAll(newVerticesArray);
     }
 
-    public static Map<PlaneType, List<HalfEdgeFace>> makeMapPlaneTypeFacesList(List<HalfEdgeFace> facesList, Map<PlaneType, List<HalfEdgeFace>> mapPlaneTypeFacesList) {
-        if (mapPlaneTypeFacesList == null) {
-            mapPlaneTypeFacesList = new HashMap<>();
-        }
-        int facesCount = facesList.size();
-        for (int i = 0; i < facesCount; i++) {
-            HalfEdgeFace face = facesList.get(i);
-            PlaneType planeType = face.getBestPlaneToProject();
-            List<HalfEdgeFace> faces = mapPlaneTypeFacesList.computeIfAbsent(planeType, k -> new ArrayList<>());
-            faces.add(face);
-        }
-        return mapPlaneTypeFacesList;
-    }
-
-    public static Map<CameraDirectionType, List<HalfEdgeFace>> makeMapCameraDirectionTypeFacesList(List<HalfEdgeFace> facesList) {
-        Map<CameraDirectionType, List<HalfEdgeFace>> mapCameraDirectionFacesList = new HashMap<>();
-        List<HalfEdgeFace> faces;
-
-        int facesCount = facesList.size();
-        for (int i = 0; i < facesCount; i++) {
-            HalfEdgeFace face = facesList.get(i);
-            CameraDirectionType cameraDirectionType = face.getCameraDirectionType();
-            faces = mapCameraDirectionFacesList.computeIfAbsent(cameraDirectionType, k -> new ArrayList<>());
-            faces.add(face);
-
-        }
-        return mapCameraDirectionFacesList;
-    }
-
     public static GaiaBoundingBox getBoundingBoxOfFaces(List<HalfEdgeFace> faces) {
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
         boundingBox.setMinX(Double.MAX_VALUE);
@@ -1463,8 +1786,10 @@ public class HalfEdgeUtils {
         boundingBox.setMaxZ(-Double.MAX_VALUE);
 
         List<HalfEdgeVertex> vertices = new ArrayList<>();
+        List<HalfEdge> memSaveHalfEdges = new ArrayList<>();
         for (HalfEdgeFace face : faces) {
-            vertices = face.getVertices(vertices);
+            memSaveHalfEdges.clear();
+            vertices = face.getVertices(vertices, memSaveHalfEdges);
         }
 
         for (HalfEdgeVertex vertex : vertices) {
@@ -1475,8 +1800,11 @@ public class HalfEdgeUtils {
         return boundingBox;
     }
 
-    public List<GaiaFace> getGaiaTriangleFacesFromGaiaFace(GaiaFace gaiaFace) {
-        List<GaiaFace> gaiaFaces = new ArrayList<>();
+    public static List<GaiaFace> getGaiaTriangleFacesFromGaiaFace(GaiaFace gaiaFace, List<GaiaFace> memSaveGaiaFaces) {
+        if (memSaveGaiaFaces == null) {
+            memSaveGaiaFaces = new ArrayList<>();
+        }
+        memSaveGaiaFaces.clear();
         int[] indices = gaiaFace.getIndices();
         Vector3d normal = gaiaFace.getFaceNormal();
         int faceId = gaiaFace.getId();
@@ -1492,9 +1820,9 @@ public class HalfEdgeUtils {
             if (normal != null) {
                 gaiaTriangleFace.setFaceNormal(new Vector3d(normal));
             }
-            gaiaFaces.add(gaiaTriangleFace);
+            memSaveGaiaFaces.add(gaiaTriangleFace);
         }
-        return gaiaFaces;
+        return memSaveGaiaFaces;
     }
 
     public static void setHalfEdgeFacesIdsInList(List<HalfEdgeFace> faces) {

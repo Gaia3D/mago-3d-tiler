@@ -12,19 +12,17 @@ import java.util.Map;
 
 public class BucketWriter implements Closeable {
     private static final int BUFFER_SIZE = 2 * 1024 * 1024;
-
-    private static class BucketBuffer {
-        byte[] buf = new byte[BUFFER_SIZE];
-        int offset = 0;
-    }
-
     private final GeographicTilingScheme scheme = new GeographicTilingScheme();
     private final Map<Integer, BucketBuffer> buffers = new HashMap<>();
-
     private final FileHandlePool fileHandlePool;
 
     public BucketWriter(Path tempRootDir) throws IOException {
         this.fileHandlePool = new FileHandlePool(tempRootDir, 128);
+    }
+
+    private static void writeBytes(BucketBuffer buffer, byte[] bytes) {
+        System.arraycopy(bytes, 0, buffer.buf, buffer.offset, bytes.length);
+        buffer.offset += bytes.length;
     }
 
     public void addPoint(GaiaLasPoint point) throws IOException {
@@ -62,16 +60,11 @@ public class BucketWriter implements Closeable {
     }
 
     private void flushBuffer(int bucketId, BucketBuffer buffer) throws IOException {
-        if (buffer.offset == 0) return;
+        if (buffer.offset == 0) {return;}
 
         OutputStream out = fileHandlePool.getOutputStream(bucketId); // append mode
         out.write(buffer.buf, 0, buffer.offset);
         buffer.offset = 0;
-    }
-
-    private static void writeBytes(BucketBuffer buffer, byte[] bytes) {
-        System.arraycopy(bytes, 0, buffer.buf, buffer.offset, bytes.length);
-        buffer.offset += bytes.length;
     }
 
     @Override
@@ -80,5 +73,10 @@ public class BucketWriter implements Closeable {
             flushBuffer(entry.getKey(), entry.getValue());
         }
         fileHandlePool.close();
+    }
+
+    private static class BucketBuffer {
+        byte[] buf = new byte[BUFFER_SIZE];
+        int offset = 0;
     }
 }

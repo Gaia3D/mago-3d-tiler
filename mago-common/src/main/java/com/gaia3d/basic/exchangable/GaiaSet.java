@@ -62,7 +62,7 @@ public class GaiaSet implements Serializable {
         return newGaiaSet;
     }
 
-    public static GaiaSet readFile(Path path) throws FileNotFoundException {
+    public static GaiaSet readFile(Path path) throws IOException {
         File input = path.toFile();
         Path imagesPath = path.getParent().resolve("images");
         try (ObjectInputStream inputStream = new ObjectInputStream(new BufferedInputStream(new FileInputStream(input)))) {
@@ -80,9 +80,9 @@ public class GaiaSet implements Serializable {
             }
             return gaiaSet;
         } catch (Exception e) {
-            log.error("[ERROR] GaiaSet Read Error : ", e);
+            log.error("[ERROR] GaiaSet Read Error : {}", path, e);
+            throw new IOException("Failed to read GaiaSet file: " + path, e);
         }
-        return null;
     }
 
     public GaiaBoundingBox getBoundingBox() {
@@ -138,7 +138,7 @@ public class GaiaSet implements Serializable {
         int dividedNumber = serial / 10000;
 
         String tempFileName = this.attribute.getIdentifier().toString() + "." + FormatType.TEMP.getExtension();
-        Path tempDir = path.resolve(this.projectName).resolve(String.valueOf(dividedNumber));
+        Path tempDir = path.resolve(this.projectName + this.attribute.getIdentifier()).resolve(String.valueOf(dividedNumber));
         File tempDirFile = tempDir.toFile();
         if (tempDirFile.mkdirs()) {
             log.debug("Directory created: {}", tempDir);
@@ -241,7 +241,6 @@ public class GaiaSet implements Serializable {
             if (!imageFile.exists()) {
                 log.error("[ERROR] Texture Input Image Path is not exists. {}", diffusePath);
             } else {
-                ImageResizer imageResizer = new ImageResizer();
                 BufferedImage bufferedImage;
                 try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(imageFile))) {
                     bufferedImage = ImageIO.read(bis);
@@ -268,9 +267,9 @@ public class GaiaSet implements Serializable {
                         FileUtils.copyFile(imageFile, outputImageFile);
                         continue;
                     }
-                    int resizeWidth = Math.max(1, (int)Math.round(bufferedImage.getWidth() * scale));
-                    int resizeHeight = Math.max(1, (int)Math.round(bufferedImage.getHeight() * scale));
-                    BufferedImage resizedImage = imageResizer.resizeImageGraphic2D(bufferedImage, resizeWidth, resizeHeight);
+                    int resizeWidth = Math.max(1, (int) Math.round(bufferedImage.getWidth() * scale));
+                    int resizeHeight = Math.max(1, (int) Math.round(bufferedImage.getHeight() * scale));
+                    BufferedImage resizedImage = ImageResizer.resizeImageGraphic2D(bufferedImage, resizeWidth, resizeHeight);
                     //ImageIO.write(resizedImage, fileFormat, outputImageFile);
                     if (fileFormat.equals("jpg") || fileFormat.equals("jpeg")) {
                         writeOnlyJpeg(resizedImage, outputImageFile, 0.8f);
@@ -353,12 +352,14 @@ public class GaiaSet implements Serializable {
         this.bufferDataList.forEach(GaiaBufferDataSet::clear);
         this.bufferDataList.clear();
 
-        int materialsCount = this.materials.size();
-        for (int i = 0; i < materialsCount; i++) {
-            GaiaMaterial material = this.materials.get(i);
-            material.clear();
+        if (this.materials != null) {
+            int materialsCount = this.materials.size();
+            for (int i = 0; i < materialsCount; i++) {
+                GaiaMaterial material = this.materials.get(i);
+                material.clear();
+            }
+            this.materials.clear();
         }
-        this.materials.clear();
     }
 
     private void writeOnlyJpeg(BufferedImage bufferedImage, File outputPath, float quality) {

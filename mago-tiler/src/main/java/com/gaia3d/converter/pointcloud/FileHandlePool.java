@@ -2,11 +2,7 @@ package com.gaia3d.converter.pointcloud;
 
 import com.gaia3d.util.geographic.TileCoordinate;
 
-import java.io.BufferedOutputStream;
-import java.io.Closeable;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -20,21 +16,6 @@ public class FileHandlePool implements Closeable {
 
     private final Map<Integer, Handle> handles = new HashMap<>();
     private final LinkedHashMap<Integer, Handle> openHandles;
-
-    private static class Handle {
-        final int bucketId;
-        final Path path;
-        OutputStream out;
-
-        Handle(int bucketId, Path path) {
-            this.bucketId = bucketId;
-            this.path = path;
-        }
-
-        boolean isOpen() {
-            return out != null;
-        }
-    }
 
     public FileHandlePool(Path rootDir, int maxOpenFiles) throws IOException {
         this(rootDir, maxOpenFiles, 4 * 1024 * 1024); // default 4MB buffer
@@ -105,7 +86,7 @@ public class FileHandlePool implements Closeable {
         TileCoordinate tile = bucketIdToTileCoordinate(bucketId);
 
         //String fileName = String.format("bucket_%06d.bin", bucketId);
-        String fileName = String.format("bucket.bin");
+        String fileName = "bucket.bin";
         String filePath = String.format("%d/%d/%d/" + fileName, tile.level, tile.x, tile.y);
         return rootDir.resolve(filePath);
     }
@@ -119,12 +100,12 @@ public class FileHandlePool implements Closeable {
                 try {
                     handle.out.flush();
                 } catch (IOException e) {
-                    if (first == null) first = e;
+                    if (first == null) {first = e;}
                 }
                 try {
                     handle.out.close();
                 } catch (IOException e) {
-                    if (first == null) first = e;
+                    if (first == null) {first = e;}
                 } finally {
                     handle.out = null;
                 }
@@ -135,6 +116,21 @@ public class FileHandlePool implements Closeable {
 
         if (first != null) {
             throw first;
+        }
+    }
+
+    private static class Handle {
+        final int bucketId;
+        final Path path;
+        OutputStream out;
+
+        Handle(int bucketId, Path path) {
+            this.bucketId = bucketId;
+            this.path = path;
+        }
+
+        boolean isOpen() {
+            return out != null;
         }
     }
 }

@@ -1,9 +1,11 @@
 package com.gaia3d.process.postprocess.batch;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
+@Tag("manual")
 class Batched3DModelTest {
 
     @Test

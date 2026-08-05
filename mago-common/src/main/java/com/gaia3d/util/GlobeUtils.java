@@ -1,5 +1,6 @@
 package com.gaia3d.util;
 
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.api.referencing.FactoryException;
 import org.geotools.api.referencing.ReferenceIdentifier;
@@ -21,6 +22,7 @@ import java.util.List;
  * Utility class for converting between geographic and cartesian coordinates.
  */
 @Slf4j
+@UtilityClass
 public class GlobeUtils {
     public static final double DEGREE_TO_RADIAN_FACTOR = 0.017453292519943296d; // 3.141592653589793 / 180.0;
     public static final double EQUATORIAL_RADIUS = 6378137.0d;
@@ -77,7 +79,7 @@ public class GlobeUtils {
         double latDistance = distanceBetweenLatitudesRad(minLatRad, maxLatRad, body);
         double lonDistance = distanceBetweenLongitudesRad((minLatRad + maxLatRad) / 2.0, minLonRad, maxLonRad, body);
 
-        return new double[] { lonDistance, latDistance };
+        return new double[]{lonDistance, latDistance};
     }
 
     public static double distanceBetweenLongitudesRad(double latRad, double minLonRad, double maxLonRad, CelestialBody body) {
@@ -288,7 +290,7 @@ public class GlobeUtils {
         return transform(source, wgs84, coordinate);
     }
 
-    public static ProjCoordinate transform(CoordinateReferenceSystem source, CoordinateReferenceSystem target,ProjCoordinate coordinate) {
+    public static ProjCoordinate transform(CoordinateReferenceSystem source, CoordinateReferenceSystem target, ProjCoordinate coordinate) {
         BasicCoordinateTransform transformer = new BasicCoordinateTransform(source, target);
         return transformer.transform(coordinate, new ProjCoordinate());
     }
@@ -346,7 +348,7 @@ public class GlobeUtils {
 
     public static CoordinateReferenceSystem convertProj4jCrsFromGeotoolsCrs(org.geotools.api.referencing.crs.CoordinateReferenceSystem crs) {
         String epsg = null;
-        List<ReferenceIdentifier> identifiers =  crs.getIdentifiers().stream().toList();
+        List<ReferenceIdentifier> identifiers = crs.getIdentifiers().stream().toList();
         if (!identifiers.isEmpty()) {
             ReferenceIdentifier identifier = identifiers.get(0);
             if (identifier.getCodeSpace().equalsIgnoreCase("EPSG")) {

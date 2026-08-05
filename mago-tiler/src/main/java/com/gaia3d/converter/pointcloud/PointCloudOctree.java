@@ -2,8 +2,6 @@ package com.gaia3d.converter.pointcloud;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.octree.GaiaOctree;
-import com.gaia3d.basic.geometry.octree.GaiaOctreeVertices;
-import com.gaia3d.basic.model.GaiaVertex;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;

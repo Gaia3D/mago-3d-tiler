@@ -27,7 +27,7 @@ public class PointCloudBinaryWriter {
         this.batchTableBytes = batchTableBytes;
     }
 
-    public void write(Path outputRoot, String nodeCode) {
+    public void write(Path outputRoot, String contentPath) {
         int featureTableJSONByteLength = featureTableJson.length();
         int batchTableJSONByteLength = batchTableJson.length();
 
@@ -67,7 +67,12 @@ public class PointCloudBinaryWriter {
             byteLength += lastPadLength;
         }
 
-        File b3dmOutputFile = outputRoot.resolve(nodeCode + "." + MAGIC).toFile();
+        File b3dmOutputFile = outputRoot.resolve(contentPath + "." + MAGIC).toFile();
+        File parent = b3dmOutputFile.getParentFile();
+        if (parent != null && !parent.exists() && !parent.mkdirs()) {
+            log.error("[ERROR] Failed to create output directory : {}", parent);
+            return;
+        }
         try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(b3dmOutputFile)))) {
             // 28-byte header (first 20 bytes)
             stream.writePureText(MAGIC);

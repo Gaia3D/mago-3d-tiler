@@ -4,6 +4,10 @@ import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
+import com.gaia3d.converter.assimp.validation.GaiaSceneRepair;
+import com.gaia3d.converter.assimp.validation.GaiaSceneValidationReport;
+import com.gaia3d.converter.assimp.validation.GaiaSceneValidationReportCollector;
+import com.gaia3d.converter.assimp.validation.GaiaSceneValidator;
 import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.converter.parametric.ExtrusionTempGenerator;
@@ -12,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.imagen.Interpolation;
+import org.geotools.api.parameter.GeneralParameterValue;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.Interpolator2D;
 import org.geotools.coverage.processing.Operations;
@@ -31,13 +36,31 @@ public class BatchedFileLoader implements FileLoader {
     private final Converter converter;
     private final AttributeReader kmlReader;
     private final ExtrusionTempGenerator tempGenerator;
+    private final GaiaSceneValidator sceneValidator = new GaiaSceneValidator();
+    private final GaiaSceneRepair sceneRepair = new GaiaSceneRepair();
 
     public List<File> loadTemp(File tempPath, List<File> files) {
         return tempGenerator.generate(tempPath, files);
     }
 
     public List<GaiaScene> loadScene(File input) {
-        return converter.load(input);
+        List<GaiaScene> scenes = converter.load(input);
+        GaiaSceneValidationReport report = sceneValidator.validate(input, scenes);
+        if (report.hasIssues()) {
+            log.warn("[WARN] Validation issues: {}", report.toIssuesSummaryString());
+            GlobalOptions globalOptions = GlobalOptions.getInstance();
+            if (globalOptions.isValidationReport()) {
+                GaiaSceneValidationReportCollector.getInstance().collect(report, new File(globalOptions.getTempPath()));
+            }
+            sceneRepair.repair(report, scenes);
+            GaiaSceneValidationReport afterRepair = sceneValidator.validate(input, scenes);
+            if (afterRepair.hasIssues()) {
+                log.debug("[WARN] Unresolved issues after repair in {}: {}", input.getName(), afterRepair.toDetailString());
+            } else {
+                log.debug("[INFO] All issues resolved after repair: {}", input.getName());
+            }
+        }
+        return scenes;
     }
 
     private GridCoverage2D loadGeoTiff(File file) {
@@ -45,7 +68,8 @@ public class BatchedFileLoader implements FileLoader {
         try {
             GeoTiffReader reader = new GeoTiffReader(file);
             Interpolation interpolation = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
-            coverage = (GridCoverage2D) Operations.DEFAULT.interpolate(reader.read(null), interpolation);
+            GeneralParameterValue[] params = null;
+            coverage = (GridCoverage2D) Operations.DEFAULT.interpolate(reader.read(params), interpolation);
             reader.dispose();
         } catch (Exception e) {
             log.debug("Failed to load GeoTiff file: {}", file.getAbsolutePath());

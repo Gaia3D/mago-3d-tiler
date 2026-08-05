@@ -11,7 +11,6 @@ import com.gaia3d.process.postprocess.ContentModel;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
-import com.gaia3d.util.GaiaSceneUtils;
 import com.gaia3d.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix3d;
@@ -36,7 +35,7 @@ public class Batched3DModelV2 implements ContentModel {
         GltfWriterOptions gltfOptions = GltfWriterOptions.builder()
                 .build();
         GlobalOptions globalOptions = GlobalOptions.getInstance();
-        if (globalOptions.getTilesVersion().equals("1.0")) {
+        if ("1.0".equals(globalOptions.getTilesVersion())) {
             gltfOptions.setUriImage(true);
         }
         if (globalOptions.isUseQuantization()) {
@@ -137,8 +136,7 @@ public class Batched3DModelV2 implements ContentModel {
             });
         });
 
-        String glbFileName = nodeCode + "." + MAGIC;
-        File glbOutputFile = outputRoot.resolve(glbFileName).toFile();
+        File glbOutputFile = contentInfo.resolveContentFile(outputRoot, MAGIC);
         if (globalOptions.isPhotogrammetry()) {
             scene.deleteNormals();
         }

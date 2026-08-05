@@ -1,11 +1,11 @@
 package com.gaia3d.basic.marchingcube;
 
 import com.gaia3d.basic.geometry.modifier.topology.GaiaExtractor;
-import com.gaia3d.basic.geometry.modifier.topology.GaiaWelder;
 import com.gaia3d.basic.geometry.modifier.topology.GaiaWeldOptions;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaWelder;
 import com.gaia3d.basic.geometry.modifier.topology.VertexNormalCalculator;
-import com.gaia3d.basic.geometry.voxel.VoxelCPGrid3D;
-import com.gaia3d.basic.geometry.voxel.VoxelGrid3D;
+import com.gaia3d.basic.geometry.voxel.PositionedVoxel3DGrid;
+import com.gaia3d.basic.geometry.voxel.Voxel3DGrid;
 import com.gaia3d.basic.legend.GaiaColor;
 import com.gaia3d.basic.legend.LegendColors;
 import com.gaia3d.basic.model.*;
@@ -312,9 +312,9 @@ public class MarchingCube {
     };
 
     public static Vector3d interpolate(Vector3d p1, Vector3d p2, float valp1, float valp2, float iso) {
-        if (Math.abs(iso - valp1) < 0.00001) return p1;
-        if (Math.abs(iso - valp2) < 0.00001) return p2;
-        if (Math.abs(valp1 - valp2) < 0.00001) return p1;
+        if (Math.abs(iso - valp1) < 0.00001) {return p1;}
+        if (Math.abs(iso - valp2) < 0.00001) {return p2;}
+        if (Math.abs(valp1 - valp2) < 0.00001) {return p1;}
         float mu = (iso - valp1) / (valp2 - valp1);
         return new Vector3d(
                 p1.x + mu * (p2.x - p1.x),
@@ -324,9 +324,9 @@ public class MarchingCube {
     }
 
     public static Vector3d interpolate(Vector3d p1, Vector3d p2, double valp1, double valp2, double iso) {
-        if (Math.abs(iso - valp1) < 0.00001) return p1;
-        if (Math.abs(iso - valp2) < 0.00001) return p2;
-        if (Math.abs(valp1 - valp2) < 0.00001) return p1;
+        if (Math.abs(iso - valp1) < 0.00001) {return p1;}
+        if (Math.abs(iso - valp2) < 0.00001) {return p2;}
+        if (Math.abs(valp1 - valp2) < 0.00001) {return p1;}
         double mu = (iso - valp1) / (valp2 - valp1);
         return new Vector3d(
                 p1.x + mu * (p2.x - p1.x),
@@ -335,7 +335,7 @@ public class MarchingCube {
         );
     }
 
-    public static GaiaScene makeGaiaScene(VoxelGrid3D voxelGrid3d, float isoValue) {
+    public static GaiaScene makeGaiaScene(Voxel3DGrid voxelGrid3d, float isoValue) {
         GaiaScene gaiaScene = new GaiaScene();
         GaiaNode rootNode = new GaiaNode();
         gaiaScene.getNodes().add(rootNode);
@@ -385,14 +385,14 @@ public class MarchingCube {
                     float value7 = voxelGrid3d.getVoxelAlphaFloat(x + 1, y + 1, z + 1);
 
                     int cubeIndex = 0;
-                    if (value0 < isoValue) cubeIndex |= 1;
-                    if (value1 < isoValue) cubeIndex |= 2;
-                    if (value2 < isoValue) cubeIndex |= 8;
-                    if (value3 < isoValue) cubeIndex |= 4;
-                    if (value4 < isoValue) cubeIndex |= 16;
-                    if (value5 < isoValue) cubeIndex |= 32;
-                    if (value6 < isoValue) cubeIndex |= 128;
-                    if (value7 < isoValue) cubeIndex |= 64;
+                    if (value0 < isoValue) {cubeIndex |= 1;}
+                    if (value1 < isoValue) {cubeIndex |= 2;}
+                    if (value2 < isoValue) {cubeIndex |= 8;}
+                    if (value3 < isoValue) {cubeIndex |= 4;}
+                    if (value4 < isoValue) {cubeIndex |= 16;}
+                    if (value5 < isoValue) {cubeIndex |= 32;}
+                    if (value6 < isoValue) {cubeIndex |= 128;}
+                    if (value7 < isoValue) {cubeIndex |= 64;}
 
                     if (cubeIndex == 0 || cubeIndex == 255) {
                         continue; // No triangles
@@ -509,7 +509,7 @@ public class MarchingCube {
         return gaiaScene;
     }
 
-    public static GaiaScene makeGaiaScene(VoxelCPGrid3D voxelGrid3d, double isoValue) {
+    public static GaiaScene makeGaiaScene(PositionedVoxel3DGrid voxelGrid3d, double isoValue) {
         GaiaScene gaiaScene = null;
         List<GaiaVertex> gaiaVertices = null;
         GaiaSurface gaiaSurface = null;
@@ -548,14 +548,14 @@ public class MarchingCube {
                     double value7 = voxelGrid3d.getVoxelValue(x + 1, y + 1, z + 1);
 
                     int cubeIndex = 0;
-                    if (value0 < isoValue) cubeIndex |= 1;
-                    if (value1 < isoValue) cubeIndex |= 2;
-                    if (value2 < isoValue) cubeIndex |= 8;
-                    if (value3 < isoValue) cubeIndex |= 4;
-                    if (value4 < isoValue) cubeIndex |= 16;
-                    if (value5 < isoValue) cubeIndex |= 32;
-                    if (value6 < isoValue) cubeIndex |= 128;
-                    if (value7 < isoValue) cubeIndex |= 64;
+                    if (value0 < isoValue) {cubeIndex |= 1;}
+                    if (value1 < isoValue) {cubeIndex |= 2;}
+                    if (value2 < isoValue) {cubeIndex |= 8;}
+                    if (value3 < isoValue) {cubeIndex |= 4;}
+                    if (value4 < isoValue) {cubeIndex |= 16;}
+                    if (value5 < isoValue) {cubeIndex |= 32;}
+                    if (value6 < isoValue) {cubeIndex |= 128;}
+                    if (value7 < isoValue) {cubeIndex |= 64;}
 
                     if (cubeIndex == 0 || cubeIndex == 255) {
                         continue; // No triangles
@@ -634,7 +634,7 @@ public class MarchingCube {
                     int i = 0;
                     cubeIndex <<= 4;
                     while (TRIANGLE_TABLE[cubeIndex + i] != -1) {
-                        if(gaiaScene == null){
+                        if (gaiaScene == null) {
                             gaiaScene = new GaiaScene();
                             GaiaNode rootNode = new GaiaNode();
                             gaiaScene.getNodes().add(rootNode);
@@ -686,7 +686,7 @@ public class MarchingCube {
         return gaiaScene;
     }
 
-    public static GaiaScene makeGaiaSceneOnion(VoxelCPGrid3D voxelCPGrid3D, double[] isoValuesArray) {
+    public static GaiaScene makeGaiaSceneOnion(PositionedVoxel3DGrid voxelCPGrid3D, double[] isoValuesArray) {
         int isoValuesCount = isoValuesArray.length;
         GaiaScene gaiaSceneMaster = null;
         double totalMinValue = voxelCPGrid3D.getMinMaxValues()[0];
@@ -771,7 +771,7 @@ public class MarchingCube {
         return gaiaSceneMaster;
     }
 
-    public static GaiaScene makeGaiaSceneOnion(VoxelCPGrid3D voxelCPGrid3D, double[] isoValuesArray, LegendColors legendColors) {
+    public static GaiaScene makeGaiaSceneOnion(PositionedVoxel3DGrid voxelCPGrid3D, double[] isoValuesArray, LegendColors legendColors) {
         int isoValuesCount = isoValuesArray.length;
         GaiaScene gaiaSceneMaster = null;
         double totalMinValue = voxelCPGrid3D.getMinMaxValues()[0];
@@ -815,8 +815,6 @@ public class MarchingCube {
                         gaiaVertex.setColor(color4);
                     }
                 }
-
-
 
                 List<GaiaMaterial> gaiaMaterials = gaiaScene.getMaterials();
                 if (gaiaMaterials.isEmpty()) {

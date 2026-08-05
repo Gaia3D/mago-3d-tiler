@@ -1,5 +1,6 @@
 package com.gaia3d.util;
 
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
 import java.awt.*;
@@ -11,9 +12,10 @@ import java.awt.image.Kernel;
  * Utility class for resizing images.
  */
 @Slf4j
+@UtilityClass
 public class ImageResizer {
     public final static int MAX_TEXTURE_SIZE = 8192 * 2;
-    public final static int MIN_TEXTURE_SIZE = 128;
+    public final static int MIN_TEXTURE_SIZE = 32;
 
     public BufferedImage resizeImageGraphic2D(BufferedImage originalImage, int width, int height) {
         return resizeImageGraphic2D(originalImage, width, height, false);
@@ -29,6 +31,30 @@ public class ImageResizer {
         Kernel k = new Kernel(3, 3, kernel);
         ConvolveOp op = new ConvolveOp(k, ConvolveOp.EDGE_NO_OP, null);
         return op.filter(original, null);
+    }
+
+    public BufferedImage resizeMultiStepSmart(
+            BufferedImage original, int lod){
+        int width = original.getWidth();
+        int height = original.getHeight();
+
+        int limiSize = 1024;
+        if(lod > 0){
+            limiSize = 512;
+        }
+
+        int widthPowerOf2 = ImageUtils.getNearestPowerOfTwo(width);
+        int heightPowerOf2 = ImageUtils.getNearestPowerOfTwo(height);
+
+        if(widthPowerOf2 > limiSize){
+            widthPowerOf2  = limiSize;
+        }
+
+        if(heightPowerOf2 > limiSize){
+            heightPowerOf2 = limiSize;
+        }
+
+        return resizeMultiStepSmart(original, widthPowerOf2, heightPowerOf2);
     }
 
     public BufferedImage resizeMultiStepSmart(
@@ -103,7 +129,9 @@ public class ImageResizer {
             log.debug("height is greater than {}", MAX_TEXTURE_SIZE);
         }
 
-        int imageType = originalImage.getType() == 0 ? BufferedImage.TYPE_INT_ARGB : originalImage.getType();
+        int imageType = originalImage.getColorModel().hasAlpha()
+                ? BufferedImage.TYPE_INT_ARGB
+                : (originalImage.getType() == BufferedImage.TYPE_CUSTOM ? BufferedImage.TYPE_INT_RGB : originalImage.getType());
         BufferedImage outputImage = new BufferedImage(width, height, imageType);
         Graphics2D graphics2D = outputImage.createGraphics();
         if (interpolation) {

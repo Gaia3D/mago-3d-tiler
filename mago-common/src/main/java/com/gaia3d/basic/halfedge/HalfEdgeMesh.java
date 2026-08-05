@@ -8,11 +8,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Setter
 @Getter
@@ -28,22 +27,21 @@ public class HalfEdgeMesh implements Serializable {
         primitives.clear();
     }
 
-    public void checkSandClockFaces() {
-        for (HalfEdgePrimitive primitive : primitives) {
-            primitive.checkSandClockFaces();
-        }
-    }
-
     public void transformPoints(Matrix4d finalMatrix) {
         for (HalfEdgePrimitive primitive : primitives) {
             primitive.transformPoints(finalMatrix);
         }
     }
 
-    public void cutByPlane(PlaneType planeType, Vector3d planePosition, double error) {
+    public PlaneCutResult cutByPlane(PlaneType planeType, Vector3d planePosition, double error, Map<HalfEdgeVertex, Integer> memSaveVertexIndexMap) {
+        PlaneCutResult total = new PlaneCutResult();
+        memSaveVertexIndexMap.clear();
         for (HalfEdgePrimitive primitive : primitives) {
-            primitive.cutByPlane(planeType, planePosition, error);
+            PlaneCutResult currentResult = primitive.cutByPlane(planeType, planePosition, error, memSaveVertexIndexMap);
+            total.add(currentResult);
         }
+
+        return total;
     }
 
     public void removeDeletedObjects() {
@@ -81,30 +79,6 @@ public class HalfEdgeMesh implements Serializable {
     public void classifyFacesIdByPlane(PlaneType planeType, Vector3d planePosition) {
         for (HalfEdgePrimitive primitive : primitives) {
             primitive.classifyFacesIdByPlane(planeType, planePosition);
-        }
-    }
-
-    public void writeFile(ObjectOutputStream outputStream) {
-        try {
-            outputStream.writeInt(primitives.size());
-            for (HalfEdgePrimitive primitive : primitives) {
-                primitive.writeFile(outputStream);
-            }
-        } catch (Exception e) {
-            log.error("[ERROR] Error Log : ", e);
-        }
-    }
-
-    public void readFile(ObjectInputStream inputStream) {
-        try {
-            int primitivesSize = inputStream.readInt();
-            for (int i = 0; i < primitivesSize; i++) {
-                HalfEdgePrimitive primitive = new HalfEdgePrimitive();
-                primitive.readFile(inputStream);
-                primitives.add(primitive);
-            }
-        } catch (Exception e) {
-            log.error("[ERROR] Error Log : ", e);
         }
     }
 

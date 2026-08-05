@@ -9,11 +9,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -55,24 +54,22 @@ public class HalfEdgePrimitive implements Serializable {
         vertices.clear();
     }
 
-    public void checkSandClockFaces() {
-        for (HalfEdgeSurface surface : surfaces) {
-            surface.checkSandClockFaces();
-        }
-    }
-
     public void transformPoints(Matrix4d finalMatrix) {
         for (HalfEdgeSurface surface : surfaces) {
             surface.transformPoints(finalMatrix);
         }
     }
 
-    public void cutByPlane(PlaneType planeType, Vector3d planePosition, double error) {
+    public PlaneCutResult cutByPlane(PlaneType planeType, Vector3d planePosition, double error, Map<HalfEdgeVertex, Integer> memSaveVertexIndexMap) {
+        PlaneCutResult total = new PlaneCutResult();
+        memSaveVertexIndexMap.clear();
         for (HalfEdgeSurface surface : surfaces) {
-            surface.cutByPlane(planeType, planePosition, error);
+            PlaneCutResult currentResult = surface.cutByPlane(planeType, planePosition, error, memSaveVertexIndexMap);
+            total.add(currentResult);
         }
 
         vertices.clear();
+        return total;
     }
 
     public GaiaBoundingBox calculateBoundingBox(GaiaBoundingBox resultBBox) {
@@ -112,40 +109,6 @@ public class HalfEdgePrimitive implements Serializable {
     public void setObjectIdsInList() {
         for (HalfEdgeSurface surface : surfaces) {
             surface.setObjectIdsInList();
-        }
-    }
-
-    public void writeFile(ObjectOutputStream outputStream) {
-        try {
-            // accessorIndices
-            outputStream.writeInt(accessorIndices);
-            // materialIndex
-            outputStream.writeInt(materialIndex);
-            // surfaces
-            outputStream.writeInt(surfaces.size());
-            for (HalfEdgeSurface surface : surfaces) {
-                surface.writeFile(outputStream);
-            }
-        } catch (Exception e) {
-            log.error("[ERROR] Error Log : ", e);
-        }
-    }
-
-    public void readFile(ObjectInputStream inputStream) {
-        try {
-            // accessorIndices
-            accessorIndices = inputStream.readInt();
-            // materialIndex
-            materialIndex = inputStream.readInt();
-            // surfaces
-            int surfacesCount = inputStream.readInt();
-            for (int i = 0; i < surfacesCount; i++) {
-                HalfEdgeSurface surface = new HalfEdgeSurface();
-                surface.readFile(inputStream);
-                surfaces.add(surface);
-            }
-        } catch (Exception e) {
-            log.error("[ERROR] Error Log : ", e);
         }
     }
 
@@ -194,6 +157,24 @@ public class HalfEdgePrimitive implements Serializable {
 
         for (HalfEdgeSurface surface : surfaces) {
             surface.scissorTexturesByMotherScene(material, motherMaterial);
+        }
+
+        // after scissoredTexture the surface, we must delete the bufferedImages of the motherMaterial.
+        // delete all textures less one.
+        boolean skiped = false;
+        int skipCount = 0;
+        for (GaiaMaterial motherMat : motherMaterials) {
+            if (!skiped) {
+                if (motherMat.hasTextures()) {
+                    skipCount++;
+                }
+
+                if(skipCount >= 1){
+                    skiped = true;
+                }
+                continue;
+            }
+            motherMat.deleteTextures();
         }
     }
 
