@@ -158,6 +158,24 @@ public class HalfEdgePrimitive implements Serializable {
         for (HalfEdgeSurface surface : surfaces) {
             surface.scissorTexturesByMotherScene(material, motherMaterial);
         }
+
+        // after scissoredTexture the surface, we must delete the bufferedImages of the motherMaterial.
+        // delete all textures less one.
+        boolean skiped = false;
+        int skipCount = 0;
+        for (GaiaMaterial motherMat : motherMaterials) {
+            if (!skiped) {
+                if (motherMat.hasTextures()) {
+                    skipCount++;
+                }
+
+                if(skipCount >= 1){
+                    skiped = true;
+                }
+                continue;
+            }
+            motherMat.deleteTextures();
+        }
     }
 
     public HalfEdgePrimitive cloneByClassifyId(int classifyId) {

@@ -29,6 +29,7 @@ import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.process.tileprocess.PhotogrammetryBatcher;
 import com.gaia3d.process.tileprocess.Tiler;
 import com.gaia3d.process.tileprocess.multithread.CutAndScissorMT;
+import com.gaia3d.process.tileprocess.multithread.CutAndScissorMTV2;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
 import com.gaia3d.process.tileprocess.tile.tileset.TilesetV2;
 import com.gaia3d.process.tileprocess.tile.tileset.asset.AssetV1;
@@ -893,10 +894,10 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         GaiaBoundingBox rootNodeBBoxLC = root.calculateLocalBoundingBox();
         int currDepth = projectMaxDepthIdx - lod;
         Map<Node, List<TileInfo>> nodeTileInfoMap = new HashMap<>();
-        CutAndScissorMT cutAndScissorMT = new CutAndScissorMT(3);
-        CutAndScissorMT.CutAndScissorResult cutScissorResult = cutAndScissorMT.apply(tileInfosCopy, root, projectMaxDepthIdx, rootNodeBBoxLC);
+        CutAndScissorMTV2 cutAndScissorMTV2 = new CutAndScissorMTV2(3);
+        CutAndScissorMTV2.CutAndScissorResult cutScissorResult = cutAndScissorMTV2.apply(tileInfosCopy, root, projectMaxDepthIdx, rootNodeBBoxLC);
         mapLodToTileInfos = cutScissorResult.tileInfosByLod();
-        Map<Integer, CutAndScissorMT.LodBoundaryAnchors> boundaryAnchorsByLod = cutScissorResult.boundaryAnchorsByLod();
+        Map<Integer, CutAndScissorMTV2.LodBoundaryAnchors> boundaryAnchorsByLod = cutScissorResult.boundaryAnchorsByLod();
         List<TileInfo> cuttedTileInfos = mapLodToTileInfos.get(lod);
         integralLeafScenesMT(cuttedTileInfos, lod, currDepth, root, projectMaxDepthIdx, 4); // 4 threads
         //integralLeafScenesST(cuttedTileInfos, lod, currDepth, root, projectMaxDepthIdx);
@@ -1250,7 +1251,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
     protected boolean configureBoundaryAnchors(
             ReMeshParameters reMeshParameters,
             int anchorLod,
-            Map<Integer, CutAndScissorMT.LodBoundaryAnchors>
+            Map<Integer, CutAndScissorMTV2.LodBoundaryAnchors>
                     boundaryAnchorsByLod
     ) {
         if (reMeshParameters == null
@@ -1258,7 +1259,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             return false;
         }
 
-        CutAndScissorMT.LodBoundaryAnchors lodAnchors =
+        CutAndScissorMTV2.LodBoundaryAnchors lodAnchors =
                 boundaryAnchorsByLod.get(anchorLod);
 
         if (lodAnchors == null
