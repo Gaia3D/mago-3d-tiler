@@ -1,0 +1,387 @@
+package com.gaia3d.basic.halfedge;
+
+import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.model.GaiaMaterial;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.joml.Matrix4d;
+import org.joml.Vector3d;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+@Getter
+@Setter
+@Slf4j
+public class HalfEdgeNode implements Serializable {
+    private HalfEdgeNode parent = null;
+    private Matrix4d transformMatrix = new Matrix4d();
+    private Matrix4d preMultipliedTransformMatrix = new Matrix4d();
+    private List<HalfEdgeMesh> meshes = new ArrayList<>();
+    private List<HalfEdgeNode> children = new ArrayList<>();
+    private GaiaBoundingBox boundingBox = null;
+
+    public void deleteObjects() {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.deleteObjects();
+        }
+        meshes.clear();
+        for (HalfEdgeNode child : children) {
+            child.deleteObjects();
+        }
+        children.clear();
+    }
+
+    public void calculateNormals() {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.calculateNormals();
+        }
+        for (HalfEdgeNode child : children) {
+            child.calculateNormals();
+        }
+    }
+
+    public Matrix4d getFinalTransformMatrix() {
+        Matrix4d finalMatrix = new Matrix4d();
+        finalMatrix.set(transformMatrix);
+        if (parent != null) {
+            finalMatrix.mul(parent.getFinalTransformMatrix());
+        }
+        return finalMatrix;
+    }
+
+    public void spendTransformationMatrix() {
+        Matrix4d finalMatrix = getFinalTransformMatrix();
+        Matrix4d identity = new Matrix4d();
+        identity.identity();
+
+        if (finalMatrix.equals(identity)) {
+            return;
+        }
+
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.transformPoints(finalMatrix);
+        }
+        for (HalfEdgeNode child : children) {
+            child.spendTransformationMatrix();
+        }
+
+        // Clear the transform matrix.
+        transformMatrix.identity();
+    }
+
+    public PlaneCutResult cutByPlane(PlaneType planeType, Vector3d planePosition, double error, Map<HalfEdgeVertex, Integer> memSaveVertexIndexMap) {
+        PlaneCutResult total = new PlaneCutResult();
+        memSaveVertexIndexMap.clear();
+        for (HalfEdgeMesh mesh : meshes) {
+            PlaneCutResult currentResult = mesh.cutByPlane(planeType, planePosition, error, memSaveVertexIndexMap);
+            total.add(currentResult);
+        }
+        for (HalfEdgeNode child : children) {
+            PlaneCutResult currentResult = child.cutByPlane(planeType, planePosition, error, memSaveVertexIndexMap);
+            total.add(currentResult);
+        }
+
+        return total;
+    }
+
+    public void removeDeletedObjects() {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.removeDeletedObjects();
+        }
+        for (HalfEdgeNode child : children) {
+            child.removeDeletedObjects();
+        }
+    }
+
+    public List<HalfEdgeSurface> extractSurfaces(List<HalfEdgeSurface> resultHalfEdgeSurfaces) {
+        if (resultHalfEdgeSurfaces == null) {
+            resultHalfEdgeSurfaces = new ArrayList<>();
+        }
+        for (HalfEdgeMesh mesh : meshes) {
+            resultHalfEdgeSurfaces = mesh.extractSurfaces(resultHalfEdgeSurfaces);
+        }
+        for (HalfEdgeNode child : children) {
+            resultHalfEdgeSurfaces = child.extractSurfaces(resultHalfEdgeSurfaces);
+        }
+        return resultHalfEdgeSurfaces;
+    }
+
+    public GaiaBoundingBox calculateBoundingBox(GaiaBoundingBox resultBBox) {
+        GaiaBoundingBox boundingBox = null;
+        for (HalfEdgeMesh mesh : this.getMeshes()) {
+            GaiaBoundingBox meshBoundingBox = mesh.calculateBoundingBox(null);
+            if (meshBoundingBox == null) {
+                continue;
+            }
+            if (boundingBox == null) {
+                boundingBox = meshBoundingBox;
+            } else {
+                boundingBox.addBoundingBox(meshBoundingBox);
+            }
+        }
+        for (HalfEdgeNode child : this.getChildren()) {
+            GaiaBoundingBox childBoundingBox = child.calculateBoundingBox(null);
+            if (childBoundingBox == null) {
+                continue;
+            }
+            if (boundingBox == null) {
+                boundingBox = childBoundingBox;
+            } else {
+                boundingBox.addBoundingBox(childBoundingBox);
+            }
+        }
+        return boundingBox;
+    }
+
+    public GaiaBoundingBox getBoundingBox() {
+        if (boundingBox == null) {
+            boundingBox = calculateBoundingBox(null);
+        }
+        return boundingBox;
+    }
+
+    public void classifyFacesIdByPlane(PlaneType planeType, Vector3d planePosition) {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.classifyFacesIdByPlane(planeType, planePosition);
+        }
+        for (HalfEdgeNode child : children) {
+            child.classifyFacesIdByPlane(planeType, planePosition);
+        }
+    }
+
+    public void deleteFacesWithClassifyId(int classifyId) {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.deleteFacesWithClassifyId(classifyId);
+        }
+        for (HalfEdgeNode child : children) {
+            child.deleteFacesWithClassifyId(classifyId);
+        }
+    }
+
+    public HalfEdgeNode cloneByClassifyId(int classifyId) {
+        HalfEdgeNode clonedNode = null;
+
+        for (HalfEdgeMesh mesh : meshes) {
+            HalfEdgeMesh clonedMesh = mesh.cloneByClassifyId(classifyId);
+            if (clonedMesh != null) {
+                if (clonedNode == null) {
+                    clonedNode = new HalfEdgeNode();
+                    clonedNode.transformMatrix = new Matrix4d(transformMatrix);
+                    clonedNode.preMultipliedTransformMatrix = new Matrix4d(preMultipliedTransformMatrix);
+                }
+                clonedNode.meshes.add(clonedMesh);
+            }
+        }
+        for (HalfEdgeNode child : children) {
+            HalfEdgeNode clonedChild = child.cloneByClassifyId(classifyId);
+            if (clonedChild != null) {
+                if (clonedNode == null) {
+                    clonedNode = new HalfEdgeNode();
+                    clonedNode.transformMatrix = new Matrix4d(transformMatrix);
+                    clonedNode.preMultipliedTransformMatrix = new Matrix4d(preMultipliedTransformMatrix);
+                }
+                clonedChild.parent = clonedNode;
+                clonedNode.children.add(clonedChild);
+            }
+        }
+        return clonedNode;
+    }
+
+    public HalfEdgeNode clone() {
+        HalfEdgeNode clonedNode = new HalfEdgeNode();
+        clonedNode.transformMatrix = new Matrix4d(transformMatrix);
+        clonedNode.preMultipliedTransformMatrix = new Matrix4d(preMultipliedTransformMatrix);
+        for (HalfEdgeMesh mesh : meshes) {
+            clonedNode.meshes.add(mesh.clone());
+        }
+        for (HalfEdgeNode child : children) {
+            HalfEdgeNode clonedChild = child.clone();
+            clonedChild.parent = clonedNode;
+            clonedNode.children.add(clonedChild);
+        }
+        if (boundingBox != null) {
+            clonedNode.boundingBox = boundingBox.clone();
+        }
+        return clonedNode;
+    }
+
+    public void scissorTextures(List<GaiaMaterial> materials) {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.scissorTextures(materials);
+        }
+        for (HalfEdgeNode child : children) {
+            child.scissorTextures(materials);
+        }
+    }
+
+    public void scissorTexturesByMotherScene(List<GaiaMaterial> materials, List<GaiaMaterial> motherMaterials) {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.scissorTexturesByMotherScene(materials, motherMaterials);
+        }
+        for (HalfEdgeNode child : children) {
+            child.scissorTexturesByMotherScene(materials, motherMaterials);
+        }
+    }
+
+    public int getTrianglesCount() {
+        int trianglesCount = 0;
+        for (HalfEdgeMesh mesh : meshes) {
+            trianglesCount += mesh.getTrianglesCount();
+        }
+        for (HalfEdgeNode child : children) {
+            trianglesCount += child.getTrianglesCount();
+        }
+        return trianglesCount;
+    }
+
+    public void setBoxTexCoordsXY(GaiaBoundingBox box) {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.setBoxTexCoordsXY(box);
+        }
+        for (HalfEdgeNode child : children) {
+            child.setBoxTexCoordsXY(box);
+        }
+    }
+
+    public void getUsedMaterialsIds(List<Integer> resultMaterialsIds) {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.getUsedMaterialsIds(resultMaterialsIds);
+        }
+        for (HalfEdgeNode child : children) {
+            child.getUsedMaterialsIds(resultMaterialsIds);
+        }
+    }
+
+    public void setMaterialId(int materialId) {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.setMaterialId(materialId);
+        }
+        for (HalfEdgeNode child : children) {
+            child.setMaterialId(materialId);
+        }
+    }
+
+    public void weldVertices(double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
+        }
+        for (HalfEdgeNode child : children) {
+            child.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
+        }
+    }
+
+    public void translate(Vector3d translation) {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.translate(translation);
+        }
+        for (HalfEdgeNode child : children) {
+            child.translate(translation);
+        }
+    }
+
+    public void splitFacesByBestObliqueCameraDirectionToProject() {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.splitFacesByBestObliqueCameraDirectionToProject();
+        }
+        for (HalfEdgeNode child : children) {
+            child.splitFacesByBestObliqueCameraDirectionToProject();
+        }
+    }
+
+    public void extractPrimitives(List<HalfEdgePrimitive> resultPrimitives) {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.extractPrimitives(resultPrimitives);
+        }
+        for (HalfEdgeNode child : children) {
+            child.extractPrimitives(resultPrimitives);
+        }
+    }
+
+    public void getWestEastSouthNorthVertices(GaiaBoundingBox bbox, List<HalfEdgeVertex> westVertices,
+                                              List<HalfEdgeVertex> eastVertices,
+                                              List<HalfEdgeVertex> southVertices,
+                                              List<HalfEdgeVertex> northVertices, double error) {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.getWestEastSouthNorthVertices(bbox, westVertices, eastVertices, southVertices, northVertices, error);
+        }
+
+        for (HalfEdgeNode child : children) {
+            child.getWestEastSouthNorthVertices(bbox, westVertices, eastVertices, southVertices, northVertices, error);
+        }
+    }
+
+
+    public double calculateArea() {
+        double area = 0;
+        for (HalfEdgeMesh mesh : meshes) {
+            area += mesh.calculateArea();
+        }
+        for (HalfEdgeNode child : children) {
+            area += child.calculateArea();
+        }
+        return area;
+    }
+
+
+    public int deleteDegeneratedFaces() {
+        int deletedFaces = 0;
+        for (HalfEdgeMesh mesh : meshes) {
+            deletedFaces += mesh.deleteDegeneratedFaces();
+        }
+        for (HalfEdgeNode child : children) {
+            deletedFaces += child.deleteDegeneratedFaces();
+        }
+        return deletedFaces;
+    }
+
+    public void translateTexCoordsToPositiveQuadrant() {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.translateTexCoordsToPositiveQuadrant();
+        }
+        for (HalfEdgeNode child : children) {
+            child.translateTexCoordsToPositiveQuadrant();
+        }
+    }
+
+    public void updateVerticesList() {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.updateVerticesList();
+        }
+        for (HalfEdgeNode child : children) {
+            child.updateVerticesList();
+        }
+    }
+
+    public void updateFacesList() {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.updateFacesList();
+        }
+        for (HalfEdgeNode child : children) {
+            child.updateFacesList();
+        }
+    }
+
+    public int getFacesCount() {
+        int facesCount = 0;
+        for (HalfEdgeMesh mesh : meshes) {
+            facesCount += mesh.getFacesCount();
+        }
+        for (HalfEdgeNode child : children) {
+            facesCount += child.getFacesCount();
+        }
+        return facesCount;
+    }
+
+    public void getIntersectedFacesByPlane(PlaneType planeType, Vector3d planePosition, List<HalfEdgeFace> resultFaces, double error) {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.getIntersectedFacesByPlane(planeType, planePosition, resultFaces, error);
+        }
+        for (HalfEdgeNode child : children) {
+            child.getIntersectedFacesByPlane(planeType, planePosition, resultFaces, error);
+        }
+    }
+}
