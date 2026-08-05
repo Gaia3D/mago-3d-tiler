@@ -13,14 +13,14 @@ import org.joml.Vector3d;
  * Class representing a 3D grid of voxels.
  * Each voxel can hold a color value.
  */
-public class VoxelGrid3D {
+public class Voxel3DGrid {
     private int gridsCountX;
     private int gridsCountY;
     private int gridsCountZ;
     private Voxel[][][] voxels;
     private GaiaBoundingBox boundingBox;
 
-    public VoxelGrid3D(int gridsCountX, int gridsCountY, int gridsCountZ, GaiaBoundingBox boundingBox) {
+    public Voxel3DGrid(int gridsCountX, int gridsCountY, int gridsCountZ, GaiaBoundingBox boundingBox) {
         this.gridsCountX = gridsCountX;
         this.gridsCountY = gridsCountY;
         this.gridsCountZ = gridsCountZ;

@@ -13,6 +13,7 @@ import java.util.List;
 
 @Slf4j
 public class FaceNormalCalculator extends Modifier {
+    private static final double MIN_NORMAL_LENGTH_SQUARED = 1.0e-20;
 
     @Override
     protected void applyPrimitive(Matrix4d productTransformMatrix, GaiaPrimitive primitive) {
@@ -75,6 +76,10 @@ public class FaceNormalCalculator extends Modifier {
     }
 
     protected boolean validateNormal(Vector3d normal) {
-        return !Double.isNaN(normal.lengthSquared()) && !Double.isNaN(normal.x()) && !Double.isNaN(normal.y()) && !Double.isNaN(normal.z()) && !Float.isNaN((float) normal.x()) && !Float.isNaN((float) normal.y()) && !Float.isNaN((float) normal.z());
+        return normal != null
+                && Double.isFinite(normal.x())
+                && Double.isFinite(normal.y())
+                && Double.isFinite(normal.z())
+                && normal.lengthSquared() > MIN_NORMAL_LENGTH_SQUARED;
     }
 }

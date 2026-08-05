@@ -1,5 +1,6 @@
 package com.gaia3d.util;
 
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 
@@ -25,6 +26,7 @@ import java.util.concurrent.Semaphore;
  */
 @SuppressWarnings("ALL")
 @Slf4j
+@UtilityClass
 public class ImageUtils {
 
     private final int MAX_IMAGE_SIZE = 16384;

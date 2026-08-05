@@ -4,8 +4,8 @@ import com.gaia3d.basic.geometry.modifier.topology.GaiaExtractor;
 import com.gaia3d.basic.geometry.modifier.topology.GaiaWeldOptions;
 import com.gaia3d.basic.geometry.modifier.topology.GaiaWelder;
 import com.gaia3d.basic.geometry.modifier.topology.VertexNormalCalculator;
-import com.gaia3d.basic.geometry.voxel.VoxelCPGrid3D;
-import com.gaia3d.basic.geometry.voxel.VoxelGrid3D;
+import com.gaia3d.basic.geometry.voxel.PositionedVoxel3DGrid;
+import com.gaia3d.basic.geometry.voxel.Voxel3DGrid;
 import com.gaia3d.basic.legend.GaiaColor;
 import com.gaia3d.basic.legend.LegendColors;
 import com.gaia3d.basic.model.*;
@@ -335,7 +335,7 @@ public class MarchingCube {
         );
     }
 
-    public static GaiaScene makeGaiaScene(VoxelGrid3D voxelGrid3d, float isoValue) {
+    public static GaiaScene makeGaiaScene(Voxel3DGrid voxelGrid3d, float isoValue) {
         GaiaScene gaiaScene = new GaiaScene();
         GaiaNode rootNode = new GaiaNode();
         gaiaScene.getNodes().add(rootNode);
@@ -509,7 +509,7 @@ public class MarchingCube {
         return gaiaScene;
     }
 
-    public static GaiaScene makeGaiaScene(VoxelCPGrid3D voxelGrid3d, double isoValue) {
+    public static GaiaScene makeGaiaScene(PositionedVoxel3DGrid voxelGrid3d, double isoValue) {
         GaiaScene gaiaScene = null;
         List<GaiaVertex> gaiaVertices = null;
         GaiaSurface gaiaSurface = null;
@@ -686,7 +686,7 @@ public class MarchingCube {
         return gaiaScene;
     }
 
-    public static GaiaScene makeGaiaSceneOnion(VoxelCPGrid3D voxelCPGrid3D, double[] isoValuesArray) {
+    public static GaiaScene makeGaiaSceneOnion(PositionedVoxel3DGrid voxelCPGrid3D, double[] isoValuesArray) {
         int isoValuesCount = isoValuesArray.length;
         GaiaScene gaiaSceneMaster = null;
         double totalMinValue = voxelCPGrid3D.getMinMaxValues()[0];
@@ -771,7 +771,7 @@ public class MarchingCube {
         return gaiaSceneMaster;
     }
 
-    public static GaiaScene makeGaiaSceneOnion(VoxelCPGrid3D voxelCPGrid3D, double[] isoValuesArray, LegendColors legendColors) {
+    public static GaiaScene makeGaiaSceneOnion(PositionedVoxel3DGrid voxelCPGrid3D, double[] isoValuesArray, LegendColors legendColors) {
         int isoValuesCount = isoValuesArray.length;
         GaiaScene gaiaSceneMaster = null;
         double totalMinValue = voxelCPGrid3D.getMinMaxValues()[0];
