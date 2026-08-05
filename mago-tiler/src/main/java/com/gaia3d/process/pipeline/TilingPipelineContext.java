@@ -1,13 +1,7 @@
 package com.gaia3d.process.pipeline;
 
 import com.gaia3d.converter.loader.FileLoader;
-import com.gaia3d.process.pipeline.result.AnalysisResult;
-import com.gaia3d.process.pipeline.result.CleanupResult;
-import com.gaia3d.process.pipeline.result.ContentGenerationResult;
-import com.gaia3d.process.pipeline.result.IngestionResult;
-import com.gaia3d.process.pipeline.result.NormalizationResult;
-import com.gaia3d.process.pipeline.result.RefinementResult;
-import com.gaia3d.process.pipeline.result.TilingResult;
+import com.gaia3d.process.pipeline.result.*;
 import lombok.Getter;
 import lombok.Setter;
 

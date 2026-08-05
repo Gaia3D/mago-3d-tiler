@@ -1,5 +1,6 @@
 package com.gaia3d.render;
 
+@Deprecated
 public class FaceColorCodeManager {
-    private int availableCode = 0;
+    private final int availableCode = 0;
 }

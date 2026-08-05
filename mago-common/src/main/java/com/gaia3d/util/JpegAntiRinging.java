@@ -1,5 +1,7 @@
 package com.gaia3d.util;
 
+import lombok.experimental.UtilityClass;
+
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
@@ -15,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 
+@UtilityClass
 public class JpegAntiRinging {
 
     /** 메인 진입: BufferedImage -> (전처리/리사이즈) -> JPEG 파일 저장 */

@@ -5,12 +5,7 @@ import com.gaia3d.basic.types.LevelOfDetail;
 import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 public class Instanced3DModelImplicitTiler extends AbstractImplicitModelTiler {
     private static final double MAXIMUM_DISTANCE = 1000.0d;

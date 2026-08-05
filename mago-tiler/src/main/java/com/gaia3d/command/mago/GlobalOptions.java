@@ -399,10 +399,7 @@ public class GlobalOptions {
 
         instance.setDebug(command.hasOption(ProcessOptions.DEBUG.getLongName()));
         instance.setValidationReport(command.hasOption(ProcessOptions.VALIDATION_REPORT.getLongName()));
-        boolean isRefineAdd = false;
-        if (command.hasOption(ProcessOptions.REFINE_ADD.getLongName())) {
-            isRefineAdd = true;
-        }
+        boolean isRefineAdd = command.hasOption(ProcessOptions.REFINE_ADD.getLongName());
 
         double rotateXAxis = command.hasOption(ProcessOptions.ROTATE_X_AXIS.getLongName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.ROTATE_X_AXIS.getLongName())) : 0;
 
@@ -445,7 +442,7 @@ public class GlobalOptions {
             System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", String.valueOf(threadCount));
         }
 
-        instance.printDebugOptions();
+        printDebugOptions();
 
         if (instance.isPhotogrammetry()) {
             instance.setUseQuantization(true);

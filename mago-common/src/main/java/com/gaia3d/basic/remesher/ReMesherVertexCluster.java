@@ -142,19 +142,19 @@ public class ReMesherVertexCluster {
                 "V2 reMeshScene localInteriorVertices = {}",
                 totalStats.localInteriorVertices
         );
-        
+
 
         log.debug(
                 "V2 reMeshScene createdAnchoredVertices = {}",
                 totalStats.createdAnchoredVertices
         );
-        
+
 
         log.debug(
                 "V2 reMeshScene mappedAnchoredVertices = {}",
                 totalStats.mappedAnchoredVertices
         );
-        
+
 
         log.debug(
                 "V2 reMeshScene missingGlobalAverage = {}",

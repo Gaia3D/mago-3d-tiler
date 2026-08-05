@@ -140,7 +140,7 @@ public class TilingPipeline implements Pipeline {
         log.info("[Tile] Start the tiling process.");
         log.info("[Tile] Writing tileset file.");
         tilesetBuildResult = tilingProcess.runWithResult(tileInfos);
-        tileset = tilesetBuildResult.getTileset();
+        tileset = tilesetBuildResult.tileset();
         tilingProcess.writeTileset(tileset);
         log.info("[Tile] End the tiling process.");
     }
@@ -150,7 +150,7 @@ public class TilingPipeline implements Pipeline {
 
         ExecutorService executorService = Executors.newFixedThreadPool(globalOptions.getMultiThreadCount());
         List<Runnable> tasks = new ArrayList<>();
-        contentInfos = new ArrayList<>(tilesetBuildResult.getContentInfos());
+        contentInfos = new ArrayList<>(tilesetBuildResult.contentInfos());
         AtomicInteger count = new AtomicInteger(1);
         int contentCount = contentInfos.size();
         globalOptions.setTileCount(contentCount);

@@ -460,8 +460,7 @@ public class GaiaTextureCoordinator {
                 log.debug(" - scaleFactor : {}", scaleFactor);
                 log.debug(" - lodLevel : {}", lodLevel);
                 log.debug("==================================");
-                ImageResizer imageResizer = new ImageResizer();
-                this.atlasImage = imageResizer.resizeMultiStepSmart(this.atlasImage, imageWidth, imageHeight);
+                this.atlasImage = ImageResizer.resizeMultiStepSmart(this.atlasImage, imageWidth, imageHeight);
 //                if (lodLevel == 0) {
 //                    this.atlasImage = imageResizer.resizeImageGraphic2D(this.atlasImage, imageWidth, imageHeight, true);
 //                } else {
@@ -498,8 +497,7 @@ public class GaiaTextureCoordinator {
         int resizeWidth = Math.max(1, (int) Math.round(width * scale));
         int resizeHeight = Math.max(1, (int) Math.round(height * scale));
         log.debug("Resize batched atlas: {}x{} -> {}x{}", width, height, resizeWidth, resizeHeight);
-        ImageResizer imageResizer = new ImageResizer();
-        this.atlasImage = imageResizer.resizeMultiStepSmart(this.atlasImage, resizeWidth, resizeHeight);
+        this.atlasImage = ImageResizer.resizeMultiStepSmart(this.atlasImage, resizeWidth, resizeHeight);
     }
 
     private void updateAtlasTextureMetadata(int fallbackWidth, int fallbackHeight) {

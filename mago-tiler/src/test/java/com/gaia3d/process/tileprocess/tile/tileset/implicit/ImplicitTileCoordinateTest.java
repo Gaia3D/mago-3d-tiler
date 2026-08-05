@@ -13,20 +13,20 @@ class ImplicitTileCoordinateTest {
         ImplicitTileCoordinate root = ImplicitTileCoordinate.root();
 
         ImplicitTileCoordinate b = root.child('B');
-        assertEquals(1, b.getLevel());
-        assertEquals(1, b.getX());
-        assertEquals(0, b.getY());
-        assertEquals(0, b.getZ());
+        assertEquals(1, b.level());
+        assertEquals(1, b.x());
+        assertEquals(0, b.y());
+        assertEquals(0, b.z());
 
         ImplicitTileCoordinate c = root.child('C');
-        assertEquals(0, c.getX());
-        assertEquals(1, c.getY());
-        assertEquals(0, c.getZ());
+        assertEquals(0, c.x());
+        assertEquals(1, c.y());
+        assertEquals(0, c.z());
 
         ImplicitTileCoordinate h = root.child('H');
-        assertEquals(1, h.getX());
-        assertEquals(1, h.getY());
-        assertEquals(1, h.getZ());
+        assertEquals(1, h.x());
+        assertEquals(1, h.y());
+        assertEquals(1, h.z());
         assertEquals(7, h.localMortonIndex(1, root, SubdivisionScheme.OCTREE));
     }
 

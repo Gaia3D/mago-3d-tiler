@@ -519,7 +519,7 @@ public final class FaceVisibilityManager {
             int candidatesToTry = Math.min(maxSeedCandidatesToTry, seedCandidates.size());
 
             for (int i = 0; i < candidatesToTry; i++) {
-                CameraDirectionType candidateCamera = seedCandidates.get(i).cameraDirectionType;
+                CameraDirectionType candidateCamera = seedCandidates.get(i).cameraDirectionType();
 
                 if (candidateCamera == null) {
                     continue;
@@ -541,7 +541,7 @@ public final class FaceVisibilityManager {
             if (bestIsland == null || bestIsland.isEmpty() || bestCameraDirectionType == null) {
                 bestIsland = new ArrayList<>();
                 bestIsland.add(seedFace);
-                bestCameraDirectionType = seedCandidates.get(0).cameraDirectionType;
+                bestCameraDirectionType = seedCandidates.get(0).cameraDirectionType();
             }
 
             for (GaiaFace face : bestIsland) {
@@ -693,17 +693,17 @@ public final class FaceVisibilityManager {
             return false;
         }
 
-        int bestPixelCount = candidates.get(0).pixelCount;
+        int bestPixelCount = candidates.get(0).pixelCount();
         if (bestPixelCount <= 0) {
             return false;
         }
 
         for (CameraDirectionCandidate candidate : candidates) {
-            if (candidate.cameraDirectionType != cameraDirectionType) {
+            if (candidate.cameraDirectionType() != cameraDirectionType) {
                 continue;
             }
 
-            double ratio = (double) candidate.pixelCount / (double) bestPixelCount;
+            double ratio = (double) candidate.pixelCount() / (double) bestPixelCount;
             return ratio >= minCandidateRatio;
         }
 
@@ -794,14 +794,14 @@ public final class FaceVisibilityManager {
             return 0.0;
         }
 
-        int bestPixelCount = candidates.get(0).pixelCount;
+        int bestPixelCount = candidates.get(0).pixelCount();
         if (bestPixelCount <= 0) {
             return 0.0;
         }
 
         for (CameraDirectionCandidate candidate : candidates) {
-            if (candidate.cameraDirectionType == cameraDirectionType) {
-                return (double) candidate.pixelCount / (double) bestPixelCount;
+            if (candidate.cameraDirectionType() == cameraDirectionType) {
+                return (double) candidate.pixelCount() / (double) bestPixelCount;
             }
         }
 
@@ -822,15 +822,15 @@ public final class FaceVisibilityManager {
                 continue;
             }
 
-            int bestPixelCount = candidates.get(0).pixelCount;
+            int bestPixelCount = candidates.get(0).pixelCount();
             if (bestPixelCount <= 0) {
                 continue;
             }
 
             for (CameraDirectionCandidate candidate : candidates) {
-                if (candidate.cameraDirectionType == cameraDirectionType) {
-                    double ratio = (double) candidate.pixelCount / (double) bestPixelCount;
-                    score += candidate.pixelCount * ratio;
+                if (candidate.cameraDirectionType() == cameraDirectionType) {
+                    double ratio = (double) candidate.pixelCount() / (double) bestPixelCount;
+                    score += candidate.pixelCount() * ratio;
                     break;
                 }
             }
@@ -958,7 +958,7 @@ public final class FaceVisibilityManager {
             candidates.add(new CameraDirectionCandidate(cameraDirectionType, pixelCount));
         }
 
-        candidates.sort((a, b) -> Integer.compare(b.pixelCount, a.pixelCount));
+        candidates.sort((a, b) -> Integer.compare(b.pixelCount(), a.pixelCount()));
         return candidates;
     }
 

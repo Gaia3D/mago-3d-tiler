@@ -1,18 +1,13 @@
 package com.gaia3d.process.pipeline;
 
-import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.pipeline.component.*;
 import com.gaia3d.process.pipeline.factory.TilingPipelineFactory;
-import com.gaia3d.process.pipeline.result.IngestionResult;
-import org.apache.commons.io.FileUtils;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 public class BatchedTilingPipeline {
-    private static GlobalOptions globalOptions = GlobalOptions.getInstance();
+    private final GlobalOptions globalOptions = GlobalOptions.getInstance();
 
     public void execute() throws IOException {
 

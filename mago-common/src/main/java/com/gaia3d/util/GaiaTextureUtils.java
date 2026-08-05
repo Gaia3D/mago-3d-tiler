@@ -1,11 +1,13 @@
 package com.gaia3d.util;
 
 import com.gaia3d.basic.model.GaiaTexture;
+import lombok.experimental.UtilityClass;
 import org.joml.Vector2d;
 import org.joml.Vector4d;
 
 import java.awt.image.BufferedImage;
 
+@UtilityClass
 public class GaiaTextureUtils {
     public static Vector2d getTexCoordPositiveQuadrant(Vector2d texCoord) {
         Vector2d positiveQuadrantTexCoord = new Vector2d(texCoord);

@@ -39,7 +39,6 @@ import com.gaia3d.process.tileprocess.tile.tileset.node.Content;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
 import com.gaia3d.render.MagoLeafTileManager;
 import com.gaia3d.render.MagoReTextureByObliqueCamera;
-import com.gaia3d.util.DecimalUtils;
 import com.gaia3d.util.GlobeUtils;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -58,7 +57,6 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 @Slf4j
 @NoArgsConstructor
@@ -275,11 +273,11 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         List<TileInfo> tileInfosOfNode = new ArrayList<>();
         //TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
         boolean makeVerticalSkirt = true;
-        if(reMeshParams == null){
+        if (reMeshParams == null) {
             log.error("[ERROR] reMeshParams is null.");
             return;
         }
-        GlobalBoundaryAnchors  globalBoundaryAnchors = reMeshParams.getGlobalBoundaryAnchors();
+        GlobalBoundaryAnchors globalBoundaryAnchors = reMeshParams.getGlobalBoundaryAnchors();
 
         Map<Node, List<TileInfo>> nodeTileInfosMap = new HashMap<>();
         for (TileInfo tileInfo : tileInfos) {
@@ -936,7 +934,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 break;
             }
 
-
             if (d >= 2) {
                 break;
             }
@@ -1296,10 +1293,10 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
     }
 
     public boolean integralLeafScenesST(List<TileInfo> tileInfos,
-                                      int lod,
-                                      int nodeDepth,
-                                      Node rootNode,
-                                      int maxDepth) {
+                                        int lod,
+                                        int nodeDepth,
+                                        Node rootNode,
+                                        int maxDepth) {
         log.info("Creating netSurface nodes for nodeDepth : " + nodeDepth + " of maxDepth : " + maxDepth);
         List<Node> nodes = new ArrayList<>();
         List<Node> intersectedNodes = new ArrayList<>();
@@ -2227,7 +2224,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         return averageBBoxMinSize / (double) tileInfosCount;
     }
 
-    protected void makeContentsForNode(Node node, GaiaScene gaiaScene, int lod, int nodeDepth, int nodeIdx){
+    protected void makeContentsForNode(Node node, GaiaScene gaiaScene, int lod, int nodeDepth, int nodeIdx) {
         GaiaAttribute gaiaAttribute = gaiaScene.getAttribute();
         String nodeCode = node.getNodeCode();
         gaiaAttribute.setNodeName(nodeCode);
@@ -2239,11 +2236,11 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         //GL_NEAREST_MIPMAP_LINEAR: 9986, GL_LINEAR_MIPMAP_LINEAR: 9987
 
         List<GaiaMaterial> materials = gaiaScene.getMaterials();
-        if(materials.size() > 1){
+        if (materials.size() > 1) {
             log.warn("Warning : more than 1 material exists in the scene. nodeCode : " + node.getNodeCode() + " materialsCount : " + materials.size());
         }
         int matId = 0;
-        for(GaiaMaterial material : materials){
+        for (GaiaMaterial material : materials) {
             material.setId(matId);
             GaiaSamplers gaiaSampler = material.getSamplers();
             gaiaSampler.setMinFilter(GL_LINEAR);
@@ -2253,8 +2250,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             matId++;
         }
 
-
-
         String outputPathString = globalOptions.getOutputPath();
         String nodeName = "node_L_" + nodeDepth + "_" + nodeIdx;
         String netTempPathString = outputPathString + File.separator + "temp" + File.separator + "reMeshTemp";
@@ -2262,7 +2257,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         Path netSetFolderPath = Paths.get(netSetFolderPathString);
 
         // set originalPath if no exist.
-        if(gaiaScene.getOriginalPath() == null){
+        if (gaiaScene.getOriginalPath() == null) {
             Path originalPath = Path.of("noOriginalPath");
             gaiaScene.setOriginalPath(originalPath);
         }
@@ -2318,13 +2313,12 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         // check if gaiaRootNode has transformMatrix.
         List<GaiaNode> nodes = gaiaScene.getNodes();
         GaiaNode rootNode = nodes.get(0);
-        if(rootNode.getTransformMatrix() == null){
+        if (rootNode.getTransformMatrix() == null) {
             log.warn("Warning : rootNode.getTransformMatrix() is null. Set to identity matrix. nodeCode : " + nodeCode);
             Matrix4d identityMatrix = new Matrix4d();
             identityMatrix.identity();
             rootNode.setTransformMatrix(identityMatrix);
         }
-
 
         // save the b3dm/glb.
         PhotogrammetryBatcher photogrammetryBatcher = new PhotogrammetryBatcher();
@@ -2334,7 +2328,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         } else {
             photogrammetryBatcher.runV2(contentInfo, gaiaScene);
         }
-
 
         // delete scenes
         gaiaScene.clear();

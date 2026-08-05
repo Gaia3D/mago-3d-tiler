@@ -21,7 +21,7 @@ public enum ProcessOptions {
     LOG_PATH("log", "l", true, false, "Output log file path."),
     RECURSIVE("recursive", "r", false, false, "Tree directory deep navigation."),
 
-    TERRAIN_PATH("terrain", "te", true, false, "GeoTiff Terrain file path, 3D Object applied as clampToGround (Supports GeoTIFF format)"),
+    TERRAIN_PATH("terrain", "te", true, false, "Terrain path for clampToGround (GeoTIFF or a local Quantized Mesh layer.json)"),
     GEOID_PATH("geoid", "ge", true, false, "Geoid file path for height correction, \n(default: Ellipsoid)(options: Ellipsoid, EGM84, EGM96, EGM2008 or GeoTIFF File Path)"),
     INSTANCE_PATH("instance", "if", true, false, "Instance file path for I3DM \n(default: {OUTPUT}/instance.dae)"),
 

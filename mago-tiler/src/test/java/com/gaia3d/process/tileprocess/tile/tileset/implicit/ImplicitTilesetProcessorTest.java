@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -35,10 +34,10 @@ class ImplicitTilesetProcessorTest {
 
         TilesetBuildResult result = new ImplicitTilesetProcessor().prepareQuadtree(tileset, 2, "glb");
 
-        assertEquals(1, result.getContentInfos().size());
-        assertNotNull(contentPathField(result.getContentInfos().getFirst()));
-        assertEquals("RC2/0/0/0", contentPathField(result.getContentInfos().getFirst()));
-        assertEquals("RC2/0/0/0", result.getContentInfos().getFirst().getContentPath());
+        assertEquals(1, result.contentInfos().size());
+        assertNotNull(contentPathField(result.contentInfos().getFirst()));
+        assertEquals("RC2/0/0/0", contentPathField(result.contentInfos().getFirst()));
+        assertEquals("RC2/0/0/0", result.contentInfos().getFirst().getContentPath());
         assertEquals("data/RC2/{level}/{x}/{y}.glb", contentNode.getContent().getUri());
         assertEquals(SubdivisionScheme.QUADTREE, contentNode.getImplicitTiling().getSubdivisionScheme());
         assertNull(contentNode.getChildren());
@@ -62,10 +61,10 @@ class ImplicitTilesetProcessorTest {
 
         TilesetBuildResult result = new ImplicitTilesetProcessor().prepareQuadtree(tileset, 2, "glb");
 
-        assertEquals(3, result.getContentInfos().size());
-        assertEquals("RC0/0/0/0", contentPathField(result.getContentInfos().get(0)));
-        assertEquals("RC0/1/0/0", contentPathField(result.getContentInfos().get(1)));
-        assertEquals("RC0/3/2/0", contentPathField(result.getContentInfos().get(2)));
+        assertEquals(3, result.contentInfos().size());
+        assertEquals("RC0/0/0/0", contentPathField(result.contentInfos().get(0)));
+        assertEquals("RC0/1/0/0", contentPathField(result.contentInfos().get(1)));
+        assertEquals("RC0/3/2/0", contentPathField(result.contentInfos().get(2)));
     }
 
     private Node node(String nodeCode, double geometricError) {

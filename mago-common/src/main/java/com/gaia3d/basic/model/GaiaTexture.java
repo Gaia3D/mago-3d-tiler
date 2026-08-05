@@ -76,7 +76,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
     }
 
     public void deleteBufferedImage() {
-        if(this.bufferedImage != null) {
+        if (this.bufferedImage != null) {
             this.bufferedImage.flush();
             this.bufferedImage = null;
         }
@@ -190,14 +190,6 @@ public class GaiaTexture extends TextureStructure implements Serializable {
     }
 
     public void saveImage(String savePath) {
-//        try {
-//            String imageExtension = savePath.substring(savePath.lastIndexOf(".") + 1);
-//            File file = new File(savePath);
-//            ImageIO.setUseCache(false);
-//            ImageIO.write(bufferedImage, imageExtension, file);
-//        } catch (IOException e) {
-//            log.error("[ERROR] :", e);
-//        }
         saveImage(savePath, true, 0.90f);
     }
 
@@ -324,8 +316,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
                 resizeHeight = ImageUtils.getNearestPowerOfTwo(resizeHeight);
                 this.width = resizeWidth;
                 this.height = resizeHeight;
-                ImageResizer imageResizer = new ImageResizer();
-                this.bufferedImage = imageResizer.resizeImageGraphic2D(this.bufferedImage, resizeWidth, resizeHeight);
+                this.bufferedImage = ImageResizer.resizeImageGraphic2D(this.bufferedImage, resizeWidth, resizeHeight);
                 this.bufferedImageLod = lod;
             }
         }
@@ -338,8 +329,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         if (this.bufferedImage == null) {
             return;
         }
-        ImageResizer imageResizer = new ImageResizer();
-        this.bufferedImage = imageResizer.resizeImageGraphic2D(this.bufferedImage, width, height);
+        this.bufferedImage = ImageResizer.resizeImageGraphic2D(this.bufferedImage, width, height);
         this.bufferedImageLod = LevelOfDetail.NONE;
         this.width = width;
         this.height = height;

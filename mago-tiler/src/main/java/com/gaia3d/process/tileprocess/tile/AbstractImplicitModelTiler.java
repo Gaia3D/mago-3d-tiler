@@ -12,12 +12,7 @@ import com.gaia3d.process.tileprocess.TilesetBuildResult;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
 import com.gaia3d.process.tileprocess.tile.tileset.TilesetV2;
 import com.gaia3d.process.tileprocess.tile.tileset.asset.AssetV2;
-import com.gaia3d.process.tileprocess.tile.tileset.implicit.ImplicitSubtreeArtifact;
-import com.gaia3d.process.tileprocess.tile.tileset.implicit.ImplicitSubtreeBuilder;
-import com.gaia3d.process.tileprocess.tile.tileset.implicit.ImplicitTileCoordinate;
-import com.gaia3d.process.tileprocess.tile.tileset.implicit.ImplicitTiling;
-import com.gaia3d.process.tileprocess.tile.tileset.implicit.SubdivisionScheme;
-import com.gaia3d.process.tileprocess.tile.tileset.implicit.TemplateUri;
+import com.gaia3d.process.tileprocess.tile.tileset.implicit.*;
 import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Content;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
@@ -40,7 +35,7 @@ public abstract class AbstractImplicitModelTiler extends DefaultTiler implements
 
     @Override
     public Tileset run(List<TileInfo> tileInfos) {
-        return runWithResult(tileInfos).getTileset();
+        return runWithResult(tileInfos).tileset();
     }
 
     @Override
@@ -175,10 +170,10 @@ public abstract class AbstractImplicitModelTiler extends DefaultTiler implements
         }
 
         if (!canSplit) {
-            return coordinate.getLevel();
+            return coordinate.level();
         }
 
-        int maxLevel = coordinate.getLevel();
+        int maxLevel = coordinate.level();
         for (int i = 0; i < splitResult.children().size(); i++) {
             List<TileInfo> childTileInfos = childTileInfos(tileInfos, contentTileInfos, splitResult, i, canSplit, depth(coordinate));
             if (childTileInfos.isEmpty()) {
@@ -277,24 +272,24 @@ public abstract class AbstractImplicitModelTiler extends DefaultTiler implements
     }
 
     private int depth(ImplicitTileCoordinate coordinate) {
-        return coordinate.getLevel();
+        return coordinate.level();
     }
 
     private String contentPath(ImplicitTileCoordinate coordinate) {
-        return "R/" + coordinate.getLevel() + "/" + coordinate.getX() + "/" + coordinate.getY();
+        return "R/" + coordinate.level() + "/" + coordinate.x() + "/" + coordinate.y();
     }
 
     private void writeSubtrees(File outputPath, ObjectMapper objectMapper) {
         for (ImplicitSubtreeArtifact artifact : implicitSubtreeArtifacts) {
             try {
-                File subtreeFile = new File(outputPath, artifact.getSubtreeUri());
-                File bufferFile = new File(outputPath, artifact.getBufferUri());
+                File subtreeFile = new File(outputPath, artifact.subtreeUri());
+                File bufferFile = new File(outputPath, artifact.bufferUri());
                 java.nio.file.Files.createDirectories(subtreeFile.toPath().getParent());
                 java.nio.file.Files.createDirectories(bufferFile.toPath().getParent());
-                objectMapper.writeValue(subtreeFile, artifact.getSubtree());
-                java.nio.file.Files.write(bufferFile.toPath(), artifact.getAvailabilityBuffer());
+                objectMapper.writeValue(subtreeFile, artifact.subtree());
+                java.nio.file.Files.write(bufferFile.toPath(), artifact.availabilityBuffer());
             } catch (IOException e) {
-                throw new TileProcessingException("Failed to write implicit subtree: " + artifact.getSubtreeUri(), e);
+                throw new TileProcessingException("Failed to write implicit subtree: " + artifact.subtreeUri(), e);
             }
         }
     }

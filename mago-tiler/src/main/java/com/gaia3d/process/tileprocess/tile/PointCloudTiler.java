@@ -10,18 +10,13 @@ import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.command.mago.TilingMode;
 import com.gaia3d.converter.pointcloud.GaiaLasPoint;
 import com.gaia3d.converter.pointcloud.GaiaPointCloud;
-import com.gaia3d.process.tileprocess.TilesetBuildResult;
 import com.gaia3d.process.tileprocess.Tiler;
+import com.gaia3d.process.tileprocess.TilesetBuildResult;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
 import com.gaia3d.process.tileprocess.tile.tileset.TilesetV2;
 import com.gaia3d.process.tileprocess.tile.tileset.asset.AssetV1;
 import com.gaia3d.process.tileprocess.tile.tileset.asset.AssetV2;
-import com.gaia3d.process.tileprocess.tile.tileset.implicit.ImplicitSubtreeArtifact;
-import com.gaia3d.process.tileprocess.tile.tileset.implicit.ImplicitSubtreeBuilder;
-import com.gaia3d.process.tileprocess.tile.tileset.implicit.ImplicitTileCoordinate;
-import com.gaia3d.process.tileprocess.tile.tileset.implicit.ImplicitTiling;
-import com.gaia3d.process.tileprocess.tile.tileset.implicit.SubdivisionScheme;
-import com.gaia3d.process.tileprocess.tile.tileset.implicit.TemplateUri;
+import com.gaia3d.process.tileprocess.tile.tileset.implicit.*;
 import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Content;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
@@ -262,7 +257,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
     }
 
     private int collectImplicitContent(Node node, String rootCode, ImplicitTileCoordinate coordinate, ImplicitSubtreeBuilder subtreeBuilder, List<ContentInfo> contentInfos) {
-        int maxLevel = coordinate.getLevel();
+        int maxLevel = coordinate.level();
         Content content = node.getContent();
         if (content != null && content.getContentInfo() != null) {
             ContentInfo contentInfo = content.getContentInfo();
@@ -299,14 +294,14 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
     private void writeImplicitSubtrees(File outputPath, ObjectMapper objectMapper) {
         for (ImplicitSubtreeArtifact artifact : implicitSubtreeArtifacts) {
             try {
-                File subtreeFile = new File(outputPath, artifact.getSubtreeUri());
-                File bufferFile = new File(outputPath, artifact.getBufferUri());
+                File subtreeFile = new File(outputPath, artifact.subtreeUri());
+                File bufferFile = new File(outputPath, artifact.bufferUri());
                 Files.createDirectories(subtreeFile.toPath().getParent());
                 Files.createDirectories(bufferFile.toPath().getParent());
-                objectMapper.writeValue(subtreeFile, artifact.getSubtree());
-                Files.write(bufferFile.toPath(), artifact.getAvailabilityBuffer());
+                objectMapper.writeValue(subtreeFile, artifact.subtree());
+                Files.write(bufferFile.toPath(), artifact.availabilityBuffer());
             } catch (IOException e) {
-                throw new TileProcessingException("Failed to write implicit subtree: " + artifact.getSubtreeUri(), e);
+                throw new TileProcessingException("Failed to write implicit subtree: " + artifact.subtreeUri(), e);
             }
         }
     }

@@ -5,9 +5,9 @@ import com.gaia3d.basic.exception.TileProcessingException;
 import com.gaia3d.process.tileprocess.TilesetBuildResult;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
+import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Content;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
-import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,14 +39,14 @@ public class ImplicitTilesetProcessor {
     public void writeSubtrees(File outputPath, ObjectMapper objectMapper, List<ImplicitSubtreeArtifact> artifacts) {
         for (ImplicitSubtreeArtifact artifact : artifacts) {
             try {
-                File subtreeFile = new File(outputPath, artifact.getSubtreeUri());
-                File bufferFile = new File(outputPath, artifact.getBufferUri());
+                File subtreeFile = new File(outputPath, artifact.subtreeUri());
+                File bufferFile = new File(outputPath, artifact.bufferUri());
                 Files.createDirectories(subtreeFile.toPath().getParent());
                 Files.createDirectories(bufferFile.toPath().getParent());
-                objectMapper.writeValue(subtreeFile, artifact.getSubtree());
-                Files.write(bufferFile.toPath(), artifact.getAvailabilityBuffer());
+                objectMapper.writeValue(subtreeFile, artifact.subtree());
+                Files.write(bufferFile.toPath(), artifact.availabilityBuffer());
             } catch (IOException e) {
-                throw new TileProcessingException("Failed to write implicit subtree: " + artifact.getSubtreeUri(), e);
+                throw new TileProcessingException("Failed to write implicit subtree: " + artifact.subtreeUri(), e);
             }
         }
     }
@@ -74,7 +74,7 @@ public class ImplicitTilesetProcessor {
     }
 
     private int collect(Node node, String rootCode, ImplicitTileCoordinate coordinate, ImplicitSubtreeBuilder subtreeBuilder, List<ContentInfo> contentInfos, Set<String> contentPaths) {
-        int maxLevel = coordinate.getLevel();
+        int maxLevel = coordinate.level();
         Content content = node.getContent();
         boolean hasContent = content != null && content.getContentInfo() != null;
         if (hasContent) {
@@ -117,7 +117,7 @@ public class ImplicitTilesetProcessor {
     }
 
     private String quadtreeContentPath(String rootCode, ImplicitTileCoordinate coordinate) {
-        return rootCode + "/" + coordinate.getLevel() + "/" + coordinate.getX() + "/" + coordinate.getY();
+        return rootCode + "/" + coordinate.level() + "/" + coordinate.x() + "/" + coordinate.y();
     }
 
     private String normalizeRootCode(String rootCode) {

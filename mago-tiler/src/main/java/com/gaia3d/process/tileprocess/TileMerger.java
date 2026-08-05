@@ -30,7 +30,7 @@ public class TileMerger {
 
     private final int MINIMUM_DEPTH = 2;
     private final int MAXIMUM_DEPTH = 16;
-    private GlobalOptions globalOptions = GlobalOptions.getInstance();
+    private final GlobalOptions globalOptions = GlobalOptions.getInstance();
 
     static BoundingVolume toRegionBoundingVolume(BoundingVolume boundingVolume, float[] transformArray) {
         if (boundingVolume == null) {

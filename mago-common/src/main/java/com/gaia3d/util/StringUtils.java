@@ -1,5 +1,6 @@
 package com.gaia3d.util;
 
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.ByteBuffer;
@@ -9,6 +10,7 @@ import java.util.Optional;
 import java.util.Vector;
 
 @Slf4j
+@UtilityClass
 public class StringUtils {
     public static String doPadding4Bytes(String text) {
         return doPaddingBytes(text, 4);

@@ -86,7 +86,7 @@ public class FileHandlePool implements Closeable {
         TileCoordinate tile = bucketIdToTileCoordinate(bucketId);
 
         //String fileName = String.format("bucket_%06d.bin", bucketId);
-        String fileName = String.format("bucket.bin");
+        String fileName = "bucket.bin";
         String filePath = String.format("%d/%d/%d/" + fileName, tile.level, tile.x, tile.y);
         return rootDir.resolve(filePath);
     }

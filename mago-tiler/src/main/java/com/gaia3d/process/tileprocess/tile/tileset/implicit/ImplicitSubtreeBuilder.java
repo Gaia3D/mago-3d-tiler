@@ -6,11 +6,7 @@ import com.gaia3d.process.tileprocess.tile.tileset.subtree.SubtreeBuffer;
 import com.gaia3d.process.tileprocess.tile.tileset.subtree.SubtreeBufferView;
 
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class ImplicitSubtreeBuilder {
     private final String rootCode;
@@ -34,7 +30,7 @@ public class ImplicitSubtreeBuilder {
 
     public void addContent(ImplicitTileCoordinate coordinate) {
         availableContents.add(coordinate);
-        for (int level = 0; level <= coordinate.getLevel(); level++) {
+        for (int level = 0; level <= coordinate.level(); level++) {
             availableTiles.add(coordinate.ancestor(level));
         }
     }
@@ -42,10 +38,10 @@ public class ImplicitSubtreeBuilder {
     public List<ImplicitSubtreeArtifact> build() {
         Set<ImplicitTileCoordinate> subtreeRoots = findSubtreeRoots();
         List<ImplicitSubtreeArtifact> artifacts = new ArrayList<>();
-        for (ImplicitTileCoordinate subtreeRoot : subtreeRoots.stream().sorted(Comparator.comparingInt(ImplicitTileCoordinate::getLevel)
-                .thenComparingInt(ImplicitTileCoordinate::getX)
-                .thenComparingInt(ImplicitTileCoordinate::getY)
-                .thenComparingInt(ImplicitTileCoordinate::getZ)).toList()) {
+        for (ImplicitTileCoordinate subtreeRoot : subtreeRoots.stream().sorted(Comparator.comparingInt(ImplicitTileCoordinate::level)
+                .thenComparingInt(ImplicitTileCoordinate::x)
+                .thenComparingInt(ImplicitTileCoordinate::y)
+                .thenComparingInt(ImplicitTileCoordinate::z)).toList()) {
             artifacts.add(buildSubtree(subtreeRoot, subtreeRoots));
         }
         return artifacts;
@@ -55,7 +51,7 @@ public class ImplicitSubtreeBuilder {
         Set<ImplicitTileCoordinate> subtreeRoots = new HashSet<>();
         subtreeRoots.add(ImplicitTileCoordinate.root());
         for (ImplicitTileCoordinate coordinate : availableTiles) {
-            int rootLevel = (coordinate.getLevel() / subtreeLevels) * subtreeLevels;
+            int rootLevel = (coordinate.level() / subtreeLevels) * subtreeLevels;
             subtreeRoots.add(coordinate.ancestor(rootLevel));
         }
         return subtreeRoots;
@@ -82,9 +78,9 @@ public class ImplicitSubtreeBuilder {
             contentBits.set(bitIndex);
         }
 
-        int childSubtreeLevel = subtreeRoot.getLevel() + subtreeLevels;
+        int childSubtreeLevel = subtreeRoot.level() + subtreeLevels;
         for (ImplicitTileCoordinate childSubtreeRoot : subtreeRoots) {
-            if (childSubtreeRoot.getLevel() != childSubtreeLevel) {
+            if (childSubtreeRoot.level() != childSubtreeLevel) {
                 continue;
             }
             if (!isChildSubtreeOf(subtreeRoot, childSubtreeRoot)) {
@@ -118,20 +114,20 @@ public class ImplicitSubtreeBuilder {
     }
 
     private boolean isInsideSubtree(ImplicitTileCoordinate subtreeRoot, ImplicitTileCoordinate coordinate) {
-        int localLevel = coordinate.getLevel() - subtreeRoot.getLevel();
+        int localLevel = coordinate.level() - subtreeRoot.level();
         if (localLevel < 0 || localLevel >= subtreeLevels) {
             return false;
         }
-        return coordinate.ancestor(subtreeRoot.getLevel()).equals(subtreeRoot);
+        return coordinate.ancestor(subtreeRoot.level()).equals(subtreeRoot);
     }
 
     private boolean isChildSubtreeOf(ImplicitTileCoordinate subtreeRoot, ImplicitTileCoordinate childSubtreeRoot) {
-        return childSubtreeRoot.getLevel() > subtreeRoot.getLevel()
-                && childSubtreeRoot.ancestor(subtreeRoot.getLevel()).equals(subtreeRoot);
+        return childSubtreeRoot.level() > subtreeRoot.level()
+                && childSubtreeRoot.ancestor(subtreeRoot.level()).equals(subtreeRoot);
     }
 
     private int availabilityBitIndex(ImplicitTileCoordinate subtreeRoot, ImplicitTileCoordinate coordinate) {
-        int localLevel = coordinate.getLevel() - subtreeRoot.getLevel();
+        int localLevel = coordinate.level() - subtreeRoot.level();
         return levelOffset(localLevel) + coordinate.localMortonIndex(localLevel, subtreeRoot, subdivisionScheme);
     }
 
@@ -182,16 +178,16 @@ public class ImplicitSubtreeBuilder {
 
     private String subtreeUri(ImplicitTileCoordinate coordinate) {
         if (subdivisionScheme == SubdivisionScheme.QUADTREE) {
-            return "subtrees/" + rootCode + "/" + coordinate.getLevel() + "/" + coordinate.getX() + "/" + coordinate.getY() + ".json";
+            return "subtrees/" + rootCode + "/" + coordinate.level() + "/" + coordinate.x() + "/" + coordinate.y() + ".json";
         }
-        return "subtrees/" + rootCode + "/" + coordinate.getLevel() + "/" + coordinate.getX() + "/" + coordinate.getY() + "/" + coordinate.getZ() + ".json";
+        return "subtrees/" + rootCode + "/" + coordinate.level() + "/" + coordinate.x() + "/" + coordinate.y() + "/" + coordinate.z() + ".json";
     }
 
     private String bufferUri(ImplicitTileCoordinate coordinate) {
         if (subdivisionScheme == SubdivisionScheme.QUADTREE) {
-            return "subtrees/" + rootCode + "/" + coordinate.getLevel() + "/" + coordinate.getX() + "/" + coordinate.getY() + ".bin";
+            return "subtrees/" + rootCode + "/" + coordinate.level() + "/" + coordinate.x() + "/" + coordinate.y() + ".bin";
         }
-        return "subtrees/" + rootCode + "/" + coordinate.getLevel() + "/" + coordinate.getX() + "/" + coordinate.getY() + "/" + coordinate.getZ() + ".bin";
+        return "subtrees/" + rootCode + "/" + coordinate.level() + "/" + coordinate.x() + "/" + coordinate.y() + "/" + coordinate.z() + ".bin";
     }
 
     private static class Bitset {

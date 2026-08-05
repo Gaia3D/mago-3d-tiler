@@ -25,7 +25,6 @@ import com.gaia3d.basic.remesher.*;
 import com.gaia3d.basic.remesher.information.GaiaStatistics;
 import com.gaia3d.basic.texture.atlas.TextureAtlasManager;
 import com.gaia3d.basic.types.TextureType;
-import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
 import com.gaia3d.util.GaiaTextureUtils;
 import com.gaia3d.util.ImageResizer;
@@ -54,46 +53,21 @@ import static com.gaia3d.basic.magogl.MagoRenderEngine.toArgb;
 
 public class MagoReTextureByObliqueCamera {
 
-    public static final int BACKGROUND_FACE_CODE =
-            0xFFFFFFFF;
+    public static final int BACKGROUND_FACE_CODE = 0xFFFFFFFF;
 
     private final MagoRenderingBackend renderingBackend;
-    private CameraDirectionType[] renderDirections = {
-            CameraDirectionType.ZNEG,
-            CameraDirectionType.XPOS_ZNEG,
-            CameraDirectionType.XNEG_ZNEG,
-            CameraDirectionType.YPOS_ZNEG,
-            CameraDirectionType.YNEG_ZNEG,
-            CameraDirectionType.XPOS_YPOS_ZNEG,
-            CameraDirectionType.XNEG_YPOS_ZNEG,
-            CameraDirectionType.XPOS_YNEG_ZNEG,
-            CameraDirectionType.XNEG_YNEG_ZNEG
-    };
-    private FaceColorCodeManager faceColorCodeManager = new FaceColorCodeManager();
-
+    private CameraDirectionType[] renderDirections = {CameraDirectionType.ZNEG, CameraDirectionType.XPOS_ZNEG, CameraDirectionType.XNEG_ZNEG, CameraDirectionType.YPOS_ZNEG, CameraDirectionType.YNEG_ZNEG, CameraDirectionType.XPOS_YPOS_ZNEG, CameraDirectionType.XNEG_YPOS_ZNEG, CameraDirectionType.XPOS_YNEG_ZNEG, CameraDirectionType.XNEG_YNEG_ZNEG};
 
     public MagoReTextureByObliqueCamera() {
         this(new SoftwareRenderingBackend());
     }
 
     public MagoReTextureByObliqueCamera(MagoRenderingBackend renderingBackend) {
-        this.renderingBackend = Objects.requireNonNull(
-                renderingBackend,
-                "renderingBackend must not be null"
-        );
+        this.renderingBackend = Objects.requireNonNull(renderingBackend, "renderingBackend must not be null");
 
     }
 
-    public void integralReMeshByObliqueCameraV2(List<SceneInfo> sceneInfos,
-                                                List<HalfEdgeScene> resultHalfEdgeScenes,
-                                                ReMeshParameters reMeshParams,
-                                                GaiaBoundingBox nodeBBox,
-                                                Matrix4d nodeTMatrix,
-                                                int maxScreenSize,
-                                                String outputPathString,
-                                                String nodeName,
-                                                int lod,
-                                                Node node) {
+    public void integralReMeshByObliqueCameraV2(List<SceneInfo> sceneInfos, List<HalfEdgeScene> resultHalfEdgeScenes, ReMeshParameters reMeshParams, GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize, String outputPathString, String nodeName, int lod, Node node) {
         // Note: There are only one scene in the scene list
         Map<CameraDirectionType, GaiaBoundingBox> mapCameraDirectionTypeBBox = new HashMap<>();
         Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix = new HashMap<>();
@@ -102,46 +76,23 @@ public class MagoReTextureByObliqueCamera {
         double screenPixelsForMeter = 20;
         double nodeBBoxMaxSize = nodeBBox.getMaxSize();
 
-        if (!Double.isFinite(nodeBBoxMaxSize)
-                || nodeBBoxMaxSize <= 0.0) {
+        if (!Double.isFinite(nodeBBoxMaxSize) || nodeBBoxMaxSize <= 0.0) {
 
-            throw new IllegalStateException(
-                    "Invalid node bounding-box size: "
-                            + nodeBBoxMaxSize
-            );
+            throw new IllegalStateException("Invalid node bounding-box size: " + nodeBBoxMaxSize);
         }
 
         int targetMaxSize = 512;
         screenPixelsForMeter = targetMaxSize / nodeBBoxMaxSize;
-        MagoFboSet fboSet = create9MagoFbos(nodeBBox,
-                renderDirections,
-                mapCameraDirectionTypeBBox,
-                mapCameraDirectionTypeModelViewMatrix,
-                mapCameraDirectionTypeProjection,
-                screenPixelsForMeter);
+        MagoFboSet fboSet = create9MagoFbos(nodeBBox, renderDirections, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, mapCameraDirectionTypeProjection, screenPixelsForMeter);
 
-        Vector4f backgroundColor =
-                new Vector4f(
-                        1.0f,
-                        0.0f,
-                        1.0f,
-                        1.0f
-                );
+        Vector4f backgroundColor = new Vector4f(1.0f, 0.0f, 1.0f, 1.0f);
 
-        int backgroundArgb =
-                toArgb(backgroundColor);
+        int backgroundArgb = toArgb(backgroundColor);
 
-        fboSet.clearAll(
-                backgroundArgb,
-                1.0f
-        ); // only one time
+        fboSet.clearAll(backgroundArgb, 1.0f); // only one time
 
         // create faceCodeFboSet by copy from fboSet.
-        MagoFboSet faceCodeFboSet =
-                fboSet.createCompatible(
-                        BACKGROUND_FACE_CODE,
-                        1.0f
-                );
+        MagoFboSet faceCodeFboSet = fboSet.createCompatible(BACKGROUND_FACE_CODE, 1.0f);
 
         Matrix4d nodeMatrixInv = new Matrix4d(nodeTMatrix);
         nodeMatrixInv.invert();
@@ -159,13 +110,7 @@ public class MagoReTextureByObliqueCamera {
         Vector3i nodeMinCellIndex = new Vector3i(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
         Vector3i nodeMaxCellIndex = new Vector3i(Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE);
 
-        GaiaWeldOptions weldOptions = GaiaWeldOptions.builder()
-                .error(weldError)
-                .checkTexCoord(false)
-                .checkNormal(false)
-                .checkColor(false)
-                .checkBatchId(false)
-                .build();
+        GaiaWeldOptions weldOptions = GaiaWeldOptions.builder().error(weldError).checkTexCoord(false).checkNormal(false).checkColor(false).checkBatchId(false).build();
 
         GaiaTriangulator triangulator = new GaiaTriangulator();
         GaiaSceneCleaner cleaner = new GaiaSceneCleaner();
@@ -180,8 +125,7 @@ public class MagoReTextureByObliqueCamera {
         MagoRenderingSession renderingSession = renderingBackend.openSession();
 
         GaiaBoundingBox translatedNodeBBox = nodeBBox.clone();
-        Vector3d nodePositionRelativeToRoot =
-                node.getCartesianPositionRelativeToRootNode();
+        Vector3d nodePositionRelativeToRoot = node.getCartesianPositionRelativeToRootNode();
         translatedNodeBBox.translate(nodePositionRelativeToRoot.x, nodePositionRelativeToRoot.y, nodePositionRelativeToRoot.z);
         try {
             for (int i = 0; i < scenesCount; i++) {
@@ -287,25 +231,18 @@ public class MagoReTextureByObliqueCamera {
                 double width = sceneBBox.getLengthX();
                 double length = sceneBBox.getLengthY();
                 double depth = sceneBBox.getLengthZ();
-                boolean isSmallScene = false;
+                boolean isSmallScene = width < cellGridSize;
 
-                if(width < cellGridSize) {
-                    isSmallScene  = true;
-                }
-
-                if(length < cellGridSize) {
-                    isSmallScene  = true;
+                if (length < cellGridSize) {
+                    isSmallScene = true;
                 }
 
                 Vector3i sceneMinCellIndex = new Vector3i();
                 Vector3i sceneMaxCellIndex = new Vector3i();
 
-                ReMesherVertexCluster.reMeshScene(
-                        gaiaScene,
-                        reMeshParams,
-                        sceneMinCellIndex,
-                        sceneMaxCellIndex
-                );
+                ReMesherVertexCluster.reMeshScene(gaiaScene, reMeshParams,
+
+                        sceneMinCellIndex, sceneMaxCellIndex);
 
                 // update the node cell index bbox
                 if (sceneMinCellIndex.x < nodeMinCellIndex.x) {
@@ -329,7 +266,6 @@ public class MagoReTextureByObliqueCamera {
 
                 // end new.-------------------------------------------------------------------------------
                 translateScene(gaiaScene, scenePosRelToCellGridNegative); // translate the scene back to the original position
-
 
                 // end of reMeshing the scene.******************************************************************************
 
@@ -366,13 +302,7 @@ public class MagoReTextureByObliqueCamera {
                     }
 
                     MagoRenderableScene decimatedRenderableScene = magoRenderableMaker.makeScene(gaiaScene);
-                    makeIntegralBoxTexturesByObliqueCamera9Directions(magoRenderableScene,
-                            decimatedRenderableScene,
-                            fboSet,
-                            faceCodeFboSet,
-                            mapCameraDirectionTypeModelViewMatrix,
-                            mapCameraDirectionTypeProjection,
-                            renderingSession);
+                    makeIntegralBoxTexturesByObliqueCamera9Directions(magoRenderableScene, decimatedRenderableScene, fboSet, faceCodeFboSet, mapCameraDirectionTypeModelViewMatrix, mapCameraDirectionTypeProjection, renderingSession);
                     // end of making oblique camera textures
 
                     if (magoRenderableScene != null) {
@@ -438,7 +368,6 @@ public class MagoReTextureByObliqueCamera {
 
         // do a last remesh for the gaiaSceneMaster.***
 
-
         // Make frontier expansion.************************************************************************************
         GaiaFrontierExpander frontierExpander = new GaiaFrontierExpander();
         double maxNodeBBoxSize = nodeBBox.getMaxSize();
@@ -454,15 +383,7 @@ public class MagoReTextureByObliqueCamera {
 
         List<GaiaTexture> resultAtlasTextures = new ArrayList<>();
         // Here scissor the atlas textures.
-        atlasTextureForIntegralReMesh9Directions(fboSet,
-                faceCodeFboSet,
-                backgroundColor,
-                halfEdgeSceneMaster,
-                mapCameraDirectionTypeBBox,
-                mapCameraDirectionTypeModelViewMatrix,
-                resultAtlasTextures,
-                mapClassificationCamDirTypeFacesList,
-                outputPathString, nodeName, lod);
+        atlasTextureForIntegralReMesh9Directions(fboSet, faceCodeFboSet, backgroundColor, halfEdgeSceneMaster, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, resultAtlasTextures, mapClassificationCamDirTypeFacesList, outputPathString, nodeName, lod);
         // end of atlas texture*************************************************************************************
 
 //        // GaiaSkirtMaker.**********************************************************************************************
@@ -501,13 +422,7 @@ public class MagoReTextureByObliqueCamera {
         GaiaTriangulator triangulator = new GaiaTriangulator();
         GaiaSceneCleaner cleaner = new GaiaSceneCleaner();
         double weldError = 1e-5; // 1e-6 is a good value for remeshing
-        GaiaWeldOptions weldOptions = GaiaWeldOptions.builder()
-                .error(weldError)
-                .checkTexCoord(false)
-                .checkNormal(false)
-                .checkColor(false)
-                .checkBatchId(false)
-                .build();
+        GaiaWeldOptions weldOptions = GaiaWeldOptions.builder().error(weldError).checkTexCoord(false).checkNormal(false).checkColor(false).checkBatchId(false).build();
         GaiaWelder weld = new GaiaWelder(weldOptions);
         GaiaExtractor extractor = new GaiaExtractor();
         GaiaScene mergedScene = null;
@@ -558,29 +473,29 @@ public class MagoReTextureByObliqueCamera {
             Vector3d scenePositionLC = sceneInfo.getScenePosLC(); // relative position of the scene respect the center of RootNode (Depth = 0).
             Vector3d scenePositionLCNegative = new Vector3d(-scenePositionLC.x, -scenePositionLC.y, -scenePositionLC.z);
 
-            if(scenePositionLCMaster == null){
+            if (scenePositionLCMaster == null) {
                 scenePositionLCMaster = new Vector3d(scenePositionLC);
                 scenePositionLCMasterNegative = new Vector3d(-scenePositionLC.x, -scenePositionLC.y, -scenePositionLC.z);
             }
 
             translateScene(gaiaScene, scenePositionLC); // translate the scene to the position in the node
 
-            if(mergedScene == null) {
+            if (mergedScene == null) {
                 mergedScene = gaiaScene.clone();
             } else {
                 List<GaiaMaterial> masterMaterials = mergedScene.getMaterials();
                 int materialsCount = masterMaterials.size();
                 GaiaNode masterRootNode = mergedScene.getRootNode();
                 List<GaiaNode> masterChildNodes = masterRootNode.getChildren();
-                GaiaNode masterChildNode =  masterChildNodes.get(0); // take the 1rst.
+                GaiaNode masterChildNode = masterChildNodes.get(0); // take the 1rst.
                 GaiaMesh masterMesh = masterChildNode.getMeshes().get(0);
 
                 List<GaiaPrimitive> currPrimitives = extractor.extractAllPrimitives(gaiaScene);
                 int primitivesCount = currPrimitives.size();
-                for(int j=0; j< primitivesCount; j++) {
+                for (int j = 0; j < primitivesCount; j++) {
                     GaiaPrimitive primitive = currPrimitives.get(j);
                     int matId = primitive.getMaterialIndex();
-                    if(matId >= 0 && matId < gaiaScene.getMaterials().size()) {
+                    if (matId >= 0 && matId < gaiaScene.getMaterials().size()) {
                         GaiaMaterial material = gaiaScene.getMaterials().get(matId);
                         masterMaterials.add(material);
                         primitive.setMaterialIndex(materialsCount);
@@ -599,46 +514,26 @@ public class MagoReTextureByObliqueCamera {
         return mergedScene;
     }
 
-    public void getGroupedSceneInfos(List<SceneInfo> sceneInfos, List<List<SceneInfo>> resultGroupedSceneInfos, int scenesCountForGroup){
-        if (sceneInfos == null
-                || sceneInfos.isEmpty()
-                || resultGroupedSceneInfos == null) {
+    public void getGroupedSceneInfos(List<SceneInfo> sceneInfos, List<List<SceneInfo>> resultGroupedSceneInfos, int scenesCountForGroup) {
+        if (sceneInfos == null || sceneInfos.isEmpty() || resultGroupedSceneInfos == null) {
             return;
         }
 
         if (scenesCountForGroup <= 0) {
-            throw new IllegalArgumentException(
-                    "scenesCountForGroup must be greater than zero"
-            );
+            throw new IllegalArgumentException("scenesCountForGroup must be greater than zero");
         }
 
-        for (int startIndex = 0;
-             startIndex < sceneInfos.size();
-             startIndex += scenesCountForGroup) {
+        for (int startIndex = 0; startIndex < sceneInfos.size(); startIndex += scenesCountForGroup) {
 
-            int endIndex = Math.min(
-                    startIndex + scenesCountForGroup,
-                    sceneInfos.size()
-            );
+            int endIndex = Math.min(startIndex + scenesCountForGroup, sceneInfos.size());
 
-            List<SceneInfo> group = new ArrayList<>(
-                    sceneInfos.subList(startIndex, endIndex)
-            );
+            List<SceneInfo> group = new ArrayList<>(sceneInfos.subList(startIndex, endIndex));
 
             resultGroupedSceneInfos.add(group);
         }
     }
 
-    public void integralReMeshByObliqueCamera2by2(List<SceneInfo> sceneInfos,
-                                                List<HalfEdgeScene> resultHalfEdgeScenes,
-                                                ReMeshParameters reMeshParams,
-                                                GaiaBoundingBox nodeBBox,
-                                                Matrix4d nodeTMatrix,
-                                                int maxScreenSize,
-                                                String outputPathString,
-                                                String nodeName,
-                                                int lod,
-                                                Node node) {
+    public void integralReMeshByObliqueCamera2by2(List<SceneInfo> sceneInfos, List<HalfEdgeScene> resultHalfEdgeScenes, ReMeshParameters reMeshParams, GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize, String outputPathString, String nodeName, int lod, Node node) {
         // Note: There are only one scene in the scene list
         Map<CameraDirectionType, GaiaBoundingBox> mapCameraDirectionTypeBBox = new HashMap<>();
         Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix = new HashMap<>();
@@ -647,46 +542,23 @@ public class MagoReTextureByObliqueCamera {
         double screenPixelsForMeter = 20;
         double nodeBBoxMaxSize = nodeBBox.getMaxSize();
 
-        if (!Double.isFinite(nodeBBoxMaxSize)
-                || nodeBBoxMaxSize <= 0.0) {
+        if (!Double.isFinite(nodeBBoxMaxSize) || nodeBBoxMaxSize <= 0.0) {
 
-            throw new IllegalStateException(
-                    "Invalid node bounding-box size: "
-                            + nodeBBoxMaxSize
-            );
+            throw new IllegalStateException("Invalid node bounding-box size: " + nodeBBoxMaxSize);
         }
 
         int targetMaxSize = 512;
         screenPixelsForMeter = targetMaxSize / nodeBBoxMaxSize;
-        MagoFboSet fboSet = create9MagoFbos(nodeBBox,
-                renderDirections,
-                mapCameraDirectionTypeBBox,
-                mapCameraDirectionTypeModelViewMatrix,
-                mapCameraDirectionTypeProjection,
-                screenPixelsForMeter);
+        MagoFboSet fboSet = create9MagoFbos(nodeBBox, renderDirections, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, mapCameraDirectionTypeProjection, screenPixelsForMeter);
 
-        Vector4f backgroundColor =
-                new Vector4f(
-                        1.0f,
-                        0.0f,
-                        1.0f,
-                        1.0f
-                );
+        Vector4f backgroundColor = new Vector4f(1.0f, 0.0f, 1.0f, 1.0f);
 
-        int backgroundArgb =
-                toArgb(backgroundColor);
+        int backgroundArgb = toArgb(backgroundColor);
 
-        fboSet.clearAll(
-                backgroundArgb,
-                1.0f
-        ); // only one time
+        fboSet.clearAll(backgroundArgb, 1.0f); // only one time
 
         // create faceCodeFboSet by copy from fboSet.
-        MagoFboSet faceCodeFboSet =
-                fboSet.createCompatible(
-                        BACKGROUND_FACE_CODE,
-                        1.0f
-                );
+        MagoFboSet faceCodeFboSet = fboSet.createCompatible(BACKGROUND_FACE_CODE, 1.0f);
 
         Matrix4d nodeMatrixInv = new Matrix4d(nodeTMatrix);
         nodeMatrixInv.invert();
@@ -709,13 +581,7 @@ public class MagoReTextureByObliqueCamera {
         Vector3i nodeMinCellIndex = new Vector3i(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
         Vector3i nodeMaxCellIndex = new Vector3i(Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE);
 
-        GaiaWeldOptions weldOptions = GaiaWeldOptions.builder()
-                .error(weldError)
-                .checkTexCoord(false)
-                .checkNormal(false)
-                .checkColor(false)
-                .checkBatchId(false)
-                .build();
+        GaiaWeldOptions weldOptions = GaiaWeldOptions.builder().error(weldError).checkTexCoord(false).checkNormal(false).checkColor(false).checkBatchId(false).build();
 
         GaiaTriangulator triangulator = new GaiaTriangulator();
         GaiaSceneCleaner cleaner = new GaiaSceneCleaner();
@@ -731,12 +597,11 @@ public class MagoReTextureByObliqueCamera {
         MagoRenderingSession renderingSession = renderingBackend.openSession();
 
         GaiaBoundingBox translatedNodeBBox = nodeBBox.clone();
-        Vector3d nodePositionRelativeToRoot =
-                node.getCartesianPositionRelativeToRootNode();
+        Vector3d nodePositionRelativeToRoot = node.getCartesianPositionRelativeToRootNode();
         translatedNodeBBox.translate(nodePositionRelativeToRoot.x, nodePositionRelativeToRoot.y, nodePositionRelativeToRoot.z);
 
         String nodeCode = node.getNodeCode();
-        if(nodeCode.equals("R10")){
+        if (nodeCode.equals("R10")) {
             int hola = 0;
         }
 
@@ -860,12 +725,9 @@ public class MagoReTextureByObliqueCamera {
                 Vector3i sceneMinCellIndex = new Vector3i();
                 Vector3i sceneMaxCellIndex = new Vector3i();
 
-                ReMesherVertexCluster.reMeshScene(
-                        mergedScene,
-                        reMeshParams,
-                        sceneMinCellIndex,
-                        sceneMaxCellIndex
-                );
+                ReMesherVertexCluster.reMeshScene(mergedScene, reMeshParams,
+
+                        sceneMinCellIndex, sceneMaxCellIndex);
 
                 // update the node cell index bbox
                 if (sceneMinCellIndex.x < nodeMinCellIndex.x) {
@@ -927,13 +789,7 @@ public class MagoReTextureByObliqueCamera {
                     }
 
                     MagoRenderableScene decimatedRenderableScene = magoRenderableMaker.makeScene(mergedScene);
-                    makeIntegralBoxTexturesByObliqueCamera9Directions(magoRenderableScene,
-                            decimatedRenderableScene,
-                            fboSet,
-                            faceCodeFboSet,
-                            mapCameraDirectionTypeModelViewMatrix,
-                            mapCameraDirectionTypeProjection,
-                            renderingSession);
+                    makeIntegralBoxTexturesByObliqueCamera9Directions(magoRenderableScene, decimatedRenderableScene, fboSet, faceCodeFboSet, mapCameraDirectionTypeModelViewMatrix, mapCameraDirectionTypeProjection, renderingSession);
                     // end of making oblique camera textures
 
                     if (magoRenderableScene != null) {
@@ -999,7 +855,6 @@ public class MagoReTextureByObliqueCamera {
 
         // do a last remesh for the gaiaSceneMaster.***
 
-
         // Make frontier expansion.************************************************************************************
 //        double maxNodeBBoxSize = nodeBBox.getMaxSize();
 //        frontierExpander.expandFrontiersToScene(gaiaSceneMaster, nodeBBox, 0.2, maxNodeBBoxSize * 0.005);
@@ -1014,15 +869,7 @@ public class MagoReTextureByObliqueCamera {
 
         List<GaiaTexture> resultAtlasTextures = new ArrayList<>();
         // Here scissor the atlas textures.
-        atlasTextureForIntegralReMesh9Directions(fboSet,
-                faceCodeFboSet,
-                backgroundColor,
-                halfEdgeSceneMaster,
-                mapCameraDirectionTypeBBox,
-                mapCameraDirectionTypeModelViewMatrix,
-                resultAtlasTextures,
-                mapClassificationCamDirTypeFacesList,
-                outputPathString, nodeName, lod);
+        atlasTextureForIntegralReMesh9Directions(fboSet, faceCodeFboSet, backgroundColor, halfEdgeSceneMaster, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, resultAtlasTextures, mapClassificationCamDirTypeFacesList, outputPathString, nodeName, lod);
         // end of atlas texture*************************************************************************************
 
 //        // GaiaSkirtMaker.**********************************************************************************************
@@ -1054,16 +901,7 @@ public class MagoReTextureByObliqueCamera {
         }
     }
 
-    public void integralDecimateByObliqueCamera(List<SceneInfo> sceneInfos,
-                                                List<HalfEdgeScene> resultHalfEdgeScenes,
-                                                DecimateParameters decimateParameters,
-                                                ReMeshParameters reMeshParams,
-                                                GaiaBoundingBox nodeBBox,
-                                                Matrix4d nodeTMatrix,
-                                                int maxScreenSize,
-                                                String outputPathString,
-                                                String nodeName,
-                                                int lod) {
+    public void integralDecimateByObliqueCamera(List<SceneInfo> sceneInfos, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, ReMeshParameters reMeshParams, GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize, String outputPathString, String nodeName, int lod) {
         // Note: There are only one scene in the scene list
         Map<CameraDirectionType, GaiaBoundingBox> mapCameraDirectionTypeBBox = new HashMap<>();
         Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix = new HashMap<>();
@@ -1072,46 +910,23 @@ public class MagoReTextureByObliqueCamera {
         double screenPixelsForMeter = 20;
         double nodeBBoxMaxSize = nodeBBox.getMaxSize();
 
-        if (!Double.isFinite(nodeBBoxMaxSize)
-                || nodeBBoxMaxSize <= 0.0) {
+        if (!Double.isFinite(nodeBBoxMaxSize) || nodeBBoxMaxSize <= 0.0) {
 
-            throw new IllegalStateException(
-                    "Invalid node bounding-box size: "
-                            + nodeBBoxMaxSize
-            );
+            throw new IllegalStateException("Invalid node bounding-box size: " + nodeBBoxMaxSize);
         }
 
         int targetMaxSize = 512;
         screenPixelsForMeter = targetMaxSize / nodeBBoxMaxSize;
-        MagoFboSet fboSet = create9MagoFbos(nodeBBox,
-                renderDirections,
-                mapCameraDirectionTypeBBox,
-                mapCameraDirectionTypeModelViewMatrix,
-                mapCameraDirectionTypeProjection,
-                screenPixelsForMeter);
+        MagoFboSet fboSet = create9MagoFbos(nodeBBox, renderDirections, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, mapCameraDirectionTypeProjection, screenPixelsForMeter);
 
-        Vector4f backgroundColor =
-                new Vector4f(
-                        1.0f,
-                        0.0f,
-                        1.0f,
-                        1.0f
-                );
+        Vector4f backgroundColor = new Vector4f(1.0f, 0.0f, 1.0f, 1.0f);
 
-        int backgroundArgb =
-                toArgb(backgroundColor);
+        int backgroundArgb = toArgb(backgroundColor);
 
-        fboSet.clearAll(
-                backgroundArgb,
-                1.0f
-        ); // only one time
+        fboSet.clearAll(backgroundArgb, 1.0f); // only one time
 
         // create faceCodeFboSet by copy from fboSet.
-        MagoFboSet faceCodeFboSet =
-                fboSet.createCompatible(
-                        BACKGROUND_FACE_CODE,
-                        1.0f
-                );
+        MagoFboSet faceCodeFboSet = fboSet.createCompatible(BACKGROUND_FACE_CODE, 1.0f);
 
         Matrix4d nodeMatrixInv = new Matrix4d(nodeTMatrix);
         nodeMatrixInv.invert();
@@ -1128,13 +943,7 @@ public class MagoReTextureByObliqueCamera {
         Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapClassificationCamDirTypeFacesList = new HashMap<>();
 
         GaiaSceneCleaner cleaner = new GaiaSceneCleaner();
-        GaiaWeldOptions weldOptions = GaiaWeldOptions.builder()
-                .error(weldError)
-                .checkTexCoord(false)
-                .checkNormal(false)
-                .checkColor(false)
-                .checkBatchId(false)
-                .build();
+        GaiaWeldOptions weldOptions = GaiaWeldOptions.builder().error(weldError).checkTexCoord(false).checkNormal(false).checkColor(false).checkBatchId(false).build();
 
         MagoRenderableMaker magoRenderableMaker = new MagoRenderableMaker();
         GaiaTriangulator triangulator = new GaiaTriangulator();
@@ -1259,13 +1068,7 @@ public class MagoReTextureByObliqueCamera {
                 decimator.apply(halfEdgeScene);
 
                 // now, try to reMesh vegetation.
-                log.debug("trianglesCount = " + stats.trianglesCount
-                        + ", areaTotal = " + stats.areaTotal
-                        + ", density = " + stats.trianglesDensity
-                        + ", normalVariance = " + stats.normalVariance
-                        + ", verticalRange = " + stats.verticalRange
-                        + ", areaFoldRatio = " + stats.areaFoldRatio
-                        + ", averageEdgeSize = " + stats.averageEdgeSize);
+                log.debug("trianglesCount = " + stats.trianglesCount + ", areaTotal = " + stats.areaTotal + ", density = " + stats.trianglesDensity + ", normalVariance = " + stats.normalVariance + ", verticalRange = " + stats.verticalRange + ", areaFoldRatio = " + stats.areaFoldRatio + ", averageEdgeSize = " + stats.averageEdgeSize);
                 GeometryOnlyReMesherByOctree reMesherByOctree = new GeometryOnlyReMesherByOctree();
                 double nodeBoxSize = nodeBBox.getMaxSize();
                 double minBoxSize = nodeBoxSize / 17.0;
@@ -1289,7 +1092,6 @@ public class MagoReTextureByObliqueCamera {
 
                 translateScene(gaiaScene, scenePositionRelToCellGridNeg); // translate the scene back to the original position
 
-
                 //******************************************************************************************************
                 halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(gaiaScene);
 
@@ -1312,13 +1114,7 @@ public class MagoReTextureByObliqueCamera {
 
                     int bufferedImageType = BufferedImage.TYPE_INT_ARGB;
                     int texturePixelsForMeter = 20; // decimateParameters.getTexturePixelsForMeter();
-                    makeIntegralBoxTexturesByObliqueCamera9Directions(magoRenderableScene,
-                            decimatedRenderableScene,
-                            fboSet,
-                            faceCodeFboSet,
-                            mapCameraDirectionTypeModelViewMatrix,
-                            mapCameraDirectionTypeProjection,
-                            renderingSession);
+                    makeIntegralBoxTexturesByObliqueCamera9Directions(magoRenderableScene, decimatedRenderableScene, fboSet, faceCodeFboSet, mapCameraDirectionTypeModelViewMatrix, mapCameraDirectionTypeProjection, renderingSession);
 
                     if (magoRenderableScene != null) {
                         magoRenderableScene.deleteObjects();
@@ -1425,15 +1221,7 @@ public class MagoReTextureByObliqueCamera {
 
         List<GaiaTexture> resultAtlasTextures = new ArrayList<>();
         // Here scissor the atlas textures.
-        atlasTextureForIntegralReMesh9Directions(fboSet,
-                faceCodeFboSet,
-                backgroundColor,
-                halfEdgeSceneMaster,
-                mapCameraDirectionTypeBBox,
-                mapCameraDirectionTypeModelViewMatrix,
-                resultAtlasTextures,
-                mapClassificationCamDirTypeFacesList,
-                outputPathString, nodeName, lod);
+        atlasTextureForIntegralReMesh9Directions(fboSet, faceCodeFboSet, backgroundColor, halfEdgeSceneMaster, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, resultAtlasTextures, mapClassificationCamDirTypeFacesList, outputPathString, nodeName, lod);
 
         // check if atlasTexture is made.
         if (!resultAtlasTextures.isEmpty()) {
@@ -1441,11 +1229,7 @@ public class MagoReTextureByObliqueCamera {
         }
     }
 
-    public MagoFbo renderTopView(List<SceneInfo> sceneInfos,
-                                 GaiaBoundingBox nodeBBox,
-                                 Matrix4d nodeTMatrix,
-                                 int maxScreenSize,
-                                 int maxDepthScreenSize) {
+    public MagoFbo renderTopView(List<SceneInfo> sceneInfos, GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize, int maxDepthScreenSize) {
         // render the scene
         log.info("Rendering the scene...getColorAndDepthRender");
 
@@ -1459,46 +1243,22 @@ public class MagoReTextureByObliqueCamera {
         float zLength = (float) nodeBBox.getSizeZ();
 
         Projection projection = new Projection(0, screenWidth, screenHeight);
-        float safeXLength =
-                Math.max(xLength, 0.001f);
+        float safeXLength = Math.max(xLength, 0.001f);
 
-        float safeYLength =
-                Math.max(yLength, 0.001f);
+        float safeYLength = Math.max(yLength, 0.001f);
 
-        float safeZLength =
-                Math.max(zLength, 0.001f);
+        float safeZLength = Math.max(zLength, 0.001f);
 
-        float zPadding =
-                Math.max(
-                        safeZLength * 0.01f,
-                        0.1f
-                );
+        float zPadding = Math.max(safeZLength * 0.01f, 0.1f);
 
-        projection.setProjectionOrthographic(
-                -safeXLength * 0.5f,
-                safeXLength * 0.5f,
-                -safeYLength * 0.5f,
-                safeYLength * 0.5f,
-                -safeZLength * 0.5f - zPadding,
-                safeZLength * 0.5f + zPadding
-        );
+        projection.setProjectionOrthographic(-safeXLength * 0.5f, safeXLength * 0.5f, -safeYLength * 0.5f, safeYLength * 0.5f, -safeZLength * 0.5f - zPadding, safeZLength * 0.5f + zPadding);
 
         MagoFbo colorFbo = new MagoFbo("topView", 1024, 1024);
-        Vector4f backgroundColor =
-                new Vector4f(
-                        1.0f,
-                        0.0f,
-                        1.0f,
-                        1.0f
-                );
+        Vector4f backgroundColor = new Vector4f(1.0f, 0.0f, 1.0f, 1.0f);
 
-        int backgroundArgb =
-                toArgb(backgroundColor);
+        int backgroundArgb = toArgb(backgroundColor);
 
-        colorFbo.clear(
-                backgroundArgb,
-                1.0f
-        );
+        colorFbo.clear(backgroundArgb, 1.0f);
 
         // now set camera position
         Camera camera = new Camera();
@@ -1506,36 +1266,23 @@ public class MagoReTextureByObliqueCamera {
         camera.setDirection(new Vector3d(0, 0, -1));
         camera.setUp(new Vector3d(0, 1, 0));
 
-        Matrix4d modelViewMatrix =
-                new Matrix4d(camera.getModelViewMatrix());
+        Matrix4d modelViewMatrix = new Matrix4d(camera.getModelViewMatrix());
 
         // 1. albedo-render.
         if (modelViewMatrix == null) {
-            throw new IllegalStateException(
-                    "model-view matrix is null"
-            );
+            throw new IllegalStateException("model-view matrix is null");
         }
 
         if (projection == null) {
-            throw new IllegalStateException(
-                    "projection is null"
-            );
+            throw new IllegalStateException("projection is null");
         }
 
-        MagoShaderProgram shaderProgram =
-                new MagoShaderProgram(
-                        "texturedShader",
-                        new MagoDefaultVertexShader(),
-                        new MagoTexturedFragmentShader()
-                );
+        MagoShaderProgram shaderProgram = new MagoShaderProgram("texturedShader", new MagoDefaultVertexShader(), new MagoTexturedFragmentShader());
 
         // Render-context.
-        MagoRenderContext renderContext =
-                new MagoRenderContext();
+        MagoRenderContext renderContext = new MagoRenderContext();
 
-        renderContext.setShaderProgram(
-                shaderProgram
-        );
+        renderContext.setShaderProgram(shaderProgram);
 
         renderContext.setDepthTestEnabled(true);
         renderContext.setCullFaceEnabled(true);
@@ -1548,13 +1295,9 @@ public class MagoReTextureByObliqueCamera {
         renderContext.setFbo(colorFbo);
         renderContext.setViewMatrix(modelViewMatrix);
 
-        renderContext.setProjectionMatrix(
-                projection.getProjMatrix()
-        );
+        renderContext.setProjectionMatrix(projection.getProjMatrix());
 
-        renderContext.setPolygonMode(
-                MagoPolygonMode.FILL
-        );
+        renderContext.setPolygonMode(MagoPolygonMode.FILL);
 
         Matrix4d nodeMatrixInv = new Matrix4d(nodeTMatrix);
         nodeMatrixInv.invert();
@@ -1603,15 +1346,9 @@ public class MagoReTextureByObliqueCamera {
 
                 try {
                     // render the scene
-                    Objects.requireNonNull(
-                            renderableScene,
-                            "renderableScene must not be null"
-                    );
+                    Objects.requireNonNull(renderableScene, "renderableScene must not be null");
 
-                    renderingSession.renderIntoFbo(
-                            renderableScene,
-                            renderContext
-                    );
+                    renderingSession.renderIntoFbo(renderableScene, renderContext);
 
                 } catch (Exception e) {
                     log.error("[ERROR] initializing the engine: ", e);
@@ -1660,16 +1397,7 @@ public class MagoReTextureByObliqueCamera {
         }
     }
 
-    private void atlasTextureForIntegralReMesh9Directions(MagoFboSet fboSet,
-                                                          MagoFboSet faceCodeFboSet,
-                                                          Vector4f backgroundColor,
-                                                          HalfEdgeScene halfEdgeSceneMaster,
-                                                          Map<CameraDirectionType, GaiaBoundingBox> mapCameraDirectionTypeBBox,
-                                                          Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix,
-                                                          List<GaiaTexture> resultAtlasTextures,
-                                                          Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapClassificationCamDirTypeFacesList,
-                                                          String outputPathString,
-                                                          String nodeName, int lod) {
+    private void atlasTextureForIntegralReMesh9Directions(MagoFboSet fboSet, MagoFboSet faceCodeFboSet, Vector4f backgroundColor, HalfEdgeScene halfEdgeSceneMaster, Map<CameraDirectionType, GaiaBoundingBox> mapCameraDirectionTypeBBox, Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix, List<GaiaTexture> resultAtlasTextures, Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapClassificationCamDirTypeFacesList, String outputPathString, String nodeName, int lod) {
         List<HalfEdgeSurface> surfaces = halfEdgeSceneMaster.extractSurfaces(null);
 
         TextureAtlasManager texAtlasManager = new TextureAtlasManager();
@@ -1691,17 +1419,13 @@ public class MagoReTextureByObliqueCamera {
         int bufferedImageType = BufferedImage.TYPE_INT_ARGB;
         List<com.gaia3d.basic.texture.atlas.TexturesAtlasData> texturesAtlasDataList = new ArrayList<>();
         //Vector4f backgroundColor = integralReMeshParameters.getBackgroundColor();
-        Color backGroundColor = new Color(
-                (int) (backgroundColor.x * 255),
-                (int) (backgroundColor.y * 255),
-                (int) (backgroundColor.z * 255)
-        );
+        Color backGroundColor = new Color((int) (backgroundColor.x * 255), (int) (backgroundColor.y * 255), (int) (backgroundColor.z * 255));
 
         for (CameraDirectionType cameraDirectionType : renderDirections) {
             MagoFbo fbo = fboSet.get(cameraDirectionType);
             BufferedImage image = fbo.getBufferedImage();
             if (image != null) {
-                texAtlasManager.dilateBackgroundColor(image, backGroundColor);
+                TextureAtlasManager.dilateBackgroundColor(image, backGroundColor);
                 com.gaia3d.basic.texture.atlas.TexturesAtlasData texturesAtlasData = new com.gaia3d.basic.texture.atlas.TexturesAtlasData();
                 texturesAtlasData.setClassifyId(classificationId);
                 texturesAtlasData.setCameraDirectionType(cameraDirectionType);
@@ -1721,24 +1445,15 @@ public class MagoReTextureByObliqueCamera {
         }
 
         // check visibility data manager****************************************************************************
-        FaceVisibilityManager visibilityManager =
-                new FaceVisibilityManager();
+        FaceVisibilityManager visibilityManager = new FaceVisibilityManager();
 
         GaiaScene gaiaSceneMaster = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneMaster);
 
-        for (CameraDirectionType direction
-                : renderDirections) {
+        for (CameraDirectionType direction : renderDirections) {
 
-            MagoFbo faceCodeFbo =
-                    faceCodeFboSet.get(direction);
+            MagoFbo faceCodeFbo = faceCodeFboSet.get(direction);
 
-            visibilityManager.updateFaceVisibilityData(
-                    gaiaSceneMaster,
-                    direction,
-                    faceCodeFbo,
-                    mapCameraDirectionTypeModelViewMatrix,
-                    mapCameraDirectionTypeBBox
-            );
+            visibilityManager.updateFaceVisibilityData(gaiaSceneMaster, direction, faceCodeFbo, mapCameraDirectionTypeModelViewMatrix, mapCameraDirectionTypeBBox);
         }
 
         // now assign face to each cameraDirectionType
@@ -1921,9 +1636,8 @@ public class MagoReTextureByObliqueCamera {
 
         // resize the atlas texture if necessary.
         BufferedImage atlasBufferedImage = atlasScissoredTexture.getBufferedImage();
-        if(atlasBufferedImage.getWidth() > 1024 || atlasBufferedImage.getHeight() > 1024) {
-            ImageResizer imageResizer = new ImageResizer();
-            BufferedImage resized = imageResizer.resizeMultiStepSmart(atlasBufferedImage, lod);
+        if (atlasBufferedImage.getWidth() > 1024 || atlasBufferedImage.getHeight() > 1024) {
+            BufferedImage resized = ImageResizer.resizeMultiStepSmart(atlasBufferedImage, lod);
             atlasBufferedImage.flush();
             atlasScissoredTexture.setBufferedImage(resized);
         }
@@ -1940,118 +1654,69 @@ public class MagoReTextureByObliqueCamera {
         }
     }
 
-    private MagoFboSet create9MagoFbos(
-            GaiaBoundingBox nodeBBox,
-            CameraDirectionType[] renderDirections,
-            Map<CameraDirectionType, GaiaBoundingBox> mapCameraDirectionTypeBBox,
-            Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix,
-            Map<CameraDirectionType, Projection> mapCameraDirectionTypeProjection,
-            double screenPixelsForMeter
-    ) {
+    private MagoFboSet create9MagoFbos(GaiaBoundingBox nodeBBox, CameraDirectionType[] renderDirections, Map<CameraDirectionType, GaiaBoundingBox> mapCameraDirectionTypeBBox, Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix, Map<CameraDirectionType, Projection> mapCameraDirectionTypeProjection, double screenPixelsForMeter) {
         MagoFboSet fboSet = new MagoFboSet();
 
         Camera camera = new Camera();
 
-        List<Vector3d> transformedVertices =
-                new ArrayList<>(8);
+        List<Vector3d> transformedVertices = new ArrayList<>(8);
 
-        List<Vector3d> bboxVertices =
-                nodeBBox.getVertices();
+        List<Vector3d> bboxVertices = nodeBBox.getVertices();
 
-        Vector3d bboxCenter =
-                nodeBBox.getCenter();
+        Vector3d bboxCenter = nodeBBox.getCenter();
 
         for (CameraDirectionType directionType : renderDirections) {
-            Vector3d cameraDirection =
-                    CameraDirectionType.getCameraDirection(directionType);
+            Vector3d cameraDirection = CameraDirectionType.getCameraDirection(directionType);
 
             camera.setPosition(bboxCenter);
             camera.setDirection(cameraDirection);
-            camera.setUp(
-                    camera.calculateUpVector(cameraDirection)
-            );
+            camera.setUp(camera.calculateUpVector(cameraDirection));
 
-            Matrix4d modelViewMatrix =
-                    new Matrix4d(camera.getModelViewMatrix());
+            Matrix4d modelViewMatrix = new Matrix4d(camera.getModelViewMatrix());
 
             transformedVertices.clear();
 
             for (Vector3d position : bboxVertices) {
-                Vector4d transformedPosition =
-                        new Vector4d(position, 1.0);
+                Vector4d transformedPosition = new Vector4d(position, 1.0);
 
-                modelViewMatrix.transform(
-                        transformedPosition
-                );
+                modelViewMatrix.transform(transformedPosition);
 
-                transformedVertices.add(
-                        new Vector3d(
-                                transformedPosition.x,
-                                transformedPosition.y,
-                                transformedPosition.z
-                        )
-                );
+                transformedVertices.add(new Vector3d(transformedPosition.x, transformedPosition.y, transformedPosition.z));
             }
 
-            GaiaBoundingBox transformedBBox =
-                    new GaiaBoundingBox();
+            GaiaBoundingBox transformedBBox = new GaiaBoundingBox();
 
-            transformedBBox.setFromPoints(
-                    transformedVertices
-            );
+            transformedBBox.setFromPoints(transformedVertices);
 
-            float minX =
-                    (float) transformedBBox.getMinX();
+            float minX = (float) transformedBBox.getMinX();
 
-            float maxX =
-                    (float) transformedBBox.getMaxX();
+            float maxX = (float) transformedBBox.getMaxX();
 
-            float minY =
-                    (float) transformedBBox.getMinY();
+            float minY = (float) transformedBBox.getMinY();
 
-            float maxY =
-                    (float) transformedBBox.getMaxY();
+            float maxY = (float) transformedBBox.getMaxY();
 
-            float minZ =
-                    (float) transformedBBox.getMinZ();
+            float minZ = (float) transformedBBox.getMinZ();
 
-            float maxZ =
-                    (float) transformedBBox.getMaxZ();
+            float maxZ = (float) transformedBBox.getMaxZ();
 
-            float xLength =
-                    maxX - minX;
+            float xLength = maxX - minX;
 
-            float yLength =
-                    maxY - minY;
+            float yLength = maxY - minY;
 
-            int fboWidth = Math.max(
-                    1,
-                    (int) Math.ceil(
-                            xLength * screenPixelsForMeter
-                    )
-            );
+            int fboWidth = Math.max(1, (int) Math.ceil(xLength * screenPixelsForMeter));
 
-            int fboHeight = Math.max(
-                    1,
-                    (int) Math.ceil(
-                            yLength * screenPixelsForMeter
-                    )
-            );
+            int fboHeight = Math.max(1, (int) Math.ceil(yLength * screenPixelsForMeter));
 
-            float near =
-                    -maxZ;
+            float near = -maxZ;
 
-            float far =
-                    -minZ;
+            float far = -minZ;
 
-            float maxSize =
-                    Math.max(xLength, yLength);
+            float maxSize = Math.max(xLength, yLength);
 
-            float zOffset =
-                    Math.max(maxSize * 0.001f, 0.4f);
+            float zOffset = Math.max(maxSize * 0.001f, 0.4f);
 
-            float zSize =
-                    maxZ - minZ;
+            float zSize = maxZ - minZ;
 
             if (zSize < 2.0f) {
                 zOffset += 1.0f;
@@ -2063,63 +1728,30 @@ public class MagoReTextureByObliqueCamera {
             /*
              * Use the real framebuffer dimensions instead of 512 x 512.
              */
-            Projection projection =
-                    new Projection(
-                            1,
-                            fboWidth,
-                            fboHeight
-                    );
+            Projection projection = new Projection(1, fboWidth, fboHeight);
 
-            projection.setProjectionOrthographic(
-                    minX,
-                    maxX,
-                    minY,
-                    maxY,
-                    near,
-                    far
-            );
+            projection.setProjectionOrthographic(minX, maxX, minY, maxY, near, far);
 
-            fboSet.create(
-                    directionType,
-                    fboWidth,
-                    fboHeight
-            );
+            fboSet.create(directionType, fboWidth, fboHeight);
 
-            mapCameraDirectionTypeBBox.put(
-                    directionType,
-                    transformedBBox
-            );
+            mapCameraDirectionTypeBBox.put(directionType, transformedBBox);
 
-            mapCameraDirectionTypeModelViewMatrix.put(
-                    directionType,
-                    modelViewMatrix
-            );
+            mapCameraDirectionTypeModelViewMatrix.put(directionType, modelViewMatrix);
 
-            mapCameraDirectionTypeProjection.put(
-                    directionType,
-                    projection
-            );
+            mapCameraDirectionTypeProjection.put(directionType, projection);
         }
 
         return fboSet;
     }
 
-    private void finishRenderingSession(
-            MagoRenderingSession renderingSession,
-            MagoFboSet albedoFbos,
-            MagoFboSet faceCodeFbos
-    ) {
+    private void finishRenderingSession(MagoRenderingSession renderingSession, MagoFboSet albedoFbos, MagoFboSet faceCodeFbos) {
         renderingSession.readback();
         logComparison(renderingSession, albedoFbos, "albedo");
         logComparison(renderingSession, faceCodeFbos, "face-code");
     }
 
 
-    private void logComparison(
-            MagoRenderingSession renderingSession,
-            MagoFboSet canonicalFbos,
-            String passName
-    ) {
+    private void logComparison(MagoRenderingSession renderingSession, MagoFboSet canonicalFbos, String passName) {
         for (CameraDirectionType direction : renderDirections) {
             MagoFbo canonical = canonicalFbos.get(direction);
             MagoFbo candidate = renderingSession.getComparisonFbo(canonical);
@@ -2135,41 +1767,18 @@ public class MagoReTextureByObliqueCamera {
                     different++;
                 }
             }
-            double mismatchPercent = expected.length == 0
-                    ? 0.0
-                    : different * 100.0 / expected.length;
-            log.info(
-                    "Render comparison [{}:{}] mismatched pixels: {}/{} ({}%)",
-                    passName,
-                    direction,
-                    different,
-                    expected.length,
-                    String.format(Locale.ROOT, "%.4f", mismatchPercent)
-            );
+            double mismatchPercent = expected.length == 0 ? 0.0 : different * 100.0 / expected.length;
+            log.info("Render comparison [{}:{}] mismatched pixels: {}/{} ({}%)", passName, direction, different, expected.length, String.format(Locale.ROOT, "%.4f", mismatchPercent));
         }
     }
 
-    public void makeIntegralBoxTexturesByObliqueCamera9Directions(MagoRenderableScene magoRenderableScene,
-                                                                  MagoRenderableScene magoDecimatedRenderableScene,
-                                                                  MagoFboSet fboSet,
-                                                                  MagoFboSet faceCodeFboSet,
-                                                                  Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix,
-                                                                  Map<CameraDirectionType, Projection> mapCameraDirectionTypeProjection,
-                                                                  MagoRenderingSession renderingSession) {
+    public void makeIntegralBoxTexturesByObliqueCamera9Directions(MagoRenderableScene magoRenderableScene, MagoRenderableScene magoDecimatedRenderableScene, MagoFboSet fboSet, MagoFboSet faceCodeFboSet, Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix, Map<CameraDirectionType, Projection> mapCameraDirectionTypeProjection, MagoRenderingSession renderingSession) {
 
-        MagoShaderProgram shaderProgram =
-                new MagoShaderProgram(
-                        "texturedShader",
-                        new MagoDefaultVertexShader(),
-                        new MagoTexturedFragmentShader()
-                );
+        MagoShaderProgram shaderProgram = new MagoShaderProgram("texturedShader", new MagoDefaultVertexShader(), new MagoTexturedFragmentShader());
 
-        MagoRenderContext renderContext =
-                new MagoRenderContext();
+        MagoRenderContext renderContext = new MagoRenderContext();
 
-        renderContext.setShaderProgram(
-                shaderProgram
-        );
+        renderContext.setShaderProgram(shaderProgram);
 
         renderContext.setDepthTestEnabled(true);
         renderContext.setCullFaceEnabled(true);
@@ -2183,28 +1792,13 @@ public class MagoReTextureByObliqueCamera {
         // albedo render.
         // 9 camera render directions.
         for (CameraDirectionType cameraDirectionType : renderDirections) {
-            renderIntegralAlbedoTextureByCameraDirection(
-                    magoRenderableScene,
-                    cameraDirectionType,
-                    mapCameraDirectionTypeModelViewMatrix,
-                    mapCameraDirectionTypeProjection,
-                    fboSet,
-                    renderingSession,
-                    renderContext
-            );
+            renderIntegralAlbedoTextureByCameraDirection(magoRenderableScene, cameraDirectionType, mapCameraDirectionTypeModelViewMatrix, mapCameraDirectionTypeProjection, fboSet, renderingSession, renderContext);
         }
 
         // Face color-coded render.
-        MagoShaderProgram shaderProgramColorCode =
-                new MagoShaderProgram(
-                        "face-code",
-                        new MagoDefaultVertexShader(),
-                        new MagoFaceCodeFragmentShader()
-                );
+        MagoShaderProgram shaderProgramColorCode = new MagoShaderProgram("face-code", new MagoDefaultVertexShader(), new MagoFaceCodeFragmentShader());
 
-        renderContext.setShaderProgram(
-                shaderProgramColorCode
-        );
+        renderContext.setShaderProgram(shaderProgramColorCode);
 
         renderContext.setDepthTestEnabled(true);
         renderContext.setCullFaceEnabled(true);
@@ -2213,87 +1807,40 @@ public class MagoReTextureByObliqueCamera {
 
         // 9 camera render directions.
         for (CameraDirectionType cameraDirectionType : renderDirections) {
-            renderIntegralColorCodeTextureByCameraDirection(
-                    magoDecimatedRenderableScene,
-                    cameraDirectionType,
-                    mapCameraDirectionTypeModelViewMatrix,
-                    mapCameraDirectionTypeProjection,
-                    faceCodeFboSet,
-                    renderingSession,
-                    renderContext
-            );
+            renderIntegralColorCodeTextureByCameraDirection(magoDecimatedRenderableScene, cameraDirectionType, mapCameraDirectionTypeModelViewMatrix, mapCameraDirectionTypeProjection, faceCodeFboSet, renderingSession, renderContext);
         }
     }
 
-    private void save9MagoFboAsPng(
-            MagoFboSet fboSet,
-            String outputPathString,
-            String nodeName
-    ) {
+    private void save9MagoFboAsPng(MagoFboSet fboSet, String outputPathString, String nodeName) {
         for (CameraDirectionType renderDirection : renderDirections) {
-            saveMagoFboAsPng(
-                    fboSet,
-                    renderDirection,
-                    outputPathString,
-                    nodeName + renderDirection.getName() + ".png"
-            );
+            saveMagoFboAsPng(fboSet, renderDirection, outputPathString, nodeName + renderDirection.getName() + ".png");
         }
     }
 
-    private void saveMagoFboAsPng(
-            MagoFbo fbo,
-            String outputPathString,
-            String nodeName
-    ) {
+    private void saveMagoFboAsPng(MagoFbo fbo, String outputPathString, String nodeName) {
         Objects.requireNonNull(fbo, "fbo must not be null");
         BufferedImage image = fbo.getBufferedImage();
 
-        Path outputDirectory = Paths.get(
-                outputPathString,
-                "mago-render-debug"
-        );
+        Path outputDirectory = Paths.get(outputPathString, "mago-render-debug");
 
-        Path outputFile = outputDirectory.resolve(
-                nodeName
-                        + "_"
-                        + ".png"
-        );
+        Path outputFile = outputDirectory.resolve(nodeName + "_" + ".png");
 
         try {
             Files.createDirectories(outputDirectory);
 
-            boolean written = ImageIO.write(
-                    image,
-                    "png",
-                    outputFile.toFile()
-            );
+            boolean written = ImageIO.write(image, "png", outputFile.toFile());
 
             if (!written) {
-                throw new IOException(
-                        "No PNG ImageIO writer is available."
-                );
+                throw new IOException("No PNG ImageIO writer is available.");
             }
 
-            log.info(
-                    "MagoGL debug render saved: {} ({}x{})",
-                    outputFile,
-                    image.getWidth(),
-                    image.getHeight()
-            );
+            log.info("MagoGL debug render saved: {} ({}x{})", outputFile, image.getWidth(), image.getHeight());
         } catch (IOException e) {
-            throw new RuntimeException(
-                    "Failed to save MagoGL render: " + outputFile,
-                    e
-            );
+            throw new RuntimeException("Failed to save MagoGL render: " + outputFile, e);
         }
     }
 
-    private void saveMagoFboAsPng(
-            MagoFboSet fboSet,
-            CameraDirectionType directionType,
-            String outputPathString,
-            String nodeName
-    ) {
+    private void saveMagoFboAsPng(MagoFboSet fboSet, CameraDirectionType directionType, String outputPathString, String nodeName) {
         Objects.requireNonNull(fboSet, "fboSet must not be null");
         Objects.requireNonNull(directionType, "directionType must not be null");
 
@@ -2301,178 +1848,90 @@ public class MagoReTextureByObliqueCamera {
 
         BufferedImage image = fbo.getBufferedImage();
 
-        Path outputDirectory = Paths.get(
-                outputPathString,
-                "mago-render-debug"
-        );
+        Path outputDirectory = Paths.get(outputPathString, "mago-render-debug");
 
-        Path outputFile = outputDirectory.resolve(
-                nodeName
-                        + "_"
-                        + directionType.name()
-                        + ".png"
-        );
+        Path outputFile = outputDirectory.resolve(nodeName + "_" + directionType.name() + ".png");
 
         try {
             Files.createDirectories(outputDirectory);
 
-            boolean written = ImageIO.write(
-                    image,
-                    "png",
-                    outputFile.toFile()
-            );
+            boolean written = ImageIO.write(image, "png", outputFile.toFile());
 
             if (!written) {
-                throw new IOException(
-                        "No PNG ImageIO writer is available."
-                );
+                throw new IOException("No PNG ImageIO writer is available.");
             }
 
-            log.info(
-                    "MagoGL debug render saved: {} ({}x{})",
-                    outputFile,
-                    image.getWidth(),
-                    image.getHeight()
-            );
+            log.info("MagoGL debug render saved: {} ({}x{})", outputFile, image.getWidth(), image.getHeight());
         } catch (IOException e) {
-            throw new RuntimeException(
-                    "Failed to save MagoGL render: " + outputFile,
-                    e
-            );
+            throw new RuntimeException("Failed to save MagoGL render: " + outputFile, e);
         }
     }
 
-    private void renderIntegralAlbedoTextureByCameraDirection(
-            MagoRenderableScene renderableScene,
-            CameraDirectionType cameraDirectionType,
-            Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix,
-            Map<CameraDirectionType, Projection> mapCameraDirectionTypeProjection,
-            MagoFboSet magoFboSet,
-            MagoRenderingSession renderingSession,
-            MagoRenderContext renderContext
-    ) {
-        Objects.requireNonNull(
-                renderableScene,
-                "renderableScene must not be null"
-        );
+    private void renderIntegralAlbedoTextureByCameraDirection(MagoRenderableScene renderableScene, CameraDirectionType cameraDirectionType, Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix, Map<CameraDirectionType, Projection> mapCameraDirectionTypeProjection, MagoFboSet magoFboSet, MagoRenderingSession renderingSession, MagoRenderContext renderContext) {
+        Objects.requireNonNull(renderableScene, "renderableScene must not be null");
 
         // 1. albedo-render.
-        MagoFbo fbo =
-                magoFboSet.get(cameraDirectionType);
+        MagoFbo fbo = magoFboSet.get(cameraDirectionType);
 
-        Matrix4d modelViewMatrix =
-                mapCameraDirectionTypeModelViewMatrix.get(
-                        cameraDirectionType
-                );
+        Matrix4d modelViewMatrix = mapCameraDirectionTypeModelViewMatrix.get(cameraDirectionType);
 
-        Projection projection =
-                mapCameraDirectionTypeProjection.get(
-                        cameraDirectionType
-                );
+        Projection projection = mapCameraDirectionTypeProjection.get(cameraDirectionType);
 
         if (modelViewMatrix == null) {
-            throw new IllegalStateException(
-                    "No model-view matrix for direction: "
-                            + cameraDirectionType
-            );
+            throw new IllegalStateException("No model-view matrix for direction: " + cameraDirectionType);
         }
 
         if (projection == null) {
-            throw new IllegalStateException(
-                    "No projection for direction: "
-                            + cameraDirectionType
-            );
+            throw new IllegalStateException("No projection for direction: " + cameraDirectionType);
         }
 
         renderContext.setFbo(fbo);
         renderContext.setViewMatrix(modelViewMatrix);
 
-        renderContext.setProjectionMatrix(
-                projection.getProjMatrix()
-        );
+        renderContext.setProjectionMatrix(projection.getProjMatrix());
 
-        renderContext.setPolygonMode(
-                MagoPolygonMode.FILL
-        );
+        renderContext.setPolygonMode(MagoPolygonMode.FILL);
 
         renderContext.setCullFaceEnabled(true);
         renderContext.setDepthTestEnabled(true);
         renderContext.setBlendEnabled(false);
 
-        renderContext.setWireframeColor(
-                0xFF000000
-        );
+        renderContext.setWireframeColor(0xFF000000);
 
-        renderingSession.renderIntoFbo(
-                renderableScene,
-                renderContext
-        );
+        renderingSession.renderIntoFbo(renderableScene, renderContext);
     }
 
-    private void renderIntegralColorCodeTextureByCameraDirection(
-            MagoRenderableScene renderableScene,
-            CameraDirectionType cameraDirectionType,
-            Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix,
-            Map<CameraDirectionType, Projection> mapCameraDirectionTypeProjection,
-            MagoFboSet magoFboSet,
-            MagoRenderingSession renderingSession,
-            MagoRenderContext renderContext
-    ) {
-        Objects.requireNonNull(
-                renderableScene,
-                "renderableScene must not be null"
-        );
+    private void renderIntegralColorCodeTextureByCameraDirection(MagoRenderableScene renderableScene, CameraDirectionType cameraDirectionType, Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix, Map<CameraDirectionType, Projection> mapCameraDirectionTypeProjection, MagoFboSet magoFboSet, MagoRenderingSession renderingSession, MagoRenderContext renderContext) {
+        Objects.requireNonNull(renderableScene, "renderableScene must not be null");
 
         // 1. albedo-render.
-        MagoFbo fbo =
-                magoFboSet.get(cameraDirectionType);
+        MagoFbo fbo = magoFboSet.get(cameraDirectionType);
 
-        Matrix4d modelViewMatrix =
-                mapCameraDirectionTypeModelViewMatrix.get(
-                        cameraDirectionType
-                );
+        Matrix4d modelViewMatrix = mapCameraDirectionTypeModelViewMatrix.get(cameraDirectionType);
 
-        Projection projection =
-                mapCameraDirectionTypeProjection.get(
-                        cameraDirectionType
-                );
+        Projection projection = mapCameraDirectionTypeProjection.get(cameraDirectionType);
 
         if (modelViewMatrix == null) {
-            throw new IllegalStateException(
-                    "No model-view matrix for direction: "
-                            + cameraDirectionType
-            );
+            throw new IllegalStateException("No model-view matrix for direction: " + cameraDirectionType);
         }
 
         if (projection == null) {
-            throw new IllegalStateException(
-                    "No projection for direction: "
-                            + cameraDirectionType
-            );
+            throw new IllegalStateException("No projection for direction: " + cameraDirectionType);
         }
 
         renderContext.setFbo(fbo);
         renderContext.setViewMatrix(modelViewMatrix);
 
-        renderContext.setProjectionMatrix(
-                projection.getProjMatrix()
-        );
+        renderContext.setProjectionMatrix(projection.getProjMatrix());
 
-        renderContext.setPolygonMode(
-                MagoPolygonMode.FILL
-        );
+        renderContext.setPolygonMode(MagoPolygonMode.FILL);
 
         renderContext.setCullFaceEnabled(true);
         renderContext.setDepthTestEnabled(true);
         renderContext.setBlendEnabled(false);
 
-        renderContext.setWireframeColor(
-                0xFF000000
-        );
+        renderContext.setWireframeColor(0xFF000000);
 
-        renderingSession.renderIntoFbo(
-                renderableScene,
-                renderContext
-        );
+        renderingSession.renderIntoFbo(renderableScene, renderContext);
     }
 }
