@@ -31,7 +31,7 @@ check_protected_path() {
 
 FAILED=0
 
-check_protected_path "mago-common" "mago-common" "develop" || FAILED=1
+check_protected_path "mago-common" "common" "main" || FAILED=1
 check_protected_path "mago-io" "mago-io" "main" || FAILED=1
 
 if [ "$FAILED" = "1" ]; then
