@@ -6,6 +6,7 @@ import com.gaia3d.basic.temp.GaiaSceneTempGroup;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.converter.Converter;
+
 import com.gaia3d.util.ImageUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,9 +25,12 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -37,12 +41,8 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class AssimpConverter implements Converter {
 
+    public final int DEFAULT_FLAGS = Assimp.aiProcess_Triangulate | Assimp.aiProcess_SortByPType;
     private final AssimpConverterOptions options;
-    private final GaiaSceneGeometryValidator sceneGeometryValidator = new GaiaSceneGeometryValidator();
-
-    public final int DEFAULT_FLAGS = Assimp.aiProcess_Triangulate |
-            Assimp.aiProcess_JoinIdenticalVertices |
-            Assimp.aiProcess_SortByPType;
 
     public List<GaiaScene> load(String filePath) {
         return load(new File(filePath));
@@ -53,9 +53,14 @@ public class AssimpConverter implements Converter {
     }
 
     public List<GaiaScene> load(File file) throws RuntimeException {
-        if (!file.isFile() && !file.exists()) {
-            log.error("[ERROR] File does not exist: {}", file.getAbsolutePath());
-            throw new RuntimeException("File does not exist: " + file.getAbsolutePath());
+        if (file == null || !file.isFile()) {
+            String path = file == null ? "null" : file.getAbsolutePath();
+            log.error("[ERROR] File does not exist or is not a regular file: {}", path);
+            throw new RuntimeException("File does not exist or is not a regular file: " + path);
+        }
+        if (!Files.isReadable(file.toPath())) {
+            log.error("[ERROR] File is not readable: {}", file.getAbsolutePath());
+            throw new RuntimeException("File is not readable: " + file.getAbsolutePath());
         }
 
         String path = file.getAbsolutePath().replace(file.getName(), "");
@@ -67,7 +72,6 @@ public class AssimpConverter implements Converter {
             return new ArrayList<>();
         }
 
-        // TODO : Handle multiple scenes in a single file
         List<GaiaScene> gaiaScenes = new ArrayList<>();
         if (options.isSplitByNode()) {
             gaiaScenes = convertScenes(file, aiScene, path);
@@ -82,9 +86,7 @@ public class AssimpConverter implements Converter {
             gaiaScene.setAttribute(attribute);
 
             gaiaScenes.add(gaiaScene);
-            //validateScenes(file, gaiaScenes);
         }
-
         Assimp.aiReleaseImport(aiScene);
         return gaiaScenes;
     }
@@ -95,15 +97,6 @@ public class AssimpConverter implements Converter {
             flags |= Assimp.aiProcess_CalcTangentSpace;
         }
         return flags;
-    }
-
-    private void validateScenes(File file, List<GaiaScene> gaiaScenes) {
-        GaiaSceneGeometryValidator.ValidationReport report = sceneGeometryValidator.validate(file, gaiaScenes);
-        if (report.hasIssues()) {
-            log.warn("[WARN] Converted scene geometry validation failed. {}", report.toDetailString());
-        } else if (log.isDebugEnabled()) {
-            log.debug("Converted scene geometry validation passed. {}", report.toSummaryString());
-        }
     }
 
     @Override
@@ -285,6 +278,7 @@ public class AssimpConverter implements Converter {
         float shininess = 0.0f;
         float roughness = 0.0f;
         float opacity = 1.0f;
+        boolean doubleSided = false;
         int properties = aiMaterial.mNumProperties();
         for (int i = 0; i < properties; i++) {
             long address = aiMaterial.mProperties().get(i);
@@ -296,15 +290,17 @@ public class AssimpConverter implements Converter {
             buffer.get(data);
 
             //log.info(aiMaterialProperty.mKey().dataString());
-            if (aiMaterialProperty.mKey().dataString().contains("opacity")) {
+            String propertyKey = aiMaterialProperty.mKey().dataString();
+            String normalizedPropertyKey = propertyKey.toLowerCase(Locale.ROOT);
+            if (normalizedPropertyKey.contains("opacity")) {
                 ByteBuffer byteBuffer = ByteBuffer.wrap(data);
                 byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
                 float opacityValue = byteBuffer.getFloat();
                 if (opacityValue < 1.0f) {
                     opacity = opacityValue;
                 }
-            } else if (aiMaterialProperty.mKey().dataString().contains("alphaMode")) {
-                String value = new String(data);
+            } else if (normalizedPropertyKey.contains("alphamode")) {
+                String value = new String(data, StandardCharsets.UTF_8);
                 value = value.toUpperCase().trim();
 
                 if (value.contains("OPAQUE")) {
@@ -314,27 +310,29 @@ public class AssimpConverter implements Converter {
                 } else if (value.contains("BLEND")) {
                     alphaMode = "BLEND";
                 }
-            } else if (aiMaterialProperty.mKey().dataString().contains("alphaCutoff")) {
+            } else if (normalizedPropertyKey.contains("alphacutoff")) {
                 ByteBuffer byteBuffer = ByteBuffer.wrap(data);
                 byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
                 float value = byteBuffer.getFloat();
                 if (value < 1.0f) {
                     alphaCutoff = value;
                 }
-            } else if (aiMaterialProperty.mKey().dataString().contains("shininess")) {
+            } else if (normalizedPropertyKey.contains("shininess")) {
                 ByteBuffer byteBuffer = ByteBuffer.wrap(data);
                 byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
                 float value = byteBuffer.getFloat();
                 if (value < 1.0f) {
                     shininess = value;
                 }
-            } else if (aiMaterialProperty.mKey().dataString().contains("roughness")) {
+            } else if (normalizedPropertyKey.contains("roughness")) {
                 ByteBuffer byteBuffer = ByteBuffer.wrap(data);
                 byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
                 float value = byteBuffer.getFloat();
                 if (value < 1.0f) {
                     roughness = value;
                 }
+            } else if (normalizedPropertyKey.contains("twosided") || normalizedPropertyKey.contains("two_sided") || normalizedPropertyKey.contains("doublesided")) {
+                doubleSided = parseBooleanMaterialProperty(data);
             }
         }
 
@@ -372,6 +370,7 @@ public class AssimpConverter implements Converter {
         if (roughness > 0.0f) {
             material.setRoughness(roughness);
         }
+        material.setDoubleSided(doubleSided);
         switch (alphaMode) {
             case "OPAQUE":
                 material.setBlend(false);
@@ -438,11 +437,12 @@ public class AssimpConverter implements Converter {
             File file = ImageUtils.getChildFile(parentPath, diffTexPath);
             if (file != null && file.exists() && file.isFile()) {
                 texture.setPath(ImageUtils.getChildPath(parentPath, diffTexPath));
-                textures.add(texture);
-                material.getTextures().put(texture.getType(), textures);
             } else {
-                log.error("[ERROR] Diffuse Texture is not found: {}", diffTexPath);
+                log.warn("[WARN] Diffuse Texture is not found: {}", diffTexPath);
+                texture.setPath(diffTexPath);
             }
+            textures.add(texture);
+            material.getTextures().put(texture.getType(), textures);
         } else {
             material.setName("NoTexture");
             List<GaiaTexture> textures = new ArrayList<>();
@@ -478,11 +478,12 @@ public class AssimpConverter implements Converter {
             File file = ImageUtils.getChildFile(parentPath, ambientTexPath);
             if (file != null && file.exists() && file.isFile()) {
                 texture.setPath(ImageUtils.getChildPath(parentPath, ambientTexPath));
-                textures.add(texture);
-                material.getTextures().put(texture.getType(), textures);
             } else {
-                log.error("[ERROR] AmbientTexture Texture is not found: {}", ambientTexPath);
+                log.warn("[WARN] Ambient Texture is not found: {}", ambientTexPath);
+                texture.setPath(ambientTexPath);
             }
+            textures.add(texture);
+            material.getTextures().put(texture.getType(), textures);
         } else {
             textures = new ArrayList<>();
             material.getTextures().put(TextureType.AMBIENT, textures);
@@ -516,11 +517,12 @@ public class AssimpConverter implements Converter {
             File file = ImageUtils.getChildFile(parentPath, specularTexPath);
             if (file != null && file.exists() && file.isFile()) {
                 texture.setPath(ImageUtils.getChildPath(parentPath, specularTexPath));
-                textures.add(texture);
-                material.getTextures().put(texture.getType(), textures);
             } else {
-                log.error("[ERROR] SpecularTexture Texture is not found: {}", specularTexPath);
+                log.warn("[WARN] Specular Texture is not found: {}", specularTexPath);
+                texture.setPath(specularTexPath);
             }
+            textures.add(texture);
+            material.getTextures().put(texture.getType(), textures);
         } else {
             textures = new ArrayList<>();
             material.getTextures().put(TextureType.SPECULAR, textures);
@@ -554,11 +556,12 @@ public class AssimpConverter implements Converter {
             File file = ImageUtils.getChildFile(parentPath, shininessTexPath);
             if (file != null && file.exists() && file.isFile()) {
                 texture.setPath(ImageUtils.getChildPath(parentPath, shininessTexPath));
-                textures.add(texture);
-                material.getTextures().put(texture.getType(), textures);
             } else {
-                log.error("[ERROR] Shininess Texture is not found: {}", shininessTexPath);
+                log.warn("[WARN] Shininess Texture is not found: {}", shininessTexPath);
+                texture.setPath(shininessTexPath);
             }
+            textures.add(texture);
+            material.getTextures().put(texture.getType(), textures);
         } else {
             textures = new ArrayList<>();
             material.getTextures().put(TextureType.SHININESS, textures);
@@ -593,11 +596,12 @@ public class AssimpConverter implements Converter {
             File file = ImageUtils.getChildFile(parentPath, normalTexPath);
             if (file != null && file.exists() && file.isFile()) {
                 texture.setPath(ImageUtils.getChildPath(parentPath, normalTexPath));
-                textures.add(texture);
-                material.getTextures().put(texture.getType(), textures);
             } else {
-                log.error("[ERROR] Normal Texture is not found: {}", normalTexPath);
+                log.warn("[WARN] Normal Texture is not found: {}", normalTexPath);
+                texture.setPath(normalTexPath);
             }
+            textures.add(texture);
+            material.getTextures().put(texture.getType(), textures);
         } else {
             textures = new ArrayList<>();
             material.getTextures().put(TextureType.NORMALS, textures);
@@ -608,6 +612,34 @@ public class AssimpConverter implements Converter {
         }
 
         return material;
+    }
+
+    private boolean parseBooleanMaterialProperty(byte[] data) {
+        if (data == null || data.length == 0) {
+            return false;
+        }
+
+        String value = new String(data, StandardCharsets.UTF_8).trim().toLowerCase(Locale.ROOT);
+        if (value.equals("0") || value.contains("false")) {
+            return false;
+        }
+        if (value.equals("1") || value.contains("true")) {
+            return true;
+        }
+
+        if (data.length >= Integer.BYTES) {
+            ByteBuffer byteBuffer = ByteBuffer.wrap(data);
+            byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+            int intValue = byteBuffer.getInt(0);
+            if (intValue == 0 || intValue == 1) {
+                return intValue == 1;
+            }
+            float floatValue = byteBuffer.getFloat(0);
+            if (!Float.isNaN(floatValue)) {
+                return floatValue != 0.0f;
+            }
+        }
+        return false;
     }
 
     private GaiaNode processNode(GaiaScene gaiaScene, AIScene aiScene, AINode aiNode, GaiaNode parentNode, FormatType formatType) {
@@ -734,10 +766,25 @@ public class AssimpConverter implements Converter {
 
         if (shouldGenerateNormals) {
             primitive.calculateVertexNormals();
+        } else if (normalsBuffer != null) {
+            calculateFaceNormalsPreservingVertexNormals(primitive);
         } else {
             primitive.calculateNormal();
         }
         return primitive;
+    }
+
+    private void calculateFaceNormalsPreservingVertexNormals(GaiaPrimitive primitive) {
+        List<Vector3d> vertexNormals = primitive.getVertices().stream()
+                .map(vertex -> vertex.getNormal() == null ? null : new Vector3d(vertex.getNormal()))
+                .toList();
+        primitive.calculateNormal();
+        for (int i = 0; i < primitive.getVertices().size(); i++) {
+            Vector3d normal = vertexNormals.get(i);
+            if (normal != null) {
+                primitive.getVertices().get(i).setNormal(normal);
+            }
+        }
     }
 
     private GaiaSurface processSurface() {

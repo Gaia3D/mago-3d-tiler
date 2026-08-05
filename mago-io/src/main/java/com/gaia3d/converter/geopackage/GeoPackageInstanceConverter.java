@@ -113,24 +113,21 @@ public class GeoPackageInstanceConverter implements AttributeReader {
                     }
                     totalFeaturesCount = featureSource.getCount(new Query(featureEntry.getTableName(), filter));
                     log.info(" - Total Features Count: {}", totalFeaturesCount);
-                    boolean showProgress = totalFeaturesCount >= 10000;
-                    int progressInterval = (int) (totalFeaturesCount / 100);
-                    if (progressInterval == 0) {
-                        progressInterval = 1;
-                    }
 
                     long featureIndex = 0;
                     try (SimpleFeatureReader simpleFeatureReader = geoPackage.reader(featureEntry, filter, transaction)) {
                         while (simpleFeatureReader.hasNext()) {
                             featureIndex++;
-                            if (showProgress && featureIndex % progressInterval == 0) {
-                                log.info(" - Processing feature {}/{} ({}%)", featureIndex, totalFeaturesCount, (double) featureIndex / (double) totalFeaturesCount * 100.0d);
-                            }
+                            log.info(" - Processing feature {}/{}", featureIndex, totalFeaturesCount);
 
                             SimpleFeature feature = simpleFeatureReader.next();
                             Geometry geom = (Geometry) feature.getDefaultGeometry();
 
-                            double heading = getNumberAttribute(feature, headingColumnName, parametricOptions.getDefaultHeading());
+                            double defaultHeading = parametricOptions.getDefaultHeading();
+                            if (parametricOptions.isRandomHeading()) {
+                                defaultHeading = Math.random() * 360.0;
+                            }
+                            double heading = getNumberAttribute(feature, headingColumnName, defaultHeading);
                             double altitude = getNumberAttribute(feature, altitudeColumnName, parametricOptions.getAbsoluteAltitudeValue());
                             double scale = getNumberAttribute(feature, scaleColumnName, parametricOptions.getDefaultScale());
                             double density = getNumberAttribute(feature, densityColumnName, parametricOptions.getDefaultDensity());

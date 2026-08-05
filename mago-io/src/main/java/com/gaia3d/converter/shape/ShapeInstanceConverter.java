@@ -89,21 +89,19 @@ public class ShapeInstanceConverter implements AttributeReader {
 
             int featureIndex = 0;
             int featuresCount = source.getCount(query);
-            boolean showProgress = featuresCount >= 10000;
-            int progressInterval = Math.max(featuresCount / 100, 1);
             try (FeatureIterator<SimpleFeature> iterator = features.features()) {
                 while (iterator.hasNext()) {
                     featureIndex++;
-                    if (showProgress && featureIndex % progressInterval == 0) {
-                        log.info(" - Processing feature {}/{} ({}%)", featureIndex, featuresCount, (double) featureIndex / (double) featuresCount * 100.0d);
-                    } else if (!showProgress) {
-                        log.info(" - Processing feature {}/{}", featureIndex, featuresCount);
-                    }
+                    log.info(" - Processing feature {}/{}", featureIndex, featuresCount);
 
                     SimpleFeature feature = iterator.next();
                     Geometry geom = (Geometry) feature.getDefaultGeometry();
 
-                    double heading = getNumberAttribute(feature, headingColumnName, parametricOptions.getDefaultHeading());
+                    double defaultHeading = parametricOptions.getDefaultHeading();
+                    if (parametricOptions.isRandomHeading()) {
+                        defaultHeading = Math.random() * 360.0;
+                    }
+                    double heading = getNumberAttribute(feature, headingColumnName, defaultHeading);
                     double altitude = getNumberAttribute(feature, altitudeColumnName, parametricOptions.getAbsoluteAltitudeValue());
                     double scale = getNumberAttribute(feature, scaleColumnName, parametricOptions.getDefaultScale());
                     double density = getNumberAttribute(feature, densityColumnName, parametricOptions.getDefaultDensity());
