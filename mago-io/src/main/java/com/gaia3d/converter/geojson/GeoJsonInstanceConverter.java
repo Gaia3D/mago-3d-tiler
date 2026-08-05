@@ -72,21 +72,23 @@ public class GeoJsonInstanceConverter implements AttributeReader {
             }
 
             int totalFeaturesCount = featureCollection.size();
+            boolean showProgress = totalFeaturesCount >= 10000;
+            int progressInterval = Math.max(totalFeaturesCount / 100, 1);
             int featureIndex = 0;
 
             try (FeatureIterator<SimpleFeature> iterator = featureCollection.features()) {
                 while (iterator.hasNext()) {
                     featureIndex++;
-                    log.info(" - Processing feature {}/{}", featureIndex, totalFeaturesCount);
+                    if (showProgress && featureIndex % progressInterval == 0) {
+                        log.info(" - Processing feature {}/{} ({}%)", featureIndex, totalFeaturesCount, (double) featureIndex / (double) totalFeaturesCount * 100.0d);
+                    } else if (!showProgress) {
+                        log.info(" - Processing feature {}/{}", featureIndex, totalFeaturesCount);
+                    }
 
                     SimpleFeature feature = iterator.next();
                     Geometry geom = (Geometry) feature.getDefaultGeometry();
 
-                    double defaultHeading = parametricOptions.getDefaultHeading();
-                    if (parametricOptions.isRandomHeading()) {
-                        defaultHeading = Math.random() * 360.0;
-                    }
-                    double heading = getNumberAttribute(feature, headingColumnName, defaultHeading);
+                    double heading = getNumberAttribute(feature, headingColumnName, parametricOptions.getDefaultHeading());
                     double altitude = getNumberAttribute(feature, altitudeColumnName, parametricOptions.getAbsoluteAltitudeValue());
                     double scale = getNumberAttribute(feature, scaleColumnName, parametricOptions.getDefaultScale());
                     double density = getNumberAttribute(feature, densityColumnName, parametricOptions.getDefaultDensity());

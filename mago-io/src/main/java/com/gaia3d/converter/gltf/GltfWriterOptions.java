@@ -13,6 +13,8 @@ public class GltfWriterOptions {
     @Builder.Default
     private boolean isUseByteNormal = false;
     @Builder.Default
+    private boolean isUseShortNormal = false;
+    @Builder.Default
     private boolean isUseShortTexCoord = false;
     @Builder.Default
     private boolean isUriImage = false;

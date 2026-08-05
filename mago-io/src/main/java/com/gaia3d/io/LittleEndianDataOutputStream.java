@@ -15,8 +15,6 @@ import java.nio.charset.StandardCharsets;
  */
 public class LittleEndianDataOutputStream extends FilterOutputStream implements DataOutput {
 
-    private final byte[] writeBuffer = new byte[8];
-
     public LittleEndianDataOutputStream(OutputStream out) {
         super(out);
     }
@@ -62,6 +60,8 @@ public class LittleEndianDataOutputStream extends FilterOutputStream implements 
             writeInt(i);
         }
     }
+
+    private final byte[] writeBuffer = new byte[8];
 
     @Override
     public void writeLong(long v) throws IOException {

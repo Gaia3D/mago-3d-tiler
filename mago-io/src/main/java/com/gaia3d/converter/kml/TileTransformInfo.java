@@ -17,12 +17,12 @@ import java.util.Map;
 public class TileTransformInfo {
     private String name;
 
-    // geographic coordinate in degrees (longitude, latitude, altitude)
-    // Translation vector in meters (absolute, clampedToGround, relativeToGround)
+    // Position in WGS84 coordinates (longitude, latitude, altitude in meters)
     private Vector3d position;
+    // Translation vector in meters (absolute, clampedToGround, relativeToGround)
     private String altitudeMode;
 
-    // Orientation in degrees
+    // Orientation
     private double heading;
     private double tilt;
     private double roll;
