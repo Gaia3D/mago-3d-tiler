@@ -29,12 +29,12 @@ public enum ProcessOptions {
     TILES_VERSION("tilesVersion", "tv", true, false, "3DTiles Version \n(default: 1.1)(options: 1.0, 1.1)"),
 
     /* Coordinate Setting Options */
-    CRS("crs", "c", true, false, "set input data CRS(Coordinate Reference Systems) \n " +
-            "(default: 3857)(options: 4326, 3857, 4978, 32652, 5186...)" +
-            "(ECEF->4978, WGS84->4326, WebMercator->3857"),
-    PROJ4("proj", "p", true, false, "Set Proj4 parameters " +
-            "\n (ex: +proj=tmerc +la...)" +
-            "when this option is set, the 'crs' option is ignored."),
+    CRS("crs", "c", true, false, "Set input data CRS (Coordinate Reference System) \n" +
+            "(default: 3857)(options: 4326, 3857, 4978, 32652, 5186...) \n" +
+            "(ECEF: 4978, WGS84: 4326, Web Mercator: 3857)"),
+    PROJ4("proj", "p", true, false, "Set Proj4 parameters \n" +
+            "(ex: +proj=tmerc +lat_0=...) \n" +
+            "When this option is set, the 'crs' option is ignored."),
     X_OFFSET("xOffset", "xo", true, false, "X Offset value for coordinate transformation"),
     Y_OFFSET("yOffset", "yo", true, false, "Y Offset value for coordinate transformation"),
     Z_OFFSET("zOffset", "zo", true, false, "Z Offset value for coordinate transformation"),
@@ -77,7 +77,7 @@ public enum ProcessOptions {
     SKIRT_HEIGHT("skirtHeight", "sh", true, false, "[GISVector][Extrusion] Set Building Skirt height \n(default: 4.0)(units: meters)"),
 
     /* Experimental Options */
-    PHOTOGRAMMETRY("photogrammetry", "pg", false, false, "[Experimental] generate b3dm for photogrammetry model with GPU"),
+    PHOTOGRAMMETRY("photogrammetry", "pg", false, false, "[Experimental] Generate b3dm with the compatibility-focused photogrammetry pipeline."),
     SPLIT_BY_NODE("splitByNode", "sbn", false, false, "[Experimental] Split tiles by nodes of scene."),
     CURVATURE_CORRECTION("curvatureCorrection", "cc", false, false, "[Experimental] Apply curvature correction for ellipsoid surface."),
     UPDATE_ROOT_TRANSFORM("updateRootTransform", "urt", true, false, "[Experimental] Add 16 comma-separated transform values to the root node of tileset.json."),

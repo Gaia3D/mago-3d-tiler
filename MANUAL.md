@@ -178,7 +178,7 @@ Options for input and output data paths and types. Specify `--inputType` when th
 | `-o`, `--output <arg>`      |   Yes    | Output directory path                     |
 | `-it`, `--inputType <arg>`  |    No    | Input file type: `kml`, `3ds`, `fbx`, `obj`, `gltf/glb`, `las/laz`, `citygml`, `indoorgml`, `shp`, `geojson`, `gpkg` |
 | `-ot`, `--outputType <arg>` |    No    | Output 3D Tiles type: `b3dm`, `i3dm`, `pnts` |
-| `-te`, `--terrain <arg>`    |    No    | GeoTIFF terrain path or directory for `clampToGround` |
+| `-te`, `--terrain <arg>`    |    No    | GeoTIFF path/directory or local Quantized Mesh `layer.json` for `clampToGround` |
 | `-ge`, `--geoid <arg>`      |    No    | Height reference correction: `Ellipsoid`, `EGM84`, `EGM96`, `EGM2008`, or a custom GeoTIFF path |
 | `-if`, `--instance <arg>`   |    No    | I3DM instance file path (Default: `{OUTPUT}/instance.dae`) |
 
@@ -244,7 +244,7 @@ These options are available but may change in future releases.
 
 | Option                                  | Required | Description                                  |
 | --------------------------------------- | :------: | -------------------------------------------- |
-| `-pg`, `--photogrammetry`               |    No    | GPU-based photogrammetry tiling              |
+| `-pg`, `--photogrammetry`               |    No    | Compatibility-focused photogrammetry tiling  |
 | `-sbn`, `--splitByNode`                 |    No    | Split tiles by scene graph nodes             |
 | `-cc`, `--curvatureCorrection`          |    No    | Apply ellipsoid curvature correction         |
 | `-urt`, `--updateRootTransform <arg>`   |    No    | Add 16 comma-separated transform values to the root node of `tileset.json` |
@@ -405,7 +405,7 @@ java -jar mago-3d-tiler.jar --input "/input_path/citygml" --inputType "citygml" 
 ```
 
 ### Photogrammetry Tiling
-When converting photogrammetry data, you can use the `--photogrammetry` option to enable GPU-based photogrammetry tiling as follows.
+When converting photogrammetry data, use `--photogrammetry` to enable the experimental compatibility-focused pipeline. This pipeline makes broader use of CPU processing and includes performance and visual-quality improvements.
 ```
 java -jar mago-3d-tiler.jar --input "/input_path/photogrammetry" --output "/output_path/photogrammetry" --inputType "obj" --outputType "b3dm" --crs "5186" --photogrammetry
 ```

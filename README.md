@@ -85,7 +85,7 @@ Usage: command options
  -ot, --outputType <arg>               Output 3DTiles Type [b3dm, i3dm, pnts]
  -l, --log <arg>                       Output log file path.
  -r, --recursive                       Tree directory deep navigation.
- -te, --terrain <arg>                  GeoTiff Terrain file path, 3D Object applied as clampToGround (Supports GeoTIFF format)
+ -te, --terrain <arg>                  Terrain path for clampToGround (GeoTIFF or a local Quantized Mesh layer.json)
  -ge, --geoid <arg>                    Geoid file path for height correction,
                                        (default: Ellipsoid)(options: Ellipsoid, EGM84, EGM96, EGM2008 or GeoTIFF File Path)
  -if, --instance <arg>                 Instance file path for I3DM
@@ -93,10 +93,12 @@ Usage: command options
  -qt, --quantize                       Quantize glTF 3DMesh via "KHR_mesh_quantization" Extension
  -tv, --tilesVersion <arg>             3DTiles Version
                                        (default: 1.1)(options: 1.0, 1.1)
- -c, --crs <arg>                       set input data CRS(Coordinate Reference Systems)
-                                       (default: 3857)(options: 4326, 3857, 4978, 32652, 5186...)(ECEF->4978, WGS84->4326, WebMercator->3857
+ -c, --crs <arg>                       Set input data CRS (Coordinate Reference System)
+                                       (default: 3857)(options: 4326, 3857, 4978, 32652, 5186...)
+                                       (ECEF: 4978, WGS84: 4326, Web Mercator: 3857)
  -p, --proj <arg>                      Set Proj4 parameters
-                                       (ex: +proj=tmerc +la...)when this option is set, the 'crs' option is ignored.
+                                       (ex: +proj=tmerc +lat_0=...)
+                                       When this option is set, the 'crs' option is ignored.
  -xo, --xOffset <arg>                  X Offset value for coordinate transformation
  -yo, --yOffset <arg>                  Y Offset value for coordinate transformation
  -zo, --zOffset <arg>                  Z Offset value for coordinate transformation
@@ -134,7 +136,7 @@ Usage: command options
                                        (default: 0.0)(units: meters)
  -sh, --skirtHeight <arg>              [GISVector][Extrusion] Set Building Skirt height
                                        (default: 4.0)(units: meters)
- -pg, --photogrammetry                 [Experimental] generate b3dm for photogrammetry model with GPU
+ -pg, --photogrammetry                 [Experimental] Generate b3dm with the compatibility-focused photogrammetry pipeline.
  -sbn, --splitByNode                   [Experimental] Split tiles by nodes of scene.
  -cc, --curvatureCorrection            [Experimental] Apply curvature correction for ellipsoid surface.
  -urt, --updateRootTransform <arg>     [Experimental] Add 16 comma-separated transform values to the root node of tileset.json.

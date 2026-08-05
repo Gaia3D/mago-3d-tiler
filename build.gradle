@@ -1,6 +1,6 @@
 subprojects {
     group "com.gaia3d"
-    version "1.15.12"
+    version "1.16.0"
     apply plugin: 'java'
     project.ext.lwjglVersion = "3.3.6"
 
@@ -113,7 +113,7 @@ tasks.register('all-javadoc', Javadoc) {
     ]
     source = files(includedProjects.collect { it.sourceSets.main.allJava })
     classpath = files(includedProjects.collect { it.sourceSets.main.compileClasspath })
-    destinationDir = file("/docs/")
+    destinationDir = file("${rootDir}/docs")
     options.encoding = 'UTF-8'
     options.memberLevel = JavadocMemberLevel.PUBLIC
     options.addStringOption('Xdoclint:none', '-quiet')
