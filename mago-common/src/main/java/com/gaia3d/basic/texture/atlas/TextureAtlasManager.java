@@ -903,7 +903,8 @@ public class TextureAtlasManager {
 
         long freeUntilMax = runtime.maxMemory() - usedHeap;
 
-        log.debug("[ATLAS ALLOCATION] thread={}, size={}x{}, " + "pixels={}, estimated={} MiB, " + "usedHeap={} MiB, freeUntilMax={} MiB, maxHeap={} MiB", Thread.currentThread().getName(), maxWidth, maxHeight, atlasPixels, bytesToMiB(atlasBytes), bytesToMiB(usedHeap), bytesToMiB(freeUntilMax), bytesToMiB(runtime.maxMemory()));
+        log.debug("[ATLAS ALLOCATION] thread={}, size={}x{}, " + "pixels={}, estimated={} MiB, " + "usedHeap={} MiB, freeUntilMax={} MiB, maxHeap={} MiB", Thread.currentThread()
+                .getName(), maxWidth, maxHeight, atlasPixels, bytesToMiB(atlasBytes), bytesToMiB(usedHeap), bytesToMiB(freeUntilMax), bytesToMiB(runtime.maxMemory()));
         resultTextureAtlas.createImage(maxWidth, maxHeight, imageType);
 
         // Fill atlas background with known color

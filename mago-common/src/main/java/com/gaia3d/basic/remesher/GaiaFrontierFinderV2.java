@@ -6,6 +6,7 @@ import com.gaia3d.basic.model.GaiaVertex;
 import java.util.Arrays;
 import java.util.List;
 
+@Deprecated
 public class GaiaFrontierFinderV2 {
 
     private static int[] collectUsedVertexIndices(List<GaiaFace> faces, int vertexCount) {
@@ -55,12 +56,7 @@ public class GaiaFrontierFinderV2 {
         return Math.round(vertex.getPosition().z * invTolerance);
     }
 
-    private static int compareQuantized(
-            int indexA,
-            int indexB,
-            List<GaiaVertex> vertices,
-            double invTolerance
-    ) {
+    private static int compareQuantized(int indexA, int indexB, List<GaiaVertex> vertices, double invTolerance) {
         GaiaVertex va = vertices.get(indexA);
         GaiaVertex vb = vertices.get(indexB);
 
@@ -81,13 +77,7 @@ public class GaiaFrontierFinderV2 {
         return Long.compare(az, bz);
     }
 
-    private static void quickSortByQuantizedPosition(
-            int[] array,
-            int left,
-            int right,
-            List<GaiaVertex> vertices,
-            double invTolerance
-    ) {
+    private static void quickSortByQuantizedPosition(int[] array, int left, int right, List<GaiaVertex> vertices, double invTolerance) {
         int i = left;
         int j = right;
         int pivot = array[left + (right - left) / 2];
@@ -119,12 +109,7 @@ public class GaiaFrontierFinderV2 {
         }
     }
 
-    public static int[] buildWeldedVertexIndicesLowMemory(
-            List<GaiaVertex> vertices,
-            List<GaiaFace> faces,
-            double tolerance,
-            int[] weldedIndices
-    ) {
+    public static int[] buildWeldedVertexIndicesLowMemory(List<GaiaVertex> vertices, List<GaiaFace> faces, double tolerance, int[] weldedIndices) {
         int vertexCount = vertices.size();
 
         Arrays.fill(weldedIndices, -1);
@@ -141,13 +126,7 @@ public class GaiaFrontierFinderV2 {
 
         double invTolerance = 1.0 / tolerance;
 
-        quickSortByQuantizedPosition(
-                usedIndices,
-                0,
-                usedIndices.length - 1,
-                vertices,
-                invTolerance
-        );
+        quickSortByQuantizedPosition(usedIndices, 0, usedIndices.length - 1, vertices, invTolerance);
 
         int nextWeldedIndex = 0;
 
@@ -247,11 +226,7 @@ public class GaiaFrontierFinderV2 {
         return last - first;
     }
 
-    public static boolean[] buildWeldedBoundaryVertexFlagsSortDirectedEdges(
-            List<GaiaFace> faces,
-            int[] weldedIndices,
-            int weldedVertexCount
-    ) {
+    public static boolean[] buildWeldedBoundaryVertexFlagsSortDirectedEdges(List<GaiaFace> faces, int[] weldedIndices, int weldedVertexCount) {
         boolean[] weldedBoundary = new boolean[weldedVertexCount];
 
         if (faces == null || faces.isEmpty() || weldedIndices == null || weldedVertexCount <= 0) {
@@ -288,9 +263,7 @@ public class GaiaFrontierFinderV2 {
                 int idx1 = indices[t * 3 + 1];
                 int idx2 = indices[t * 3 + 2];
 
-                if (!isValidOriginalIndex(idx0, weldedIndices.length)
-                        || !isValidOriginalIndex(idx1, weldedIndices.length)
-                        || !isValidOriginalIndex(idx2, weldedIndices.length)) {
+                if (!isValidOriginalIndex(idx0, weldedIndices.length) || !isValidOriginalIndex(idx1, weldedIndices.length) || !isValidOriginalIndex(idx2, weldedIndices.length)) {
                     continue;
                 }
 
@@ -356,10 +329,7 @@ public class GaiaFrontierFinderV2 {
         return weldedBoundary;
     }
 
-    public static boolean[] buildOriginalBoundaryVertexFlags(
-            int[] weldedIndices,
-            boolean[] weldedBoundary
-    ) {
+    public static boolean[] buildOriginalBoundaryVertexFlags(int[] weldedIndices, boolean[] weldedBoundary) {
         boolean[] originalBoundary = new boolean[weldedIndices.length];
 
         for (int originalIndex = 0; originalIndex < weldedIndices.length; originalIndex++) {
@@ -381,12 +351,7 @@ public class GaiaFrontierFinderV2 {
         return originalBoundary;
     }
 
-    public boolean[] findBoundaryVertices(
-            List<GaiaVertex> vertices,
-            List<GaiaFace> faces,
-            double tolerance,
-            int[] weldedIndices
-    ) {
+    public boolean[] findBoundaryVertices(List<GaiaVertex> vertices, List<GaiaFace> faces, double tolerance, int[] weldedIndices) {
         if (vertices == null || vertices.isEmpty()) {
             return new boolean[0];
         }
@@ -399,21 +364,11 @@ public class GaiaFrontierFinderV2 {
             weldedIndices = new int[vertices.size()];
         }
 
-        buildWeldedVertexIndicesLowMemory(
-                vertices,
-                faces,
-                tolerance,
-                weldedIndices
-        );
+        buildWeldedVertexIndicesLowMemory(vertices, faces, tolerance, weldedIndices);
 
         int weldedVertexCount = getWeldedVertexCount(weldedIndices);
 
-        boolean[] weldedBoundary =
-                buildWeldedBoundaryVertexFlagsSortDirectedEdges(
-                        faces,
-                        weldedIndices,
-                        weldedVertexCount
-                );
+        boolean[] weldedBoundary = buildWeldedBoundaryVertexFlagsSortDirectedEdges(faces, weldedIndices, weldedVertexCount);
 
         return buildOriginalBoundaryVertexFlags(weldedIndices, weldedBoundary);
     }

@@ -24,10 +24,7 @@ public class GlobalBoundaryAnchors {
             return false;
         }
 
-        lockedAveragePositions.putIfAbsent(
-                new Vector3i(cellIndex),
-                new Vector3d(average)
-        );
+        lockedAveragePositions.putIfAbsent(new Vector3i(cellIndex), new Vector3d(average));
         return false;
     }
 
@@ -47,17 +44,11 @@ public class GlobalBoundaryAnchors {
      * Solo debe llamarse durante la construcción.
      * Después, GlobalBoundaryAnchors será de solo lectura.
      */
-    void putLockedAverage(
-            Vector3i cellIndex,
-            Vector3d average
-    ) {
+    void putLockedAverage(Vector3i cellIndex, Vector3d average) {
         if (cellIndex == null || average == null) {
             return;
         }
 
-        lockedAveragePositions.put(
-                new Vector3i(cellIndex),
-                new Vector3d(average)
-        );
+        lockedAveragePositions.put(new Vector3i(cellIndex), new Vector3d(average));
     }
 }

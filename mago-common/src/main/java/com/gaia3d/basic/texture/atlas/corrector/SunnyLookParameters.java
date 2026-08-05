@@ -2,29 +2,13 @@ package com.gaia3d.basic.texture.atlas.corrector;
 
 public class SunnyLookParameters {
 
-    // Sunny-Look variables.
     public boolean sunnyLookEnabled = false;
-
-    // Intensidad general del modo soleado.
-    // 0.0 = apagado, 1.0 = completo.
     public double sunnyStrength = 0.0;
-
-    // Calidez: sube un poco rojos/amarillos y baja un poco azules.
     public double warmStrength = 0.0;
-
-    // Extra de saturación para look soleado.
     public double sunnySaturationBoost = 0.0;
-
-    // Extra de contraste suave.
     public double sunnyContrastBoost = 0.0;
-
-    // Extra de dehaze / black point.
     public double sunnyDehazeBoost = 0.0;
-
-    // Hace las zonas claras un poco más cálidas que las sombras.
     public double highlightWarmth = 0.0;
-
-    // Hace sombras un pelín más frías para separar luz/sombra.
     public double shadowCoolness = 0.0;
 
     public static SunnyLookParameters disabled() {
@@ -95,15 +79,6 @@ public class SunnyLookParameters {
 
     @Override
     public String toString() {
-        return "SunnyLookParameters{" +
-                "sunnyLookEnabled=" + sunnyLookEnabled +
-                ", sunnyStrength=" + sunnyStrength +
-                ", warmStrength=" + warmStrength +
-                ", sunnySaturationBoost=" + sunnySaturationBoost +
-                ", sunnyContrastBoost=" + sunnyContrastBoost +
-                ", sunnyDehazeBoost=" + sunnyDehazeBoost +
-                ", highlightWarmth=" + highlightWarmth +
-                ", shadowCoolness=" + shadowCoolness +
-                '}';
+        return "SunnyLookParameters{" + "sunnyLookEnabled=" + sunnyLookEnabled + ", sunnyStrength=" + sunnyStrength + ", warmStrength=" + warmStrength + ", sunnySaturationBoost=" + sunnySaturationBoost + ", sunnyContrastBoost=" + sunnyContrastBoost + ", sunnyDehazeBoost=" + sunnyDehazeBoost + ", highlightWarmth=" + highlightWarmth + ", shadowCoolness=" + shadowCoolness + '}';
     }
 }

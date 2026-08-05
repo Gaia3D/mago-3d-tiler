@@ -17,10 +17,7 @@ public class TextureAwareReMesher {
         }
     }
 
-    private static int classifyTextureIslands(
-            GaiaSurface surface,
-            int startIslandId
-    ) {
+    private static int classifyTextureIslands(GaiaSurface surface, int startIslandId) {
         List<GaiaFace> faces = surface.getFaces();
         if (faces == null || faces.isEmpty()) {
             return startIslandId;
@@ -40,9 +37,7 @@ public class TextureAwareReMesher {
 
                 EdgeKey key = new EdgeKey(a, b);
 
-                edgeToFaces
-                        .computeIfAbsent(key, k -> new ArrayList<>())
-                        .add(fIdx);
+                edgeToFaces.computeIfAbsent(key, k -> new ArrayList<>()).add(fIdx);
             }
         }
 
@@ -94,12 +89,8 @@ public class TextureAwareReMesher {
         return islandId;
     }
 
-    private static boolean[] buildMultiIslandVertexFlags(
-            List<GaiaSurface> surfaces,
-            int vertexCount
-    ) {
-        @SuppressWarnings("unchecked")
-        Set<Integer>[] vertexIslands = new HashSet[vertexCount];
+    private static boolean[] buildMultiIslandVertexFlags(List<GaiaSurface> surfaces, int vertexCount) {
+        @SuppressWarnings("unchecked") Set<Integer>[] vertexIslands = new HashSet[vertexCount];
 
         for (GaiaSurface surface : surfaces) {
             for (GaiaFace face : surface.getFaces()) {
@@ -129,10 +120,7 @@ public class TextureAwareReMesher {
         return result;
     }
 
-    private static int[] buildVertexDominantIslandId(
-            List<GaiaSurface> surfaces,
-            int vertexCount
-    ) {
+    private static int[] buildVertexDominantIslandId(List<GaiaSurface> surfaces, int vertexCount) {
         Map<Integer, Map<Integer, Integer>> vertexIslandCounts = new HashMap<>();
 
         for (GaiaSurface surface : surfaces) {
@@ -145,8 +133,7 @@ public class TextureAwareReMesher {
                 for (int vi : idx) {
                     if (vi < 0 || vi >= vertexCount) {continue;}
 
-                    Map<Integer, Integer> counts =
-                            vertexIslandCounts.computeIfAbsent(vi, k -> new HashMap<>());
+                    Map<Integer, Integer> counts = vertexIslandCounts.computeIfAbsent(vi, k -> new HashMap<>());
 
                     counts.put(islandId, counts.getOrDefault(islandId, 0) + 1);
                 }
@@ -175,10 +162,7 @@ public class TextureAwareReMesher {
         return dominant;
     }
 
-    private static void classifyRemeshableCells(
-            Map<Vector3i, CellStats> cellStatsMap,
-            double cellSize
-    ) {
+    private static void classifyRemeshableCells(Map<Vector3i, CellStats> cellStatsMap, double cellSize) {
         int minTriangles = 5;
         double minArea = cellSize * cellSize * 0.03;
 
@@ -199,15 +183,11 @@ public class TextureAwareReMesher {
             if (stats.areaSum < minArea) {continue;}
             if (d2 < cellSize * 0.25) {continue;}
 
-            boolean lineLike =
-                    d1 < cellSize * 0.10 &&
-                            d2 > cellSize * 0.45;
+            boolean lineLike = d1 < cellSize * 0.10 && d2 > cellSize * 0.45;
 
             if (lineLike) {continue;}
 
-            boolean surfaceLike =
-                    d1 > cellSize * 0.10 &&
-                            d2 > cellSize * 0.30;
+            boolean surfaceLike = d1 > cellSize * 0.10 && d2 > cellSize * 0.30;
 
             if (!surfaceLike) {continue;}
 
@@ -253,10 +233,7 @@ public class TextureAwareReMesher {
         return center;
     }
 
-    private static Map<Vector3i, CellStats> buildCellStats(
-            GaiaPrimitive primitive,
-            CellGrid3D cellGrid
-    ) {
+    private static Map<Vector3i, CellStats> buildCellStats(GaiaPrimitive primitive, CellGrid3D cellGrid) {
         List<GaiaVertex> vertices = primitive.getVertices();
         Map<Vector3i, CellStats> cellStatsMap = new HashMap<>();
 
@@ -271,10 +248,7 @@ public class TextureAwareReMesher {
                 // Importante hacer copia por si getCellIndex reutiliza objeto.
                 Vector3i cellKey = new Vector3i(cell);
 
-                CellStats stats = cellStatsMap.computeIfAbsent(
-                        cellKey,
-                        k -> new CellStats(cellKey)
-                );
+                CellStats stats = cellStatsMap.computeIfAbsent(cellKey, k -> new CellStats(cellKey));
 
                 stats.triangleCount++;
                 stats.areaSum += calculateFaceArea(face, vertices);
@@ -288,10 +262,7 @@ public class TextureAwareReMesher {
         return cellStatsMap;
     }
 
-    private static void dilateRemeshableCells(
-            Map<Vector3i, CellStats> cellStatsMap,
-            int iterations
-    ) {
+    private static void dilateRemeshableCells(Map<Vector3i, CellStats> cellStatsMap, int iterations) {
         for (int it = 0; it < iterations; it++) {
 
             Set<Vector3i> toEnable = new HashSet<>();
@@ -308,11 +279,7 @@ public class TextureAwareReMesher {
 
                             if (dx == 0 && dy == 0 && dz == 0) {continue;}
 
-                            Vector3i nb = new Vector3i(
-                                    cell.x + dx,
-                                    cell.y + dy,
-                                    cell.z + dz
-                            );
+                            Vector3i nb = new Vector3i(cell.x + dx, cell.y + dy, cell.z + dz);
 
                             if (cellStatsMap.containsKey(nb)) {
                                 toEnable.add(nb);
@@ -331,10 +298,7 @@ public class TextureAwareReMesher {
         }
     }
 
-    private static void cleanBadRemeshableCells(
-            Map<Vector3i, CellStats> cellStatsMap,
-            double cellSize
-    ) {
+    private static void cleanBadRemeshableCells(Map<Vector3i, CellStats> cellStatsMap, double cellSize) {
         for (CellStats stats : cellStatsMap.values()) {
             if (!stats.remeshable) {continue;}
 
@@ -373,12 +337,7 @@ public class TextureAwareReMesher {
         }
     }
 
-    private static boolean isFaceRemeshable(
-            GaiaFace face,
-            List<GaiaVertex> vertices,
-            CellGrid3D cellGrid,
-            Map<Vector3i, CellStats> cellStatsMap
-    ) {
+    private static boolean isFaceRemeshable(GaiaFace face, List<GaiaVertex> vertices, CellGrid3D cellGrid, Map<Vector3i, CellStats> cellStatsMap) {
         Vector3d center = calculateFaceCenter(face, vertices);
         Vector3i centerCell = new Vector3i(cellGrid.getCellIndex(center));
 
@@ -402,12 +361,7 @@ public class TextureAwareReMesher {
         return true;
     }
 
-    private static boolean[][] buildRemeshFaceFlags(
-            List<GaiaSurface> surfaces,
-            List<GaiaVertex> oldVertices,
-            CellGrid3D cellGrid,
-            Map<Vector3i, CellStats> cellStatsMap
-    ) {
+    private static boolean[][] buildRemeshFaceFlags(List<GaiaSurface> surfaces, List<GaiaVertex> oldVertices, CellGrid3D cellGrid, Map<Vector3i, CellStats> cellStatsMap) {
         boolean[][] flags = new boolean[surfaces.size()][];
 
         for (int sIdx = 0; sIdx < surfaces.size(); sIdx++) {
@@ -419,23 +373,14 @@ public class TextureAwareReMesher {
             for (int fIdx = 0; fIdx < faces.size(); fIdx++) {
                 GaiaFace face = faces.get(fIdx);
 
-                flags[sIdx][fIdx] = isFaceRemeshable(
-                        face,
-                        oldVertices,
-                        cellGrid,
-                        cellStatsMap
-                );
+                flags[sIdx][fIdx] = isFaceRemeshable(face, oldVertices, cellGrid, cellStatsMap);
             }
         }
 
         return flags;
     }
 
-    private static boolean[] buildBoundaryProtectedVertices(
-            List<GaiaSurface> surfaces,
-            boolean[][] remeshFaceFlags,
-            int vertexCount
-    ) {
+    private static boolean[] buildBoundaryProtectedVertices(List<GaiaSurface> surfaces, boolean[][] remeshFaceFlags, int vertexCount) {
         boolean[] protectedVertex = new boolean[vertexCount];
 
         Map<EdgeKey, Boolean> edgeTouchesRemesh = new HashMap<>();
@@ -478,12 +423,7 @@ public class TextureAwareReMesher {
         return protectedVertex;
     }
 
-    private static void updateSceneMinMaxCells(
-            List<GaiaVertex> vertices,
-            CellGrid3D cellGrid,
-            Vector3i sceneMinCellIndex,
-            Vector3i sceneMaxCellIndex
-    ) {
+    private static void updateSceneMinMaxCells(List<GaiaVertex> vertices, CellGrid3D cellGrid, Vector3i sceneMinCellIndex, Vector3i sceneMaxCellIndex) {
         boolean first = true;
 
         for (GaiaVertex vertex : vertices) {
@@ -520,13 +460,7 @@ public class TextureAwareReMesher {
         return false;
     }
 
-    private static void recalculateMovedVertexTexcoords(
-            List<GaiaSurface> surfaces,
-            List<GaiaVertex> vertices,
-            List<Vector3d> originalPositions,
-            List<Vector2d> originalTexcoords,
-            boolean[] movedVertex
-    ) {
+    private static void recalculateMovedVertexTexcoords(List<GaiaSurface> surfaces, List<GaiaVertex> vertices, List<Vector3d> originalPositions, List<Vector2d> originalTexcoords, boolean[] movedVertex) {
         // vertex -> incident faces
         Map<Integer, List<GaiaFace>> vertexToFaces = new HashMap<>();
 
@@ -538,9 +472,7 @@ public class TextureAwareReMesher {
                 for (int vi : idx) {
                     if (vi < 0 || vi >= vertices.size()) {continue;}
 
-                    vertexToFaces
-                            .computeIfAbsent(vi, k -> new ArrayList<>())
-                            .add(face);
+                    vertexToFaces.computeIfAbsent(vi, k -> new ArrayList<>()).add(face);
                 }
             }
         }
@@ -579,23 +511,11 @@ public class TextureAwareReMesher {
                 Vector3d p1 = originalPositions.get(i1);
                 Vector3d p2 = originalPositions.get(i2);
 
-                BarycentricResult result = closestBarycentricOnTriangle(
-                        newPos,
-                        p0,
-                        p1,
-                        p2
-                );
+                BarycentricResult result = closestBarycentricOnTriangle(newPos, p0, p1, p2);
 
                 if (result == null) {continue;}
 
-                Vector2d uv = interpolateUv(
-                        uv0,
-                        uv1,
-                        uv2,
-                        result.u,
-                        result.v,
-                        result.w
-                );
+                Vector2d uv = interpolateUv(uv0, uv1, uv2, result.u, result.v, result.w);
 
                 if (result.distanceSquared < bestScore) {
                     bestScore = result.distanceSquared;
@@ -609,12 +529,7 @@ public class TextureAwareReMesher {
         }
     }
 
-    private static BarycentricResult closestBarycentricOnTriangle(
-            Vector3d p,
-            Vector3d a,
-            Vector3d b,
-            Vector3d c
-    ) {
+    private static BarycentricResult closestBarycentricOnTriangle(Vector3d p, Vector3d a, Vector3d b, Vector3d c) {
         Vector3d ab = new Vector3d(b).sub(a);
         Vector3d ac = new Vector3d(c).sub(a);
         Vector3d ap = new Vector3d(p).sub(a);
@@ -650,9 +565,7 @@ public class TextureAwareReMesher {
         v /= sum;
         w /= sum;
 
-        Vector3d closest = new Vector3d(a).mul(u)
-                .add(new Vector3d(b).mul(v))
-                .add(new Vector3d(c).mul(w));
+        Vector3d closest = new Vector3d(a).mul(u).add(new Vector3d(b).mul(v)).add(new Vector3d(c).mul(w));
 
         BarycentricResult result = new BarycentricResult();
         result.u = u;
@@ -663,25 +576,11 @@ public class TextureAwareReMesher {
         return result;
     }
 
-    private static Vector2d interpolateUv(
-            Vector2d uv0,
-            Vector2d uv1,
-            Vector2d uv2,
-            double u,
-            double v,
-            double w
-    ) {
-        return new Vector2d(uv0).mul(u)
-                .add(new Vector2d(uv1).mul(v))
-                .add(new Vector2d(uv2).mul(w));
+    private static Vector2d interpolateUv(Vector2d uv0, Vector2d uv1, Vector2d uv2, double u, double v, double w) {
+        return new Vector2d(uv0).mul(u).add(new Vector2d(uv1).mul(v)).add(new Vector2d(uv2).mul(w));
     }
 
-    private static List<PositionGroup> buildPositionGroups(
-            List<GaiaVertex> vertices,
-            double epsilon,
-            int[] vertexIslandId,
-            int[] vertexToPositionGroup
-    ) {
+    private static List<PositionGroup> buildPositionGroups(List<GaiaVertex> vertices, double epsilon, int[] vertexIslandId, int[] vertexToPositionGroup) {
         Map<PositionKey, PositionGroup> map = new HashMap<>();
 
         for (int i = 0; i < vertices.size(); i++) {
@@ -726,12 +625,7 @@ public class TextureAwareReMesher {
         return groups;
     }
 
-    public void reMeshScene(
-            GaiaScene gaiaScene,
-            ReMeshParameters params,
-            Vector3i sceneMinCellIndex,
-            Vector3i sceneMaxCellIndex
-    ) {
+    public void reMeshScene(GaiaScene gaiaScene, ReMeshParameters params, Vector3i sceneMinCellIndex, Vector3i sceneMaxCellIndex) {
         GaiaExtractor extractor = new GaiaExtractor();
         List<GaiaPrimitive> primitives = extractor.extractAllPrimitives(gaiaScene);
 
@@ -779,12 +673,7 @@ public class TextureAwareReMesher {
         // =========================================================
         // 2. Clasificar caras remesheables
         // =========================================================
-        boolean[][] remeshFaceFlags = buildRemeshFaceFlags(
-                surfaces,
-                vertices,
-                cellGrid,
-                cellStatsMap
-        );
+        boolean[][] remeshFaceFlags = buildRemeshFaceFlags(surfaces, vertices, cellGrid, cellStatsMap);
 
         // =========================================================
         // 3. Clasificar islas de textura / islas topológicas
@@ -794,10 +683,7 @@ public class TextureAwareReMesher {
         // =========================================================
         // 4. Calcular isla dominante de cada vértice
         // =========================================================
-        int[] vertexIslandId = buildVertexDominantIslandId(
-                surfaces,
-                vertices.size()
-        );
+        int[] vertexIslandId = buildVertexDominantIslandId(surfaces, vertices.size());
 
         // =========================================================
         // 5. Agrupar vértices por posición geométrica
@@ -811,12 +697,7 @@ public class TextureAwareReMesher {
         int[] vertexToPositionGroup = new int[vertices.size()];
         Arrays.fill(vertexToPositionGroup, -1);
 
-        List<PositionGroup> positionGroups = buildPositionGroups(
-                vertices,
-                positionEpsilon,
-                vertexIslandId,
-                vertexToPositionGroup
-        );
+        List<PositionGroup> positionGroups = buildPositionGroups(vertices, positionEpsilon, vertexIslandId, vertexToPositionGroup);
 
         // =========================================================
         // 6. Detectar grupos de posición que pueden moverse
@@ -866,9 +747,7 @@ public class TextureAwareReMesher {
 
             PositionGroup group = positionGroups.get(groupId);
 
-            Vector3i cell = new Vector3i(
-                    cellGrid.getCellIndex(group.position)
-            );
+            Vector3i cell = new Vector3i(cellGrid.getCellIndex(group.position));
 
             CellStats stats = cellStatsMap.get(cell);
             if (stats == null || !stats.remeshable) {
@@ -877,10 +756,7 @@ public class TextureAwareReMesher {
 
             CellClusterKey key = new CellClusterKey(cell);
 
-            MoveCluster cluster = clusterMap.computeIfAbsent(
-                    key,
-                    k -> new MoveCluster()
-            );
+            MoveCluster cluster = clusterMap.computeIfAbsent(key, k -> new MoveCluster());
 
             cluster.addPositionGroup(groupId, group);
         }
@@ -960,13 +836,7 @@ public class TextureAwareReMesher {
         // Esto evita que la textura antigua quede estirada de forma absurda
         // después de mover la geometría.
         // =========================================================
-        recalculateMovedVertexTexcoords(
-                surfaces,
-                vertices,
-                originalPositions,
-                originalTexcoords,
-                movedVertex
-        );
+        recalculateMovedVertexTexcoords(surfaces, vertices, originalPositions, originalTexcoords, movedVertex);
 
         // =========================================================
         // 11. Actualizar min/max cells
@@ -1011,9 +881,7 @@ public class TextureAwareReMesher {
 
         @Override
         public boolean equals(Object obj) {
-            if (!(obj instanceof EdgeKey)) {return false;}
-
-            EdgeKey other = (EdgeKey) obj;
+            if (!(obj instanceof EdgeKey other)) {return false;}
 
             return a == other.a && b == other.b;
         }
@@ -1027,32 +895,27 @@ public class TextureAwareReMesher {
         }
     }
 
-    private static class CellClusterKey {
-        final Vector3i cell;
-        CellClusterKey(Vector3i cell) {
-            this.cell = new Vector3i(cell);
+    private record CellClusterKey(Vector3i cell) {
+            private CellClusterKey(Vector3i cell) {
+                this.cell = new Vector3i(cell);
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (!(obj instanceof CellClusterKey other)) {return false;}
+
+                return cell.x == other.cell.x && cell.y == other.cell.y && cell.z == other.cell.z;
+            }
+
+            @Override
+            public int hashCode() {
+                int h = 17;
+                h = 31 * h + cell.x;
+                h = 31 * h + cell.y;
+                h = 31 * h + cell.z;
+                return h;
+            }
         }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof CellClusterKey)) {return false;}
-
-            CellClusterKey other = (CellClusterKey) obj;
-
-            return cell.x == other.cell.x
-                    && cell.y == other.cell.y
-                    && cell.z == other.cell.z;
-        }
-
-        @Override
-        public int hashCode() {
-            int h = 17;
-            h = 31 * h + cell.x;
-            h = 31 * h + cell.y;
-            h = 31 * h + cell.z;
-            return h;
-        }
-    }
 
     private static class CellStats {
         Vector3i cellIndex;
@@ -1060,17 +923,9 @@ public class TextureAwareReMesher {
         int triangleCount = 0;
         double areaSum = 0.0;
 
-        Vector3d min = new Vector3d(
-                Double.POSITIVE_INFINITY,
-                Double.POSITIVE_INFINITY,
-                Double.POSITIVE_INFINITY
-        );
+        Vector3d min = new Vector3d(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
 
-        Vector3d max = new Vector3d(
-                Double.NEGATIVE_INFINITY,
-                Double.NEGATIVE_INFINITY,
-                Double.NEGATIVE_INFINITY
-        );
+        Vector3d max = new Vector3d(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY);
 
         boolean remeshable = false;
 
@@ -1150,8 +1005,7 @@ public class TextureAwareReMesher {
 
         @Override
         public boolean equals(Object obj) {
-            if (!(obj instanceof UvKey)) {return false;}
-            UvKey other = (UvKey) obj;
+            if (!(obj instanceof UvKey other)) {return false;}
             return u == other.u && v == other.v;
         }
 
@@ -1177,8 +1031,7 @@ public class TextureAwareReMesher {
 
         @Override
         public boolean equals(Object obj) {
-            if (!(obj instanceof PositionKey)) {return false;}
-            PositionKey other = (PositionKey) obj;
+            if (!(obj instanceof PositionKey other)) {return false;}
             return x == other.x && y == other.y && z == other.z;
         }
 

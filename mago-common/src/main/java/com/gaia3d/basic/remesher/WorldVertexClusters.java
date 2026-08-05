@@ -16,9 +16,7 @@ public class WorldVertexClusters {
     public final Map<Vector3i, Vector3d> interiorAveragePositions = new HashMap<>();
     public final Map<Vector3i, Vector3d> frontierAveragePositions = new HashMap<>();
 
-    private static void calculateAveragePositions(
-            Map<Vector3i, List<GaiaVertex>> clusters,
-            Map<Vector3i, Vector3d> result) {
+    private static void calculateAveragePositions(Map<Vector3i, List<GaiaVertex>> clusters, Map<Vector3i, Vector3d> result) {
 
         if (clusters == null || result == null) {
             return;

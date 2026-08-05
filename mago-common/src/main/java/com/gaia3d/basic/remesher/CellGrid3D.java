@@ -5,8 +5,6 @@ import lombok.Setter;
 import org.joml.Vector3d;
 import org.joml.Vector3i;
 
-import static net.sf.geographiclib.GeoMath.epsilon;
-
 @Getter
 @Setter
 public class CellGrid3D {

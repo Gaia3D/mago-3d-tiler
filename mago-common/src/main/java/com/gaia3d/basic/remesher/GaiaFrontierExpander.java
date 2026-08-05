@@ -13,12 +13,7 @@ import java.util.Map;
 @Slf4j
 public class GaiaFrontierExpander {
 
-    public int expandFrontiersToScene(
-            GaiaScene scene,
-            GaiaBoundingBox nodeBBox,
-            double tolerance,
-            double expandDistance
-    ) {
+    public int expandFrontiersToScene(GaiaScene scene, GaiaBoundingBox nodeBBox, double tolerance, double expandDistance) {
         if (scene == null || nodeBBox == null) {
             return 0;
         }
@@ -35,12 +30,7 @@ public class GaiaFrontierExpander {
         int movedVerticesCount = 0;
 
         for (GaiaNode node : nodes) {
-            movedVerticesCount += expandFrontiersToNode(
-                    node,
-                    nodeBBox,
-                    tolerance,
-                    expandDistance
-            );
+            movedVerticesCount += expandFrontiersToNode(node, nodeBBox, tolerance, expandDistance);
         }
 
         log.debug("[GaiaFrontierExpander] moved frontier vertices = {}", movedVerticesCount);
@@ -48,12 +38,7 @@ public class GaiaFrontierExpander {
         return movedVerticesCount;
     }
 
-    private int expandFrontiersToNode(
-            GaiaNode node,
-            GaiaBoundingBox nodeBBox,
-            double tolerance,
-            double expandDistance
-    ) {
+    private int expandFrontiersToNode(GaiaNode node, GaiaBoundingBox nodeBBox, double tolerance, double expandDistance) {
         if (node == null) {
             return 0;
         }
@@ -63,36 +48,21 @@ public class GaiaFrontierExpander {
         List<GaiaMesh> meshes = node.getMeshes();
         if (meshes != null && !meshes.isEmpty()) {
             for (GaiaMesh mesh : meshes) {
-                movedVerticesCount += expandFrontiersToMesh(
-                        mesh,
-                        nodeBBox,
-                        tolerance,
-                        expandDistance
-                );
+                movedVerticesCount += expandFrontiersToMesh(mesh, nodeBBox, tolerance, expandDistance);
             }
         }
 
         List<GaiaNode> children = node.getChildren();
         if (children != null && !children.isEmpty()) {
             for (GaiaNode child : children) {
-                movedVerticesCount += expandFrontiersToNode(
-                        child,
-                        nodeBBox,
-                        tolerance,
-                        expandDistance
-                );
+                movedVerticesCount += expandFrontiersToNode(child, nodeBBox, tolerance, expandDistance);
             }
         }
 
         return movedVerticesCount;
     }
 
-    private int expandFrontiersToMesh(
-            GaiaMesh mesh,
-            GaiaBoundingBox nodeBBox,
-            double tolerance,
-            double expandDistance
-    ) {
+    private int expandFrontiersToMesh(GaiaMesh mesh, GaiaBoundingBox nodeBBox, double tolerance, double expandDistance) {
         if (mesh == null) {
             return 0;
         }
@@ -105,23 +75,13 @@ public class GaiaFrontierExpander {
         int movedVerticesCount = 0;
 
         for (GaiaPrimitive primitive : primitives) {
-            movedVerticesCount += expandFrontiersToPrimitive(
-                    primitive,
-                    nodeBBox,
-                    tolerance,
-                    expandDistance
-            );
+            movedVerticesCount += expandFrontiersToPrimitive(primitive, nodeBBox, tolerance, expandDistance);
         }
 
         return movedVerticesCount;
     }
 
-    private int expandFrontiersToPrimitive(
-            GaiaPrimitive primitive,
-            GaiaBoundingBox nodeBBox,
-            double tolerance,
-            double expandDistance
-    ) {
+    private int expandFrontiersToPrimitive(GaiaPrimitive primitive, GaiaBoundingBox nodeBBox, double tolerance, double expandDistance) {
         if (primitive == null || nodeBBox == null) {
             return 0;
         }
@@ -141,12 +101,7 @@ public class GaiaFrontierExpander {
         int[] weldedIndices = new int[vertices.size()];
 
         GaiaFrontierFinder frontierFinder = new GaiaFrontierFinder();
-        boolean[] frontierVertices = frontierFinder.findBoundaryVertices(
-                vertices,
-                faces,
-                1e-6,
-                weldedIndices
-        );
+        boolean[] frontierVertices = frontierFinder.findBoundaryVertices(vertices, faces, 1e-6, weldedIndices);
 
         if (frontierVertices == null || frontierVertices.length < vertices.size()) {
             return 0;
@@ -169,22 +124,14 @@ public class GaiaFrontierExpander {
             Vector3d position = vertex.getPosition();
 
             // Direction outward from the nodeBBox.
-            Vector3d bboxDir = getExpandDirectionXYZ(
-                    position,
-                    nodeBBox,
-                    tolerance
-            );
+            Vector3d bboxDir = getExpandDirectionXYZ(position, nodeBBox, tolerance);
 
             if (bboxDir == null || bboxDir.lengthSquared() <= 1e-12) {
                 continue;
             }
 
             // Average normal of faces that use this vertex.
-            Vector3d averageNormal = calculateAverageFaceNormalForVertex(
-                    i,
-                    vertexToFaces,
-                    vertices
-            );
+            Vector3d averageNormal = calculateAverageFaceNormalForVertex(i, vertexToFaces, vertices);
 
             Vector3d expandDir = null;
 
@@ -213,11 +160,7 @@ public class GaiaFrontierExpander {
         return movedVerticesCount;
     }
 
-    private Vector3d calculateAverageFaceNormalForVertex(
-            int vertexIndex,
-            Map<Integer, List<GaiaFace>> vertexToFaces,
-            List<GaiaVertex> vertices
-    ) {
+    private Vector3d calculateAverageFaceNormalForVertex(int vertexIndex, Map<Integer, List<GaiaFace>> vertexToFaces, List<GaiaVertex> vertices) {
         List<GaiaFace> faces = vertexToFaces.get(vertexIndex);
         if (faces == null || faces.isEmpty()) {
             return null;
@@ -247,11 +190,7 @@ public class GaiaFrontierExpander {
         return normalSum;
     }
 
-    private Vector3d getExpandDirectionXYZ(
-            Vector3d position,
-            GaiaBoundingBox nodeBBox,
-            double tolerance
-    ) {
+    private Vector3d getExpandDirectionXYZ(Vector3d position, GaiaBoundingBox nodeBBox, double tolerance) {
         if (position == null || nodeBBox == null) {
             return null;
         }
@@ -289,10 +228,7 @@ public class GaiaFrontierExpander {
         return direction;
     }
 
-    private double calculateFaceArea(
-            GaiaFace face,
-            List<GaiaVertex> vertices
-    ) {
+    private double calculateFaceArea(GaiaFace face, List<GaiaVertex> vertices) {
         if (face == null || face.getIndices() == null || face.getIndices().length < 3) {
             return 0.0;
         }
@@ -303,9 +239,7 @@ public class GaiaFrontierExpander {
         int i1 = indices[1];
         int i2 = indices[2];
 
-        if (i0 < 0 || i0 >= vertices.size()
-                || i1 < 0 || i1 >= vertices.size()
-                || i2 < 0 || i2 >= vertices.size()) {
+        if (i0 < 0 || i0 >= vertices.size() || i1 < 0 || i1 >= vertices.size() || i2 < 0 || i2 >= vertices.size()) {
             return 0.0;
         }
 
@@ -323,12 +257,7 @@ public class GaiaFrontierExpander {
         return e1.cross(e2, new Vector3d()).length() * 0.5;
     }
 
-    private Vector3d calculateBoundaryNormalForVertex(
-            int vertexIndex,
-            Vector3d bboxDir,
-            Map<Integer, List<GaiaFace>> vertexToFaces,
-            List<GaiaVertex> vertices
-    ) {
+    private Vector3d calculateBoundaryNormalForVertex(int vertexIndex, Vector3d bboxDir, Map<Integer, List<GaiaFace>> vertexToFaces, List<GaiaVertex> vertices) {
         if (bboxDir == null || bboxDir.lengthSquared() <= 1e-12) {
             return null;
         }
@@ -378,10 +307,7 @@ public class GaiaFrontierExpander {
         return normalSum;
     }
 
-    private Vector3d projectDirectionOnPlane(
-            Vector3d direction,
-            Vector3d planeNormal
-    ) {
+    private Vector3d projectDirectionOnPlane(Vector3d direction, Vector3d planeNormal) {
         if (direction == null || planeNormal == null) {
             return null;
         }
@@ -393,9 +319,7 @@ public class GaiaFrontierExpander {
         Vector3d n = new Vector3d(planeNormal).normalize();
 
         // projected = direction - normal * dot(direction, normal)
-        Vector3d projected = new Vector3d(direction).sub(
-                new Vector3d(n).mul(direction.dot(n))
-        );
+        Vector3d projected = new Vector3d(direction).sub(new Vector3d(n).mul(direction.dot(n)));
 
         if (projected.lengthSquared() <= 1e-12) {
             return null;
@@ -405,10 +329,7 @@ public class GaiaFrontierExpander {
         return projected;
     }
 
-    private Vector3d calculateFaceNormal(
-            GaiaFace face,
-            List<GaiaVertex> vertices
-    ) {
+    private Vector3d calculateFaceNormal(GaiaFace face, List<GaiaVertex> vertices) {
         if (face == null || face.getIndices() == null || face.getIndices().length < 3) {
             return null;
         }
@@ -419,9 +340,7 @@ public class GaiaFrontierExpander {
         int i1 = indices[1];
         int i2 = indices[2];
 
-        if (i0 < 0 || i0 >= vertices.size()
-                || i1 < 0 || i1 >= vertices.size()
-                || i2 < 0 || i2 >= vertices.size()) {
+        if (i0 < 0 || i0 >= vertices.size() || i1 < 0 || i1 >= vertices.size() || i2 < 0 || i2 >= vertices.size()) {
             return null;
         }
 

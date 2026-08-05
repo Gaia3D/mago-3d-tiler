@@ -3,9 +3,7 @@ package com.gaia3d.basic.remesher;
 import com.gaia3d.basic.model.GaiaFace;
 import com.gaia3d.basic.model.GaiaVertex;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class GaiaFrontierFinder {
     private static int[] collectUsedVertexIndices(List<GaiaFace> faces, int vertexCount) {

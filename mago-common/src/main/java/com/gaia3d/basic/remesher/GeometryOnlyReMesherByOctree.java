@@ -118,18 +118,12 @@ public class GeometryOnlyReMesherByOctree {
         info.radius = Math.max(maxPerpendicularDist, 1e-9);
         info.slenderness = info.length / info.radius;
 
-        info.isBar =
-                info.length > 0.05 &&
-                        info.slenderness > 6.0;
+        info.isBar = info.length > 0.05 && info.slenderness > 6.0;
 
         return info;
     }
 
-    public OctreeShapeInfo classifyOctreeShape(
-            GaiaOctreeFaces octFaces,
-            List<GeometryContent> faceDataList,
-            List<GaiaVertex> vertices
-    ) {
+    public OctreeShapeInfo classifyOctreeShape(GaiaOctreeFaces octFaces, List<GeometryContent> faceDataList, List<GaiaVertex> vertices) {
         OctreeShapeInfo info = new OctreeShapeInfo();
 
         if (faceDataList == null || faceDataList.isEmpty()) {
@@ -208,11 +202,7 @@ public class GeometryOnlyReMesherByOctree {
         info.sizeY = maxY - minY;
         info.sizeZ = maxZ - minZ;
 
-        double[] sizes = new double[]{
-                info.sizeX,
-                info.sizeY,
-                info.sizeZ
-        };
+        double[] sizes = new double[]{info.sizeX, info.sizeY, info.sizeZ};
 
         Arrays.sort(sizes);
 
@@ -234,11 +224,9 @@ public class GeometryOnlyReMesherByOctree {
         boolean veryFlat = info.flatness > 5.0;
         boolean veryLong = info.elongation > 3.0;
 
-        boolean mostlyHorizontal =
-                Math.abs(info.averageNormal.z) > 0.75;
+        boolean mostlyHorizontal = Math.abs(info.averageNormal.z) > 0.75;
 
-        boolean mostlyVertical =
-                Math.abs(info.averageNormal.z) < 0.35;
+        boolean mostlyVertical = Math.abs(info.averageNormal.z) < 0.35;
 
         // Suelo: plano horizontal, dos dimensiones dominantes, poca altura
         if (veryFlat && mostlyHorizontal && !veryLong) {
@@ -262,9 +250,7 @@ public class GeometryOnlyReMesherByOctree {
         return info;
     }
 
-    public void reMeshScene(GaiaScene scene,
-                            GaiaStatistics sceneStatsOptional,
-                            GaiaBoundingBox nodeBBoxOptional) {
+    public void reMeshScene(GaiaScene scene, GaiaStatistics sceneStatsOptional, GaiaBoundingBox nodeBBoxOptional) {
         //***********************************************************
         // The scene must be Baked (all tMatrix must be identity).***
         //-----------------------------------------------------------
@@ -306,21 +292,14 @@ public class GeometryOnlyReMesherByOctree {
     }
 
     private boolean isFloorCandidate(OctreeShapeInfo shapeInfo, GaiaStatistics stats) {
-        return shapeInfo.flatness > 5.0
-                && Math.abs(shapeInfo.averageNormal.z) > 0.75
-                && stats.normalVariance < 0.15;
+        return shapeInfo.flatness > 5.0 && Math.abs(shapeInfo.averageNormal.z) > 0.75 && stats.normalVariance < 0.15;
     }
 
     private boolean isBarCandidate(OctreeShapeInfo shapeInfo, GaiaStatistics stats) {
-        return shapeInfo.elongation > 3.0
-                && shapeInfo.flatness < 10.0
-                && stats.normalVariance > 0.05;
+        return shapeInfo.elongation > 3.0 && shapeInfo.flatness < 10.0 && stats.normalVariance > 0.05;
     }
 
-    public OctreeBBoxInfo calculateBoundingBoxForLeafDistInfo(
-            GaiaBoundingBox currBBox,
-            double leafDist
-    ) {
+    public OctreeBBoxInfo calculateBoundingBoxForLeafDistInfo(GaiaBoundingBox currBBox, double leafDist) {
         if (currBBox == null || leafDist <= 0.0) {
             return new OctreeBBoxInfo(currBBox, 0, 0.0, 0.0);
         }
@@ -334,9 +313,7 @@ public class GeometryOnlyReMesherByOctree {
         int maxDepth = 0;
 
         if (currCubeSize > leafDist) {
-            maxDepth = (int) Math.ceil(
-                    HalfEdgeUtils.log2(currCubeSize / leafDist)
-            );
+            maxDepth = (int) Math.ceil(HalfEdgeUtils.log2(currCubeSize / leafDist));
         }
 
         double rootCubeSize = leafDist * Math.pow(2.0, maxDepth);
@@ -359,12 +336,7 @@ public class GeometryOnlyReMesherByOctree {
         resultBBox.setMinZ(cz - half);
         resultBBox.setMaxZ(cz + half);
 
-        return new OctreeBBoxInfo(
-                resultBBox,
-                maxDepth,
-                rootCubeSize,
-                leafSize
-        );
+        return new OctreeBBoxInfo(resultBBox, maxDepth, rootCubeSize, leafSize);
     }
 
     private List<GeometryContent> getContentsOfParent(GaiaOctree<GeometryContent> octree) {
@@ -400,11 +372,7 @@ public class GeometryOnlyReMesherByOctree {
         return result;
     }
 
-    private void addUniqueContents(
-            List<GeometryContent> contents,
-            List<GeometryContent> result,
-            Set<GeometryContent> used
-    ) {
+    private void addUniqueContents(List<GeometryContent> contents, List<GeometryContent> result, Set<GeometryContent> used) {
         if (contents == null || contents.isEmpty()) {
             return;
         }
@@ -442,9 +410,7 @@ public class GeometryOnlyReMesherByOctree {
 
         double cubeSize = cubeBoundingBox.getMaxSize();
 
-        int depth = (int) Math.ceil(
-                Math.log(cubeSize / limitBoxSize) / Math.log(2.0)
-        );
+        int depth = (int) Math.ceil(Math.log(cubeSize / limitBoxSize) / Math.log(2.0));
 
         double desiredCubeSize = limitBoxSize * Math.pow(2.0, depth);
         double difSize = desiredCubeSize - cubeSize;
@@ -561,28 +527,18 @@ public class GeometryOnlyReMesherByOctree {
         }
     }
 
-    private boolean isBuildingWallProtected(
-            OctreeShapeInfo shapeInfo,
-            GaiaStatistics stats
-    ) {
+    private boolean isBuildingWallProtected(OctreeShapeInfo shapeInfo, GaiaStatistics stats) {
         if (shapeInfo == null || stats == null) {
             return false;
         }
 
-        boolean orderedNormals =
-                stats.normalVariance < 0.15;
+        boolean orderedNormals = stats.normalVariance < 0.15;
 
-        boolean notFolded =
-                stats.areaFoldRatio > 0.5 &&
-                        stats.areaFoldRatio < 3.0;
+        boolean notFolded = stats.areaFoldRatio > 0.5 && stats.areaFoldRatio < 3.0;
 
-        boolean enoughWallScale =
-                shapeInfo.longest > 1.0 &&
-                        shapeInfo.middle > 0.5;
+        boolean enoughWallScale = shapeInfo.longest > 1.0 && shapeInfo.middle > 0.5;
 
-        return orderedNormals &&
-                notFolded &&
-                enoughWallScale;
+        return orderedNormals && notFolded && enoughWallScale;
     }
 
     private boolean isChaoticZone(GaiaStatistics stats) {
@@ -590,9 +546,7 @@ public class GeometryOnlyReMesherByOctree {
             return false;
         }
 
-        return stats.normalVariance > 0.05 &&
-                stats.areaFoldRatio > 0.3 &&
-                stats.trianglesDensity > 1.0;
+        return stats.normalVariance > 0.05 && stats.areaFoldRatio > 0.3 && stats.trianglesDensity > 1.0;
     }
 
     public void reMeshPrimitive_original(GaiaPrimitive primitive, GaiaNode parentNode, GaiaScene parentScene, GaiaBoundingBox nodeBBoxOptional) {
@@ -721,16 +675,13 @@ public class GeometryOnlyReMesherByOctree {
         }
     }
 
-    private boolean isBuildingCornerCandidate(
-            List<GeometryContent> faceDataList,
-            List<GaiaVertex> vertices
-    ) {
+    private boolean isBuildingCornerCandidate(List<GeometryContent> faceDataList, List<GaiaVertex> vertices) {
         if (faceDataList == null || faceDataList.isEmpty() || vertices == null) {
             return false;
         }
 
         class NormalCluster {
-            Vector3d normal = new Vector3d();
+            final Vector3d normal = new Vector3d();
             double area = 0.0;
             int faceCount = 0;
         }
@@ -759,10 +710,7 @@ public class GeometryOnlyReMesherByOctree {
             int i1 = indices[1];
             int i2 = indices[2];
 
-            if (i0 < 0 || i1 < 0 || i2 < 0 ||
-                    i0 >= vertices.size() ||
-                    i1 >= vertices.size() ||
-                    i2 >= vertices.size()) {
+            if (i0 < 0 || i1 < 0 || i2 < 0 || i0 >= vertices.size() || i1 >= vertices.size() || i2 >= vertices.size()) {
                 continue;
             }
 
@@ -867,8 +815,7 @@ public class GeometryOnlyReMesherByOctree {
         }
 
         double dominantAreaRatio = dominantArea / totalArea;
-        double architecturalClusterRatio =
-                (double) architecturalLikeCount / (double) dominantClusters.size();
+        double architecturalClusterRatio = (double) architecturalLikeCount / (double) dominantClusters.size();
 
         // En arquitectura, los planos dominantes deben explicar bastante área.
         if (dominantAreaRatio < 0.60) {
@@ -885,8 +832,7 @@ public class GeometryOnlyReMesherByOctree {
         boolean multipleWalls = verticalLikeCount >= 2;
 
         // Caso 2: pared + suelo/techo.
-        boolean wallAndHorizontalPlane =
-                verticalLikeCount >= 1 && horizontalLikeCount >= 1;
+        boolean wallAndHorizontalPlane = verticalLikeCount >= 1 && horizontalLikeCount >= 1;
 
         if (!multipleWalls && !wallAndHorizontalPlane) {
             return false;
@@ -931,13 +877,7 @@ public class GeometryOnlyReMesherByOctree {
             return true;
         }
 
-        if (sceneStats != null &&
-                stats.trianglesDensity > sceneStats.trianglesDensity * 1.1 &&
-                stats.normalVariance > 0.10) {
-            return true;
-        }
-
-        return false;
+        return sceneStats != null && stats.trianglesDensity > sceneStats.trianglesDensity * 1.1 && stats.normalVariance > 0.10;
     }
 
     private boolean isArchitecturalFlatCandidate(OctreeShapeInfo shapeInfo, GaiaStatistics stats) {
@@ -946,17 +886,12 @@ public class GeometryOnlyReMesherByOctree {
         }
 
         // Plano claro: suelo, pared, tejado plano, fachada.
-        if (shapeInfo.type == OctreeShapeType.FLOOR ||
-                shapeInfo.type == OctreeShapeType.WALL) {
+        if (shapeInfo.type == OctreeShapeType.FLOOR || shapeInfo.type == OctreeShapeType.WALL) {
             return true;
         }
 
         // Plano muy fino aunque la clasificación no haya sido perfecta.
-        if (shapeInfo.flatness > 4.0 && stats.normalVariance < 0.20) {
-            return true;
-        }
-
-        return false;
+        return shapeInfo.flatness > 4.0 && stats.normalVariance < 0.20;
     }
 
     public void ReMesh(List<GaiaVertex> vertices) {
@@ -1010,11 +945,7 @@ public class GeometryOnlyReMesherByOctree {
     }
 
     public enum OctreeShapeType {
-        UNKNOWN,
-        BAR,
-        FLOOR,
-        WALL,
-        VOLUME
+        UNKNOWN, BAR, FLOOR, WALL, VOLUME
     }
 
     public static class BarInfo {

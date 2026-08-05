@@ -24,10 +24,7 @@ public class GaiaTexFacesFinder {
         return triangleCount;
     }
 
-    private static List<Island> buildIslandsFromUnionFind(
-            List<GaiaFace> faces,
-            UnionFind unionFind
-    ) {
+    private static List<Island> buildIslandsFromUnionFind(List<GaiaFace> faces, UnionFind unionFind) {
         List<Island> result = new ArrayList<>();
         Map<Integer, Island> rootToIsland = new HashMap<>();
 
@@ -180,12 +177,7 @@ public class GaiaTexFacesFinder {
         return (((long) a) << 32) | (b & 0xffffffffL);
     }
 
-    private static void quickSortEdges(
-            long[] edgeKeys,
-            int[] faceIndices,
-            int left,
-            int right
-    ) {
+    private static void quickSortEdges(long[] edgeKeys, int[] faceIndices, int left, int right) {
         int i = left;
         int j = right;
         long pivot = edgeKeys[left + (right - left) / 2];

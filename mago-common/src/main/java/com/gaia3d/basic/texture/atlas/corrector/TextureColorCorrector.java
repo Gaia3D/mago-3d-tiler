@@ -3,13 +3,7 @@ package com.gaia3d.basic.texture.atlas.corrector;
 import java.awt.image.BufferedImage;
 
 public class TextureColorCorrector {
-    public static BufferedImage correct(
-            BufferedImage src,
-            double gamma,
-            double exposure,
-            double contrast,
-            double saturation
-    ) {
+    public static BufferedImage correct(BufferedImage src, double gamma, double exposure, double contrast, double saturation) {
         int w = src.getWidth();
         int h = src.getHeight();
 

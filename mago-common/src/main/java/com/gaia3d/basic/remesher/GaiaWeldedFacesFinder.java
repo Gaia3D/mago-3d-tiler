@@ -12,11 +12,7 @@ import java.util.Map;
 
 public class GaiaWeldedFacesFinder {
 
-    public static List<Island> findIslands(
-            GaiaSurface surface,
-            List<GaiaVertex> vertices,
-            double tolerance
-    ) {
+    public static List<Island> findIslands(GaiaSurface surface, List<GaiaVertex> vertices, double tolerance) {
         List<Island> result = new ArrayList<>();
 
         if (surface == null || surface.getFaces() == null || surface.getFaces().isEmpty()) {
@@ -56,8 +52,7 @@ public class GaiaWeldedFacesFinder {
                 int originalA = indices[i];
                 int originalB = indices[(i + 1) % indicesCount];
 
-                if (!isValidIndex(originalA, weldedIndices.length)
-                        || !isValidIndex(originalB, weldedIndices.length)) {
+                if (!isValidIndex(originalA, weldedIndices.length) || !isValidIndex(originalB, weldedIndices.length)) {
                     continue;
                 }
 
@@ -70,10 +65,7 @@ public class GaiaWeldedFacesFinder {
 
                 EdgeKey edgeKey = new EdgeKey(weldedA, weldedB);
 
-                List<Integer> edgeFaces = edgeToFaceIndices.computeIfAbsent(
-                        edgeKey,
-                        k -> new ArrayList<>()
-                );
+                List<Integer> edgeFaces = edgeToFaceIndices.computeIfAbsent(edgeKey, k -> new ArrayList<>());
 
                 /*
                  * Todas las faces que comparten este edge geométrico
@@ -109,10 +101,7 @@ public class GaiaWeldedFacesFinder {
         return result;
     }
 
-    public static int[] buildWeldedVertexIndices(
-            List<GaiaVertex> vertices,
-            double tolerance
-    ) {
+    public static int[] buildWeldedVertexIndices(List<GaiaVertex> vertices, double tolerance) {
         int vertexCount = vertices.size();
 
         int[] weldedIndices = new int[vertexCount];
@@ -182,9 +171,8 @@ public class GaiaWeldedFacesFinder {
         @Override
         public boolean equals(Object obj) {
             if (this == obj) {return true;}
-            if (!(obj instanceof PositionKey)) {return false;}
+            if (!(obj instanceof PositionKey other)) {return false;}
 
-            PositionKey other = (PositionKey) obj;
             return x == other.x && y == other.y && z == other.z;
         }
 
@@ -214,9 +202,8 @@ public class GaiaWeldedFacesFinder {
         @Override
         public boolean equals(Object obj) {
             if (this == obj) {return true;}
-            if (!(obj instanceof EdgeKey)) {return false;}
+            if (!(obj instanceof EdgeKey other)) {return false;}
 
-            EdgeKey other = (EdgeKey) obj;
             return a == other.a && b == other.b;
         }
 

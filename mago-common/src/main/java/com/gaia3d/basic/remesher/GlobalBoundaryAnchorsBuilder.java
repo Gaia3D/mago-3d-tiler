@@ -6,22 +6,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 import org.joml.Vector3i;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 public class GlobalBoundaryAnchorsBuilder {
 
     private final CellGrid3D cellGrid;
 
-    /*
-     * Tolerancia para detectar dos planos paralelos diferentes
-     * que hayan caído accidentalmente en una misma celda.
-     */
     private final double planeTolerance;
 
     private final List<PlaneCutPoint> candidatePoints =
@@ -46,6 +37,39 @@ public class GlobalBoundaryAnchorsBuilder {
 
         this.cellGrid = cellGrid;
         this.planeTolerance = planeTolerance;
+    }
+
+    public static boolean isValidPoint(
+            PlaneCutPoint point
+    ) {
+        if (point == null
+                || point.getPlaneType() == null) {
+            return false;
+        }
+
+        if (!isSupportedPlaneType(
+                point.getPlaneType()
+        )) {
+            return false;
+        }
+
+        return Double.isFinite(point.getX())
+                && Double.isFinite(point.getY())
+                && Double.isFinite(point.getZ())
+                && Double.isFinite(
+                point.getPlaneCoordinate()
+        );
+    }
+
+    private static boolean isSupportedPlaneType(
+            PlaneType planeType
+    ) {
+        return planeType == PlaneType.XY
+                || planeType == PlaneType.XYNEG
+                || planeType == PlaneType.XZ
+                || planeType == PlaneType.XZNEG
+                || planeType == PlaneType.YZ
+                || planeType == PlaneType.YZNEG;
     }
 
     public void addPoint(
@@ -218,39 +242,6 @@ public class GlobalBoundaryAnchorsBuilder {
         );
 
         return result;
-    }
-
-    public static boolean isValidPoint(
-            PlaneCutPoint point
-    ) {
-        if (point == null
-                || point.getPlaneType() == null) {
-            return false;
-        }
-
-        if (!isSupportedPlaneType(
-                point.getPlaneType()
-        )) {
-            return false;
-        }
-
-        return Double.isFinite(point.getX())
-                && Double.isFinite(point.getY())
-                && Double.isFinite(point.getZ())
-                && Double.isFinite(
-                point.getPlaneCoordinate()
-        );
-    }
-
-    private static boolean isSupportedPlaneType(
-            PlaneType planeType
-    ) {
-        return planeType == PlaneType.XY
-                || planeType == PlaneType.XYNEG
-                || planeType == PlaneType.XZ
-                || planeType == PlaneType.XZNEG
-                || planeType == PlaneType.YZ
-                || planeType == PlaneType.YZNEG;
     }
 
     private static class PositionAccumulator {

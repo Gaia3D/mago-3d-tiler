@@ -10,13 +10,7 @@ import java.util.*;
 @Slf4j
 public class GaiaSkirtMaker {
 
-    public int addSkirtsToScene(
-            GaiaScene scene,
-            GaiaBoundingBox nodeBBox,
-            double tolerance,
-            double skirtDepth,
-            double maxSegmentLength
-    ) {
+    public int addSkirtsToScene(GaiaScene scene, GaiaBoundingBox nodeBBox, double tolerance, double skirtDepth, double maxSegmentLength) {
         if (scene == null || nodeBBox == null) {
             return 0;
         }
@@ -33,13 +27,7 @@ public class GaiaSkirtMaker {
         int totalCreatedFaces = 0;
 
         for (GaiaNode node : nodes) {
-            totalCreatedFaces += addSkirtsToNode(
-                    node,
-                    nodeBBox,
-                    tolerance,
-                    skirtDepth,
-                    maxSegmentLength
-            );
+            totalCreatedFaces += addSkirtsToNode(node, nodeBBox, tolerance, skirtDepth, maxSegmentLength);
         }
 
         log.debug("GaiaSkirtMakerV2 created skirt triangles = {}", totalCreatedFaces);
@@ -47,13 +35,7 @@ public class GaiaSkirtMaker {
         return totalCreatedFaces;
     }
 
-    private int addSkirtsToNode(
-            GaiaNode node,
-            GaiaBoundingBox nodeBBox,
-            double tolerance,
-            double skirtDepth,
-            double maxSegmentLength
-    ) {
+    private int addSkirtsToNode(GaiaNode node, GaiaBoundingBox nodeBBox, double tolerance, double skirtDepth, double maxSegmentLength) {
         if (node == null) {
             return 0;
         }
@@ -63,39 +45,21 @@ public class GaiaSkirtMaker {
         List<GaiaMesh> meshes = node.getMeshes();
         if (meshes != null) {
             for (GaiaMesh mesh : meshes) {
-                createdFaces += addSkirtsToMesh(
-                        mesh,
-                        nodeBBox,
-                        tolerance,
-                        skirtDepth,
-                        maxSegmentLength
-                );
+                createdFaces += addSkirtsToMesh(mesh, nodeBBox, tolerance, skirtDepth, maxSegmentLength);
             }
         }
 
         List<GaiaNode> children = node.getChildren();
         if (children != null) {
             for (GaiaNode child : children) {
-                createdFaces += addSkirtsToNode(
-                        child,
-                        nodeBBox,
-                        tolerance,
-                        skirtDepth,
-                        maxSegmentLength
-                );
+                createdFaces += addSkirtsToNode(child, nodeBBox, tolerance, skirtDepth, maxSegmentLength);
             }
         }
 
         return createdFaces;
     }
 
-    private int addSkirtsToMesh(
-            GaiaMesh mesh,
-            GaiaBoundingBox nodeBBox,
-            double tolerance,
-            double skirtDepth,
-            double maxSegmentLength
-    ) {
+    private int addSkirtsToMesh(GaiaMesh mesh, GaiaBoundingBox nodeBBox, double tolerance, double skirtDepth, double maxSegmentLength) {
         if (mesh == null) {
             return 0;
         }
@@ -108,38 +72,17 @@ public class GaiaSkirtMaker {
         int createdFaces = 0;
 
         for (GaiaPrimitive primitive : primitives) {
-            createdFaces += addSkirtsToPrimitive(
-                    primitive,
-                    nodeBBox,
-                    tolerance,
-                    skirtDepth,
-                    maxSegmentLength
-            );
+            createdFaces += addSkirtsToPrimitive(primitive, nodeBBox, tolerance, skirtDepth, maxSegmentLength);
         }
 
         return createdFaces;
     }
 
-    public int addSkirtsToPrimitive(
-            GaiaPrimitive primitive,
-            GaiaBoundingBox nodeBBox,
-            double tolerance,
-            double skirtDepth,
-            double maxSegmentLength
-    ) {
-        return addSkirtsToPrimitiveByFrontierVertices(
-                primitive,
-                nodeBBox,
-                tolerance,
-                skirtDepth,
-                maxSegmentLength
-        );
+    public int addSkirtsToPrimitive(GaiaPrimitive primitive, GaiaBoundingBox nodeBBox, double tolerance, double skirtDepth, double maxSegmentLength) {
+        return addSkirtsToPrimitiveByFrontierVertices(primitive, nodeBBox, tolerance, skirtDepth, maxSegmentLength);
     }
 
-    private Vector3d calculateFaceNormal(
-            GaiaFace face,
-            List<GaiaVertex> vertices
-    ) {
+    private Vector3d calculateFaceNormal(GaiaFace face, List<GaiaVertex> vertices) {
         if (face == null || face.getIndices() == null || face.getIndices().length < 3) {
             return null;
         }
@@ -150,10 +93,7 @@ public class GaiaSkirtMaker {
         int i1 = indices[1];
         int i2 = indices[2];
 
-        if (i0 < 0 || i1 < 0 || i2 < 0 ||
-                i0 >= vertices.size() ||
-                i1 >= vertices.size() ||
-                i2 >= vertices.size()) {
+        if (i0 < 0 || i1 < 0 || i2 < 0 || i0 >= vertices.size() || i1 >= vertices.size() || i2 >= vertices.size()) {
             return null;
         }
 
@@ -176,13 +116,7 @@ public class GaiaSkirtMaker {
         return n.normalize();
     }
 
-    private int addSkirtsToPrimitiveByFrontierVertices(
-            GaiaPrimitive primitive,
-            GaiaBoundingBox nodeBBox,
-            double tolerance,
-            double skirtDepth,
-            double maxSegmentLength
-    ) {
+    private int addSkirtsToPrimitiveByFrontierVertices(GaiaPrimitive primitive, GaiaBoundingBox nodeBBox, double tolerance, double skirtDepth, double maxSegmentLength) {
         if (primitive == null || nodeBBox == null) {
             return 0;
         }
@@ -190,8 +124,7 @@ public class GaiaSkirtMaker {
         List<GaiaVertex> vertices = primitive.getVertices();
         List<GaiaSurface> surfaces = primitive.getSurfaces();
 
-        if (vertices == null || vertices.size() < 2 ||
-                surfaces == null || surfaces.isEmpty()) {
+        if (vertices == null || vertices.size() < 2 || surfaces == null || surfaces.isEmpty()) {
             return 0;
         }
 
@@ -206,12 +139,7 @@ public class GaiaSkirtMaker {
 
         GaiaFrontierFinder finder = new GaiaFrontierFinder();
 
-        boolean[] frontierVertices = finder.findBoundaryVertices(
-                vertices,
-                allFaces,
-                1e-6,
-                weldedIndices
-        );
+        boolean[] frontierVertices = finder.findBoundaryVertices(vertices, allFaces, 1e-6, weldedIndices);
 
         if (frontierVertices == null || frontierVertices.length == 0) {
             return 0;
@@ -254,9 +182,7 @@ public class GaiaSkirtMaker {
                     int v0 = indices[i];
                     int v1 = indices[(i + 1) % indices.length];
 
-                    if (!isValidVertexIndex(v0, vertices.size()) ||
-                            !isValidVertexIndex(v1, vertices.size()) ||
-                            v0 == v1) {
+                    if (!isValidVertexIndex(v0, vertices.size()) || !isValidVertexIndex(v1, vertices.size()) || v0 == v1) {
                         continue;
                     }
 
@@ -279,19 +205,7 @@ public class GaiaSkirtMaker {
 
                     frontierEdgeCandidates++;
 
-                    int added = tryAddSkirtForFrontierEdge(
-                            vertices,
-                            skirtSurface,
-                            originalToSkirt,
-                            createdEdges,
-                            v0,
-                            v1,
-                            nodeBBox,
-                            tolerance,
-                            skirtDepth,
-                            maxSegmentLength,
-                            faceNormal
-                    );
+                    int added = tryAddSkirtForFrontierEdge(vertices, skirtSurface, originalToSkirt, createdEdges, v0, v1, nodeBBox, tolerance, skirtDepth, maxSegmentLength, faceNormal);
 
                     if (added > 0) {
                         bboxEdgeCandidates++;
@@ -309,50 +223,24 @@ public class GaiaSkirtMaker {
             primitive.getSurfaces().add(skirtSurface);
         }
 
-        log.debug(
-                "GaiaSkirtMakerV2 primitive: frontierEdgeCandidates={}, bboxEdgeCandidates={}, createdFaces={}, tolerance={}, skirtDepth={}, maxSegmentLength={}",
-                frontierEdgeCandidates,
-                bboxEdgeCandidates,
-                createdFaces,
-                tolerance,
-                skirtDepth,
-                maxSegmentLength
-        );
+        log.debug("GaiaSkirtMakerV2 primitive: frontierEdgeCandidates={}, bboxEdgeCandidates={}, createdFaces={}, tolerance={}, skirtDepth={}, maxSegmentLength={}", frontierEdgeCandidates, bboxEdgeCandidates, createdFaces, tolerance, skirtDepth, maxSegmentLength);
 
         return createdFaces;
     }
 
-    private int tryAddSkirtForFrontierEdge(
-            List<GaiaVertex> vertices,
-            GaiaSurface skirtSurface,
-            Map<Integer, Integer> originalToSkirt,
-            Set<Long> createdEdges,
-            int v0,
-            int v1,
-            GaiaBoundingBox nodeBBox,
-            double tolerance,
-            double skirtDepth,
-            double maxSegmentLength,
-            Vector3d faceNormal
-    ) {
-        if (vertices == null || skirtSurface == null ||
-                originalToSkirt == null || createdEdges == null ||
-                nodeBBox == null) {
+    private int tryAddSkirtForFrontierEdge(List<GaiaVertex> vertices, GaiaSurface skirtSurface, Map<Integer, Integer> originalToSkirt, Set<Long> createdEdges, int v0, int v1, GaiaBoundingBox nodeBBox, double tolerance, double skirtDepth, double maxSegmentLength, Vector3d faceNormal) {
+        if (vertices == null || skirtSurface == null || originalToSkirt == null || createdEdges == null || nodeBBox == null) {
             return 0;
         }
 
-        if (!isValidVertexIndex(v0, vertices.size()) ||
-                !isValidVertexIndex(v1, vertices.size()) ||
-                v0 == v1) {
+        if (!isValidVertexIndex(v0, vertices.size()) || !isValidVertexIndex(v1, vertices.size()) || v0 == v1) {
             return 0;
         }
 
         GaiaVertex vertex0 = vertices.get(v0);
         GaiaVertex vertex1 = vertices.get(v1);
 
-        if (vertex0 == null || vertex1 == null ||
-                vertex0.getPosition() == null ||
-                vertex1.getPosition() == null) {
+        if (vertex0 == null || vertex1 == null || vertex0.getPosition() == null || vertex1.getPosition() == null) {
             return 0;
         }
 
@@ -360,12 +248,7 @@ public class GaiaSkirtMaker {
             return 0;
         }
 
-        BoundarySide side = getBoundarySideOfEdge(
-                vertex0,
-                vertex1,
-                nodeBBox,
-                tolerance
-        );
+        BoundarySide side = getBoundarySideOfEdge(vertex0, vertex1, nodeBBox, tolerance);
 
         if (side == BoundarySide.NONE) {
             return 0;
@@ -377,23 +260,9 @@ public class GaiaSkirtMaker {
             return 0;
         }
 
-        int skirtVertex0 = getOrCreateSkirtVertex(
-                vertices,
-                originalToSkirt,
-                v0,
-                skirtDepth,
-                side,
-                faceNormal
-        );
+        int skirtVertex0 = getOrCreateSkirtVertex(vertices, originalToSkirt, v0, skirtDepth, side, faceNormal);
 
-        int skirtVertex1 = getOrCreateSkirtVertex(
-                vertices,
-                originalToSkirt,
-                v1,
-                skirtDepth,
-                side,
-                faceNormal
-        );
+        int skirtVertex1 = getOrCreateSkirtVertex(vertices, originalToSkirt, v1, skirtDepth, side, faceNormal);
 
         if (skirtVertex0 < 0 || skirtVertex1 < 0) {
             return 0;
@@ -408,16 +277,8 @@ public class GaiaSkirtMaker {
         return 2;
     }
 
-    private BoundarySide getBoundarySideOfEdge(
-            GaiaVertex v0,
-            GaiaVertex v1,
-            GaiaBoundingBox nodeBBox,
-            double tolerance
-    ) {
-        if (v0 == null || v1 == null ||
-                v0.getPosition() == null ||
-                v1.getPosition() == null ||
-                nodeBBox == null) {
+    private BoundarySide getBoundarySideOfEdge(GaiaVertex v0, GaiaVertex v1, GaiaBoundingBox nodeBBox, double tolerance) {
+        if (v0 == null || v1 == null || v0.getPosition() == null || v1.getPosition() == null || nodeBBox == null) {
             return BoundarySide.NONE;
         }
 
@@ -426,25 +287,13 @@ public class GaiaSkirtMaker {
 
         // Para que una arista pertenezca a un lado,
         // ambos extremos deben estar cerca de ese mismo lado.
-        double minXDist = Math.max(
-                Math.abs(p0.x - nodeBBox.getMinX()),
-                Math.abs(p1.x - nodeBBox.getMinX())
-        );
+        double minXDist = Math.max(Math.abs(p0.x - nodeBBox.getMinX()), Math.abs(p1.x - nodeBBox.getMinX()));
 
-        double maxXDist = Math.max(
-                Math.abs(p0.x - nodeBBox.getMaxX()),
-                Math.abs(p1.x - nodeBBox.getMaxX())
-        );
+        double maxXDist = Math.max(Math.abs(p0.x - nodeBBox.getMaxX()), Math.abs(p1.x - nodeBBox.getMaxX()));
 
-        double minYDist = Math.max(
-                Math.abs(p0.y - nodeBBox.getMinY()),
-                Math.abs(p1.y - nodeBBox.getMinY())
-        );
+        double minYDist = Math.max(Math.abs(p0.y - nodeBBox.getMinY()), Math.abs(p1.y - nodeBBox.getMinY()));
 
-        double maxYDist = Math.max(
-                Math.abs(p0.y - nodeBBox.getMaxY()),
-                Math.abs(p1.y - nodeBBox.getMaxY())
-        );
+        double maxYDist = Math.max(Math.abs(p0.y - nodeBBox.getMaxY()), Math.abs(p1.y - nodeBBox.getMaxY()));
 
         double best = tolerance;
         BoundarySide side = BoundarySide.NONE;
@@ -471,19 +320,12 @@ public class GaiaSkirtMaker {
         return side;
     }
 
-    private Vector3d getInsetDirectionOppositeFaceNormalXY(
-            Vector3d faceNormal,
-            double epsilon
-    ) {
+    private Vector3d getInsetDirectionOppositeFaceNormalXY(Vector3d faceNormal, double epsilon) {
         if (faceNormal == null) {
             return null;
         }
 
-        Vector3d dir = new Vector3d(
-                -faceNormal.x,
-                -faceNormal.y,
-                0.0
-        );
+        Vector3d dir = new Vector3d(-faceNormal.x, -faceNormal.y, 0.0);
 
         double lenSq = dir.x * dir.x + dir.y * dir.y;
 
@@ -499,14 +341,7 @@ public class GaiaSkirtMaker {
         return dir;
     }
 
-    private int getOrCreateSkirtVertex(
-            List<GaiaVertex> vertices,
-            Map<Integer, Integer> originalToSkirt,
-            int originalIndex,
-            double skirtDepth,
-            BoundarySide side,
-            Vector3d faceNormal
-    ) {
+    private int getOrCreateSkirtVertex(List<GaiaVertex> vertices, Map<Integer, Integer> originalToSkirt, int originalIndex, double skirtDepth, BoundarySide side, Vector3d faceNormal) {
         if (vertices == null || originalToSkirt == null) {
             return -1;
         }
@@ -560,29 +395,18 @@ public class GaiaSkirtMaker {
         return skirtIndex;
     }
 
-    private boolean isValidVertexIndex(
-            int index,
-            int verticesCount
-    ) {
+    private boolean isValidVertexIndex(int index, int verticesCount) {
         return index >= 0 && index < verticesCount;
     }
 
-    private long makeUndirectedEdgeKey(
-            int a,
-            int b
-    ) {
+    private long makeUndirectedEdgeKey(int a, int b) {
         int min = Math.min(a, b);
         int max = Math.max(a, b);
 
         return (((long) min) << 32) ^ (max & 0xffffffffL);
     }
 
-    private void addTriangleFace(
-            GaiaSurface surface,
-            int i0,
-            int i1,
-            int i2
-    ) {
+    private void addTriangleFace(GaiaSurface surface, int i0, int i1, int i2) {
         if (surface == null) {
             return;
         }
@@ -593,14 +417,8 @@ public class GaiaSkirtMaker {
         surface.getFaces().add(face);
     }
 
-    private boolean areVerticesCloseEnough(
-            GaiaVertex a,
-            GaiaVertex b,
-            double maxDistance
-    ) {
-        if (a == null || b == null ||
-                a.getPosition() == null ||
-                b.getPosition() == null) {
+    private boolean areVerticesCloseEnough(GaiaVertex a, GaiaVertex b, double maxDistance) {
+        if (a == null || b == null || a.getPosition() == null || b.getPosition() == null) {
             return false;
         }
 
@@ -608,10 +426,6 @@ public class GaiaSkirtMaker {
     }
 
     private enum BoundarySide {
-        NONE,
-        MIN_X,
-        MAX_X,
-        MIN_Y,
-        MAX_Y
+        NONE, MIN_X, MAX_X, MIN_Y, MAX_Y
     }
 }

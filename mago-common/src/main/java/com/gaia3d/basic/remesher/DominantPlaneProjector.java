@@ -10,12 +10,8 @@ import java.util.*;
 public class DominantPlaneProjector {
 
     double maxPlaneDistance = 0.05;
-    public PrimitiveClusterBuildResult buildClustersOnPrimitiveWithResult(
-            GaiaPrimitive primitive,
-            double positionEpsilon,
-            double maxNormalAngleDeg,
-            int minFacesPerCluster
-    ) {
+
+    public PrimitiveClusterBuildResult buildClustersOnPrimitiveWithResult(GaiaPrimitive primitive, double positionEpsilon, double maxNormalAngleDeg, int minFacesPerCluster) {
         PrimitiveClusterBuildResult result = new PrimitiveClusterBuildResult();
 
         if (primitive == null) {
@@ -72,8 +68,7 @@ public class DominantPlaneProjector {
             return result;
         }
 
-        Map<EdgeKey, List<FaceRef>> edgeMap =
-                buildEdgeMap(result.faceRefs, vertices, positionEpsilon);
+        Map<EdgeKey, List<FaceRef>> edgeMap = buildEdgeMap(result.faceRefs, vertices, positionEpsilon);
 
         Map<FaceRef, Boolean> visited = new IdentityHashMap<>();
 
@@ -86,15 +81,7 @@ public class DominantPlaneProjector {
 
             FaceCluster cluster = new FaceCluster(clusterId++);
 
-            floodFillCluster(
-                    seed,
-                    cluster,
-                    visited,
-                    edgeMap,
-                    vertices,
-                    positionEpsilon,
-                    cosMaxAngle
-            );
+            floodFillCluster(seed, cluster, visited, edgeMap, vertices, positionEpsilon, cosMaxAngle);
 
             if (cluster.faces.size() >= minFacesPerCluster) {
                 computeClusterGeometry(cluster, result.faceRefMap);
@@ -107,11 +94,7 @@ public class DominantPlaneProjector {
         return result;
     }
 
-    private Map<EdgeKey, List<FaceRef>> buildEdgeMap(
-            List<FaceRef> faceRefs,
-            List<GaiaVertex> vertices,
-            double eps
-    ) {
+    private Map<EdgeKey, List<FaceRef>> buildEdgeMap(List<FaceRef> faceRefs, List<GaiaVertex> vertices, double eps) {
         Map<EdgeKey, List<FaceRef>> edgeMap = new HashMap<>();
 
         for (FaceRef ref : faceRefs) {
@@ -137,15 +120,7 @@ public class DominantPlaneProjector {
         return edgeMap;
     }
 
-    private void floodFillCluster(
-            FaceRef seed,
-            FaceCluster cluster,
-            Map<FaceRef, Boolean> visited,
-            Map<EdgeKey, List<FaceRef>> edgeMap,
-            List<GaiaVertex> vertices,
-            double eps,
-            double cosMaxAngle
-    ) {
+    private void floodFillCluster(FaceRef seed, FaceCluster cluster, Map<FaceRef, Boolean> visited, Map<EdgeKey, List<FaceRef>> edgeMap, List<GaiaVertex> vertices, double eps, double cosMaxAngle) {
         ArrayDeque<FaceRef> queue = new ArrayDeque<>();
 
         visited.put(seed, true);
@@ -165,10 +140,7 @@ public class DominantPlaneProjector {
                 Vector3d p0 = vertices.get(idx0).getPosition();
                 Vector3d p1 = vertices.get(idx1).getPosition();
 
-                EdgeKey edgeKey = new EdgeKey(
-                        new PosKey(p0, eps),
-                        new PosKey(p1, eps)
-                );
+                EdgeKey edgeKey = new EdgeKey(new PosKey(p0, eps), new PosKey(p1, eps));
 
                 List<FaceRef> neighbors = edgeMap.get(edgeKey);
                 if (neighbors == null) {continue;}
@@ -179,11 +151,7 @@ public class DominantPlaneProjector {
 
                     double dot = Math.abs(current.normal.dot(neighbor.normal));
 
-                    double dist = Math.abs(
-                            seed.normal.x * (neighbor.centroid.x - seed.centroid.x) +
-                                    seed.normal.y * (neighbor.centroid.y - seed.centroid.y) +
-                                    seed.normal.z * (neighbor.centroid.z - seed.centroid.z)
-                    );
+                    double dist = Math.abs(seed.normal.x * (neighbor.centroid.x - seed.centroid.x) + seed.normal.y * (neighbor.centroid.y - seed.centroid.y) + seed.normal.z * (neighbor.centroid.z - seed.centroid.z));
 
                     if (dot >= cosMaxAngle && dist <= maxPlaneDistance) {
                         visited.put(neighbor, true);
@@ -194,11 +162,7 @@ public class DominantPlaneProjector {
         }
     }
 
-    private boolean computeFaceGeometry(
-            FaceRef ref,
-            List<GaiaVertex> vertices,
-            FaceGeometryDebugStats stats
-    ) {
+    private boolean computeFaceGeometry(FaceRef ref, List<GaiaVertex> vertices, FaceGeometryDebugStats stats) {
         stats.total++;
 
         if (ref == null) {
@@ -233,8 +197,7 @@ public class DominantPlaneProjector {
             stats.shortIndices++;
 
             if (stats.printedExamples < stats.maxExamples) {
-                log.debug("Example short indices. faceIndex = " + ref.localFaceIndex +
-                        ", indices.length = " + indices.length);
+                log.debug("Example short indices. faceIndex = " + ref.localFaceIndex + ", indices.length = " + indices.length);
                 stats.printedExamples++;
             }
 
@@ -245,19 +208,12 @@ public class DominantPlaneProjector {
         int idx1 = indices[1];
         int idx2 = indices[2];
 
-        if (idx0 < 0 || idx0 >= vertices.size() ||
-                idx1 < 0 || idx1 >= vertices.size() ||
-                idx2 < 0 || idx2 >= vertices.size()) {
+        if (idx0 < 0 || idx0 >= vertices.size() || idx1 < 0 || idx1 >= vertices.size() || idx2 < 0 || idx2 >= vertices.size()) {
 
             stats.outOfBounds++;
 
             if (stats.printedExamples < stats.maxExamples) {
-                log.debug("Example out of bounds. faceIndex = " + ref.localFaceIndex +
-                        ", vertices.size = " + vertices.size() +
-                        ", indices.length = " + indices.length +
-                        ", idx0 = " + idx0 +
-                        ", idx1 = " + idx1 +
-                        ", idx2 = " + idx2);
+                log.debug("Example out of bounds. faceIndex = " + ref.localFaceIndex + ", vertices.size = " + vertices.size() + ", indices.length = " + indices.length + ", idx0 = " + idx0 + ", idx1 = " + idx1 + ", idx2 = " + idx2);
                 stats.printedExamples++;
             }
 
@@ -300,12 +256,7 @@ public class DominantPlaneProjector {
             stats.degenerated++;
 
             if (stats.printedExamples < stats.maxExamples) {
-                log.debug("Example degenerated. faceIndex = " + ref.localFaceIndex +
-                        ", len = " + len +
-                        ", indices = [" + idx0 + ", " + idx1 + ", " + idx2 + "]" +
-                        ", p0 = " + p0 +
-                        ", p1 = " + p1 +
-                        ", p2 = " + p2);
+                log.debug("Example degenerated. faceIndex = " + ref.localFaceIndex + ", len = " + len + ", indices = [" + idx0 + ", " + idx1 + ", " + idx2 + "]" + ", p0 = " + p0 + ", p1 = " + p1 + ", p2 = " + p2);
                 stats.printedExamples++;
             }
 
@@ -336,10 +287,7 @@ public class DominantPlaneProjector {
         return true;
     }
 
-    private void computeClusterGeometry(
-            FaceCluster cluster,
-            Map<GaiaFace, FaceRef> faceRefMap
-    ) {
+    private void computeClusterGeometry(FaceCluster cluster, Map<GaiaFace, FaceRef> faceRefMap) {
         Vector3d normalSum = new Vector3d();
         Vector3d centroidSum = new Vector3d();
 
@@ -367,11 +315,7 @@ public class DominantPlaneProjector {
         }
     }
 
-    private Map<PosKey, List<VertexRef>> buildCoincidentVertexMap(
-            GaiaPrimitive primitive,
-            Vector3d[] originalPositions,
-            double positionEpsilon
-    ) {
+    private Map<PosKey, List<VertexRef>> buildCoincidentVertexMap(GaiaPrimitive primitive, Vector3d[] originalPositions, double positionEpsilon) {
         Map<PosKey, List<VertexRef>> map = new HashMap<>();
 
         if (primitive == null || primitive.getVertices() == null) {
@@ -391,12 +335,12 @@ public class DominantPlaneProjector {
 
             PosKey key = new PosKey(originalPosition, positionEpsilon);
 
-            map.computeIfAbsent(key, k -> new ArrayList<>())
-                    .add(new VertexRef(primitive, i, vertex));
+            map.computeIfAbsent(key, k -> new ArrayList<>()).add(new VertexRef(primitive, i, vertex));
         }
 
         return map;
     }
+
     private Vector3d[] copyOriginalPositions(GaiaPrimitive primitive) {
         List<GaiaVertex> vertices = primitive.getVertices();
 
@@ -413,17 +357,10 @@ public class DominantPlaneProjector {
         return originalPositions;
     }
 
-    private Vector3d projectPointToPlane(
-            Vector3d point,
-            Vector3d planePoint,
-            Vector3d planeNormal
-    ) {
+    private Vector3d projectPointToPlane(Vector3d point, Vector3d planePoint, Vector3d planeNormal) {
         Vector3d result = new Vector3d(point);
 
-        double dist =
-                planeNormal.x * (point.x - planePoint.x) +
-                        planeNormal.y * (point.y - planePoint.y) +
-                        planeNormal.z * (point.z - planePoint.z);
+        double dist = planeNormal.x * (point.x - planePoint.x) + planeNormal.y * (point.y - planePoint.y) + planeNormal.z * (point.z - planePoint.z);
 
         result.x -= planeNormal.x * dist;
         result.y -= planeNormal.y * dist;
@@ -432,93 +369,45 @@ public class DominantPlaneProjector {
         return result;
     }
 
-    public void projectClustersOnScene_SimpleTest(
-            GaiaScene scene,
-            double positionEpsilon,
-            double maxNormalAngleDeg,
-            int minFacesPerCluster,
-            boolean useProjectionToPlane
-    ) {
+    public void projectClustersOnScene_SimpleTest(GaiaScene scene, double positionEpsilon, double maxNormalAngleDeg, int minFacesPerCluster, boolean useProjectionToPlane) {
         if (scene == null || scene.getNodes() == null) {
             return;
         }
 
         for (GaiaNode node : scene.getNodes()) {
-            projectClustersOnNode(
-                    node,
-                    positionEpsilon,
-                    maxNormalAngleDeg,
-                    minFacesPerCluster,
-                    useProjectionToPlane
-            );
+            projectClustersOnNode(node, positionEpsilon, maxNormalAngleDeg, minFacesPerCluster, useProjectionToPlane);
         }
     }
 
-    private void projectClustersOnNode(
-            GaiaNode node,
-            double positionEpsilon,
-            double maxNormalAngleDeg,
-            int minFacesPerCluster,
-            boolean useProjectionToPlane
-    ) {
+    private void projectClustersOnNode(GaiaNode node, double positionEpsilon, double maxNormalAngleDeg, int minFacesPerCluster, boolean useProjectionToPlane) {
         if (node == null) {
             return;
         }
 
         if (node.getMeshes() != null) {
             for (GaiaMesh mesh : node.getMeshes()) {
-                projectClustersOnMesh(
-                        mesh,
-                        positionEpsilon,
-                        maxNormalAngleDeg,
-                        minFacesPerCluster,
-                        useProjectionToPlane
-                );
+                projectClustersOnMesh(mesh, positionEpsilon, maxNormalAngleDeg, minFacesPerCluster, useProjectionToPlane);
             }
         }
 
         if (node.getChildren() != null) {
             for (GaiaNode child : node.getChildren()) {
-                projectClustersOnNode(
-                        child,
-                        positionEpsilon,
-                        maxNormalAngleDeg,
-                        minFacesPerCluster,
-                        useProjectionToPlane
-                );
+                projectClustersOnNode(child, positionEpsilon, maxNormalAngleDeg, minFacesPerCluster, useProjectionToPlane);
             }
         }
     }
 
-    private void projectClustersOnMesh(
-            GaiaMesh mesh,
-            double positionEpsilon,
-            double maxNormalAngleDeg,
-            int minFacesPerCluster,
-            boolean useProjectionToPlane
-    ) {
+    private void projectClustersOnMesh(GaiaMesh mesh, double positionEpsilon, double maxNormalAngleDeg, int minFacesPerCluster, boolean useProjectionToPlane) {
         if (mesh == null || mesh.getPrimitives() == null) {
             return;
         }
 
         for (GaiaPrimitive primitive : mesh.getPrimitives()) {
-            projectClustersOnPrimitiveAuto(
-                    primitive,
-                    positionEpsilon,
-                    maxNormalAngleDeg,
-                    minFacesPerCluster,
-                    useProjectionToPlane
-            );
+            projectClustersOnPrimitiveAuto(primitive, positionEpsilon, maxNormalAngleDeg, minFacesPerCluster, useProjectionToPlane);
         }
     }
 
-    private void projectClustersOnPrimitiveAuto(
-            GaiaPrimitive primitive,
-            double positionEpsilon,
-            double maxNormalAngleDeg,
-            int minFacesPerCluster,
-            boolean useProjectionToPlane
-    ) {
+    private void projectClustersOnPrimitiveAuto(GaiaPrimitive primitive, double positionEpsilon, double maxNormalAngleDeg, int minFacesPerCluster, boolean useProjectionToPlane) {
         if (primitive == null) {
             return;
         }
@@ -530,16 +419,9 @@ public class DominantPlaneProjector {
         }
 
         // 1. Crear FaceClusters.
-        PrimitiveClusterBuildResult buildResult = buildClustersOnPrimitiveWithResult(
-                primitive,
-                positionEpsilon,
-                maxNormalAngleDeg,
-                minFacesPerCluster
-        );
+        PrimitiveClusterBuildResult buildResult = buildClustersOnPrimitiveWithResult(primitive, positionEpsilon, maxNormalAngleDeg, minFacesPerCluster);
 
-        if (buildResult == null ||
-                buildResult.clusters == null ||
-                buildResult.clusters.isEmpty()) {
+        if (buildResult == null || buildResult.clusters == null || buildResult.clusters.isEmpty()) {
 
             log.debug("projectClustersOnPrimitiveAuto: no clusters.");
             return;
@@ -552,26 +434,14 @@ public class DominantPlaneProjector {
 
         // 2. Test sencillo.
         if (useProjectionToPlane) {
-            projectClustersOnPrimitive_SimpleTest(
-                    primitive,
-                    clusters,
-                    positionEpsilon
-            );
+            projectClustersOnPrimitive_SimpleTest(primitive, clusters, positionEpsilon);
         } else {
-            moveClustersAlongNormal_SimpleTest(
-                    primitive,
-                    clusters,
-                    positionEpsilon,
-                    0.2 // moveDistance test
+            moveClustersAlongNormal_SimpleTest(primitive, clusters, positionEpsilon, 0.2 // moveDistance test
             );
         }
     }
 
-    public void projectClustersOnPrimitive_SimpleTest(
-            GaiaPrimitive primitive,
-            List<FaceCluster> clusters,
-            double positionEpsilon
-    ) {
+    public void projectClustersOnPrimitive_SimpleTest(GaiaPrimitive primitive, List<FaceCluster> clusters, double positionEpsilon) {
         if (primitive == null || clusters == null || clusters.isEmpty()) {
             return;
         }
@@ -584,12 +454,7 @@ public class DominantPlaneProjector {
 
         Vector3d[] originalPositions = copyOriginalPositions(primitive);
 
-        Map<PosKey, List<VertexRef>> coincidentVertexMap =
-                buildCoincidentVertexMap(
-                        primitive,
-                        originalPositions,
-                        positionEpsilon
-                );
+        Map<PosKey, List<VertexRef>> coincidentVertexMap = buildCoincidentVertexMap(primitive, originalPositions, positionEpsilon);
 
         log.debug("SimpleTest: clusters = " + clusters.size());
         log.debug("SimpleTest: vertices = " + vertices.size());
@@ -652,11 +517,7 @@ public class DominantPlaneProjector {
                         continue;
                     }
 
-                    Vector3d projected = projectPointToPlane(
-                            originalPos,
-                            planePoint,
-                            planeNormal
-                    );
+                    Vector3d projected = projectPointToPlane(originalPos, planePoint, planeNormal);
 
                     if (projected.distance(originalPos) > maxMoveDistance) {
                         skippedTooFar++;
@@ -681,12 +542,7 @@ public class DominantPlaneProjector {
         log.debug("SimpleTest: skippedTooFar = " + skippedTooFar);
     }
 
-    public void moveClustersAlongNormal_SimpleTest(
-            GaiaPrimitive primitive,
-            List<FaceCluster> clusters,
-            double positionEpsilon,
-            double moveDistance
-    ) {
+    public void moveClustersAlongNormal_SimpleTest(GaiaPrimitive primitive, List<FaceCluster> clusters, double positionEpsilon, double moveDistance) {
         if (primitive == null || clusters == null || clusters.isEmpty()) {
             return;
         }
@@ -699,12 +555,7 @@ public class DominantPlaneProjector {
 
         Vector3d[] originalPositions = copyOriginalPositions(primitive);
 
-        Map<PosKey, List<VertexRef>> coincidentVertexMap =
-                buildCoincidentVertexMap(
-                        primitive,
-                        originalPositions,
-                        positionEpsilon
-                );
+        Map<PosKey, List<VertexRef>> coincidentVertexMap = buildCoincidentVertexMap(primitive, originalPositions, positionEpsilon);
 
         log.debug("MoveTest: clusters = " + clusters.size());
         log.debug("MoveTest: vertices = " + vertices.size());
@@ -742,11 +593,7 @@ public class DominantPlaneProjector {
                     List<VertexRef> coincidentRefs = coincidentVertexMap.get(key);
                     if (coincidentRefs == null || coincidentRefs.isEmpty()) {continue;}
 
-                    Vector3d moved = new Vector3d(originalPos).add(
-                            n.x * moveDistance,
-                            n.y * moveDistance,
-                            n.z * moveDistance
-                    );
+                    Vector3d moved = new Vector3d(originalPos).add(n.x * moveDistance, n.y * moveDistance, n.z * moveDistance);
 
                     for (VertexRef ref : coincidentRefs) {
                         if (ref == null || ref.vertex == null) {continue;}
@@ -838,8 +685,7 @@ public class DominantPlaneProjector {
 
         @Override
         public boolean equals(Object o) {
-            if (!(o instanceof PosKey)) {return false;}
-            PosKey other = (PosKey) o;
+            if (!(o instanceof PosKey other)) {return false;}
             return x == other.x && y == other.y && z == other.z;
         }
 
@@ -874,8 +720,7 @@ public class DominantPlaneProjector {
 
         @Override
         public boolean equals(Object o) {
-            if (!(o instanceof EdgeKey)) {return false;}
-            EdgeKey other = (EdgeKey) o;
+            if (!(o instanceof EdgeKey other)) {return false;}
             return a.equals(other.a) && b.equals(other.b);
         }
 

@@ -13,12 +13,7 @@ public class GaiaHorizontalSkirtMaker {
 
     private static final Logger log = LoggerFactory.getLogger(GaiaHorizontalSkirtMaker.class);
 
-    public int addHorizontalSkirtsToScene(
-            GaiaScene scene,
-            GaiaBoundingBox nodeBBox,
-            double tolerance,
-            double pushDistance
-    ) {
+    public int addHorizontalSkirtsToScene(GaiaScene scene, GaiaBoundingBox nodeBBox, double tolerance, double pushDistance) {
         if (scene == null || nodeBBox == null) {
             return 0;
         }
@@ -35,12 +30,7 @@ public class GaiaHorizontalSkirtMaker {
         int movedVerticesCount = 0;
 
         for (GaiaNode node : nodes) {
-            movedVerticesCount += addHorizontalSkirtsToNode(
-                    node,
-                    nodeBBox,
-                    tolerance,
-                    pushDistance
-            );
+            movedVerticesCount += addHorizontalSkirtsToNode(node, nodeBBox, tolerance, pushDistance);
         }
 
         log.debug("GaiaHorizontalSkirtMaker moved frontier vertices = {}", movedVerticesCount);
@@ -48,12 +38,7 @@ public class GaiaHorizontalSkirtMaker {
         return movedVerticesCount;
     }
 
-    private int addHorizontalSkirtsToNode(
-            GaiaNode node,
-            GaiaBoundingBox nodeBBox,
-            double tolerance,
-            double pushDistance
-    ) {
+    private int addHorizontalSkirtsToNode(GaiaNode node, GaiaBoundingBox nodeBBox, double tolerance, double pushDistance) {
         if (node == null) {
             return 0;
         }
@@ -63,36 +48,21 @@ public class GaiaHorizontalSkirtMaker {
         List<GaiaMesh> meshes = node.getMeshes();
         if (meshes != null && !meshes.isEmpty()) {
             for (GaiaMesh mesh : meshes) {
-                movedVerticesCount += addHorizontalSkirtsToMesh(
-                        mesh,
-                        nodeBBox,
-                        tolerance,
-                        pushDistance
-                );
+                movedVerticesCount += addHorizontalSkirtsToMesh(mesh, nodeBBox, tolerance, pushDistance);
             }
         }
 
         List<GaiaNode> children = node.getChildren();
         if (children != null && !children.isEmpty()) {
             for (GaiaNode child : children) {
-                movedVerticesCount += addHorizontalSkirtsToNode(
-                        child,
-                        nodeBBox,
-                        tolerance,
-                        pushDistance
-                );
+                movedVerticesCount += addHorizontalSkirtsToNode(child, nodeBBox, tolerance, pushDistance);
             }
         }
 
         return movedVerticesCount;
     }
 
-    private int addHorizontalSkirtsToMesh(
-            GaiaMesh mesh,
-            GaiaBoundingBox nodeBBox,
-            double tolerance,
-            double pushDistance
-    ) {
+    private int addHorizontalSkirtsToMesh(GaiaMesh mesh, GaiaBoundingBox nodeBBox, double tolerance, double pushDistance) {
         if (mesh == null) {
             return 0;
         }
@@ -105,23 +75,13 @@ public class GaiaHorizontalSkirtMaker {
         int movedVerticesCount = 0;
 
         for (GaiaPrimitive primitive : primitives) {
-            movedVerticesCount += addHorizontalSkirtsToPrimitive(
-                    primitive,
-                    nodeBBox,
-                    tolerance,
-                    pushDistance
-            );
+            movedVerticesCount += addHorizontalSkirtsToPrimitive(primitive, nodeBBox, tolerance, pushDistance);
         }
 
         return movedVerticesCount;
     }
 
-    private int addHorizontalSkirtsToPrimitive(
-            GaiaPrimitive primitive,
-            GaiaBoundingBox nodeBBox,
-            double tolerance,
-            double pushDistance
-    ) {
+    private int addHorizontalSkirtsToPrimitive(GaiaPrimitive primitive, GaiaBoundingBox nodeBBox, double tolerance, double pushDistance) {
         if (primitive == null || nodeBBox == null) {
             return 0;
         }
@@ -141,12 +101,7 @@ public class GaiaHorizontalSkirtMaker {
         int[] weldedIndices = new int[vertices.size()];
 
         GaiaFrontierFinder frontierFinder = new GaiaFrontierFinder();
-        boolean[] frontierVertices = frontierFinder.findBoundaryVertices(
-                vertices,
-                faces,
-                1e-6,
-                weldedIndices
-        );
+        boolean[] frontierVertices = frontierFinder.findBoundaryVertices(vertices, faces, 1e-6, weldedIndices);
 
         if (frontierVertices == null || frontierVertices.length < vertices.size()) {
             return 0;
@@ -165,11 +120,7 @@ public class GaiaHorizontalSkirtMaker {
             }
 
             Vector3d position = vertex.getPosition();
-            Vector3d outwardDir = getOutwardDirectionXY(
-                    position,
-                    nodeBBox,
-                    tolerance
-            );
+            Vector3d outwardDir = getOutwardDirectionXY(position, nodeBBox, tolerance);
 
             if (outwardDir == null) {
                 continue;
@@ -184,11 +135,7 @@ public class GaiaHorizontalSkirtMaker {
         return movedVerticesCount;
     }
 
-    private Vector3d getOutwardDirectionXY(
-            Vector3d position,
-            GaiaBoundingBox nodeBBox,
-            double tolerance
-    ) {
+    private Vector3d getOutwardDirectionXY(Vector3d position, GaiaBoundingBox nodeBBox, double tolerance) {
         if (position == null || nodeBBox == null) {
             return null;
         }

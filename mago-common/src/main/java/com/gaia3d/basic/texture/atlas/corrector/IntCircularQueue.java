@@ -2,53 +2,22 @@ package com.gaia3d.basic.texture.atlas.corrector;
 
 public class IntCircularQueue {
 
-    private int[] values;
-
-    /*
-     * Posición del siguiente elemento que será extraído.
-     */
-    private int head;
-
-    /*
-     * Número actual de elementos pendientes.
-     */
-    private int size;
-
-    /*
-     * La cola nunca necesitará más elementos que píxeles
-     * tenga la imagen.
-     */
     private final int maximumCapacity;
-
-    /*
-     * Solo para diagnóstico y profiler.
-     */
+    private int[] values;
+    private int head;
+    private int size;
     private int maximumObservedSize;
 
-    public IntCircularQueue(
-            int initialCapacity,
-            int maximumCapacity
-    ) {
+    public IntCircularQueue(int initialCapacity, int maximumCapacity) {
         if (maximumCapacity <= 0) {
-            throw new IllegalArgumentException(
-                    "maximumCapacity must be greater than zero"
-            );
+            throw new IllegalArgumentException("maximumCapacity must be greater than zero");
         }
 
-        this.maximumCapacity =
-                maximumCapacity;
+        this.maximumCapacity = maximumCapacity;
 
-        int safeInitialCapacity =
-                Math.max(
-                        1,
-                        Math.min(
-                                initialCapacity,
-                                maximumCapacity
-                        )
-                );
+        int safeInitialCapacity = Math.max(1, Math.min(initialCapacity, maximumCapacity));
 
-        this.values =
-                new int[safeInitialCapacity];
+        this.values = new int[safeInitialCapacity];
     }
 
     public boolean isEmpty() {
@@ -74,33 +43,27 @@ public class IntCircularQueue {
          * Como size nunca es mayor que values.length,
          * basta una única corrección en lugar de usar %.
          */
-        int tail =
-                head + size;
+        int tail = head + size;
 
         if (tail >= values.length) {
             tail -= values.length;
         }
 
-        values[tail] =
-                value;
+        values[tail] = value;
 
         size++;
 
         if (size > maximumObservedSize) {
-            maximumObservedSize =
-                    size;
+            maximumObservedSize = size;
         }
     }
 
     public int remove() {
         if (size == 0) {
-            throw new IllegalStateException(
-                    "Cannot remove from an empty queue"
-            );
+            throw new IllegalStateException("Cannot remove from an empty queue");
         }
 
-        int value =
-                values[head];
+        int value = values[head];
 
         head++;
 
@@ -114,68 +77,37 @@ public class IntCircularQueue {
     }
 
     private void grow() {
-        int oldCapacity =
-                values.length;
+        int oldCapacity = values.length;
 
         if (oldCapacity >= maximumCapacity) {
-            throw new IllegalStateException(
-                    "Circular queue exceeded its maximum capacity: "
-                            + maximumCapacity
-            );
+            throw new IllegalStateException("Circular queue exceeded its maximum capacity: " + maximumCapacity);
         }
 
         /*
          * Utilizamos long para evitar overflow al duplicar.
          */
-        long doubledCapacity =
-                (long) oldCapacity * 2L;
+        long doubledCapacity = (long) oldCapacity * 2L;
 
-        int newCapacity =
-                (int) Math.min(
-                        maximumCapacity,
-                        Math.max(
-                                oldCapacity + 1L,
-                                doubledCapacity
-                        )
-                );
+        int newCapacity = (int) Math.min(maximumCapacity, Math.max(oldCapacity + 1L, doubledCapacity));
 
-        int[] newValues =
-                new int[newCapacity];
+        int[] newValues = new int[newCapacity];
 
         /*
          * La cola puede estar dividida en dos fragmentos:
          *
          * [parte final del array] + [parte inicial del array]
          */
-        int firstPartLength =
-                Math.min(
-                        size,
-                        oldCapacity - head
-                );
+        int firstPartLength = Math.min(size, oldCapacity - head);
 
-        System.arraycopy(
-                values,
-                head,
-                newValues,
-                0,
-                firstPartLength
-        );
+        System.arraycopy(values, head, newValues, 0, firstPartLength);
 
-        int secondPartLength =
-                size - firstPartLength;
+        int secondPartLength = size - firstPartLength;
 
         if (secondPartLength > 0) {
-            System.arraycopy(
-                    values,
-                    0,
-                    newValues,
-                    firstPartLength,
-                    secondPartLength
-            );
+            System.arraycopy(values, 0, newValues, firstPartLength, secondPartLength);
         }
 
-        values =
-                newValues;
+        values = newValues;
 
         head = 0;
     }

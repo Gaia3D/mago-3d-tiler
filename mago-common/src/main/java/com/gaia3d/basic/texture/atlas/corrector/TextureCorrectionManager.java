@@ -15,12 +15,9 @@ public class TextureCorrectionManager {
     private double luminanceSum = 0.0;
     private double luminanceSqSum = 0.0;
     private double saturationSum = 0.0;
-    // Para acelerar. 1 = todos los píxeles, 2 = uno de cada 2, 4 = uno de cada 4...
-    private int sampleStep = 4;
+    private final int sampleStep = 4;
 
-    public static TexturePixelData createPixelData(
-            BufferedImage image
-    ) {
+    public static TexturePixelData createPixelData(BufferedImage image) {
         if (image == null) {
             return null;
         }
@@ -32,60 +29,26 @@ public class TextureCorrectionManager {
         Raster raster = image.getRaster();
         int imageType = image.getType();
 
-        boolean isIntImage =
-                imageType == BufferedImage.TYPE_INT_RGB
-                        || imageType == BufferedImage.TYPE_INT_ARGB
-                        || imageType == BufferedImage.TYPE_INT_ARGB_PRE;
+        boolean isIntImage = imageType == BufferedImage.TYPE_INT_RGB || imageType == BufferedImage.TYPE_INT_ARGB || imageType == BufferedImage.TYPE_INT_ARGB_PRE;
 
-        if (isIntImage
-                && raster.getDataBuffer() instanceof DataBufferInt dataBuffer
-                && raster.getSampleModel()
-                instanceof SinglePixelPackedSampleModel sampleModel
-                && sampleModel.getScanlineStride() == width
-                && raster.getSampleModelTranslateX() == 0
-                && raster.getSampleModelTranslateY() == 0
-                && dataBuffer.getOffset() == 0
-                && dataBuffer.getData().length >= width * height) {
+        if (isIntImage && raster.getDataBuffer() instanceof DataBufferInt dataBuffer && raster.getSampleModel() instanceof SinglePixelPackedSampleModel sampleModel && sampleModel.getScanlineStride() == width && raster.getSampleModelTranslateX() == 0 && raster.getSampleModelTranslateY() == 0 && dataBuffer.getOffset() == 0 && dataBuffer.getData().length >= width * height) {
 
             /*
              * Acceso directo, sin copiar la imagen.
              */
-            return new TexturePixelData(
-                    dataBuffer.getData(),
-                    width,
-                    height,
-                    hasAlpha
-            );
+            return new TexturePixelData(dataBuffer.getData(), width, height, hasAlpha);
         }
 
         /*
          * Fallback: una sola conversión para toda la textura.
          */
-        int[] pixels = image.getRGB(
-                0,
-                0,
-                width,
-                height,
-                null,
-                0,
-                width
-        );
+        int[] pixels = image.getRGB(0, 0, width, height, null, 0, width);
 
-        return new TexturePixelData(
-                pixels,
-                width,
-                height,
-                hasAlpha
-        );
+        return new TexturePixelData(pixels, width, height, hasAlpha);
     }
 
-    private static double smoothstep(
-            double edge0,
-            double edge1,
-            double value
-    ) {
-        double t =
-                (value - edge0) / (edge1 - edge0);
+    private static double smoothstep(double edge0, double edge1, double value) {
+        double t = (value - edge0) / (edge1 - edge0);
 
         t = clamp01(t);
 
@@ -116,48 +79,28 @@ public class TextureCorrectionManager {
         return (int) (value * 255.0 + 0.5);
     }
 
-    public void mergeFrom(
-            TextureCorrectionManager other
-    ) {
-        if (other == null
-                || other.sampledPixels == 0) {
+    public void mergeFrom(TextureCorrectionManager other) {
+        if (other == null || other.sampledPixels == 0) {
             return;
         }
 
-        this.sampledPixels +=
-                other.sampledPixels;
+        this.sampledPixels += other.sampledPixels;
 
-        this.luminanceSum +=
-                other.luminanceSum;
+        this.luminanceSum += other.luminanceSum;
 
-        this.luminanceSqSum +=
-                other.luminanceSqSum;
+        this.luminanceSqSum += other.luminanceSqSum;
 
-        this.saturationSum +=
-                other.saturationSum;
+        this.saturationSum += other.saturationSum;
 
-        int histogramSize = Math.min(
-                this.luminanceHistogram.length,
-                other.luminanceHistogram.length
-        );
+        int histogramSize = Math.min(this.luminanceHistogram.length, other.luminanceHistogram.length);
 
         for (int i = 0; i < histogramSize; i++) {
-            this.luminanceHistogram[i] +=
-                    other.luminanceHistogram[i];
+            this.luminanceHistogram[i] += other.luminanceHistogram[i];
         }
     }
 
-    public void addStatisticsByUvTriangle(
-            TexturePixelData texture,
-            Vector2d uv0,
-            Vector2d uv1,
-            Vector2d uv2
-    ) {
-        if (texture == null
-                || texture.pixels() == null
-                || uv0 == null
-                || uv1 == null
-                || uv2 == null) {
+    public void addStatisticsByUvTriangle(TexturePixelData texture, Vector2d uv0, Vector2d uv1, Vector2d uv2) {
+        if (texture == null || texture.pixels() == null || uv0 == null || uv1 == null || uv2 == null) {
             return;
         }
 
@@ -168,30 +111,21 @@ public class TextureCorrectionManager {
             return;
         }
 
-        double areaUv =
-                calculateUvTriangleArea(uv0, uv1, uv2);
+        double areaUv = calculateUvTriangleArea(uv0, uv1, uv2);
 
         if (areaUv <= EPSILON) {
             return;
         }
 
-        double pixelArea =
-                areaUv * width * height;
+        double pixelArea = areaUv * width * height;
 
-        int minSamples =
-                pixelArea < 4.0 ? 1 : 4;
+        int minSamples = pixelArea < 4.0 ? 1 : 4;
 
-        int samples =
-                (int) Math.ceil(pixelArea / 16.0);
+        int samples = (int) Math.ceil(pixelArea / 16.0);
 
-        samples = clamp(
-                samples,
-                minSamples,
-                256
-        );
+        samples = clamp(samples, minSamples, 256);
 
-        int grid =
-                (int) Math.ceil(Math.sqrt(samples));
+        int grid = (int) Math.ceil(Math.sqrt(samples));
 
         double inverseGrid = 1.0 / grid;
 
@@ -207,24 +141,13 @@ public class TextureCorrectionManager {
                     sampleB = 1.0 - sampleB;
                 }
 
-                double weight0 =
-                        1.0 - a - sampleB;
+                double weight0 = 1.0 - a - sampleB;
 
-                double u =
-                        uv0.x * weight0
-                                + uv1.x * a
-                                + uv2.x * sampleB;
+                double u = uv0.x * weight0 + uv1.x * a + uv2.x * sampleB;
 
-                double v =
-                        uv0.y * weight0
-                                + uv1.y * a
-                                + uv2.y * sampleB;
+                double v = uv0.y * weight0 + uv1.y * a + uv2.y * sampleB;
 
-                addStatisticsByUv(
-                        texture,
-                        u,
-                        v
-                );
+                addStatisticsByUv(texture, u, v);
             }
         }
     }
@@ -239,11 +162,7 @@ public class TextureCorrectionManager {
         return Math.abs(x1 * y2 - y1 * x2) * 0.5;
     }
 
-    private void addStatisticsByUv(
-            TexturePixelData texture,
-            double u,
-            double v
-    ) {
+    private void addStatisticsByUv(TexturePixelData texture, double u, double v) {
         int width = texture.width();
         int height = texture.height();
 
@@ -257,12 +176,9 @@ public class TextureCorrectionManager {
         int x = (int) (u * (width - 1));
         int y = (int) ((1.0 - v) * (height - 1));
 
-        int argb =
-                texture.pixels()[y * width + x];
+        int argb = texture.pixels()[y * width + x];
 
-        int alpha = texture.hasAlpha()
-                ? (argb >>> 24) & 0xFF
-                : 255;
+        int alpha = texture.hasAlpha() ? (argb >>> 24) & 0xFF : 255;
 
         if (alpha < 16) {
             return;
@@ -279,23 +195,14 @@ public class TextureCorrectionManager {
         /*
          * Calcular directamente desde los canales enteros.
          */
-        double luminance =
-                (0.2126 * r
-                        + 0.7152 * g
-                        + 0.0722 * b)
-                        / 255.0;
+        double luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255.0;
 
         int max = Math.max(r, Math.max(g, b));
         int min = Math.min(r, Math.min(g, b));
 
-        double saturation = max == 0
-                ? 0.0
-                : (double) (max - min) / max;
+        double saturation = max == 0 ? 0.0 : (double) (max - min) / max;
 
-        addPixelStatistics(
-                luminance,
-                saturation
-        );
+        addPixelStatistics(luminance, saturation);
     }
 
     private void addPixelStatistics(double luminance, double saturation) {
@@ -382,10 +289,7 @@ public class TextureCorrectionManager {
          * Haze detector:
          * tonos oscuros levantados + poca saturación + medios tonos claros.
          */
-        boolean hazyImage =
-                p05 > 0.05 &&
-                        meanSat < 0.30 &&
-                        p50 > 0.30;
+        boolean hazyImage = p05 > 0.05 && meanSat < 0.30 && p50 > 0.30;
 
         if (hazyImage) {
             params.contrast = Math.max(params.contrast, 1.08);
@@ -500,14 +404,7 @@ public class TextureCorrectionManager {
             params.saturation = 1.00;
         }
 
-        double correctionNeed = estimateCorrectionNeed(
-                meanLum,
-                stddevLum,
-                meanSat,
-                p05,
-                p50,
-                p95
-        );
+        double correctionNeed = estimateCorrectionNeed(meanLum, stddevLum, meanSat, p05, p50, p95);
 
         params.correctionStrength = correctionNeed;
 
@@ -671,16 +568,8 @@ public class TextureCorrectionManager {
         return value * effectiveExposure;
     }
 
-    private void applyIdyllicLook(
-            double r,
-            double g,
-            double b,
-            IdyllicLookParameters params,
-            double[] result
-    ) {
-        if (params == null
-                || !params.idyllicLookEnabled
-                || params.idyllicStrength <= 0.0) {
+    private void applyIdyllicLook(double r, double g, double b, IdyllicLookParameters params, double[] result) {
+        if (params == null || !params.idyllicLookEnabled || params.idyllicStrength <= 0.0) {
 
             result[0] = r;
             result[1] = g;
@@ -708,9 +597,7 @@ public class TextureCorrectionManager {
          */
         double lum = calculateLuminance(r, g, b);
 
-        double midFactor =
-                smoothstep(0.15, 0.55, lum) *
-                        (1.0 - smoothstep(0.65, 0.95, lum));
+        double midFactor = smoothstep(0.15, 0.55, lum) * (1.0 - smoothstep(0.65, 0.95, lum));
 
         double lift = params.midtoneLift * s * midFactor;
 
@@ -793,8 +680,7 @@ public class TextureCorrectionManager {
 
         // Verde relativo: G es comparable a R/B.
         // Ayuda en vegetación oscura o grisácea.
-        double greenRelative =
-                (g + 0.04) - Math.max(r * 0.92, b * 0.95);
+        double greenRelative = (g + 0.04) - Math.max(r * 0.92, b * 0.95);
 
         double greenBaseA = clamp(greenDominance * 5.0, 0.0, 1.0);
         double greenBaseB = clamp(greenRelative * 4.0, 0.0, 1.0);
@@ -808,11 +694,7 @@ public class TextureCorrectionManager {
         double darkGreenFactor = 1.0 - smoothstep(0.42, 0.78, lumNow);
         double midGreenFactor = smoothstep(0.08, 0.35, lumNow);
 
-        double greenLumFactor = clamp(
-                0.35 + darkGreenFactor * 0.45 + midGreenFactor * 0.35,
-                0.0,
-                1.0
-        );
+        double greenLumFactor = clamp(0.35 + darkGreenFactor * 0.45 + midGreenFactor * 0.35, 0.0, 1.0);
 
         double greenFactor = greenBase * greenColor * greenLumFactor;
 
@@ -848,9 +730,7 @@ public class TextureCorrectionManager {
 
         double blueDominance = b - r;
 
-        double blueFactor =
-                clamp(blueDominance * 3.0, 0.0, 1.0) *
-                        clamp(colorfulness * 2.5, 0.0, 1.0);
+        double blueFactor = clamp(blueDominance * 3.0, 0.0, 1.0) * clamp(colorfulness * 2.5, 0.0, 1.0);
 
         double blueBoost = params.skyBlueBoost * s * blueFactor;
 
@@ -866,12 +746,7 @@ public class TextureCorrectionManager {
         result[2] = clamp01(b);
     }
 
-    public BufferedImage correctImage(
-            BufferedImage source,
-            TextureCorrectionParameters params,
-            SunnyLookParameters sunnyParams,
-            IdyllicLookParameters idyllicParams
-    ) {
+    public BufferedImage correctImage(BufferedImage source, TextureCorrectionParameters params, SunnyLookParameters sunnyParams, IdyllicLookParameters idyllicParams) {
         if (source == null) {
             return null;
         }
@@ -888,48 +763,23 @@ public class TextureCorrectionManager {
         final int height = source.getHeight();
         final boolean hasAlpha = source.getColorModel().hasAlpha();
 
-        BufferedImage result = new BufferedImage(
-                width,
-                height,
-                hasAlpha
-                        ? BufferedImage.TYPE_INT_ARGB
-                        : BufferedImage.TYPE_INT_RGB
-        );
+        BufferedImage result = new BufferedImage(width, height, hasAlpha ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB);
 
         /*
          * Una sola conversión de la imagen de origen.
          */
-        int[] sourcePixels = source.getRGB(
-                0,
-                0,
-                width,
-                height,
-                null,
-                0,
-                width
-        );
+        int[] sourcePixels = source.getRGB(0, 0, width, height, null, 0, width);
 
         /*
          * Escritura directa sobre la imagen de destino.
          */
-        int[] resultPixels =
-                ((java.awt.image.DataBufferInt)
-                        result.getRaster().getDataBuffer())
-                        .getData();
+        int[] resultPixels = ((java.awt.image.DataBufferInt) result.getRaster().getDataBuffer()).getData();
 
-        final boolean useIdyllicLook =
-                idyllicParams != null
-                        && idyllicParams.idyllicLookEnabled
-                        && idyllicParams.idyllicStrength > 0.0;
+        final boolean useIdyllicLook = idyllicParams != null && idyllicParams.idyllicLookEnabled && idyllicParams.idyllicStrength > 0.0;
 
-        final boolean useSunnyLook =
-                !useIdyllicLook
-                        && sunnyParams.sunnyLookEnabled
-                        && sunnyParams.sunnyStrength > 0.0;
+        final boolean useSunnyLook = !useIdyllicLook && sunnyParams.sunnyLookEnabled && sunnyParams.sunnyStrength > 0.0;
 
-        final double sunnyStrength = useSunnyLook
-                ? clamp01(sunnyParams.sunnyStrength)
-                : 0.0;
+        final double sunnyStrength = useSunnyLook ? clamp01(sunnyParams.sunnyStrength) : 0.0;
 
         /*
          * Parámetros constantes calculados una vez.
@@ -937,37 +787,22 @@ public class TextureCorrectionManager {
         double effectiveBlackPoint = params.blackPoint;
 
         if (useSunnyLook) {
-            effectiveBlackPoint +=
-                    sunnyParams.sunnyDehazeBoost
-                            * sunnyStrength;
+            effectiveBlackPoint += sunnyParams.sunnyDehazeBoost * sunnyStrength;
         }
 
-        effectiveBlackPoint =
-                clamp(effectiveBlackPoint, 0.0, 0.10);
+        effectiveBlackPoint = clamp(effectiveBlackPoint, 0.0, 0.10);
 
-        final double[] toneLut = createToneLut(
-                effectiveBlackPoint,
-                params.whitePoint,
-                params.gamma
-        );
+        final double[] toneLut = createToneLut(effectiveBlackPoint, params.whitePoint, params.gamma);
 
-        final double exposureDelta =
-                params.exposure - 1.0;
+        final double exposureDelta = params.exposure - 1.0;
 
-        final double baseContrast =
-                params.contrast;
+        final double baseContrast = params.contrast;
 
-        final double baseSaturation =
-                params.saturation;
+        final double baseSaturation = params.saturation;
 
-        final double[] idyllicRgb =
-                useIdyllicLook
-                        ? new double[3]
-                        : null;
+        final double[] idyllicRgb = useIdyllicLook ? new double[3] : null;
 
-        for (int index = 0;
-             index < sourcePixels.length;
-             index++) {
+        for (int index = 0; index < sourcePixels.length; index++) {
 
             int argb = sourcePixels[index];
 
@@ -994,18 +829,11 @@ public class TextureCorrectionManager {
             /*
              * Exposure protegido.
              */
-            double luminanceBeforeExposure =
-                    calculateLuminance(rd, gd, bd);
+            double luminanceBeforeExposure = calculateLuminance(rd, gd, bd);
 
-            double protectionFactor =
-                    1.0 - smoothstep(
-                            0.50,
-                            0.82,
-                            luminanceBeforeExposure
-                    );
+            double protectionFactor = 1.0 - smoothstep(0.50, 0.82, luminanceBeforeExposure);
 
-            double effectiveExposure =
-                    1.0 + exposureDelta * protectionFactor;
+            double effectiveExposure = 1.0 + exposureDelta * protectionFactor;
 
             rd *= effectiveExposure;
             gd *= effectiveExposure;
@@ -1021,17 +849,13 @@ public class TextureCorrectionManager {
             /*
              * Saturación.
              */
-            double luminance =
-                    calculateLuminance(rd, gd, bd);
+            double luminance = calculateLuminance(rd, gd, bd);
 
-            rd = luminance
-                    + (rd - luminance) * baseSaturation;
+            rd = luminance + (rd - luminance) * baseSaturation;
 
-            gd = luminance
-                    + (gd - luminance) * baseSaturation;
+            gd = luminance + (gd - luminance) * baseSaturation;
 
-            bd = luminance
-                    + (bd - luminance) * baseSaturation;
+            bd = luminance + (bd - luminance) * baseSaturation;
 
             /*
              * Conserva aquí el bloque Sunny actual.
@@ -1041,13 +865,7 @@ public class TextureCorrectionManager {
             }
 
             if (useIdyllicLook) {
-                applyIdyllicLook(
-                        rd,
-                        gd,
-                        bd,
-                        idyllicParams,
-                        idyllicRgb
-                );
+                applyIdyllicLook(rd, gd, bd, idyllicParams, idyllicRgb);
 
                 rd = idyllicRgb[0];
                 gd = idyllicRgb[1];
@@ -1058,41 +876,25 @@ public class TextureCorrectionManager {
             int gg = clampToByteFast(gd);
             int bb = clampToByteFast(bd);
 
-            resultPixels[index] = hasAlpha
-                    ? (alpha << 24)
-                      | (rr << 16)
-                      | (gg << 8)
-                      | bb
-                    : (rr << 16)
-                      | (gg << 8)
-                      | bb;
+            resultPixels[index] = hasAlpha ? (alpha << 24) | (rr << 16) | (gg << 8) | bb : (rr << 16) | (gg << 8) | bb;
         }
 
         return result;
     }
 
-    private double[] createToneLut(
-            double blackPoint,
-            double whitePoint,
-            double gamma
-    ) {
+    private double[] createToneLut(double blackPoint, double whitePoint, double gamma) {
         double[] lut = new double[256];
 
-        double denominator =
-                Math.max(whitePoint - blackPoint, EPSILON);
+        double denominator = Math.max(whitePoint - blackPoint, EPSILON);
 
         for (int i = 0; i < 256; i++) {
             double value = i / 255.0;
 
             if (blackPoint > 0.0) {
-                value = clamp01(
-                        (value - blackPoint) / denominator
-                );
+                value = clamp01((value - blackPoint) / denominator);
             }
 
-            lut[i] = gamma == 1.0
-                    ? value
-                    : Math.pow(value, gamma);
+            lut[i] = gamma == 1.0 ? value : Math.pow(value, gamma);
         }
 
         return lut;
@@ -1180,14 +982,7 @@ public class TextureCorrectionManager {
         return Math.max(min, Math.min(max, value));
     }
 
-    private double estimateCorrectionNeed(
-            double meanLum,
-            double stddevLum,
-            double meanSat,
-            double p05,
-            double p50,
-            double p95
-    ) {
+    private double estimateCorrectionNeed(double meanLum, double stddevLum, double meanSat, double p05, double p50, double p95) {
         double need = 0.0;
 
         /*
@@ -1263,11 +1058,5 @@ public class TextureCorrectionManager {
         return a + (b - a) * t;
     }
 
-    public record TexturePixelData(
-            int[] pixels,
-            int width,
-            int height,
-            boolean hasAlpha
-    ) {
-    }
+    public record TexturePixelData(int[] pixels, int width, int height, boolean hasAlpha) {}
 }
