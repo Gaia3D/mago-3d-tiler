@@ -37,3 +37,5 @@ git rm -r mago-io
 git commit -m "fix: Remove existing mago-io-common subtree"
 rm mago-io
 git subtree add --prefix=mago-io https://github.com/Gaia3D/mago-io.git main
+
+test
