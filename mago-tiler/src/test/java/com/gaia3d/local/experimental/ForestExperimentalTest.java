@@ -377,6 +377,42 @@ public class ForestExperimentalTest {
     }
 
     @Test
+    void garisanChimVersion3Test() {
+        String path = "garisan/Chim";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getSsdInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-other-dem-temp",
+                "-c", "5187",
+                "-ot", "i3dm",
+                "--refineAdd",
+                "--scaleColumn", "TreeHeight",
+                "--tilesVersion", "1.0",
+                "-instance", "D:\\user\\znkim\\Downloads\\Export_GLB\\Triangles_200.glb",
+                "-terrain", "D:\\user\\znkim\\Downloads\\merged_dem_5186.tif",
+                "-maxLod", "4",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void garisanChimVersion2Test() {
+        String path = "garisan/Chim";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getSsdInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-temp",
+                "-c", "5187",
+                "-ot", "i3dm",
+                "--refineAdd",
+                "--scaleColumn", "TreeHeight",
+                "--tilesVersion", "1.0",
+                "-instance", "D:\\user\\znkim\\Downloads\\chim-sample-low-test.glb",
+                "-terrain", MagoTestConfig.getTerrainPath("korea-05-cog-dem-4326.tif").getAbsolutePath(),
+                "-maxLod", "4",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
     void garisanChim() {
         String path = "garisan/Chim";
         String[] args = new String[]{
