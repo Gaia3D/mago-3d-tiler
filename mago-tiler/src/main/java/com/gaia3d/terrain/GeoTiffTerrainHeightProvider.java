@@ -18,6 +18,7 @@ import java.util.OptionalDouble;
 
 @Slf4j
 public class GeoTiffTerrainHeightProvider implements TerrainHeightProvider {
+    private static final double MAXIMUM_ABSOLUTE_TERRAIN_HEIGHT = 100_000.0;
     private final List<CoverageSampler> samplers;
 
     public GeoTiffTerrainHeightProvider(List<GridCoverage2D> coverages) {
@@ -34,11 +35,38 @@ public class GeoTiffTerrainHeightProvider implements TerrainHeightProvider {
                 MathTransform worldToGridCenter = coverage.getGridGeometry()
                         .getGridToCRS2D(PixelOrientation.CENTER)
                         .inverse();
-                samplers.add(new CoverageSampler(coverage, fromWgs84, worldToGridCenter));
+                samplers.add(new CoverageSampler(
+                        coverage,
+                        fromWgs84,
+                        worldToGridCenter,
+                        getNoDataValues(coverage)));
             } catch (Exception e) {
                 throw new IllegalArgumentException("Failed to initialize GeoTIFF terrain sampler", e);
             }
         }
+    }
+
+    private double[] getNoDataValues(GridCoverage2D coverage) {
+        try {
+            double[] noDataValues = coverage.getSampleDimension(0).getNoDataValues();
+            return noDataValues == null ? new double[0] : noDataValues.clone();
+        } catch (IllegalStateException e) {
+            log.debug("GeoTIFF terrain does not provide readable NoData metadata");
+            return new double[0];
+        }
+    }
+
+    static boolean isValidTerrainHeight(double height, double[] noDataValues) {
+        if (!Double.isFinite(height) || Math.abs(height) > MAXIMUM_ABSOLUTE_TERRAIN_HEIGHT) {
+            return false;
+        }
+        for (double noDataValue : noDataValues) {
+            if ((Double.isNaN(noDataValue) && Double.isNaN(height))
+                    || Double.compare(height, noDataValue) == 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -65,7 +93,8 @@ public class GeoTiffTerrainHeightProvider implements TerrainHeightProvider {
     private record CoverageSampler(
             GridCoverage2D coverage,
             MathTransform fromWgs84,
-            MathTransform worldToGridCenter) {
+            MathTransform worldToGridCenter,
+            double[] noDataValues) {
 
         private static int clamp(int value, int minimum, int maximum) {
             return Math.max(minimum, Math.min(maximum, value));
@@ -102,14 +131,19 @@ public class GeoTiffTerrainHeightProvider implements TerrainHeightProvider {
             double topRight = raster.getSampleDouble(x1, y0, 0);
             double bottomLeft = raster.getSampleDouble(x0, y1, 0);
             double bottomRight = raster.getSampleDouble(x1, y1, 0);
-            if (!Double.isFinite(topLeft) || !Double.isFinite(topRight)
-                    || !Double.isFinite(bottomLeft) || !Double.isFinite(bottomRight)) {
+            if (!isValidTerrainHeight(topLeft, noDataValues)
+                    || !isValidTerrainHeight(topRight, noDataValues)
+                    || !isValidTerrainHeight(bottomLeft, noDataValues)
+                    || !isValidTerrainHeight(bottomRight, noDataValues)) {
                 return OptionalDouble.empty();
             }
 
             double top = topLeft * (1.0 - fractionX) + topRight * fractionX;
             double bottom = bottomLeft * (1.0 - fractionX) + bottomRight * fractionX;
-            return OptionalDouble.of(top * (1.0 - fractionY) + bottom * fractionY);
+            double height = top * (1.0 - fractionY) + bottom * fractionY;
+            return isValidTerrainHeight(height, noDataValues)
+                    ? OptionalDouble.of(height)
+                    : OptionalDouble.empty();
         }
     }
 }

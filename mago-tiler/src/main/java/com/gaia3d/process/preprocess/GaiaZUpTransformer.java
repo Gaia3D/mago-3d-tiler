@@ -3,6 +3,7 @@ package com.gaia3d.process.preprocess;
 import com.gaia3d.basic.geometry.modifier.transform.UpAxisTransformer;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
+import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.NoArgsConstructor;
@@ -74,6 +75,10 @@ public class GaiaZUpTransformer implements PreProcess {
                 return tileInfo;
             }
 
+            if (hasExplicitUpAxis(scene)) {
+                return tileInfo;
+            }
+
             Matrix3d rotationMatrix = createNormalMatrix3d(scene);
             boolean isZUp = isZUpAxis(rotationMatrix);
             boolean isYUp = isYUpAxis(rotationMatrix);
@@ -109,6 +114,21 @@ public class GaiaZUpTransformer implements PreProcess {
 
         tileInfo.updateSceneInfo();
         return tileInfo;
+    }
+
+    private boolean hasExplicitUpAxis(GaiaScene scene) {
+        if (scene.getOriginalPath() == null || scene.getOriginalPath().getFileName() == null) {
+            return false;
+        }
+
+        String fileName = scene.getOriginalPath().getFileName().toString();
+        int extensionSeparator = fileName.lastIndexOf('.');
+        if (extensionSeparator < 0 || extensionSeparator == fileName.length() - 1) {
+            return false;
+        }
+
+        FormatType formatType = FormatType.fromExtension(fileName.substring(extensionSeparator + 1));
+        return formatType == FormatType.GLB || formatType == FormatType.GLTF;
     }
 
     private Matrix3d createNormalMatrix3d(GaiaScene scene) {
