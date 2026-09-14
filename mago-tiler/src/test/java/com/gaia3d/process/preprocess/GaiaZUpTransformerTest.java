@@ -2,8 +2,11 @@ package com.gaia3d.process.preprocess;
 
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import org.joml.Matrix4d;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -14,6 +17,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag("default")
 class GaiaZUpTransformerTest {
+    private boolean originalParametric;
+
+    @BeforeEach
+    void disableParametricMode() {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        originalParametric = globalOptions.isParametric();
+        globalOptions.setParametric(false);
+    }
+
+    @AfterEach
+    void restoreParametricMode() {
+        GlobalOptions.getInstance().setParametric(originalParametric);
+    }
 
     @Test
     void preservesGltfNodeTransformBecauseTheFormatDefinesYUp() {
