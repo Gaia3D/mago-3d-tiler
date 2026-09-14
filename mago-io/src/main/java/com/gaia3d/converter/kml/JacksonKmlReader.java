@@ -45,9 +45,9 @@ public class JacksonKmlReader implements AttributeReader {
                 double heading = model.getOrientation().getHeading();
                 double tilt = model.getOrientation().getTilt();
                 double roll = model.getOrientation().getRoll();
-                double x = model.getScale().getX();
-                double y = model.getScale().getY();
-                double z = model.getScale().getZ();
+                double x = AttributeReader.positiveOrDefault(model.getScale().getX(), 1.0);
+                double y = AttributeReader.positiveOrDefault(model.getScale().getY(), 1.0);
+                double z = AttributeReader.positiveOrDefault(model.getScale().getZ(), 1.0);
                 tileTransformInfo = TileTransformInfo.builder().name(name).position(new Vector3d(longitude, latitude, altitude)).altitudeMode(altitudeMode).heading(heading).tilt(tilt).roll(roll).href(href).scaleX(x).scaleY(y).scaleZ(z).build();
             }
         } catch (IOException e) {
@@ -78,9 +78,9 @@ public class JacksonKmlReader implements AttributeReader {
                     double heading = model.getOrientation().getHeading();
                     double tilt = model.getOrientation().getTilt();
                     double roll = model.getOrientation().getRoll();
-                    double x = model.getScale().getX();
-                    double y = model.getScale().getY();
-                    double z = model.getScale().getZ();
+                    double x = AttributeReader.positiveOrDefault(model.getScale().getX(), 1.0);
+                    double y = AttributeReader.positiveOrDefault(model.getScale().getY(), 1.0);
+                    double z = AttributeReader.positiveOrDefault(model.getScale().getZ(), 1.0);
 
                     HashMap<String, String> properties = new HashMap<>();
                     properties.put("name", name);

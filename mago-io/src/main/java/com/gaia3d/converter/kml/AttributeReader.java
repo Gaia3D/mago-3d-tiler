@@ -254,4 +254,24 @@ public interface AttributeReader {
         }
         return result;
     }
+
+    static double parseNumber(Object value, double defaultValue) {
+        if (value instanceof Number number) {
+            double parsed = number.doubleValue();
+            return Double.isFinite(parsed) ? parsed : defaultValue;
+        }
+        if (value instanceof String text) {
+            try {
+                double parsed = Double.parseDouble(text.trim());
+                return Double.isFinite(parsed) ? parsed : defaultValue;
+            } catch (NumberFormatException ignored) {
+                return defaultValue;
+            }
+        }
+        return defaultValue;
+    }
+
+    static double positiveOrDefault(double value, double defaultValue) {
+        return Double.isFinite(value) && value > 0.0 ? value : defaultValue;
+    }
 }
