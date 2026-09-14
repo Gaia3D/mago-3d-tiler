@@ -103,7 +103,7 @@ public class ShapeInstanceConverter implements AttributeReader {
                     }
                     double heading = getNumberAttribute(feature, headingColumnName, defaultHeading);
                     double altitude = getNumberAttribute(feature, altitudeColumnName, parametricOptions.getAbsoluteAltitudeValue());
-                    double scale = getNumberAttribute(feature, scaleColumnName, parametricOptions.getDefaultScale());
+                    double scale = getPositiveNumberAttribute(feature, scaleColumnName, parametricOptions.getDefaultScale());
                     double density = getNumberAttribute(feature, densityColumnName, parametricOptions.getDefaultDensity());
 
                     if (!attributeFilters.isEmpty()) {
@@ -151,28 +151,14 @@ public class ShapeInstanceConverter implements AttributeReader {
     }
 
     private double getNumberAttribute(SimpleFeature feature, String column, double defaultValue) {
-        double result = defaultValue;
         Object attributeLower = feature.getAttribute(column);
         Object attributeUpper = feature.getAttribute(column.toUpperCase());
-        Object attributeObject = null;
-        if (attributeLower != null) {
-            attributeObject = attributeLower;
-        } else if (attributeUpper != null) {
-            attributeObject = attributeUpper;
-        }
+        Object attributeObject = attributeLower != null ? attributeLower : attributeUpper;
+        return AttributeReader.parseNumber(attributeObject, defaultValue);
+    }
 
-        if (attributeObject instanceof Short) {
-            result = result + (short) attributeObject;
-        } else if (attributeObject instanceof Integer) {
-            result = result + (int) attributeObject;
-        } else if (attributeObject instanceof Long) {
-            result = result + (Long) attributeObject;
-        } else if (attributeObject instanceof Double) {
-            result = result + (double) attributeObject;
-        } else if (attributeObject instanceof String) {
-            result = Double.parseDouble((String) attributeObject);
-        }
-        return result;
+    private double getPositiveNumberAttribute(SimpleFeature feature, String column, double defaultValue) {
+        return AttributeReader.positiveOrDefault(getNumberAttribute(feature, column, defaultValue), defaultValue);
     }
 
 }

@@ -31,9 +31,9 @@ public class FastKmlReader implements AttributeReader {
                     .tilt(parseDouble(findValue(xml, "tilt")))
                     .roll(parseDouble(findValue(xml, "roll")))
                     .href(findValue(xml, "href"))
-                    .scaleX(parseDouble(findValue(xml, "x")))
-                    .scaleY(parseDouble(findValue(xml, "y")))
-                    .scaleZ(parseDouble(findValue(xml, "z")))
+                    .scaleX(AttributeReader.positiveOrDefault(parseDouble(findValue(xml, "x")), 1.0))
+                    .scaleY(AttributeReader.positiveOrDefault(parseDouble(findValue(xml, "y")), 1.0))
+                    .scaleZ(AttributeReader.positiveOrDefault(parseDouble(findValue(xml, "z")), 1.0))
                     .build();
             xml = null;
         } catch (IOException e) {
