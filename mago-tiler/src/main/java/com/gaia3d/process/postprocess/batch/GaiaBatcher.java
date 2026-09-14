@@ -239,6 +239,7 @@ public class GaiaBatcher {
         // batch dataSets with same material
         List<GaiaBufferDataSet> filteredDataSets = batchDataSetsWithTheSameMaterial(batchedDataSets, filteredMaterials);
         setMaterialsIndexInList(filteredMaterials, filteredDataSets);
+        assignTexturelessMaterialsToDataSetsWithoutTexCoords(filteredDataSets, filteredMaterials);
         checkIsRepeatMaterial(filteredMaterials, filteredDataSets);
 
         /* only diffuse-color use materials */
@@ -257,8 +258,7 @@ public class GaiaBatcher {
         /* clear Textures */
         colorMaterials.forEach((material) -> {
             material.setName("COLOR_MATERIAL");
-            material.getTextures().remove(TextureType.DIFFUSE);
-            material.getTextures().put(TextureType.DIFFUSE, new ArrayList<>());
+            material.getTextures().clear();
         });
         colorDataSet.forEach((bufferDataSet) -> {
             createColorBuffer(colorMaterials, bufferDataSet, lod);
@@ -482,6 +482,30 @@ public class GaiaBatcher {
             });
         });
         return filterdBufferDataList;
+    }
+
+    void assignTexturelessMaterialsToDataSetsWithoutTexCoords(List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> materials) {
+        Map<Integer, GaiaMaterial> texturelessMaterials = new HashMap<>();
+        for (GaiaBufferDataSet dataSet : dataSets) {
+            if (dataSet.getBuffers().get(AttributeType.TEXCOORD) != null) {
+                continue;
+            }
+
+            GaiaMaterial material = findMaterial(materials, dataSet.getMaterialId());
+            if (material == null || !material.hasTextures()) {
+                continue;
+            }
+
+            GaiaMaterial texturelessMaterial = texturelessMaterials.computeIfAbsent(material.getId(), ignored -> {
+                GaiaMaterial clone = material.clone();
+                clone.setId(materials.size() + texturelessMaterials.size());
+                clone.setName(material.getName() + "_NO_TEXCOORD");
+                clone.getTextures().clear();
+                return clone;
+            });
+            dataSet.setMaterialId(texturelessMaterial.getId());
+        }
+        materials.addAll(texturelessMaterials.values());
     }
 
     private void checkIsRepeatMaterial(List<GaiaMaterial> materials, List<GaiaBufferDataSet> dataSets) {

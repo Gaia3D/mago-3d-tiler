@@ -2,7 +2,10 @@ package com.gaia3d.process.postprocess.batch;
 
 import com.gaia3d.basic.exchangable.GaiaBuffer;
 import com.gaia3d.basic.exchangable.GaiaBufferDataSet;
+import com.gaia3d.basic.model.GaiaMaterial;
+import com.gaia3d.basic.model.GaiaTexture;
 import com.gaia3d.basic.types.AttributeType;
+import com.gaia3d.basic.types.TextureType;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -44,6 +47,27 @@ class GaiaBatcherTest {
         assertEquals(1, groups.size());
         assertEquals(List.of(first, second), groups.getFirst());
         assertFalse(groups.getFirst().isEmpty());
+    }
+
+    @Test
+    void removesAllTextureReferencesFromMaterialUsedWithoutTexCoords() {
+        GaiaMaterial texturedMaterial = new GaiaMaterial();
+        texturedMaterial.setId(0);
+        texturedMaterial.getTextures().put(TextureType.NORMALS, List.of(new GaiaTexture()));
+        GaiaBufferDataSet withTexCoord = createDataSet(true);
+        GaiaBufferDataSet withoutTexCoord = createDataSet(false);
+        withTexCoord.setMaterialId(0);
+        withoutTexCoord.setMaterialId(0);
+        List<GaiaMaterial> materials = new java.util.ArrayList<>(List.of(texturedMaterial));
+
+        new GaiaBatcher().assignTexturelessMaterialsToDataSetsWithoutTexCoords(
+                List.of(withTexCoord, withoutTexCoord), materials);
+
+        assertEquals(2, materials.size());
+        assertEquals(0, withTexCoord.getMaterialId());
+        assertFalse(materials.get(withTexCoord.getMaterialId()).getTextures().isEmpty());
+        assertEquals(1, withoutTexCoord.getMaterialId());
+        assertTrue(materials.get(withoutTexCoord.getMaterialId()).getTextures().isEmpty());
     }
 
     private GaiaBufferDataSet createDataSet(boolean withTexCoord) {
