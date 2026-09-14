@@ -297,7 +297,7 @@ public abstract class AbstractGeometryConverter {
     }
 
     protected double getDiameter(SimpleFeature feature, String column) {
-        double result = 10.0d;
+        double defaultValue = 10.0d;
         Object attributeLower = feature.getAttribute(column);
         Object attributeUpper = feature.getAttribute(column.toUpperCase());
         Object attributeObject = null;
@@ -306,22 +306,11 @@ public abstract class AbstractGeometryConverter {
         } else if (attributeUpper != null) {
             attributeObject = attributeUpper;
         } else {
-            return result;
+            return defaultValue;
         }
 
-        if (attributeObject instanceof Short) {
-            result = result + (short) attributeObject;
-        } else if (attributeObject instanceof Integer) {
-            result = result + (int) attributeObject;
-        } else if (attributeObject instanceof Long) {
-            result = result + (Long) attributeObject;
-        } else if (attributeObject instanceof Double) {
-            result = result + (double) attributeObject;
-        } else if (attributeObject instanceof String) {
-            result = Double.parseDouble((String) attributeObject);
-        }
-
-        return result;
+        double result = com.gaia3d.converter.kml.AttributeReader.parseNumber(attributeObject, defaultValue);
+        return com.gaia3d.converter.kml.AttributeReader.positiveOrDefault(result, defaultValue);
     }
 
     protected GaiaPrimitive createSurfaceFromExteriorAndInteriorPolygons(List<Vector3d> ExteriorPolygon, List<List<Vector3d>> interiorPolygons) {

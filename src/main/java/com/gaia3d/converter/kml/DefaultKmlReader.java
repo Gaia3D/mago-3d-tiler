@@ -43,9 +43,9 @@ public class DefaultKmlReader implements AttributeReader {
                     .tilt(Double.parseDouble(findContent(elements, "tilt")))
                     .roll(Double.parseDouble(findContent(elements, "roll")))
                     .href(findContent(elements, "href"))
-                    .scaleX(Double.parseDouble(findContent(elements, "x")))
-                    .scaleY(Double.parseDouble(findContent(elements, "y")))
-                    .scaleZ(Double.parseDouble(findContent(elements, "z")))
+                    .scaleX(AttributeReader.positiveOrDefault(Double.parseDouble(findContent(elements, "x")), 1.0))
+                    .scaleY(AttributeReader.positiveOrDefault(Double.parseDouble(findContent(elements, "y")), 1.0))
+                    .scaleZ(AttributeReader.positiveOrDefault(Double.parseDouble(findContent(elements, "z")), 1.0))
                     .build();
             document = null;
             builder = null;
