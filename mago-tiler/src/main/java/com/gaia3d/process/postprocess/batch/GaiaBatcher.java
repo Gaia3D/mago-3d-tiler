@@ -387,7 +387,19 @@ public class GaiaBatcher {
         }
     }
 
-    private List<List<GaiaBufferDataSet>> divisionByMaxVerticesCount(List<GaiaBufferDataSet> dataSets) {
+    List<List<GaiaBufferDataSet>> divisionByMaxVerticesCount(List<GaiaBufferDataSet> dataSets) {
+        Map<Boolean, List<GaiaBufferDataSet>> dataSetsByTexCoord = new LinkedHashMap<>();
+        for (GaiaBufferDataSet dataSet : dataSets) {
+            boolean hasTexCoord = dataSet.getBuffers().get(AttributeType.TEXCOORD) != null;
+            dataSetsByTexCoord.computeIfAbsent(hasTexCoord, ignored -> new ArrayList<>()).add(dataSet);
+        }
+
+        List<List<GaiaBufferDataSet>> result = new ArrayList<>();
+        dataSetsByTexCoord.values().forEach(group -> result.addAll(divisionByMaxVerticesCountInternal(group)));
+        return result;
+    }
+
+    private List<List<GaiaBufferDataSet>> divisionByMaxVerticesCountInternal(List<GaiaBufferDataSet> dataSets) {
         int count = 0;
         List<List<GaiaBufferDataSet>> result = new ArrayList<>();
         List<GaiaBufferDataSet> splitList = new ArrayList<>();
