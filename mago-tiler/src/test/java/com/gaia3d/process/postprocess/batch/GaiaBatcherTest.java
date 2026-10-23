@@ -88,6 +88,31 @@ class GaiaBatcherTest {
         assertEquals(11.0f, positions[indices[4] * 3]);
     }
 
+    @Test
+    void fillsNormalsAndColorsMissingFromSomeDataSets() {
+        GaiaBufferDataSet withAttributes = createIndexedDataSet(new float[]{0, 0, 0, 1, 0, 0, 0, 1, 0}, new int[]{0, 1, 2});
+        GaiaBuffer normalBuffer = new GaiaBuffer();
+        normalBuffer.setFloats(new float[]{1, 0, 0, 1, 0, 0, 1, 0, 0});
+        withAttributes.getBuffers().put(AttributeType.NORMAL, normalBuffer);
+        GaiaBuffer colorBuffer = new GaiaBuffer();
+        colorBuffer.setBytes(new byte[]{1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4});
+        withAttributes.getBuffers().put(AttributeType.COLOR, colorBuffer);
+        GaiaBufferDataSet withoutAttributes = createIndexedDataSet(new float[]{10, 0, 0, 11, 0, 0}, new int[]{0, 1, 1});
+
+        GaiaBufferDataSet batched = new GaiaBatcher().batchVertices(List.of(withoutAttributes, withAttributes), new byte[]{9, 8, 7, 6});
+
+        float[] normals = batched.getBuffers().get(AttributeType.NORMAL).getFloats();
+        byte[] colors = batched.getBuffers().get(AttributeType.COLOR).getBytes();
+        assertEquals(5 * 3, normals.length);
+        assertEquals(5 * 4, colors.length);
+        assertEquals(5, batched.getBuffers().get(AttributeType.NORMAL).getElementsCount());
+        assertEquals(1.0f, normals[2]); // filled up normal of vertex 0
+        assertEquals(1.0f, normals[2 * 3]); // vertex 2 is the first one with its own normal
+        assertEquals(9, colors[0]);
+        assertEquals(1, colors[2 * 4]);
+        assertEquals(4, colors[5 * 4 - 1]);
+    }
+
     private GaiaBufferDataSet createIndexedDataSet(float[] positions, int[] indices) {
         GaiaBufferDataSet dataSet = new GaiaBufferDataSet();
         GaiaBuffer positionBuffer = new GaiaBuffer();

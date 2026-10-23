@@ -476,7 +476,7 @@ public class GaiaBatcher {
         dataSetsMap.forEach((material, bufferDataSetDataList) -> {
             List<List<GaiaBufferDataSet>> splitDataSets = divisionByMaxVerticesCount(bufferDataSetDataList);
             splitDataSets.forEach((splitDataSet) -> {
-                GaiaBufferDataSet batchedBufferData = batchVertices(splitDataSet);
+                GaiaBufferDataSet batchedBufferData = batchVertices(splitDataSet, toColorBytes(material.getDiffuseColor()));
                 batchedBufferData.setMaterialId(material.getId());
                 filterdBufferDataList.add(batchedBufferData);
             });
@@ -589,6 +589,13 @@ public class GaiaBatcher {
         return false;
     }
 
+    private byte[] toColorBytes(Vector4d color) {
+        if (color == null) {
+            return new byte[]{(byte) 255, (byte) 255, (byte) 255, (byte) 255};
+        }
+        return new byte[]{(byte) (color.x * 255), (byte) (color.y * 255), (byte) (color.z * 255), (byte) (color.w * 255)};
+    }
+
     private void createColorBuffer(List<GaiaMaterial> materials, GaiaBufferDataSet bufferDataSet, LevelOfDetail lod) {
         GaiaMaterial material = findMaterial(materials, bufferDataSet.getMaterialId());
         Vector4d diffuseColor = material.getDiffuseColor();
@@ -626,6 +633,14 @@ public class GaiaBatcher {
     }
 
     GaiaBufferDataSet batchVertices(List<GaiaBufferDataSet> bufferDataSets) {
+        return batchVertices(bufferDataSets, new byte[]{(byte) 255, (byte) 255, (byte) 255, (byte) 255});
+    }
+
+    /**
+     * Merges dataSets into one. NORMAL and COLOR present in only some dataSets are filled with defaults
+     * (up normal, defaultColor) for the others, so every attribute stays aligned with POSITION.
+     */
+    GaiaBufferDataSet batchVertices(List<GaiaBufferDataSet> bufferDataSets, byte[] defaultColor) {
         GaiaBufferDataSet dataSet = new GaiaBufferDataSet();
         int totalIndicesCount = 0;
         int totalPositionCount = 0;
@@ -670,6 +685,14 @@ public class GaiaBatcher {
             }
         }
 
+        int totalVertexCount = totalPositionCount / 3;
+        if (totalNormalCount > 0) {
+            totalNormalCount = totalVertexCount * 3;
+        }
+        if (totalColorCount > 0) {
+            totalColorCount = totalVertexCount * 4;
+        }
+
         int[] indices = new int[totalIndicesCount];
         float[] positions = new float[totalPositionCount];
         float[] normals = new float[totalNormalCount];
@@ -698,9 +721,8 @@ public class GaiaBatcher {
                 log.error("[ERROR] indicesBuffer is null");
             }
             // offset by the appended vertex count, not by the max referenced index: unreferenced trailing vertices would shift every following dataSet
-            if (positionBuffer != null) {
-                vertexOffset += positionBuffer.getFloats().length / 3;
-            }
+            int vertexCount = positionBuffer != null ? positionBuffer.getFloats().length / 3 : 0;
+            vertexOffset += vertexCount;
 
             if (positionBuffer != null) {
                 for (float position : positionBuffer.getFloats()) {
@@ -714,11 +736,22 @@ public class GaiaBatcher {
                 for (float normal : normalBuffer.getFloats()) {
                     normals[normalIndex++] = normal;
                 }
+            } else if (normals.length > 0) {
+                for (int i = 0; i < vertexCount; i++) {
+                    normals[normalIndex++] = 0.0f;
+                    normals[normalIndex++] = 0.0f;
+                    normals[normalIndex++] = 1.0f;
+                }
             }
 
             if (colorBuffer != null) {
                 for (byte color : colorBuffer.getBytes()) {
                     colors[colorIndex++] = color;
+                }
+            } else if (colors.length > 0) {
+                for (int i = 0; i < vertexCount; i++) {
+                    System.arraycopy(defaultColor, 0, colors, colorIndex, 4);
+                    colorIndex += 4;
                 }
             }
 
