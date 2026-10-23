@@ -247,6 +247,18 @@ public class GaiaTextureCoordinator {
             splitImages.add(splitImage);
         }
 
+        // shrink sources to their share of the final atlas before packing, so the full-size atlas is never allocated
+        int atlasMaxSize = getBatchAtlasMaxSize(lod);
+        double sourceScale = isPhotorealistic ? 1.0 : getSourceScale(splitImages, atlasMaxSize);
+        if (sourceScale < 1.0) {
+            for (GaiaBatchImage splitImage : splitImages) {
+                GaiaRectangle originBoundary = splitImage.getOriginBoundary();
+                int width = Math.max(1, (int) Math.round(originBoundary.getWidth() * sourceScale));
+                int height = Math.max(1, (int) Math.round(originBoundary.getHeight() * sourceScale));
+                splitImage.setOriginBoundary(new GaiaRectangle(new Vector2d(0, 0), new Vector2d(width, height)));
+            }
+        }
+
         splitImages = splitImages.stream().sorted(Comparator.comparing(splitImage -> splitImage.getOriginBoundary().getArea())).collect(Collectors.toList());
         Collections.reverse(splitImages);
 
@@ -291,6 +303,11 @@ public class GaiaTextureCoordinator {
             if (!textures.isEmpty()) {
                 GaiaTexture texture = textures.getFirst();
                 BufferedImage source = isPhotorealistic ? texture.getBufferedImage() : texture.getBufferedImage(lod);
+                int targetWidth = (int) splitRectangle.getWidth();
+                int targetHeight = (int) splitRectangle.getHeight();
+                if (source.getWidth() != targetWidth || source.getHeight() != targetHeight) {
+                    source = ImageResizer.resizeMultiStepSmart(source, targetWidth, targetHeight);
+                }
                 graphics.drawImage(source, (int) splitRectangle.getMinX(), (int) splitRectangle.getMinY(), null); // original code
                 //graphics.drawImage(randomColoredImage, (int) splitRectangle.getMinX(), (int) splitRectangle.getMinY(), null); // test code
             }
@@ -469,7 +486,7 @@ public class GaiaTextureCoordinator {
 //                }
             }
         } else {
-            limitAtlasSize(GlobalConstants.DEFAULT_BATCH_ATLAS_MAX_TEXTURE_SIZE);
+            limitAtlasSize(atlasMaxSize);
         }
 
         updateAtlasTextureMetadata(maxWidth, maxHeight);
@@ -480,6 +497,23 @@ public class GaiaTextureCoordinator {
         }
 
         return this.atlasImage;
+    }
+
+    static int getBatchAtlasMaxSize(LevelOfDetail lod) {
+        int level = Math.max(0, lod.getLevel());
+        int size = level >= 31 ? 0 : GlobalConstants.DEFAULT_BATCH_ATLAS_LOD0_MAX_TEXTURE_SIZE >> level;
+        return Math.max(GlobalConstants.DEFAULT_BATCH_ATLAS_MIN_MAX_TEXTURE_SIZE, size);
+    }
+
+    /**
+     * Scale that fits the summed source area into maxSize^2; packing waste is left to limitAtlasSize.
+     */
+    static double getSourceScale(List<GaiaBatchImage> splitImages, int maxSize) {
+        double totalArea = splitImages.stream().mapToDouble(splitImage -> splitImage.getOriginBoundary().getArea()).sum();
+        if (totalArea <= 0 || maxSize <= 0) {
+            return 1.0;
+        }
+        return Math.min(1.0, maxSize / Math.sqrt(totalArea));
     }
 
     private void limitAtlasSize(int maximumSize) {
