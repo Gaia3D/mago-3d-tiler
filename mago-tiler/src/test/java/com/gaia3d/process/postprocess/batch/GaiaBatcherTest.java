@@ -70,6 +70,35 @@ class GaiaBatcherTest {
         assertTrue(materials.get(withoutTexCoord.getMaterialId()).getTextures().isEmpty());
     }
 
+    @Test
+    void offsetsIndicesByVertexCountWhenTrailingVerticesAreUnreferenced() {
+        // first: 4 vertices, triangle uses 0..2 only (vertex 3 unreferenced)
+        GaiaBufferDataSet first = createIndexedDataSet(new float[]{
+                0, 0, 0, 1, 0, 0, 0, 1, 0, 9, 9, 9}, new int[]{0, 1, 2});
+        GaiaBufferDataSet second = createIndexedDataSet(new float[]{
+                10, 0, 0, 11, 0, 0, 10, 1, 0}, new int[]{0, 1, 2});
+
+        GaiaBufferDataSet batched = new GaiaBatcher().batchVertices(List.of(first, second));
+
+        int[] indices = batched.getBuffers().get(AttributeType.INDICE).getInts();
+        float[] positions = batched.getBuffers().get(AttributeType.POSITION).getFloats();
+        assertEquals(6, batched.getBuffers().get(AttributeType.INDICE).getElementsCount());
+        assertEquals(List.of(0, 1, 2, 4, 5, 6), java.util.Arrays.stream(indices).boxed().toList());
+        assertEquals(10.0f, positions[indices[3] * 3]);
+        assertEquals(11.0f, positions[indices[4] * 3]);
+    }
+
+    private GaiaBufferDataSet createIndexedDataSet(float[] positions, int[] indices) {
+        GaiaBufferDataSet dataSet = new GaiaBufferDataSet();
+        GaiaBuffer positionBuffer = new GaiaBuffer();
+        positionBuffer.setFloats(positions);
+        dataSet.getBuffers().put(AttributeType.POSITION, positionBuffer);
+        GaiaBuffer indicesBuffer = new GaiaBuffer();
+        indicesBuffer.setInts(indices);
+        dataSet.getBuffers().put(AttributeType.INDICE, indicesBuffer);
+        return dataSet;
+    }
+
     private GaiaBufferDataSet createDataSet(boolean withTexCoord) {
         GaiaBufferDataSet dataSet = new GaiaBufferDataSet();
         GaiaBuffer positionBuffer = new GaiaBuffer();

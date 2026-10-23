@@ -625,7 +625,7 @@ public class GaiaBatcher {
         }
     }
 
-    private GaiaBufferDataSet batchVertices(List<GaiaBufferDataSet> bufferDataSets) {
+    GaiaBufferDataSet batchVertices(List<GaiaBufferDataSet> bufferDataSets) {
         GaiaBufferDataSet dataSet = new GaiaBufferDataSet();
         int totalIndicesCount = 0;
         int totalPositionCount = 0;
@@ -678,7 +678,7 @@ public class GaiaBatcher {
         byte[] colors = new byte[totalColorCount];
 
         GaiaRectangle batchedBoundingRectangle = null;
-        int totalIndicesMax = 0;
+        int vertexOffset = 0;
         for (GaiaBufferDataSet bufferDataSet : bufferDataSets) {
             Map<AttributeType, GaiaBuffer> buffers = bufferDataSet.getBuffers();
 
@@ -690,18 +690,16 @@ public class GaiaBatcher {
             GaiaBuffer batchIdBuffer = buffers.get(AttributeType.BATCHID);
 
             if (indicesBuffer != null) {
-                int indicesMax = 0;
                 for (int indice : indicesBuffer.getInts()) {
                     int intIndice = indice < 0 ? indice + 65536 : indice;
-                    indicesMax = Math.max(indicesMax, intIndice);
-                    //short value = (short) (totalIndicesMax + intIndice);
-                    int value = (totalIndicesMax + intIndice);
-                    indices[indicesIndex++] = value;
+                    indices[indicesIndex++] = vertexOffset + intIndice;
                 }
-                totalIndicesMax = totalIndicesMax + (indicesMax + 1);
-                totalIndicesCount += indicesBuffer.getInts().length;
             } else {
                 log.error("[ERROR] indicesBuffer is null");
+            }
+            // offset by the appended vertex count, not by the max referenced index: unreferenced trailing vertices would shift every following dataSet
+            if (positionBuffer != null) {
+                vertexOffset += positionBuffer.getFloats().length / 3;
             }
 
             if (positionBuffer != null) {
