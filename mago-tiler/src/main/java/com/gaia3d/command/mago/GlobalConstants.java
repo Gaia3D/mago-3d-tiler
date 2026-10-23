@@ -50,7 +50,8 @@ public class GlobalConstants {
     public static final double DEFAULT_HEADING = 0.0d;
 
     public static final boolean DEFAULT_USE_QUANTIZATION = false;
-    public static final int DEFAULT_BATCH_ATLAS_MAX_TEXTURE_SIZE = 1024;
+    public static final int DEFAULT_BATCH_ATLAS_LOD0_MAX_TEXTURE_SIZE = 2048;
+    public static final int DEFAULT_BATCH_ATLAS_MAX_TEXTURE_SIZE = 1024; // LOD1 and coarser
     public static final int REALISTIC_LOD0_MAX_TEXTURE_SIZE = 1024;
     public static final int REALISTIC_MAX_TEXTURE_SIZE = 512;
     public static final int REALISTIC_MIN_TEXTURE_SIZE = 32;

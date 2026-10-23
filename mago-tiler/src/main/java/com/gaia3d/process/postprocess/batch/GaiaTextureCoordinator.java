@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class GaiaTextureCoordinator {
@@ -64,133 +63,6 @@ public class GaiaTextureCoordinator {
         } else {
             this.atlasImage = null;
         }
-    }
-
-    private boolean intersectsRectangleAtlasingProcess(List<GaiaRectangle> listRectangles, GaiaRectangle rectangle) {
-        // this function returns true if the rectangle intersects with any existent rectangle of the listRectangles
-        boolean intersects = false;
-        double error = 10E-5;
-        for (GaiaRectangle existentRectangle : listRectangles) {
-            if (existentRectangle == rectangle) {
-                continue;
-            }
-            if (existentRectangle.intersects(rectangle, error)) {
-                intersects = true;
-                break;
-            }
-        }
-        return intersects;
-    }
-
-    private Vector2d getBestPositionMosaicInAtlas(List<GaiaBatchImage> listProcessSplitDataList, GaiaBatchImage splitDataToPutInMosaic) {
-        Vector2d resultVec = new Vector2d();
-
-        double currPosX, currPosY;
-        double candidatePosX = 0.0, candidatePosY = 0.0;
-        double currMosaicPerimeter, candidateMosaicPerimeter;
-        candidateMosaicPerimeter = -1.0;
-
-        //GaiaRectangle rect_toPutInMosaic = splitDataToPutInMosaic.getOriginBoundary();
-
-        // make existent rectangles list using listProcessSplitDataList
-        List<GaiaRectangle> listRectangles = new ArrayList<>();
-        GaiaRectangle beforeMosaicRectangle = new GaiaRectangle(0.0, 0.0, 0.0, 0.0);
-        int existentSplitDatasCount = listProcessSplitDataList.size();
-        for (int i = 0; i < existentSplitDatasCount; i++) {
-            GaiaBatchImage existentSplitData = listProcessSplitDataList.get(i);
-            GaiaRectangle batchedBoundary = existentSplitData.batchedBoundary;
-            if (i == 0) {
-                beforeMosaicRectangle.copyFrom(batchedBoundary);
-            } else {
-                beforeMosaicRectangle.addBoundingRectangle(batchedBoundary);
-            }
-            listRectangles.add(batchedBoundary);
-        }
-
-        // Now, try to find the best positions to put our rectangle
-        for (int i = 0; i < existentSplitDatasCount; i++) {
-            GaiaBatchImage existentSplitData = listProcessSplitDataList.get(i);
-            GaiaRectangle currRect = existentSplitData.batchedBoundary;
-
-            // for each existent rectangles, there are 2 possibles positions: leftUp & rightDown
-            // in this 2 possibles positions we put our leftDownCorner of rectangle of "splitDataToPutInMosaic"
-
-            // If in some of two positions our rectangle intersects with any other rectangle, then discard
-            // If no intersects with others rectangles, then calculate the mosaic-perimeter.
-            // We choose the minor perimeter of the mosaic
-
-            double width = splitDataToPutInMosaic.getOriginBoundary().getWidth();
-            double height = splitDataToPutInMosaic.getOriginBoundary().getHeight();
-
-            // 1- leftUp corner
-            currPosX = currRect.getMinX();
-            currPosY = currRect.getMaxY();
-
-            // setup our rectangle
-            if (splitDataToPutInMosaic.batchedBoundary == null) {
-                splitDataToPutInMosaic.batchedBoundary = new GaiaRectangle(0.0, 0.0, 0.0, 0.0);
-            }
-            splitDataToPutInMosaic.batchedBoundary.setMinX(currPosX);
-            splitDataToPutInMosaic.batchedBoundary.setMinY(currPosY);
-            splitDataToPutInMosaic.batchedBoundary.setMaxX(currPosX + width);
-            splitDataToPutInMosaic.batchedBoundary.setMaxY(currPosY + height);
-
-            // put our rectangle into mosaic & check that no intersects with another rectangles
-            if (!this.intersectsRectangleAtlasingProcess(listRectangles, splitDataToPutInMosaic.batchedBoundary)) {
-                GaiaRectangle afterMosaicRectangle = new GaiaRectangle(0.0, 0.0, 0.0, 0.0);
-                afterMosaicRectangle.copyFrom(beforeMosaicRectangle);
-                afterMosaicRectangle.addBoundingRectangle(splitDataToPutInMosaic.batchedBoundary);
-
-                // calculate the perimeter of the mosaic
-                if (candidateMosaicPerimeter < 0.0) {
-                    candidateMosaicPerimeter = afterMosaicRectangle.getPerimeter();
-                    candidatePosX = currPosX;
-                    candidatePosY = currPosY;
-                } else {
-                    currMosaicPerimeter = afterMosaicRectangle.getPerimeter();
-                    if (candidateMosaicPerimeter > currMosaicPerimeter) {
-                        candidateMosaicPerimeter = currMosaicPerimeter;
-                        candidatePosX = currPosX;
-                        candidatePosY = currPosY;
-                    }
-                }
-            }
-
-            // 2- rightDown corner
-            currPosX = currRect.getMaxX();
-            currPosY = currRect.getMinY();
-
-            // setup our rectangle
-            splitDataToPutInMosaic.batchedBoundary.setMinX(currPosX);
-            splitDataToPutInMosaic.batchedBoundary.setMinY(currPosY);
-            splitDataToPutInMosaic.batchedBoundary.setMaxX(currPosX + width);
-            splitDataToPutInMosaic.batchedBoundary.setMaxY(currPosY + height);
-
-            // put our rectangle into mosaic & check that no intersects with another rectangles
-            if (!this.intersectsRectangleAtlasingProcess(listRectangles, splitDataToPutInMosaic.batchedBoundary)) {
-                GaiaRectangle afterMosaicRectangle = new GaiaRectangle(0.0, 0.0, 0.0, 0.0);
-                afterMosaicRectangle.copyFrom(beforeMosaicRectangle);
-                afterMosaicRectangle.addBoundingRectangle(splitDataToPutInMosaic.batchedBoundary);
-
-                // calculate the perimeter of the mosaic
-                if (candidateMosaicPerimeter < 0.0) {
-                    candidateMosaicPerimeter = afterMosaicRectangle.getPerimeter();
-                    candidatePosX = currPosX;
-                    candidatePosY = currPosY;
-                } else {
-                    currMosaicPerimeter = afterMosaicRectangle.getPerimeter();
-                    if (candidateMosaicPerimeter > currMosaicPerimeter) {
-                        candidateMosaicPerimeter = currMosaicPerimeter;
-                        candidatePosX = currPosX;
-                        candidatePosY = currPosY;
-                    }
-                }
-            }
-        }
-
-        resultVec.set(candidatePosX, candidatePosY);
-
-        return resultVec;
     }
 
     private float modf(float value) {
@@ -247,26 +119,28 @@ public class GaiaTextureCoordinator {
             splitImages.add(splitImage);
         }
 
-        splitImages = splitImages.stream().sorted(Comparator.comparing(splitImage -> splitImage.getOriginBoundary().getArea())).collect(Collectors.toList());
-        Collections.reverse(splitImages);
-
-        // do the atlasing process
-        List<GaiaBatchImage> listProcessSplitDatas = new ArrayList<>();
+        // pack once at source size, then shrink the sources so the packed atlas fits the LOD cap; the full-size
+        // atlas is never allocated and each source is resampled only once
+        int atlasMaxSize = getBatchAtlasMaxSize(lod);
+        int[] sourceWidths = splitImages.stream().mapToInt(splitImage -> (int) splitImage.getOriginBoundary().getWidth()).toArray();
+        int[] sourceHeights = splitImages.stream().mapToInt(splitImage -> (int) splitImage.getOriginBoundary().getHeight()).toArray();
+        int[] widths = sourceWidths;
+        int[] heights = sourceHeights;
+        GaiaAtlasPacker.Result packed = GaiaAtlasPacker.pack(widths, heights);
+        double sourceScale = 1.0;
+        for (int attempt = 0; !isPhotorealistic && attempt < 8 && packed.longestSide() > atlasMaxSize; attempt++) {
+            sourceScale *= atlasMaxSize / (double) packed.longestSide();
+            widths = scaleSizes(sourceWidths, sourceScale);
+            heights = scaleSizes(sourceHeights, sourceScale);
+            packed = GaiaAtlasPacker.pack(widths, heights);
+        }
+        log.debug("Packed atlas {}: {} images, {}x{}, source scale {}, sources {}x{}", ATLAS_IMAGE, splitImages.size(), packed.width(), packed.height(),
+                sourceScale, Arrays.toString(sourceWidths), Arrays.toString(sourceHeights));
         for (int i = 0; i < splitImages.size(); i++) {
             GaiaBatchImage splitImage = splitImages.get(i);
-            GaiaRectangle originBoundary = splitImage.getOriginBoundary();
-
-            if (i == 0) {
-                splitImage.setBatchedBoundary(originBoundary);
-            } else {
-                // 1rst, find the best position for image into atlas
-                Vector2d bestPosition = this.getBestPositionMosaicInAtlas(listProcessSplitDatas, splitImage);
-                splitImage.batchedBoundary.setMinX(bestPosition.x);
-                splitImage.batchedBoundary.setMinY(bestPosition.y);
-                splitImage.batchedBoundary.setMaxX(bestPosition.x + originBoundary.getWidth());
-                splitImage.batchedBoundary.setMaxY(bestPosition.y + originBoundary.getHeight());
-            }
-            listProcessSplitDatas.add(splitImage);
+            Vector2d minPoint = new Vector2d(packed.xs()[i], packed.ys()[i]);
+            splitImage.setOriginBoundary(new GaiaRectangle(new Vector2d(0, 0), new Vector2d(widths[i], heights[i])));
+            splitImage.setBatchedBoundary(new GaiaRectangle(minPoint, new Vector2d(minPoint).add(widths[i], heights[i])));
         }
 
         int maxWidth = getMaxWidth(splitImages);
@@ -291,6 +165,11 @@ public class GaiaTextureCoordinator {
             if (!textures.isEmpty()) {
                 GaiaTexture texture = textures.getFirst();
                 BufferedImage source = isPhotorealistic ? texture.getBufferedImage() : texture.getBufferedImage(lod);
+                int targetWidth = (int) splitRectangle.getWidth();
+                int targetHeight = (int) splitRectangle.getHeight();
+                if (source.getWidth() != targetWidth || source.getHeight() != targetHeight) {
+                    source = ImageResizer.resizeMultiStepSmart(source, targetWidth, targetHeight);
+                }
                 graphics.drawImage(source, (int) splitRectangle.getMinX(), (int) splitRectangle.getMinY(), null); // original code
                 //graphics.drawImage(randomColoredImage, (int) splitRectangle.getMinX(), (int) splitRectangle.getMinY(), null); // test code
             }
@@ -469,7 +348,7 @@ public class GaiaTextureCoordinator {
 //                }
             }
         } else {
-            limitAtlasSize(GlobalConstants.DEFAULT_BATCH_ATLAS_MAX_TEXTURE_SIZE);
+            limitAtlasSize(atlasMaxSize);
         }
 
         updateAtlasTextureMetadata(maxWidth, maxHeight);
@@ -480,6 +359,14 @@ public class GaiaTextureCoordinator {
         }
 
         return this.atlasImage;
+    }
+
+    static int getBatchAtlasMaxSize(LevelOfDetail lod) {
+        return lod.getLevel() <= 0 ? GlobalConstants.DEFAULT_BATCH_ATLAS_LOD0_MAX_TEXTURE_SIZE : GlobalConstants.DEFAULT_BATCH_ATLAS_MAX_TEXTURE_SIZE;
+    }
+
+    static int[] scaleSizes(int[] sizes, double scale) {
+        return Arrays.stream(sizes).map(size -> Math.max(1, (int) Math.floor(size * scale))).toArray();
     }
 
     private void limitAtlasSize(int maximumSize) {

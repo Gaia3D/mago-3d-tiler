@@ -1,0 +1,4 @@
+it.geosolutions.jgridshift:jgridshift-core:1.3|https://github.com/geosolutions-it/jgridshift|GNU Lesser General Public License, Version 2.1|https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
+org.apache.xml:xml-commons-resolver:1.2|https://xerces.apache.org/xml-commons/components/resolver/|Apache License, Version 2.0|https://www.apache.org/licenses/LICENSE-2.0
+org.huldra.math:bigint:0.7.1|https://github.com/bwakell/Huldra|BSD 2-Clause License|https://github.com/bwakell/Huldra/blob/master/LICENSE
+picocontainer:picocontainer:1.2|http://www.picocontainer.org/|BSD 3-Clause License (PicoContainer)|http://www.picocontainer.org/license.html

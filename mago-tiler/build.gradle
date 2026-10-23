@@ -2,6 +2,7 @@ plugins {
     id "java"
     id "com.google.cloud.tools.jib" version "3.4.0"
     id "com.gradleup.shadow" version "9.0.1"
+    id "com.github.jk1.dependency-license-report" version "3.1.4"
 }
 
 dependencies {
@@ -77,9 +78,38 @@ jar {
 }
 
 import com.github.jengelman.gradle.plugins.shadow.transformers.AppendingTransformer
+import com.github.jk1.license.filter.LicenseBundleNormalizer
+import com.github.jk1.license.render.InventoryHtmlReportRenderer
+import com.github.jk1.license.render.TextReportRenderer
+
+licenseReport {
+    outputDir = layout.buildDirectory.dir("reports/dependency-license").get().asFile
+    projects = [project]
+    unionParentPomLicenses = false
+    configurations = ["runtimeClasspath"]
+    excludeOwnGroup = true
+    excludeBoms = true
+    filters = [new LicenseBundleNormalizer()]
+    renderers = [
+            new TextReportRenderer("THIRD-PARTY-LICENSES.txt"),
+            new InventoryHtmlReportRenderer("index.html", "mago-3d-tiler third-party licenses", file("license-overrides.txt"))
+    ]
+}
 
 shadowJar {
+    dependsOn "generateLicenseReport"
     mergeServiceFiles()
+    // Per-dependency LICENSE/NOTICE files are shipped under META-INF/third-party instead
+    exclude "META-INF/LICENSE", "META-INF/LICENSE.txt", "META-INF/LICENSE.md"
+    exclude "META-INF/NOTICE", "META-INF/NOTICE.txt", "META-INF/NOTICE.md"
+    into("META-INF/mago-3d-tiler") {
+        from(rootProject.file("LICENSE"))
+        from(rootProject.file("THIRD-PARTY-NOTICES.md"))
+    }
+    into("META-INF/third-party") {
+        from(licenseReport.outputDir)
+        from(rootProject.file("licenses"))
+    }
     transform(AppendingTransformer) {
         resource = "META-INF/registryFile.jai"
     }
@@ -95,7 +125,6 @@ shadowJar {
         attributes "Implementation-Vendor-Id": "com.gaia3d"
         attributes "Implementation-URL": "http://java.sun.com/products/java-media/jai/forDevelopers/jai-imageio/"
     }
-    relocate "org.slf4j", "shadow.slf4j"
     from sourceSets.main.runtimeClasspath
     configurations = [project.configurations.runtimeClasspath]
     archiveFileName = "mago-3d-tiler-${project.version}.jar"

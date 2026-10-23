@@ -177,3 +177,4 @@ main dependencies used in the mago-3d-tiler project include
 
 ## License
 - **MPL2.0**: The Mozilla Public License 2.0 (MPL2.0) governs the use of this software
+- **Third-party components**: See [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) for the licenses of bundled libraries and data
