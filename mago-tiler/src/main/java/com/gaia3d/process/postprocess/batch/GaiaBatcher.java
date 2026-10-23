@@ -476,7 +476,7 @@ public class GaiaBatcher {
         dataSetsMap.forEach((material, bufferDataSetDataList) -> {
             List<List<GaiaBufferDataSet>> splitDataSets = divisionByMaxVerticesCount(bufferDataSetDataList);
             splitDataSets.forEach((splitDataSet) -> {
-                GaiaBufferDataSet batchedBufferData = batchVertices(splitDataSet);
+                GaiaBufferDataSet batchedBufferData = batchVertices(splitDataSet, toColorBytes(material.getDiffuseColor()));
                 batchedBufferData.setMaterialId(material.getId());
                 filterdBufferDataList.add(batchedBufferData);
             });
@@ -589,6 +589,17 @@ public class GaiaBatcher {
         return false;
     }
 
+    private byte[] toColorBytes(Vector4d color) {
+        if (color == null) {
+            return new byte[]{(byte) 255, (byte) 255, (byte) 255, (byte) 255};
+        }
+        return new byte[]{toColorByte(color.x), toColorByte(color.y), toColorByte(color.z), toColorByte(color.w)};
+    }
+
+    private byte toColorByte(double value) {
+        return (byte) Math.round(Math.max(0.0, Math.min(1.0, value)) * 255);
+    }
+
     private void createColorBuffer(List<GaiaMaterial> materials, GaiaBufferDataSet bufferDataSet, LevelOfDetail lod) {
         GaiaMaterial material = findMaterial(materials, bufferDataSet.getMaterialId());
         Vector4d diffuseColor = material.getDiffuseColor();
@@ -606,11 +617,9 @@ public class GaiaBatcher {
         int elementsCount = positionBuffer.getElementsCount();
         int length = elementsCount * 4;
         byte[] colorList = new byte[length];
+        byte[] color = toColorBytes(diffuseColor);
         for (int i = 0; i < length; i += 4) {
-            colorList[i] = (byte) (diffuseColor.x * 255);
-            colorList[i + 1] = (byte) (diffuseColor.y * 255);
-            colorList[i + 2] = (byte) (diffuseColor.z * 255);
-            colorList[i + 3] = (byte) (diffuseColor.w * 255);
+            System.arraycopy(color, 0, colorList, i, 4);
         }
 
         GaiaBuffer colorBuffer = bufferMap.get(AttributeType.COLOR);
@@ -625,7 +634,15 @@ public class GaiaBatcher {
         }
     }
 
-    private GaiaBufferDataSet batchVertices(List<GaiaBufferDataSet> bufferDataSets) {
+    GaiaBufferDataSet batchVertices(List<GaiaBufferDataSet> bufferDataSets) {
+        return batchVertices(bufferDataSets, new byte[]{(byte) 255, (byte) 255, (byte) 255, (byte) 255});
+    }
+
+    /**
+     * Merges dataSets into one. NORMAL and COLOR present in only some dataSets are filled with defaults
+     * (up normal, defaultColor) for the others, so every attribute stays aligned with POSITION.
+     */
+    GaiaBufferDataSet batchVertices(List<GaiaBufferDataSet> bufferDataSets, byte[] defaultColor) {
         GaiaBufferDataSet dataSet = new GaiaBufferDataSet();
         int totalIndicesCount = 0;
         int totalPositionCount = 0;
@@ -670,6 +687,14 @@ public class GaiaBatcher {
             }
         }
 
+        int totalVertexCount = totalPositionCount / 3;
+        if (totalNormalCount > 0) {
+            totalNormalCount = totalVertexCount * 3;
+        }
+        if (totalColorCount > 0) {
+            totalColorCount = totalVertexCount * 4;
+        }
+
         int[] indices = new int[totalIndicesCount];
         float[] positions = new float[totalPositionCount];
         float[] normals = new float[totalNormalCount];
@@ -678,7 +703,7 @@ public class GaiaBatcher {
         byte[] colors = new byte[totalColorCount];
 
         GaiaRectangle batchedBoundingRectangle = null;
-        int totalIndicesMax = 0;
+        int vertexOffset = 0;
         for (GaiaBufferDataSet bufferDataSet : bufferDataSets) {
             Map<AttributeType, GaiaBuffer> buffers = bufferDataSet.getBuffers();
 
@@ -690,19 +715,16 @@ public class GaiaBatcher {
             GaiaBuffer batchIdBuffer = buffers.get(AttributeType.BATCHID);
 
             if (indicesBuffer != null) {
-                int indicesMax = 0;
                 for (int indice : indicesBuffer.getInts()) {
                     int intIndice = indice < 0 ? indice + 65536 : indice;
-                    indicesMax = Math.max(indicesMax, intIndice);
-                    //short value = (short) (totalIndicesMax + intIndice);
-                    int value = (totalIndicesMax + intIndice);
-                    indices[indicesIndex++] = value;
+                    indices[indicesIndex++] = vertexOffset + intIndice;
                 }
-                totalIndicesMax = totalIndicesMax + (indicesMax + 1);
-                totalIndicesCount += indicesBuffer.getInts().length;
             } else {
                 log.error("[ERROR] indicesBuffer is null");
             }
+            // offset by the appended vertex count, not by the max referenced index: unreferenced trailing vertices would shift every following dataSet
+            int vertexCount = positionBuffer != null ? positionBuffer.getFloats().length / 3 : 0;
+            vertexOffset += vertexCount;
 
             if (positionBuffer != null) {
                 for (float position : positionBuffer.getFloats()) {
@@ -712,16 +734,27 @@ public class GaiaBatcher {
                 log.error("[ERROR] positionBuffer is null");
             }
 
-            if (normalBuffer != null) {
-                for (float normal : normalBuffer.getFloats()) {
-                    normals[normalIndex++] = normal;
+            // copy at most one entry per vertex and pad the rest, so a mis-sized buffer cannot shift the following dataSets
+            if (normals.length > 0) {
+                int copied = normalBuffer != null ? Math.min(normalBuffer.getFloats().length, vertexCount * 3) : 0;
+                if (copied > 0) {
+                    System.arraycopy(normalBuffer.getFloats(), 0, normals, normalIndex, copied);
                 }
+                for (int i = copied; i < vertexCount * 3; i += 3) {
+                    normals[normalIndex + i + 2] = 1.0f;
+                }
+                normalIndex += vertexCount * 3;
             }
 
-            if (colorBuffer != null) {
-                for (byte color : colorBuffer.getBytes()) {
-                    colors[colorIndex++] = color;
+            if (colors.length > 0) {
+                int copied = colorBuffer != null ? Math.min(colorBuffer.getBytes().length, vertexCount * 4) : 0;
+                if (copied > 0) {
+                    System.arraycopy(colorBuffer.getBytes(), 0, colors, colorIndex, copied);
                 }
+                for (int i = copied; i < vertexCount * 4; i += 4) {
+                    System.arraycopy(defaultColor, 0, colors, colorIndex + i, 4);
+                }
+                colorIndex += vertexCount * 4;
             }
 
             if (texCoordBuffer != null) {
