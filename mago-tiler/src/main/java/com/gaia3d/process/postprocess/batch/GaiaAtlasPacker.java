@@ -13,6 +13,7 @@ import java.util.stream.IntStream;
  */
 final class GaiaAtlasPacker {
     private static final int STRIP_WIDTH_STEPS = 21; // sqrt(area) * 1.00, 1.05, ... 2.00
+    private static final int MANY_IMAGES = 200; // above this, try every 4th strip width with the first ordering only
 
     record Result(int[] xs, int[] ys, int width, int height) {
         int longestSide() {
@@ -42,10 +43,11 @@ final class GaiaAtlasPacker {
 
         double squareSide = Math.sqrt(totalArea);
         Result best = null;
-        for (Comparator<Integer> ordering : orderings) {
+        boolean many = count > MANY_IMAGES;
+        for (Comparator<Integer> ordering : many ? orderings.subList(0, 1) : orderings) {
             Integer[] order = IntStream.range(0, count).boxed().sorted(ordering).toArray(Integer[]::new);
             int previousStripWidth = -1;
-            for (int step = 0; step < STRIP_WIDTH_STEPS; step++) {
+            for (int step = 0; step < STRIP_WIDTH_STEPS; step += many ? 4 : 1) {
                 int stripWidth = Math.max(maxWidth, (int) Math.ceil(squareSide * (1.0 + 0.05 * step)));
                 if (stripWidth == previousStripWidth) {
                     continue;

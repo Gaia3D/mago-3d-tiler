@@ -593,7 +593,11 @@ public class GaiaBatcher {
         if (color == null) {
             return new byte[]{(byte) 255, (byte) 255, (byte) 255, (byte) 255};
         }
-        return new byte[]{(byte) (color.x * 255), (byte) (color.y * 255), (byte) (color.z * 255), (byte) (color.w * 255)};
+        return new byte[]{toColorByte(color.x), toColorByte(color.y), toColorByte(color.z), toColorByte(color.w)};
+    }
+
+    private byte toColorByte(double value) {
+        return (byte) Math.round(Math.max(0.0, Math.min(1.0, value)) * 255);
     }
 
     private void createColorBuffer(List<GaiaMaterial> materials, GaiaBufferDataSet bufferDataSet, LevelOfDetail lod) {
@@ -613,11 +617,9 @@ public class GaiaBatcher {
         int elementsCount = positionBuffer.getElementsCount();
         int length = elementsCount * 4;
         byte[] colorList = new byte[length];
+        byte[] color = toColorBytes(diffuseColor);
         for (int i = 0; i < length; i += 4) {
-            colorList[i] = (byte) (diffuseColor.x * 255);
-            colorList[i + 1] = (byte) (diffuseColor.y * 255);
-            colorList[i + 2] = (byte) (diffuseColor.z * 255);
-            colorList[i + 3] = (byte) (diffuseColor.w * 255);
+            System.arraycopy(color, 0, colorList, i, 4);
         }
 
         GaiaBuffer colorBuffer = bufferMap.get(AttributeType.COLOR);
@@ -732,27 +734,27 @@ public class GaiaBatcher {
                 log.error("[ERROR] positionBuffer is null");
             }
 
-            if (normalBuffer != null) {
-                for (float normal : normalBuffer.getFloats()) {
-                    normals[normalIndex++] = normal;
+            // copy at most one entry per vertex and pad the rest, so a mis-sized buffer cannot shift the following dataSets
+            if (normals.length > 0) {
+                int copied = normalBuffer != null ? Math.min(normalBuffer.getFloats().length, vertexCount * 3) : 0;
+                if (copied > 0) {
+                    System.arraycopy(normalBuffer.getFloats(), 0, normals, normalIndex, copied);
                 }
-            } else if (normals.length > 0) {
-                for (int i = 0; i < vertexCount; i++) {
-                    normals[normalIndex++] = 0.0f;
-                    normals[normalIndex++] = 0.0f;
-                    normals[normalIndex++] = 1.0f;
+                for (int i = copied; i < vertexCount * 3; i += 3) {
+                    normals[normalIndex + i + 2] = 1.0f;
                 }
+                normalIndex += vertexCount * 3;
             }
 
-            if (colorBuffer != null) {
-                for (byte color : colorBuffer.getBytes()) {
-                    colors[colorIndex++] = color;
+            if (colors.length > 0) {
+                int copied = colorBuffer != null ? Math.min(colorBuffer.getBytes().length, vertexCount * 4) : 0;
+                if (copied > 0) {
+                    System.arraycopy(colorBuffer.getBytes(), 0, colors, colorIndex, copied);
                 }
-            } else if (colors.length > 0) {
-                for (int i = 0; i < vertexCount; i++) {
-                    System.arraycopy(defaultColor, 0, colors, colorIndex, 4);
-                    colorIndex += 4;
+                for (int i = copied; i < vertexCount * 4; i += 4) {
+                    System.arraycopy(defaultColor, 0, colors, colorIndex + i, 4);
                 }
+                colorIndex += vertexCount * 4;
             }
 
             if (texCoordBuffer != null) {

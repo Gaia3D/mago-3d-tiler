@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class GaiaTextureCoordinatorTest {
 
     @Test
-    void halvesAtlasCapPerLodDownToFloor() {
+    void capsLeafAtlasHigherThanCoarserLods() {
         assertEquals(2048, GaiaTextureCoordinator.getBatchAtlasMaxSize(LevelOfDetail.NONE));
         assertEquals(2048, GaiaTextureCoordinator.getBatchAtlasMaxSize(LevelOfDetail.LOD0));
         assertEquals(1024, GaiaTextureCoordinator.getBatchAtlasMaxSize(LevelOfDetail.LOD1));

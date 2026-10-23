@@ -362,9 +362,7 @@ public class GaiaTextureCoordinator {
     }
 
     static int getBatchAtlasMaxSize(LevelOfDetail lod) {
-        int level = Math.max(0, lod.getLevel());
-        int size = level >= 31 ? 0 : GlobalConstants.DEFAULT_BATCH_ATLAS_LOD0_MAX_TEXTURE_SIZE >> level;
-        return Math.max(GlobalConstants.DEFAULT_BATCH_ATLAS_MIN_MAX_TEXTURE_SIZE, size);
+        return lod.getLevel() <= 0 ? GlobalConstants.DEFAULT_BATCH_ATLAS_LOD0_MAX_TEXTURE_SIZE : GlobalConstants.DEFAULT_BATCH_ATLAS_MAX_TEXTURE_SIZE;
     }
 
     static int[] scaleSizes(int[] sizes, double scale) {
