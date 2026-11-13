@@ -77,7 +77,7 @@ services:
 ### Execute mago 3DTiler with Java
 You can also run mago 3DTiler directly using the jar file.   
 Download the latest `mago-3d-tiler.jar` file from the releases page or build it from the source code.  
-Currently, **JDK 21** is required.
+Currently, **JDK 25** is required.
 
 ```
 java -jar mago-3d-tiler.jar --input "/data/input/sample" --output "/data/output/sample"
@@ -209,7 +209,10 @@ Options for 3D Tiles tileset generation.
 | `-ng`, `--minGeometricError <arg>` |    No    | Minimum geometric error                      |
 | `-mg`, `--maxGeometricError <arg>` |    No    | Maximum geometric error                      |
 | `-mp`, `--maxPoints <arg>`         |    No    | Maximum number of points per tile            |
-| `-qt`, `--quantize`                |    No    | Quantize glTF meshes with `KHR_mesh_quantization` |
+| `-mcp`, `--meshCompression <arg>`  |    No    | Mesh compression: `none` (Default), `quantize` (`KHR_mesh_quantization`) or `draco` (`KHR_draco_mesh_compression`, batched models only) |
+| `-tcp`, `--textureCompression <arg>` | No     | Texture compression: `none` (Default, source JPEG/PNG) or `ktx2` (Basis Universal ETC1S with mipmaps, `KHR_texture_basisu`, about 1/8 of the GPU memory). On Windows a JDK whose `msvcp140.dll` is older than 14.40 turns `ktx2` off with a warning |
+| `-ul`, `--unlit`                   |    No    | Write unlit materials (`KHR_materials_unlit`): textures show their own colors without scene lighting |
+| `-qt`, `--quantize`                |    No    | Deprecated, same as `--meshCompression quantize` |
 | `-tv`, `--tilesVersion <arg>`      |    No    | 3D Tiles version: `1.0` or `1.1` (Default: `1.1`) |
 | `-vr`, `--validationReport`        |    No    | Write per-file validation reports and a batch summary |
 

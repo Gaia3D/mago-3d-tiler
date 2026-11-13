@@ -4,7 +4,12 @@ import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
+import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
+import com.gaia3d.command.mago.MeshCompression;
+import com.gaia3d.command.mago.TextureCompression;
+import com.gaia3d.converter.gltf.DracoMeshCompressor;
+import com.gaia3d.converter.gltf.Ktx2TextureEncoder;
 import com.gaia3d.converter.gltf.GltfWriterOptions;
 import com.gaia3d.converter.gltf.tiles.BatchedModelGltfWriter;
 import com.gaia3d.process.postprocess.ContentModel;
@@ -16,12 +21,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix3d;
 import org.joml.Matrix4d;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.UnaryOperator;
 
 /**
  * 3D Tiles 1.1 Batched Model
@@ -30,6 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Batched3DModelV2 implements ContentModel {
     private static final String MAGIC = "glb";
     private final BatchedModelGltfWriter gltfWriter;
+    private final UnaryOperator<byte[]> meshCompressor;
 
     public Batched3DModelV2() {
         GltfWriterOptions gltfOptions = GltfWriterOptions.builder()
@@ -41,11 +51,26 @@ public class Batched3DModelV2 implements ContentModel {
         if (globalOptions.isUseQuantization()) {
             gltfOptions.setUseQuantization(true);
         }
+        if (globalOptions.isUnlit()) {
+            gltfOptions.setUnlit(true);
+        }
+        if (globalOptions.getTextureCompression() == TextureCompression.KTX2) {
+            gltfOptions.setKtx2Encoder(new Ktx2TextureEncoder(GlobalConstants.DEFAULT_KTX2_ETC1S_QUALITY, GlobalConstants.DEFAULT_KTX2_ETC1S_COMPRESSION_LEVEL,
+                    Runtime.getRuntime().availableProcessors() / Math.max(1, globalOptions.getMultiThreadCount())));
+        }
         if (globalOptions.isPhotogrammetry()) {
             gltfOptions.setForceJpeg(true);
-            gltfOptions.setUseQuantization(true);
-            gltfOptions.setUseShortTexCoord(true);
-            gltfOptions.setUseByteNormal(true);
+            if (globalOptions.getMeshCompression() != MeshCompression.DRACO) {
+                gltfOptions.setUseQuantization(true);
+                gltfOptions.setUseShortTexCoord(true);
+                gltfOptions.setUseByteNormal(true);
+            }
+        }
+        if (globalOptions.getMeshCompression() == MeshCompression.DRACO) {
+            this.meshCompressor = new DracoMeshCompressor(GlobalConstants.DEFAULT_DRACO_POSITION_BITS,
+                    GlobalConstants.DEFAULT_DRACO_TEXCOORD_BITS, GlobalConstants.DEFAULT_DRACO_COLOR_BITS);
+        } else {
+            this.meshCompressor = null;
         }
         this.gltfWriter = new BatchedModelGltfWriter(gltfOptions);
     }
@@ -141,7 +166,17 @@ public class Batched3DModelV2 implements ContentModel {
             scene.deleteNormals();
         }
 
-        this.gltfWriter.writeGlb(scene, glbOutputFile, featureTable, batchTableMap);
+        if (meshCompressor != null) {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            this.gltfWriter.writeGlb(scene, byteArrayOutputStream, featureTable, batchTableMap);
+            try {
+                Files.write(glbOutputFile.toPath(), meshCompressor.apply(byteArrayOutputStream.toByteArray()));
+            } catch (IOException e) {
+                log.error("[ERROR] Failed to write glb file.", e);
+            }
+        } else {
+            this.gltfWriter.writeGlb(scene, glbOutputFile, featureTable, batchTableMap);
+        }
         return contentInfo;
     }
 }

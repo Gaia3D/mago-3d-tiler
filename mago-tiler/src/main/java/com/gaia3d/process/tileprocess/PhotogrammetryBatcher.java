@@ -7,7 +7,12 @@ import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
+import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
+import com.gaia3d.command.mago.MeshCompression;
+import com.gaia3d.command.mago.TextureCompression;
+import com.gaia3d.converter.gltf.DracoMeshCompressor;
+import com.gaia3d.converter.gltf.Ktx2TextureEncoder;
 import com.gaia3d.converter.gltf.GltfWriterOptions;
 import com.gaia3d.converter.gltf.tiles.BatchedModelGltfWriter;
 import com.gaia3d.io.LittleEndianDataOutputStream;
@@ -29,12 +34,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.UnaryOperator;
 
 @Slf4j
 public class PhotogrammetryBatcher {
     private static final String MAGIC = "glb";
     private static final int VERSION = 1;
     private final BatchedModelGltfWriter gltfWriter;
+    private final UnaryOperator<byte[]> meshCompressor;
 
     public PhotogrammetryBatcher() {
         GltfWriterOptions gltfOptions = GltfWriterOptions.builder()
@@ -46,13 +53,25 @@ public class PhotogrammetryBatcher {
         if (globalOptions.isUseQuantization()) {
             gltfOptions.setUseQuantization(true);
         }
+        if (globalOptions.isUnlit()) {
+            gltfOptions.setUnlit(true);
+        }
+        if (globalOptions.getTextureCompression() == TextureCompression.KTX2) {
+            gltfOptions.setKtx2Encoder(new Ktx2TextureEncoder(GlobalConstants.DEFAULT_KTX2_ETC1S_QUALITY, GlobalConstants.DEFAULT_KTX2_ETC1S_COMPRESSION_LEVEL,
+                    Runtime.getRuntime().availableProcessors() / Math.max(1, globalOptions.getMultiThreadCount())));
+        }
+        boolean draco = globalOptions.getMeshCompression() == MeshCompression.DRACO;
         if (globalOptions.isPhotogrammetry()) {
             gltfOptions.setForceJpeg(true);
-            gltfOptions.setUseQuantization(true);
-            gltfOptions.setUseShortTexCoord(true);
-            gltfOptions.setUseByteNormal(true);
+            if (!draco) {
+                gltfOptions.setUseQuantization(true);
+                gltfOptions.setUseShortTexCoord(true);
+                gltfOptions.setUseByteNormal(true);
+            }
         }
         gltfWriter = new BatchedModelGltfWriter(gltfOptions);
+        meshCompressor = draco ? new DracoMeshCompressor(GlobalConstants.DEFAULT_DRACO_POSITION_BITS,
+                GlobalConstants.DEFAULT_DRACO_TEXCOORD_BITS, GlobalConstants.DEFAULT_DRACO_COLOR_BITS) : null;
     }
 
     public ContentInfo runV2(ContentInfo contentInfo, GaiaScene scene) {
@@ -142,7 +161,17 @@ public class PhotogrammetryBatcher {
 //        gltfOptions.setUseShortTexCoord(true);
 //        gltfOptions.setUseByteNormal(true);
 
-        gltfWriter.writeGlb(scene, glbOutputFile, featureTable, batchTableMap);
+        if (meshCompressor != null) {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            gltfWriter.writeGlb(scene, byteArrayOutputStream, featureTable, batchTableMap);
+            try {
+                Files.write(glbOutputFile.toPath(), meshCompressor.apply(byteArrayOutputStream.toByteArray()));
+            } catch (IOException e) {
+                log.error("[ERROR] Failed to write glb file.", e);
+            }
+        } else {
+            gltfWriter.writeGlb(scene, glbOutputFile, featureTable, batchTableMap);
+        }
         return contentInfo;
     }
 
@@ -226,6 +255,16 @@ public class PhotogrammetryBatcher {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             this.gltfWriter.writeGlb(scene, byteArrayOutputStream);
             glbBytes = byteArrayOutputStream.toByteArray();
+        }
+        if (meshCompressor != null) {
+            glbBytes = meshCompressor.apply(glbBytes);
+            if (globalOptions.isGlb()) {
+                try {
+                    Files.write(outputRoot.resolve(nodeCode + ".glb"), glbBytes);
+                } catch (IOException e) {
+                    log.error("[ERROR] Failed to write glb file.", e);
+                }
+            }
         }
         scene = null;
 
