@@ -61,9 +61,8 @@ public class GlobalConstants {
     public static final double DEFAULT_SCREEN_SPACE_ERROR = 16.0;
     public static final int DEFAULT_KTX2_ETC1S_QUALITY = 128; // basisu/toktx default
     public static final int DEFAULT_KTX2_ETC1S_COMPRESSION_LEVEL = 1;
-    // Draco quantization bits; 16 position bits match the precision of KHR_mesh_quantization
+    // Draco quantization bits; 16 position bits match the precision of KHR_mesh_quantization, normals stay exact
     public static final int DEFAULT_DRACO_POSITION_BITS = 16;
-    public static final int DEFAULT_DRACO_NORMAL_BITS = 10;
     public static final int DEFAULT_DRACO_TEXCOORD_BITS = 14;
     public static final int DEFAULT_DRACO_COLOR_BITS = 8;
     public static final int REALISTIC_LOD0_MAX_TEXTURE_SIZE = 1024;

@@ -71,7 +71,7 @@ public class Batched3DModel implements ContentModel {
             }
         }
         if (globalOptions.getMeshCompression() == MeshCompression.DRACO) {
-            this.meshCompressor = new DracoMeshCompressor(GlobalConstants.DEFAULT_DRACO_POSITION_BITS, GlobalConstants.DEFAULT_DRACO_NORMAL_BITS,
+            this.meshCompressor = new DracoMeshCompressor(GlobalConstants.DEFAULT_DRACO_POSITION_BITS,
                     GlobalConstants.DEFAULT_DRACO_TEXCOORD_BITS, GlobalConstants.DEFAULT_DRACO_COLOR_BITS);
         } else {
             this.meshCompressor = null;

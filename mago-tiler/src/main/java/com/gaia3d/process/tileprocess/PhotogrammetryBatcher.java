@@ -70,7 +70,7 @@ public class PhotogrammetryBatcher {
             }
         }
         gltfWriter = new BatchedModelGltfWriter(gltfOptions);
-        meshCompressor = draco ? new DracoMeshCompressor(GlobalConstants.DEFAULT_DRACO_POSITION_BITS, GlobalConstants.DEFAULT_DRACO_NORMAL_BITS,
+        meshCompressor = draco ? new DracoMeshCompressor(GlobalConstants.DEFAULT_DRACO_POSITION_BITS,
                 GlobalConstants.DEFAULT_DRACO_TEXCOORD_BITS, GlobalConstants.DEFAULT_DRACO_COLOR_BITS) : null;
     }
 

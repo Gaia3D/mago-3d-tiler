@@ -62,7 +62,7 @@ class DracoMeshCompressorTest {
                 + "\"images\":[{\"bufferView\":3,\"mimeType\":\"image/png\"}],"
                 + "\"meshes\":[{\"primitives\":[{\"attributes\":{\"POSITION\":0,\"_FEATURE_ID_0\":1},\"indices\":2}]}]}";
 
-        byte[] compressed = new DracoMeshCompressor(16, 10, 14, 8).apply(toGlb(json, bin));
+        byte[] compressed = new DracoMeshCompressor(16, 14, 8).apply(toGlb(json, bin));
 
         ByteBuffer glb = ByteBuffer.wrap(compressed).order(ByteOrder.LITTLE_ENDIAN);
         int jsonLength = glb.getInt(12);
@@ -104,7 +104,7 @@ class DracoMeshCompressorTest {
     void leavesGlbWithoutTrianglesUnchanged() {
         String json = "{\"asset\":{\"version\":\"2.0\"},\"meshes\":[]}";
         byte[] glb = toGlb(json, new byte[0]);
-        assertSame(glb, new DracoMeshCompressor(16, 10, 14, 8).apply(glb));
+        assertSame(glb, new DracoMeshCompressor(16, 14, 8).apply(glb));
     }
 
     @Test

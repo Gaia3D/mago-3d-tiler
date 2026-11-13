@@ -24,7 +24,7 @@ import java.util.function.UnaryOperator;
 /**
  * Rewrites the triangle primitives of a GLB with KHR_draco_mesh_compression. Each primitive's indices and attributes
  * are encoded into one Draco buffer view, the plain buffer views they used are dropped and the binary chunk is
- * repacked. Attributes are stored as floats: positions, normals, texture coordinates and colors are quantized, other
+ * repacked. Attributes are stored as floats: positions, texture coordinates and colors are quantized, normals and other
  * attributes such as _BATCHID and _FEATURE_ID_n are kept exact. A primitive that cannot be encoded is left as it was.
  */
 @Slf4j
@@ -40,13 +40,11 @@ public class DracoMeshCompressor implements UnaryOperator<byte[]> {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final int positionBits;
-    private final int normalBits;
     private final int texcoordBits;
     private final int colorBits;
 
-    public DracoMeshCompressor(int positionBits, int normalBits, int texcoordBits, int colorBits) {
+    public DracoMeshCompressor(int positionBits, int texcoordBits, int colorBits) {
         this.positionBits = positionBits;
-        this.normalBits = normalBits;
         this.texcoordBits = texcoordBits;
         this.colorBits = colorBits;
     }
@@ -191,7 +189,9 @@ public class DracoMeshCompressor implements UnaryOperator<byte[]> {
 
         byte[] encoded;
         try {
-            encoded = Draco.encode(mesh, createOptions(DracoCompressionLevel.STANDARD));
+            // FAST uses difference prediction; this encoder's STANDARD texture coordinate prediction decodes to wrong
+            // UVs in Google's decoder and OPTIMAL does not decode at all
+            encoded = Draco.encode(mesh, createOptions(DracoCompressionLevel.FAST));
         } catch (RuntimeException e) {
             // the edgebreaker traversal fails on some non-manifold meshes; the sequential encoder still quantizes
             log.debug("[DEBUG] Draco edgebreaker failed ({}), using the sequential encoder.", e.toString());
@@ -231,7 +231,6 @@ public class DracoMeshCompressor implements UnaryOperator<byte[]> {
     private DracoEncodeOptions createOptions(DracoCompressionLevel level) {
         DracoEncodeOptions options = new DracoEncodeOptions();
         options.setPositionBits(positionBits);
-        options.setNormalBits(normalBits);
         options.setTextureCoordinateBits(texcoordBits);
         options.setColorBits(colorBits);
         options.setCompressionLevel(level);
@@ -258,7 +257,7 @@ public class DracoMeshCompressor implements UnaryOperator<byte[]> {
     /**
      * The attribute as 32-bit floats. The encoder only quantizes float attributes and mishandles integer attributes
      * narrower than 32 bits or with several components, so integers are widened (normalized ones to [0, 1] / [-1, 1]);
-     * generic floats such as _BATCHID and _FEATURE_ID_n are stored losslessly.
+     * generic floats such as normals, _BATCHID and _FEATURE_ID_n are stored losslessly.
      */
     private PointAttribute createAttribute(String name, ObjectNode accessor, ArrayNode bufferViews, byte[] bin) {
         int componentType = accessor.get("componentType").asInt();
@@ -423,11 +422,13 @@ public class DracoMeshCompressor implements UnaryOperator<byte[]> {
         return value instanceof ArrayNode array ? array : new ObjectMapper().createArrayNode();
     }
 
+    /**
+     * Draco attribute type of a glTF attribute. Normals are stored as generic floats: this encoder's octahedral normal
+     * coding decodes to wrong directions in Google's decoder at every compression level.
+     */
     static int getAttributeType(String name) {
         if (name.equals("POSITION")) {
             return com.openize.drako.AttributeType.POSITION;
-        } else if (name.equals("NORMAL")) {
-            return com.openize.drako.AttributeType.NORMAL;
         } else if (name.startsWith("TEXCOORD_")) {
             return com.openize.drako.AttributeType.TEX_COORD;
         } else if (name.startsWith("COLOR_")) {
