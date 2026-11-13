@@ -342,7 +342,7 @@ public class GaiaBatcher {
 
     private List<GaiaMaterial> getMaterialsListOfBufferDataSet(List<GaiaBufferDataSet> bufferDataSets, List<GaiaMaterial> materials) {
         // first, make a map to avoid duplicate materials
-        Map<Integer, GaiaMaterial> materialMap = new WeakHashMap<>();
+        Map<Integer, GaiaMaterial> materialMap = new HashMap<>(); // not weak: boxed ids would be collected while the map is in use
         for (GaiaBufferDataSet bufferDataSet : bufferDataSets) {
             Integer materialId = bufferDataSet.getMaterialId();
             GaiaMaterial material = findMaterial(batchedMaterials, bufferDataSet.getMaterialId());

@@ -8,7 +8,7 @@ Based on Java, mago 3DTiler is highly portable, flexible, and fast.
 
 ![Static Badge](https://img.shields.io/badge/Gaia3D%2C%20Inc-blue?style=flat-square)
 ![Static Badge](https://img.shields.io/badge/3DTiles1.1-green?style=flat-square&logo=Cesium)
-![Static Badge](https://img.shields.io/badge/JDK21-red?style=flat-square&logo=openjdk)
+![Static Badge](https://img.shields.io/badge/JDK25-red?style=flat-square&logo=openjdk)
 ![Static Badge](https://img.shields.io/badge/Gradle9-darkorange?style=flat-square&logo=gradle)
 ![Static Badge](https://img.shields.io/badge/Docker%20Image-blue?style=flat-square&logo=docker)
 
@@ -29,7 +29,7 @@ download the mago-3d-tiler jar file or use the Docker image to get started quick
 
 ### Using the Jar File
 You can easily run mago 3dTiler using the jar file.   
-> ⚠️ **Requires JDK 21**
+> ⚠️ **Requires JDK 25**
 
 ```
 java -jar mago-3d-tiler-x.x.x.jar -input C:\data\kml-input-dir -output C:\data\kml-output-dir
@@ -60,7 +60,7 @@ then navigate to the project directory and run:
 gradle jar
 ```
 
-###### The Java version used in the release is OpenJDK 21
+###### The Java version used in the release is OpenJDK 25
 
 ## Example help command
 ```bash
