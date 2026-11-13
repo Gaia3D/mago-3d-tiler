@@ -45,6 +45,7 @@ import java.util.List;
 public class GltfWriter {
 
     protected final GltfWriterOptions gltfOptions;
+    private static final String KTX2_MIME_TYPE = "image/ktx2";
 
     public GltfWriter() {
         this(GltfWriterOptions.builder().build());
@@ -743,6 +744,16 @@ public class GltfWriter {
             material.setNormalTexture(normalTextureInfo);
         }
 
+        // KHR_materials_unlit: the viewer shows base color (texture) as is instead of shading it by the scene light
+        if (gltfOptions.isUnlit()) {
+            Map<String, Object> extensions = material.getExtensions() != null ? new HashMap<>(material.getExtensions()) : new HashMap<>();
+            extensions.put(ExtensionConstant.MATERIAL_UNLIT.getExtensionName(), new HashMap<String, Object>());
+            material.setExtensions(extensions);
+            if (gltf.getExtensionsUsed() == null || !gltf.getExtensionsUsed().contains(ExtensionConstant.MATERIAL_UNLIT.getExtensionName())) {
+                gltf.addExtensionsUsed(ExtensionConstant.MATERIAL_UNLIT.getExtensionName());
+            }
+        }
+
         gltf.addMaterials(material);
     }
 
@@ -761,7 +772,16 @@ public class GltfWriter {
             String uri = convertBufferedImageToURI(gaiaTexture.getBufferedImage(), mimeType);
             image.setUri(uri);
         } else {
-            byte[] imageBytes = convertBufferedImageToBytes(gaiaTexture.getBufferedImage(), mimeType);
+            byte[] imageBytes = null;
+            if (gltfOptions.getKtx2Encoder() != null) {
+                imageBytes = gltfOptions.getKtx2Encoder().apply(gaiaTexture.getBufferedImage());
+                if (imageBytes != null) {
+                    image.setMimeType(KTX2_MIME_TYPE);
+                }
+            }
+            if (imageBytes == null) {
+                imageBytes = convertBufferedImageToBytes(gaiaTexture.getBufferedImage(), mimeType);
+            }
 
             int bufferOffset = binary.calcTotalByteBufferLength() + binary.calcTotalImageByteBufferLength();
             int bufferViewId = createBufferView(gltf, 0, bufferOffset, imageBytes.length, -1, -1);
@@ -789,8 +809,22 @@ public class GltfWriter {
 
         Texture texture = new Texture();
         texture.setSampler(0);
-        texture.setSource(imageSource);
         texture.setName(gaiaTexture.getName());
+        if (KTX2_MIME_TYPE.equals(gltf.getImages().get(imageSource).getMimeType())) {
+            // no fallback image: the extension is required, as every 3D Tiles 1.1 viewer supports it
+            String basisu = ExtensionConstant.TEXTURE_BASISU.getExtensionName();
+            Map<String, Object> source = new HashMap<>();
+            source.put("source", imageSource);
+            Map<String, Object> extensions = new HashMap<>();
+            extensions.put(basisu, source);
+            texture.setExtensions(extensions);
+            if (gltf.getExtensionsUsed() == null || !gltf.getExtensionsUsed().contains(basisu)) {
+                gltf.addExtensionsUsed(basisu);
+                gltf.addExtensionsRequired(basisu);
+            }
+        } else {
+            texture.setSource(imageSource);
+        }
 
         gltf.addTextures(texture);
         return gltf.getTextures().size() - 1;
