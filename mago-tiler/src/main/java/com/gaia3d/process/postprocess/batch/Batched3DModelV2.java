@@ -4,7 +4,10 @@ import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
+import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
+import com.gaia3d.command.mago.TextureCompression;
+import com.gaia3d.converter.gltf.Ktx2TextureEncoder;
 import com.gaia3d.converter.gltf.GltfWriterOptions;
 import com.gaia3d.converter.gltf.tiles.BatchedModelGltfWriter;
 import com.gaia3d.process.postprocess.ContentModel;
@@ -40,6 +43,13 @@ public class Batched3DModelV2 implements ContentModel {
         }
         if (globalOptions.isUseQuantization()) {
             gltfOptions.setUseQuantization(true);
+        }
+        if (globalOptions.isUnlit()) {
+            gltfOptions.setUnlit(true);
+        }
+        if (globalOptions.getTextureCompression() == TextureCompression.KTX2) {
+            gltfOptions.setKtx2Encoder(new Ktx2TextureEncoder(GlobalConstants.DEFAULT_KTX2_ETC1S_QUALITY, GlobalConstants.DEFAULT_KTX2_ETC1S_COMPRESSION_LEVEL,
+                    Runtime.getRuntime().availableProcessors() / Math.max(1, globalOptions.getMultiThreadCount())));
         }
         if (globalOptions.isPhotogrammetry()) {
             gltfOptions.setForceJpeg(true);

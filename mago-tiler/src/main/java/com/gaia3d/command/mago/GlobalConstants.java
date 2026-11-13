@@ -50,8 +50,17 @@ public class GlobalConstants {
     public static final double DEFAULT_HEADING = 0.0d;
 
     public static final boolean DEFAULT_USE_QUANTIZATION = false;
-    public static final int DEFAULT_BATCH_ATLAS_LOD0_MAX_TEXTURE_SIZE = 2048;
-    public static final int DEFAULT_BATCH_ATLAS_MAX_TEXTURE_SIZE = 1024; // LOD1 and coarser
+    public static final int DEFAULT_BATCH_ATLAS_LOD0_MAX_TEXTURE_SIZE = 4096;
+    public static final int DEFAULT_BATCH_ATLAS_MAX_TEXTURE_SIZE = 2048; // LOD1 and coarser
+    public static final int DEFAULT_BATCH_ATLAS_MAX_COUNT = 4; // atlases per tile and sidedness before sources are shrunk to fit
+    // texel density budget of batched atlases in texels per square meter of surface. LOD0 matches the VWorld leaf tiles;
+    // coarser LODs aim at BATCH_ATLAS_TEXELS_PER_SCREEN_PIXEL texels per screen pixel at the distance their geometric
+    // error reaches the screen space error, (k * sse / ge)^2, capped by the LOD0 budget
+    public static final double DEFAULT_BATCH_ATLAS_LOD0_TEXEL_DENSITY = 200.0;
+    public static final double DEFAULT_BATCH_ATLAS_TEXELS_PER_SCREEN_PIXEL = 1.5;
+    public static final double DEFAULT_SCREEN_SPACE_ERROR = 16.0;
+    public static final int DEFAULT_KTX2_ETC1S_QUALITY = 128; // basisu/toktx default
+    public static final int DEFAULT_KTX2_ETC1S_COMPRESSION_LEVEL = 1;
     public static final int REALISTIC_LOD0_MAX_TEXTURE_SIZE = 1024;
     public static final int REALISTIC_MAX_TEXTURE_SIZE = 512;
     public static final int REALISTIC_MIN_TEXTURE_SIZE = 32;

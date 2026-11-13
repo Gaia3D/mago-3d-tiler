@@ -94,6 +94,9 @@ public class GlobalOptions {
 
     /* 3.4 3D Data Options */
     private boolean useQuantization = false;
+    private boolean unlit = false;
+    private MeshCompression meshCompression = MeshCompression.NONE;
+    private TextureCompression textureCompression = TextureCompression.NONE;
     private boolean useByteNormal = false;
     private boolean useShortTexCoord = false;
     private boolean recursive = false;
@@ -363,7 +366,29 @@ public class GlobalOptions {
         instance.setMaxInstance(GlobalConstants.DEFAULT_MAX_INSTANCE);
         instance.setMaxNodeDepth(GlobalConstants.DEFAULT_MAX_NODE_DEPTH);
         instance.setPhotogrammetry(command.hasOption(ProcessOptions.PHOTOGRAMMETRY.getLongName()));
-        instance.setUseQuantization(command.hasOption(ProcessOptions.MESH_QUANTIZATION.getLongName()) || GlobalConstants.DEFAULT_USE_QUANTIZATION);
+        MeshCompression meshCompression = GlobalConstants.DEFAULT_USE_QUANTIZATION ? MeshCompression.QUANTIZE : MeshCompression.NONE;
+        if (command.hasOption(ProcessOptions.MESH_COMPRESSION.getLongName())) {
+            meshCompression = MeshCompression.fromOption(command.getOptionValue(ProcessOptions.MESH_COMPRESSION.getLongName()));
+        }
+        if (command.hasOption(ProcessOptions.MESH_QUANTIZATION.getLongName())) {
+            if (command.hasOption(ProcessOptions.MESH_COMPRESSION.getLongName()) && meshCompression != MeshCompression.QUANTIZE) {
+                throw new IllegalArgumentException("'--quantize' conflicts with '--meshCompression " + meshCompression.name().toLowerCase() + "'");
+            }
+            log.warn("[WARN] '--quantize' is deprecated, use '--meshCompression quantize'.");
+            meshCompression = MeshCompression.QUANTIZE;
+        }
+        instance.setMeshCompression(meshCompression);
+        instance.setUseQuantization(meshCompression == MeshCompression.QUANTIZE);
+        instance.setUnlit(command.hasOption(ProcessOptions.UNLIT.getLongName()));
+        if (command.hasOption(ProcessOptions.TEXTURE_COMPRESSION.getLongName())) {
+            instance.setTextureCompression(TextureCompression.fromOption(command.getOptionValue(ProcessOptions.TEXTURE_COMPRESSION.getLongName())));
+        } else {
+            instance.setTextureCompression(TextureCompression.NONE);
+        }
+        if (instance.textureCompression == TextureCompression.KTX2 && !com.gaia3d.converter.gltf.Ktx2TextureEncoder.isRuntimeSupported()) {
+            log.warn("[WARN] KTX2 disabled: this JDK ships msvcp140.dll older than 14.40, which crashes libktx on Windows. Use a newer JDK 21 build.");
+            instance.setTextureCompression(TextureCompression.NONE);
+        }
 
         /* Point Cloud Options */
         instance.setMaximumPointPerTile(command.hasOption(ProcessOptions.MAX_POINTS.getLongName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_POINTS.getLongName())) : GlobalConstants.DEFAULT_POINT_PER_TILE);
@@ -446,6 +471,7 @@ public class GlobalOptions {
 
         if (instance.isPhotogrammetry()) {
             instance.setUseQuantization(true);
+            instance.setMeshCompression(MeshCompression.QUANTIZE);
         }
 
         instance.setCurvatureCorrection(command.hasOption(ProcessOptions.CURVATURE_CORRECTION.getLongName()));
@@ -558,10 +584,12 @@ public class GlobalOptions {
         log.info("isClassicTransformMatrix: {}", instance.classicTransformMatrix);
         log.info("Multi-Thread Count: {}", instance.multiThreadCount);
         Mago3DTilerMain.drawLine();
-        log.info("Mesh Quantization: {}", instance.useQuantization);
+        log.info("Mesh Compression: {}", instance.meshCompression);
+        log.info("Texture Compression: {}", instance.textureCompression);
         log.info("Rotate X-Axis: {}", instance.rotateX);
         log.info("Flip Coordinate: {}", instance.flipCoordinate);
         log.info("Ignore Textures: {}", instance.ignoreTextures);
+        log.info("Unlit Materials: {}", instance.unlit);
         log.info("Max Triangles: {}", instance.maxTriangles);
         log.info("Max Instance Size: {}", instance.maxInstance);
         log.info("Max Node Depth: {}", instance.maxNodeDepth);
