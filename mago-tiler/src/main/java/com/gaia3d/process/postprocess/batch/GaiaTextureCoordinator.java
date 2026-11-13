@@ -6,6 +6,7 @@ import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.model.GaiaMaterial;
 import com.gaia3d.basic.model.GaiaTexture;
 import com.gaia3d.basic.types.AttributeType;
+import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.basic.types.LevelOfDetail;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalConstants;
@@ -399,7 +400,13 @@ public class GaiaTextureCoordinator {
         }
 
         int[] originalCrop = getUsedSourceRegion(texcoords, originalSize[0], originalSize[1], CROP_PADDING);
-        double scale = getDensityScale(getTexelDensity(materialDataSets, originalSize[0], originalSize[1]), getTargetTexelDensity(lod));
+        double scale;
+        if (isSharedModel() && loaded != null) {
+            // an instance model is stored once for all its placements, so it keeps the per-LOD texture scale
+            scale = Math.min(1.0, (double) loaded.getWidth() / originalSize[0]);
+        } else {
+            scale = getDensityScale(getTexelDensity(materialDataSets, originalSize[0], originalSize[1]), getTargetTexelDensity(lod));
+        }
         int plannedWidth = Math.max(1, (int) Math.round((originalCrop[2] - originalCrop[0]) * scale));
         int plannedHeight = Math.max(1, (int) Math.round((originalCrop[3] - originalCrop[1]) * scale));
 
@@ -541,9 +548,15 @@ public class GaiaTextureCoordinator {
         return Math.sqrt(targetDensity / texelDensity);
     }
 
+    private boolean isSharedModel() {
+        FormatType outputFormat = globalOptions.getOutputFormat();
+        return FormatType.I3DM.equals(outputFormat) || FormatType.FOREST.equals(outputFormat);
+    }
+
     /**
      * Source texels per square meter of surface: UV area in texels of a width x height source over the triangle area.
-     * NaN when either area is zero.
+     * The UV area counts at most the whole image, since triangles that reuse the same texels (leaf cards, repeated
+     * details) do not need more of them. NaN when either area is zero.
      */
     static double getTexelDensity(List<GaiaBufferDataSet> dataSets, int width, int height) {
         double uvArea = 0.0;
@@ -578,7 +591,7 @@ public class GaiaTextureCoordinator {
         if (surfaceArea <= 0.0 || uvArea <= 0.0) {
             return Double.NaN;
         }
-        return uvArea * width * height / surfaceArea;
+        return Math.min(uvArea, 1.0) * width * height / surfaceArea;
     }
 
     static int getBatchAtlasMaxSize(LevelOfDetail lod) {

@@ -87,6 +87,28 @@ class GaiaTextureCoordinatorTest {
     }
 
     @Test
+    void countsReusedTexelsOnce() {
+        // four 1 m2 leaf cards each mapped to the whole 64 x 64 texture: 4096 texels over 4 m2, not 4096 per m2
+        float[] positions = new float[48];
+        float[] texcoords = new float[32];
+        int[] indexArray = new int[24];
+        for (int card = 0; card < 4; card++) {
+            float[] quad = {card * 2, 0, 0, card * 2 + 1, 0, 0, card * 2 + 1, 1, 0, card * 2, 1, 0};
+            System.arraycopy(quad, 0, positions, card * 12, 12);
+            System.arraycopy(new float[]{0, 0, 1, 0, 1, 1, 0, 1}, 0, texcoords, card * 8, 8);
+            int v = card * 4;
+            System.arraycopy(new int[]{v, v + 1, v + 2, v, v + 2, v + 3}, 0, indexArray, card * 6, 6);
+        }
+        GaiaBufferDataSet dataSet = new GaiaBufferDataSet();
+        dataSet.getBuffers().put(AttributeType.POSITION, floatBuffer(positions));
+        dataSet.getBuffers().put(AttributeType.TEXCOORD, floatBuffer(texcoords));
+        GaiaBuffer indices = new GaiaBuffer();
+        indices.setInts(indexArray);
+        dataSet.getBuffers().put(AttributeType.INDICE, indices);
+        assertEquals(1024.0, GaiaTextureCoordinator.getTexelDensity(List.of(dataSet), 64, 64), 1e-6);
+    }
+
+    @Test
     void groupsSourcesIntoAtlasesThatFitTheCap() {
         // four 1024 squares fill one 2048 atlas past the 85% mark, so they need two
         int[] sizes = {1024, 1024, 1024, 1024};
