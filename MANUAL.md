@@ -77,7 +77,7 @@ services:
 ### Execute mago 3DTiler with Java
 You can also run mago 3DTiler directly using the jar file.   
 Download the latest `mago-3d-tiler.jar` file from the releases page or build it from the source code.  
-Currently, **JDK 21** is required.
+Currently, **JDK 25** is required.
 
 ```
 java -jar mago-3d-tiler.jar --input "/data/input/sample" --output "/data/output/sample"
