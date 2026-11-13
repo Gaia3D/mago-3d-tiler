@@ -386,7 +386,7 @@ public class GlobalOptions {
             instance.setTextureCompression(TextureCompression.NONE);
         }
         if (instance.textureCompression == TextureCompression.KTX2 && !com.gaia3d.converter.gltf.Ktx2TextureEncoder.isRuntimeSupported()) {
-            log.warn("[WARN] KTX2 disabled: this JDK ships msvcp140.dll older than 14.40, which crashes libktx on Windows. Use a newer JDK 21 build.");
+            log.warn("[WARN] KTX2 disabled: this JDK ships msvcp140.dll older than 14.40, which crashes libktx on Windows. Use JDK 25.");
             instance.setTextureCompression(TextureCompression.NONE);
         }
 

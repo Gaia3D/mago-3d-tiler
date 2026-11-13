@@ -95,7 +95,7 @@ Usage: command options
                                        (quantize: "KHR_mesh_quantization", draco: "KHR_draco_mesh_compression" for batched models)
  -tcp, --textureCompression <arg>      Texture compression of glTF content
                                        (default: none)(options: none, ktx2)
-                                       (none: source JPEG/PNG, ktx2: Basis Universal ETC1S with mipmaps via "KHR_texture_basisu", about 1/8 of the GPU memory; on Windows needs a JDK 21 build with msvcp140.dll 14.40+)
+                                       (none: source JPEG/PNG, ktx2: Basis Universal ETC1S with mipmaps via "KHR_texture_basisu", about 1/8 of the GPU memory)
  -ul, --unlit                          Write unlit materials via "KHR_materials_unlit" Extension, so textures show their own colors without scene lighting
  -tv, --tilesVersion <arg>             3DTiles Version
                                        (default: 1.1)(options: 1.0, 1.1)

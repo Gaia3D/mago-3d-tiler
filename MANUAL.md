@@ -210,7 +210,7 @@ Options for 3D Tiles tileset generation.
 | `-mg`, `--maxGeometricError <arg>` |    No    | Maximum geometric error                      |
 | `-mp`, `--maxPoints <arg>`         |    No    | Maximum number of points per tile            |
 | `-mcp`, `--meshCompression <arg>`  |    No    | Mesh compression: `none` (Default), `quantize` (`KHR_mesh_quantization`) or `draco` (`KHR_draco_mesh_compression`, batched models only) |
-| `-tcp`, `--textureCompression <arg>` | No     | Texture compression: `none` (Default, source JPEG/PNG) or `ktx2` (Basis Universal ETC1S with mipmaps, `KHR_texture_basisu`, about 1/8 of the GPU memory). On Windows `ktx2` needs a JDK 21 build whose `msvcp140.dll` is 14.40 or newer (e.g. 21.0.13); with an older JDK it is turned off with a warning |
+| `-tcp`, `--textureCompression <arg>` | No     | Texture compression: `none` (Default, source JPEG/PNG) or `ktx2` (Basis Universal ETC1S with mipmaps, `KHR_texture_basisu`, about 1/8 of the GPU memory). On Windows a JDK whose `msvcp140.dll` is older than 14.40 turns `ktx2` off with a warning |
 | `-ul`, `--unlit`                   |    No    | Write unlit materials (`KHR_materials_unlit`): textures show their own colors without scene lighting |
 | `-qt`, `--quantize`                |    No    | Deprecated, same as `--meshCompression quantize` |
 | `-tv`, `--tilesVersion <arg>`      |    No    | 3D Tiles version: `1.0` or `1.1` (Default: `1.1`) |
