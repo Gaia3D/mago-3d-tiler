@@ -160,7 +160,7 @@ public class AssimpConverter implements Converter {
         for (int i = 0; i < numMaterials; i++) {
             assert aiMaterials != null;
             AIMaterial aiMaterial = AIMaterial.create(aiMaterials.get(i));
-            gaiaScene.getMaterials().add(processMaterial(aiMaterial, filePath, embeddedTextures));
+            gaiaScene.getMaterials().add(processMaterial(aiMaterial, filePath, embeddedTextures, formatType));
         }
 
         assert aiNode != null;
@@ -214,7 +214,7 @@ public class AssimpConverter implements Converter {
         for (int i = 0; i < numMaterials; i++) {
             assert aiMaterials != null;
             AIMaterial aiMaterial = AIMaterial.create(aiMaterials.get(i));
-            gaiaScene.getMaterials().add(processMaterial(aiMaterial, filePath, embeddedTextures));
+            gaiaScene.getMaterials().add(processMaterial(aiMaterial, filePath, embeddedTextures, formatType));
         }
 
         assert aiNode != null;
@@ -270,7 +270,7 @@ public class AssimpConverter implements Converter {
         return embeddedTextures;
     }
 
-    private GaiaMaterial processMaterial(AIMaterial aiMaterial, String path, List<String> embeddedTextures) {
+    private GaiaMaterial processMaterial(AIMaterial aiMaterial, String path, List<String> embeddedTextures, FormatType formatType) {
         GaiaMaterial material = new GaiaMaterial();
 
         String alphaMode = "OPAQUE";
@@ -443,6 +443,12 @@ public class AssimpConverter implements Converter {
             }
             textures.add(texture);
             material.getTextures().put(texture.getType(), textures);
+
+            // OBJ viewers (3ds Max, Blender) show map_Kd as is; the Kd beside it (0.588 by 3ds Max default) only tints
+            // untextured surfaces, so multiplying it into baseColorFactor darkens the texture
+            if (formatType == FormatType.OBJ) {
+                material.setDiffuseColor(new Vector4d(1.0, 1.0, 1.0, material.getDiffuseColor().w));
+            }
         } else {
             material.setName("NoTexture");
             List<GaiaTexture> textures = new ArrayList<>();

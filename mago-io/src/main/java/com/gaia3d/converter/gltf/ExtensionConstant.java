@@ -22,7 +22,9 @@ public enum ExtensionConstant {
     // KHR_mesh_quantization
     MESH_QUANTIZATION("KHR_mesh_quantization"),
     // KHR_materials_unlit
-    MATERIAL_UNLIT("KHR_materials_unlit");
+    MATERIAL_UNLIT("KHR_materials_unlit"),
+    // KHR_texture_basisu
+    TEXTURE_BASISU("KHR_texture_basisu");
 
     private final String extensionName;
 }
