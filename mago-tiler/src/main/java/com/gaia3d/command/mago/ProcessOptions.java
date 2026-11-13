@@ -26,7 +26,7 @@ public enum ProcessOptions {
     INSTANCE_PATH("instance", "if", true, false, "Instance file path for I3DM \n(default: {OUTPUT}/instance.dae)"),
 
     MESH_COMPRESSION("meshCompression", "mcp", true, false, "Mesh compression of glTF content \n(default: none)(options: none, quantize, draco)\n(quantize: \"KHR_mesh_quantization\", draco: \"KHR_draco_mesh_compression\" for batched models)"),
-    TEXTURE_COMPRESSION("textureCompression", "tcp", true, false, "Texture compression of glTF content \n(default: none)(options: none, ktx2)\n(none: source JPEG/PNG, ktx2: Basis Universal ETC1S with mipmaps via \"KHR_texture_basisu\", about 1/8 of the GPU memory; on Windows needs a JDK 21 build with msvcp140.dll 14.40+)"),
+    TEXTURE_COMPRESSION("textureCompression", "tcp", true, false, "Texture compression of glTF content \n(default: none)(options: none, ktx2)\n(none: source JPEG/PNG, ktx2: Basis Universal ETC1S with mipmaps via \"KHR_texture_basisu\", about 1/8 of the GPU memory)"),
     UNLIT("unlit", "ul", false, false, "Write unlit materials via \"KHR_materials_unlit\" Extension, so textures show their own colors without scene lighting"),
     TILES_VERSION("tilesVersion", "tv", true, false, "3DTiles Version \n(default: 1.1)(options: 1.0, 1.1)"),
 
