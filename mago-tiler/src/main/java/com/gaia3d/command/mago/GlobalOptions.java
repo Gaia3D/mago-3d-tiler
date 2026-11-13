@@ -469,7 +469,10 @@ public class GlobalOptions {
 
         printDebugOptions();
 
-        if (instance.isPhotogrammetry()) {
+        if (instance.getMeshCompression() == MeshCompression.DRACO && instance.getOutputFormat() != FormatType.B3DM && instance.getOutputFormat() != FormatType.GLB) {
+            log.warn("[WARN] '--meshCompression draco' applies to batched models only; {} content is written uncompressed.", instance.getOutputFormat());
+        }
+        if (instance.isPhotogrammetry() && instance.getMeshCompression() != MeshCompression.DRACO) {
             instance.setUseQuantization(true);
             instance.setMeshCompression(MeshCompression.QUANTIZE);
         }

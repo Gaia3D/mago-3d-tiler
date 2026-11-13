@@ -91,8 +91,8 @@ Usage: command options
  -if, --instance <arg>                 Instance file path for I3DM
                                        (default: {OUTPUT}/instance.dae)
  -mcp, --meshCompression <arg>         Mesh compression of glTF content
-                                       (default: none)(options: none, quantize)
-                                       (quantize: "KHR_mesh_quantization")
+                                       (default: none)(options: none, quantize, draco)
+                                       (quantize: "KHR_mesh_quantization", draco: "KHR_draco_mesh_compression" for batched models)
  -tcp, --textureCompression <arg>      Texture compression of glTF content
                                        (default: none)(options: none, ktx2)
                                        (none: source JPEG/PNG, ktx2: Basis Universal ETC1S with mipmaps via "KHR_texture_basisu", about 1/8 of the GPU memory; on Windows needs a JDK 21 build with msvcp140.dll 14.40+)

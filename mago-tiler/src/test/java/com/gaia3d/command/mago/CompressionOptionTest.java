@@ -14,7 +14,8 @@ class CompressionOptionTest {
         assertEquals(MeshCompression.NONE, MeshCompression.fromOption(null));
         assertEquals(MeshCompression.NONE, MeshCompression.fromOption("none"));
         assertEquals(MeshCompression.QUANTIZE, MeshCompression.fromOption("Quantize"));
-        assertThrows(IllegalArgumentException.class, () -> MeshCompression.fromOption("draco"));
+        assertEquals(MeshCompression.DRACO, MeshCompression.fromOption("draco"));
+        assertThrows(IllegalArgumentException.class, () -> MeshCompression.fromOption("meshopt"));
     }
 
     @Test

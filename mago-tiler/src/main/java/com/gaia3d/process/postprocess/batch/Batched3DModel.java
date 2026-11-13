@@ -9,7 +9,9 @@ import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
+import com.gaia3d.command.mago.MeshCompression;
 import com.gaia3d.command.mago.TextureCompression;
+import com.gaia3d.converter.gltf.DracoMeshCompressor;
 import com.gaia3d.converter.gltf.Ktx2TextureEncoder;
 import com.gaia3d.converter.gltf.GltfWriter;
 import com.gaia3d.converter.gltf.GltfWriterOptions;
@@ -33,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.UnaryOperator;
 
 @SuppressWarnings("ALL")
 @Slf4j
@@ -40,6 +43,7 @@ public class Batched3DModel implements ContentModel {
     private static final String MAGIC = "b3dm";
     private static final int VERSION = 1;
     private final GltfWriter gltfWriter;
+    private final UnaryOperator<byte[]> meshCompressor;
 
     public Batched3DModel() {
         GltfWriterOptions gltfOptions = GltfWriterOptions.builder()
@@ -60,9 +64,17 @@ public class Batched3DModel implements ContentModel {
         }
         if (globalOptions.isPhotogrammetry()) {
             gltfOptions.setForceJpeg(true);
-            gltfOptions.setUseQuantization(true);
-            gltfOptions.setUseShortTexCoord(true);
-            gltfOptions.setUseByteNormal(true);
+            if (globalOptions.getMeshCompression() != MeshCompression.DRACO) {
+                gltfOptions.setUseQuantization(true);
+                gltfOptions.setUseShortTexCoord(true);
+                gltfOptions.setUseByteNormal(true);
+            }
+        }
+        if (globalOptions.getMeshCompression() == MeshCompression.DRACO) {
+            this.meshCompressor = new DracoMeshCompressor(GlobalConstants.DEFAULT_DRACO_POSITION_BITS, GlobalConstants.DEFAULT_DRACO_NORMAL_BITS,
+                    GlobalConstants.DEFAULT_DRACO_TEXCOORD_BITS, GlobalConstants.DEFAULT_DRACO_COLOR_BITS);
+        } else {
+            this.meshCompressor = null;
         }
         this.gltfWriter = new GltfWriter(gltfOptions);
     }
@@ -148,6 +160,12 @@ public class Batched3DModel implements ContentModel {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             this.gltfWriter.writeGlb(scene, byteArrayOutputStream);
             glbBytes = byteArrayOutputStream.toByteArray();
+        }
+        if (meshCompressor != null) {
+            glbBytes = meshCompressor.apply(glbBytes);
+            if (globalOptions.isGlb()) {
+                writeCompressedGlb(contentInfo.resolveContentFile(outputRoot, "glb"), glbBytes);
+            }
         }
         scene = null;
 
@@ -255,6 +273,14 @@ public class Batched3DModel implements ContentModel {
             log.error("[ERROR] :", e);
         }
         return contentInfo;
+    }
+
+    private void writeCompressedGlb(File glbOutputFile, byte[] glbBytes) {
+        try {
+            Files.write(glbOutputFile.toPath(), glbBytes);
+        } catch (IOException e) {
+            log.error("[ERROR] Failed to write glb file.", e);
+        }
     }
 
     private byte[] readGlb(File glbOutputFile) {

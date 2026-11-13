@@ -5,7 +5,8 @@ package com.gaia3d.command.mago;
  */
 public enum MeshCompression {
     NONE,
-    QUANTIZE; // KHR_mesh_quantization
+    QUANTIZE, // KHR_mesh_quantization
+    DRACO; // KHR_draco_mesh_compression
 
     public static MeshCompression fromOption(String value) {
         if (value == null || value.isBlank()) {
@@ -16,6 +17,6 @@ public enum MeshCompression {
                 return compression;
             }
         }
-        throw new IllegalArgumentException("Invalid mesh compression: " + value + " (options: none, quantize)");
+        throw new IllegalArgumentException("Invalid mesh compression: " + value + " (options: none, quantize, draco)");
     }
 }
