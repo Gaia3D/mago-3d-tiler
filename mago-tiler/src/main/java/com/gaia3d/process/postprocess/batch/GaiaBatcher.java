@@ -547,13 +547,34 @@ public class GaiaBatcher {
 
         setMaterialsIndexInList(materials, dataSets);
         String atlasNodeCode = doubleSided ? nodeCode + "_double_sided" : nodeCode + "_single_sided";
-        BufferedImage bufferedImage = atlasTextures(lod, atlasNodeCode, dataSets, materials);
+        // a tile whose sources exceed one atlas at the LOD texel budget gets several atlases
+        GaiaTextureCoordinator planner = new GaiaTextureCoordinator(atlasNodeCode, materials, dataSets);
+        List<List<GaiaMaterial>> groups = planner.groupMaterialsForAtlases(lod);
+        // split the dataSets before any group renumbers its material ids
+        List<List<GaiaBufferDataSet>> groupDataSets = groups.stream().map(group -> {
+            Set<Integer> materialIds = group.stream().map(GaiaMaterial::getId).collect(Collectors.toSet());
+            return dataSets.stream().filter(dataSet -> materialIds.contains(dataSet.getMaterialId())).collect(Collectors.toList());
+        }).toList();
+        for (int i = 0; i < groups.size(); i++) {
+            String groupNodeCode = groups.size() > 1 ? atlasNodeCode + "_" + i : atlasNodeCode;
+            appendBatchedClampAtlasGroup(lod, groupNodeCode, doubleSided, groupDataSets.get(i), new ArrayList<>(groups.get(i)), planner.getPlannedImages(), resultBufferDataSets, resultMaterials);
+        }
+    }
+
+    private void appendBatchedClampAtlasGroup(LevelOfDetail lod, String atlasNodeCode, boolean doubleSided, List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> materials, Map<GaiaMaterial, GaiaBatchImage> plannedImages, List<GaiaBufferDataSet> resultBufferDataSets, List<GaiaMaterial> resultMaterials) {
+        if (dataSets.isEmpty() || materials.isEmpty()) {
+            return;
+        }
+        setMaterialsIndexInList(materials, dataSets);
+        BufferedImage bufferedImage = new GaiaTextureCoordinator(atlasNodeCode, materials, dataSets, plannedImages).batchTextures(lod);
         List<List<GaiaBufferDataSet>> splitDataSets = divisionByMaxVerticesCount(dataSets);
         List<GaiaBufferDataSet> batchedClampDataSets = batchClampMaterial(splitDataSets);
 
         GaiaMaterial atlasMaterial = materials.getFirst();
         atlasMaterial.setName(doubleSided ? "ATLAS_DOUBLE_SIDED" : "ATLAS_SINGLE_SIDED");
         atlasMaterial.setId(resultMaterials.size());
+        // color factors of the merged materials are baked into the atlas pixels
+        atlasMaterial.setDiffuseColor(new Vector4d(1.0, 1.0, 1.0, atlasMaterial.getDiffuseColor().w));
 
         Map<TextureType, List<GaiaTexture>> textures = atlasMaterial.getTextures();
         List<GaiaTexture> diffuseTextures = textures.get(TextureType.DIFFUSE);
@@ -565,11 +586,6 @@ public class GaiaBatcher {
         batchedClampDataSets.forEach(dataSet -> dataSet.setMaterialId(atlasMaterial.getId()));
         resultMaterials.add(atlasMaterial);
         resultBufferDataSets.addAll(batchedClampDataSets);
-    }
-
-    private BufferedImage atlasTextures(LevelOfDetail lod, String codeName, List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> materials) {
-        GaiaTextureCoordinator textureCoordinator = new GaiaTextureCoordinator(codeName, materials, dataSets);
-        return textureCoordinator.batchTextures(lod);
     }
 
     private boolean checkRepeat(GaiaMaterial material, GaiaBufferDataSet dataSet) {

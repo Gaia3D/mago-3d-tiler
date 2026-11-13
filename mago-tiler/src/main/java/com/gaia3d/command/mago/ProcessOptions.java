@@ -25,7 +25,9 @@ public enum ProcessOptions {
     GEOID_PATH("geoid", "ge", true, false, "Geoid file path for height correction, \n(default: Ellipsoid)(options: Ellipsoid, EGM84, EGM96, EGM2008 or GeoTIFF File Path)"),
     INSTANCE_PATH("instance", "if", true, false, "Instance file path for I3DM \n(default: {OUTPUT}/instance.dae)"),
 
-    MESH_QUANTIZATION("quantize", "qt", false, false, "Quantize glTF 3DMesh via \"KHR_mesh_quantization\" Extension"),
+    MESH_COMPRESSION("meshCompression", "mcp", true, false, "Mesh compression of glTF content \n(default: none)(options: none, quantize, draco)\n(quantize: \"KHR_mesh_quantization\", draco: \"KHR_draco_mesh_compression\" for batched models)"),
+    TEXTURE_COMPRESSION("textureCompression", "tcp", true, false, "Texture compression of glTF content \n(default: none)(options: none, ktx2)\n(none: source JPEG/PNG, ktx2: Basis Universal ETC1S with mipmaps via \"KHR_texture_basisu\", about 1/8 of the GPU memory; on Windows needs a JDK 21 build with msvcp140.dll 14.40+)"),
+    UNLIT("unlit", "ul", false, false, "Write unlit materials via \"KHR_materials_unlit\" Extension, so textures show their own colors without scene lighting"),
     TILES_VERSION("tilesVersion", "tv", true, false, "3DTiles Version \n(default: 1.1)(options: 1.0, 1.1)"),
 
     /* Coordinate Setting Options */
@@ -88,6 +90,7 @@ public enum ProcessOptions {
     MULTI_THREAD_COUNT("multiThreadCount", "mc", true, false, "[Deprecated] set thread count"),
     DEBUG_GLB("glb", "glb", false, false, "[Deprecated] Create glb file with B3DM."),
     IGNORE_TEXTURES("ignoreTextures", "igtx", false, false, "[Deprecated] Ignore diffuse textures. "),
+    MESH_QUANTIZATION("quantize", "qt", false, false, "[Deprecated] Same as '--meshCompression quantize'."),
 
     /* Validation Options */
     VALIDATION_REPORT("validationReport", "vr", false, false, "[Validation] Save per-file validation JSON reports to the temp directory and write a batch summary to the output directory."),

@@ -90,7 +90,13 @@ Usage: command options
                                        (default: Ellipsoid)(options: Ellipsoid, EGM84, EGM96, EGM2008 or GeoTIFF File Path)
  -if, --instance <arg>                 Instance file path for I3DM
                                        (default: {OUTPUT}/instance.dae)
- -qt, --quantize                       Quantize glTF 3DMesh via "KHR_mesh_quantization" Extension
+ -mcp, --meshCompression <arg>         Mesh compression of glTF content
+                                       (default: none)(options: none, quantize, draco)
+                                       (quantize: "KHR_mesh_quantization", draco: "KHR_draco_mesh_compression" for batched models)
+ -tcp, --textureCompression <arg>      Texture compression of glTF content
+                                       (default: none)(options: none, ktx2)
+                                       (none: source JPEG/PNG, ktx2: Basis Universal ETC1S with mipmaps via "KHR_texture_basisu", about 1/8 of the GPU memory; on Windows needs a JDK 21 build with msvcp140.dll 14.40+)
+ -ul, --unlit                          Write unlit materials via "KHR_materials_unlit" Extension, so textures show their own colors without scene lighting
  -tv, --tilesVersion <arg>             3DTiles Version
                                        (default: 1.1)(options: 1.0, 1.1)
  -c, --crs <arg>                       Set input data CRS (Coordinate Reference System)
@@ -147,6 +153,7 @@ Usage: command options
  -mc, --multiThreadCount <arg>         [Deprecated] set thread count
  -glb, --glb                           [Deprecated] Create glb file with B3DM.
  -igtx, --ignoreTextures               [Deprecated] Ignore diffuse textures.
+ -qt, --quantize                       [Deprecated] Same as '--meshCompression quantize'.
  -vr, --validationReport               [Validation] Save per-file validation JSON reports to the temp directory and write a batch summary to the output directory.
  -v, --verbose                         [Verbose] Show debug-level logs without changing the log format or disabling async logging.
  -d, --debug                           [DEBUG] More detailed log output and stops on Multi-Thread bugs.

@@ -15,6 +15,7 @@ dependencies {
     implementation "org.lwjgl:lwjgl-ktx"
 
     implementation "org.jdom:jdom2:2.0.6.1"
+    implementation "com.openize:drako:26.3.0"
 
     implementation "de.javagl:jgltf-obj:2.0.4"
     implementation "de.javagl:jgltf-model:2.0.4"

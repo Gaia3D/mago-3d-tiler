@@ -28,7 +28,7 @@ To regenerate the report from source:
 |---|---|
 | Apache License 2.0 | Apache Log4j, Apache Commons, Jackson, Woodstox, Guava, citygml4j, Proj4J, Eclipse ImageN, EJML, ehcache, SQLite JDBC, Kotlin stdlib, KTX-Software, Draco |
 | BSD 2/3-Clause | LWJGL, Assimp, jai-imageio-core, HSQLDB, ANTLR, Janino, Units of Measurement (indriya, si-units), stax2-api, PicoContainer, BigInt (Huldra) |
-| MIT | JOML, JglTF, SLF4J, DuckDB JDBC, GeographicLib-Java, Checker Framework, stb, libffi, liburing |
+| MIT | JOML, JglTF, SLF4J, Openize.Drako (Java port of Google Draco), DuckDB JDBC, GeographicLib-Java, Checker Framework, stb, libffi, liburing |
 | zlib/libpng | GLFW |
 | GNU LGPL 2.1 | GeoTools, ImageIO-Ext, laszip4j, jgridshift |
 | Eclipse Public License 1.0 / 2.0 | Eclipse EMF, Eclipse XSD, JTS Topology Suite (EPL 2.0 / EDL 1.0), Jakarta Annotations |
