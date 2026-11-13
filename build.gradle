@@ -11,8 +11,8 @@ subprojects {
 
     dependencies {
         /* Lombok */
-        compileOnly "org.projectlombok:lombok:1.18.30"
-        annotationProcessor "org.projectlombok:lombok:1.18.30"
+        compileOnly "org.projectlombok:lombok:1.18.48"
+        annotationProcessor "org.projectlombok:lombok:1.18.48"
 
         /* Logging */
         implementation 'org.slf4j:slf4j-api:1.7.25'
@@ -56,8 +56,8 @@ subprojects {
         implementation 'org.apache.commons:commons-text:1.10.0'
 
         /* Development libraries */
-        testCompileOnly "org.projectlombok:lombok:1.18.30"
-        testAnnotationProcessor "org.projectlombok:lombok:1.18.30"
+        testCompileOnly "org.projectlombok:lombok:1.18.48"
+        testAnnotationProcessor "org.projectlombok:lombok:1.18.48"
 
         testImplementation platform("org.junit:junit-bom:5.10.0")
         testImplementation "org.junit.jupiter:junit-jupiter-api"
@@ -67,14 +67,14 @@ subprojects {
 
     java {
         toolchain {
-            languageVersion = JavaLanguageVersion.of(21)
+            languageVersion = JavaLanguageVersion.of(25)
         }
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_25
+        targetCompatibility = JavaVersion.VERSION_25
     }
 
     tasks.withType(JavaCompile).configureEach {
-        options.release = 21
+        options.release = 25
         options.encoding = "UTF-8"
     }
 }

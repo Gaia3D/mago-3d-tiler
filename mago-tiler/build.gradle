@@ -1,8 +1,8 @@
 plugins {
     id "java"
-    id "com.google.cloud.tools.jib" version "3.4.0"
-    id "com.gradleup.shadow" version "9.0.1"
-    id "com.github.jk1.dependency-license-report" version "3.1.4"
+    id "com.google.cloud.tools.jib" version "3.5.4"
+    id "com.gradleup.shadow" version "9.6.1"
+    id "com.github.jk1.dependency-license-report" version "3.1.5"
 }
 
 dependencies {
@@ -51,10 +51,10 @@ test {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
     }
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
 
 javadoc {
@@ -69,6 +69,7 @@ jar {
     finalizedBy shadowJar
     manifest {
         attributes "Main-Class": "com.gaia3d.command.mago.Mago3DTilerMain"
+        attributes "Enable-Native-Access": "ALL-UNNAMED" // LWJGL loads its natives with System.load
         attributes "Implementation-Version": project.version
         attributes "Implementation-Title": "mago-3d-tiler"
         attributes "Implementation-Vendor": "Gaia3d, Inc."
@@ -119,6 +120,7 @@ shadowJar {
 
     manifest {
         attributes "Main-Class": "com.gaia3d.command.mago.Mago3DTilerMain"
+        attributes "Enable-Native-Access": "ALL-UNNAMED" // LWJGL loads its natives with System.load
         attributes "Implementation-Version": project.version
         attributes "Implementation-Title": "mago-3d-tiler"
         attributes "Implementation-Vendor": "Gaia3d, Inc."
@@ -141,7 +143,7 @@ shadowJar {
 
 jib {
     from {
-        image = "eclipse-temurin:21-jre"
+        image = "eclipse-temurin:25-jre"
         platforms {
             platform {
                 architecture = "amd64"
@@ -199,7 +201,7 @@ clean {
 
 compileJava {
     options.encoding = "UTF-8"
-    options.release = 21
+    options.release = 25
 }
 
 tasks.named("jib") {
