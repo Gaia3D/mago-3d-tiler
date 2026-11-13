@@ -23,6 +23,7 @@ developed with Java, this open-source marvel stands as a beacon for flexibility 
 - **Point Cloud Precision**: Bring your detailed point cloud data (***LAS, LAZ***) into the fold with pinpoint accuracy.​
 - **2D to 3D Extrusion**: Turn 2D geospatial data (***ESRI SHP, GeoJSON, GeoPackage***) into detailed 3D extrusion models, breathing life into flat representations.​
 - **On-The-Fly CRS Conversion**: Leverage the power of multi-threading and on-the-fly coordinate conversion with comprehensive PCS and GCS support via the Proj4 library.​
+- **Lightweight Output**: Compress geometry with ***Draco*** (`--meshCompression draco`) and textures with ***KTX2*** (`--textureCompression ktx2`), and write unlit materials (`--unlit`).
 
 ## Quick Start Guide
 download the mago-3d-tiler jar file or use the Docker image to get started quickly.
@@ -46,6 +47,25 @@ docker pull gaia3d/mago-3d-tiler
 ```
 docker run --rm -v "/workspace:/workspace" gaia3d/mago-3d-tiler -input /workspace/3ds-samples -output /workspace/sample-3d-tiles -crs 5186
 ```
+#### running with Draco / KTX2 compression:
+```bash
+docker pull gaia3d/mago-3d-tiler:1.17.0
+
+docker run --rm -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 \
+  -e "JAVA_TOOL_OPTIONS=-Xmx20g -Dfile.encoding=UTF-8 -Dsun.jnu.encoding=UTF-8" \
+  -v "/workspace:/workspace" \
+  gaia3d/mago-3d-tiler:1.17.0 \
+  -i "/workspace/obj-buildings" \
+  -o "/workspace/obj-buildings-tiles" \
+  -t /tmp/mago -it obj -r -c 5186 \
+  -mcp draco -tcp ktx2 -ul \
+  -l "/workspace/obj-buildings-tiles/tiler.log"
+```
+- `-mcp draco` : Draco geometry compression (`KHR_draco_mesh_compression`), batched models only
+- `-tcp ktx2` : KTX2 textures (`KHR_texture_basisu`), about 1/8 of the GPU memory; conversion takes longer
+- `-ul` : unlit materials (`KHR_materials_unlit`)
+
+On Windows, use `^` (Command Prompt) or `` ` `` (PowerShell) instead of `\` at the line ends. See the [Manual](MANUAL.md#compressing-geometry-and-textures-draco--ktx2--unlit) for details.
 
 ### Building from Source
 If you prefer to build the mago 3DTiler jar file from source,
