@@ -40,6 +40,30 @@ class OptimizedCardShufflerTest {
     }
 
     @Test
+    void scattersAgainWhenSectionsWouldNeedTooManyOpenFiles() throws IOException {
+        // 20-block sections would need 500 scatter files, so the 64 files hold more than a section and scatter again
+        long sectionBytes = BLOCK_SIZE * 20L;
+        assertEquals(OptimizedCardShuffler.MAX_SCATTER_FILES, OptimizedCardShuffler.getScatterCount(5000L * BLOCK_SIZE, sectionBytes, BLOCK_SIZE));
+        assertEquals(3, OptimizedCardShuffler.countPasses(5000L * BLOCK_SIZE, sectionBytes, BLOCK_SIZE));
+
+        File source = writeBlocks("source.bin", 5000, 3);
+        File target = tempDir.resolve("target.bin").toFile();
+        new OptimizedCardShuffler(sectionBytes).shuffle(source, target, BLOCK_SIZE);
+        assertPermutation(source, target, 5000, 3);
+        try (var files = Files.list(tempDir)) {
+            assertEquals(2, files.count(), "scatter temp files must be removed");
+        }
+    }
+
+    @Test
+    void boundsPassesAtTheDefaultSection() {
+        long section = (2024L * 1024 * 1024 / 18) * 18;
+        assertEquals(1, OptimizedCardShuffler.countPasses(1L << 30, section, 18));
+        assertEquals(2, OptimizedCardShuffler.countPasses(50L << 30, section, 18));
+        assertEquals(3, OptimizedCardShuffler.countPasses(200L << 30, section, 18));
+    }
+
+    @Test
     void isDeterministic() throws IOException {
         File source = writeBlocks("source.bin", 3000, 0);
         File first = tempDir.resolve("first.bin").toFile();

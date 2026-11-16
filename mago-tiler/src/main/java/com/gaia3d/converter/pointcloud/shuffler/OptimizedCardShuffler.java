@@ -18,6 +18,7 @@ public class OptimizedCardShuffler extends Shuffler {
     private static final int RANDOM_SEED = 8291;
     private static final int FIXED_SECTION_BYTES = 2024 * (1024 * 1024);
     private static final int STREAM_BUFFER_SIZE = 8192 * 64;
+    static final int MAX_SCATTER_FILES = 64;
 
     private final long sectionBytes;
 
@@ -35,7 +36,7 @@ public class OptimizedCardShuffler extends Shuffler {
         long blockCount = sourceFileSize / blockSize;
         long fullBytes = blockCount * blockSize;
         long maxSectionBytes = getMaxSectionBytes(blockSize);
-        int passes = fullBytes <= maxSectionBytes ? 1 : 2;
+        int passes = countPasses(fullBytes, maxSectionBytes, blockSize);
         log.info("[Pre][Shuffle][{}/{}] File size: {} bytes, Point count: {} bytes, passes: {}", processCount, totalProcessCount, sourceFileSize, blockCount, passes);
 
         File tempDir = targetFile.getAbsoluteFile().getParentFile();
@@ -59,6 +60,23 @@ public class OptimizedCardShuffler extends Shuffler {
         return Math.max(blockSize, (sectionBytes / blockSize) * blockSize);
     }
 
+    // scatter files of about half a section, but never more open at once than MAX_SCATTER_FILES: a larger file scatters
+    // into sections bigger than memory, which scatter again (about 64 GB of points per extra pass at the default size)
+    static int getScatterCount(long length, long maxSectionBytes, int blockSize) {
+        long scatterBytes = Math.max(blockSize, maxSectionBytes / 2);
+        return (int) Math.max(2, Math.min(MAX_SCATTER_FILES, (length + scatterBytes - 1) / scatterBytes));
+    }
+
+    static int countPasses(long length, long maxSectionBytes, int blockSize) {
+        int passes = 1;
+        while (length > maxSectionBytes) {
+            int scatterCount = getScatterCount(length, maxSectionBytes, blockSize);
+            length = (length + scatterCount - 1) / scatterCount;
+            passes++;
+        }
+        return passes;
+    }
+
     /**
      * Writes the next {@code length} bytes of {@code in}, a whole number of blocks, to {@code out} in shuffled block order.
      */
@@ -72,8 +90,8 @@ public class OptimizedCardShuffler extends Shuffler {
         }
 
         long blockCount = length / blockSize;
-        long scatterBytes = Math.max(blockSize, maxSectionBytes / 2);
-        int scatterCount = (int) Math.min(Integer.MAX_VALUE, (length + scatterBytes - 1) / scatterBytes);
+        int scatterCount = getScatterCount(length, maxSectionBytes, blockSize);
+        long scatterBytes = length / scatterCount;
         int bufferSize = (int) Math.min(STREAM_BUFFER_SIZE, Math.max(8192, scatterBytes));
         List<File> scatterFiles = new ArrayList<>(scatterCount);
         try {
@@ -84,7 +102,7 @@ public class OptimizedCardShuffler extends Shuffler {
                     scatterFiles.add(scatterFile);
                     scatterOutputs.add(new BufferedOutputStream(new FileOutputStream(scatterFile, false), bufferSize));
                 }
-                log.info("[Pre][Shuffle][{}/{}][1/2] Scattering {} points into {} sections...", processCount, totalProcessCount, blockCount, scatterCount);
+                log.info("[Pre][Shuffle][{}/{}] Scattering {} points into {} sections...", processCount, totalProcessCount, blockCount, scatterCount);
                 byte[] block = new byte[blockSize];
                 for (long i = 0; i < blockCount; i++) {
                     readFully(in, block, blockSize);
@@ -96,7 +114,7 @@ public class OptimizedCardShuffler extends Shuffler {
                 }
             }
 
-            log.info("[Pre][Shuffle][{}/{}][2/2] Shuffling {} sections...", processCount, totalProcessCount, scatterCount);
+            log.info("[Pre][Shuffle][{}/{}] Shuffling {} sections...", processCount, totalProcessCount, scatterCount);
             for (File scatterFile : scatterFiles) {
                 try (InputStream scatterInput = new BufferedInputStream(new FileInputStream(scatterFile), bufferSize)) {
                     shuffleBlocks(scatterInput, scatterFile.length(), out, blockSize, maxSectionBytes, random, tempDir);
