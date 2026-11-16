@@ -12,6 +12,7 @@ import com.gaia3d.converter.gltf.DracoMeshCompressor;
 import com.gaia3d.converter.gltf.Ktx2TextureEncoder;
 import com.gaia3d.converter.gltf.GltfWriterOptions;
 import com.gaia3d.converter.gltf.tiles.BatchedModelGltfWriter;
+import com.gaia3d.process.output.TilesetOutput;
 import com.gaia3d.process.postprocess.ContentModel;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
@@ -22,10 +23,7 @@ import org.joml.Matrix3d;
 import org.joml.Matrix4d;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -117,15 +115,6 @@ public class Batched3DModelV2 implements ContentModel {
             featureTable.setRtcCenter(rtcCenter);
         }
 
-        File outputFile = new File(globalOptions.getOutputPath());
-        Path outputRoot = outputFile.toPath()
-                .resolve("data");
-        if (!outputRoot.toFile()
-                .exists() && outputRoot.toFile()
-                .mkdir()) {
-            log.debug("[Create][data] Created output data directory,", outputRoot);
-        }
-
         /* create BatchTable */
         GaiaBatchTableMap<String, List<String>> batchTableMap = new GaiaBatchTableMap<>();
         AtomicInteger batchIdIndex = new AtomicInteger(0);
@@ -161,21 +150,20 @@ public class Batched3DModelV2 implements ContentModel {
             });
         });
 
-        File glbOutputFile = contentInfo.resolveContentFile(outputRoot, MAGIC);
         if (globalOptions.isPhotogrammetry()) {
             scene.deleteNormals();
         }
 
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        this.gltfWriter.writeGlb(scene, byteArrayOutputStream, featureTable, batchTableMap);
+        byte[] glbBytes = byteArrayOutputStream.toByteArray();
         if (meshCompressor != null) {
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            this.gltfWriter.writeGlb(scene, byteArrayOutputStream, featureTable, batchTableMap);
-            try {
-                Files.write(glbOutputFile.toPath(), meshCompressor.apply(byteArrayOutputStream.toByteArray()));
-            } catch (IOException e) {
-                log.error("[ERROR] Failed to write glb file.", e);
-            }
-        } else {
-            this.gltfWriter.writeGlb(scene, glbOutputFile, featureTable, batchTableMap);
+            glbBytes = meshCompressor.apply(glbBytes);
+        }
+        try {
+            TilesetOutput.write(contentInfo.resolveContentPath(MAGIC), glbBytes);
+        } catch (IOException e) {
+            log.error("[ERROR] Failed to write glb file.", e);
         }
         return contentInfo;
     }

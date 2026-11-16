@@ -10,6 +10,7 @@ import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.command.mago.TilingMode;
 import com.gaia3d.converter.pointcloud.GaiaLasPoint;
 import com.gaia3d.converter.pointcloud.GaiaPointCloud;
+import com.gaia3d.process.output.TilesetOutput;
 import com.gaia3d.process.tileprocess.Tiler;
 import com.gaia3d.process.tileprocess.TilesetBuildResult;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
@@ -26,11 +27,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -163,7 +161,6 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
 
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         File outputPath = new File(globalOptions.getOutputPath());
-        File tilesetFile = new File(outputPath, "tileset.json");
         ObjectMapper objectMapper = new ObjectMapper();
         if (!globalOptions.isDebug()) {
             objectMapper.getFactory().configure(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature(), true);
@@ -177,10 +174,10 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
             log.error("[ERROR] Failed to create output directory: {}", outputPath, e);
             throw new TileProcessingException("Failed to create output directory: " + outputPath, e);
         }
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(tilesetFile))) {
+        try {
             String result = objectMapper.writeValueAsString(tileset);
             log.info("[Tile][Tileset] write 'tileset.json' file.");
-            writer.write(result);
+            TilesetOutput.writeJson("tileset.json", result);
             globalOptions.setTilesetSize(result.length());
         } catch (IOException e) {
             log.error("[ERROR] :", e);
@@ -188,7 +185,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         }
 
         if (globalOptions.getTilingMode() == TilingMode.IMPLICIT) {
-            writeImplicitSubtrees(outputPath, objectMapper);
+            writeImplicitSubtrees(objectMapper);
         }
     }
 
@@ -291,15 +288,11 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         return code;
     }
 
-    private void writeImplicitSubtrees(File outputPath, ObjectMapper objectMapper) {
+    private void writeImplicitSubtrees(ObjectMapper objectMapper) {
         for (ImplicitSubtreeArtifact artifact : implicitSubtreeArtifacts) {
             try {
-                File subtreeFile = new File(outputPath, artifact.subtreeUri());
-                File bufferFile = new File(outputPath, artifact.bufferUri());
-                Files.createDirectories(subtreeFile.toPath().getParent());
-                Files.createDirectories(bufferFile.toPath().getParent());
-                objectMapper.writeValue(subtreeFile, artifact.subtree());
-                Files.write(bufferFile.toPath(), artifact.availabilityBuffer());
+                TilesetOutput.write(artifact.subtreeUri(), objectMapper.writeValueAsBytes(artifact.subtree()));
+                TilesetOutput.write(artifact.bufferUri(), artifact.availabilityBuffer());
             } catch (IOException e) {
                 throw new TileProcessingException("Failed to write implicit subtree: " + artifact.subtreeUri(), e);
             }

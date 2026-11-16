@@ -7,6 +7,7 @@ import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.gltf.GltfWriterOptions;
 import com.gaia3d.converter.gltf.tiles.InstancedModelGltfWriter;
 import com.gaia3d.converter.kml.TileTransformInfo;
+import com.gaia3d.process.output.TilesetOutput;
 import com.gaia3d.process.postprocess.ContentModel;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTableMap;
 import com.gaia3d.process.postprocess.batch.GaiaBatcher;
@@ -20,8 +21,7 @@ import org.joml.Matrix4d;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 
-import java.io.File;
-import java.nio.file.Path;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -126,15 +126,6 @@ public class Instanced3DModelV2 implements ContentModel {
         instanced3DModelBinary.setFeatureIds(batchId);
 
         GlobalOptions globalOptions = GlobalOptions.getInstance();
-        File outputFile = new File(globalOptions.getOutputPath());
-        Path outputRoot = outputFile.toPath()
-                .resolve("data");
-        if (!outputRoot.toFile()
-                .exists() && outputRoot.toFile()
-                .mkdir()) {
-            log.debug("[Create][data] Created output data directory, {}", outputRoot);
-        }
-
         GaiaFeatureTable featureTable = new GaiaFeatureTable();
 
         // IMPORTANT!
@@ -189,12 +180,11 @@ public class Instanced3DModelV2 implements ContentModel {
             }
         });
 
-        File i3dmOutputFile = contentInfo.resolveContentFile(outputRoot, MAGIC);
-        createInstance(i3dmOutputFile, contentInfo, tileInfos.get(0), featureTable, batchTableMap);
+        createInstance(contentInfo.resolveContentPath(MAGIC), contentInfo, tileInfos.get(0), featureTable, batchTableMap);
         return contentInfo;
     }
 
-    private void createInstance(File file, ContentInfo contentInfo, TileInfo tileInfo, GaiaFeatureTable featureTable, GaiaBatchTableMap<String, List<String>> batchTableMap) {
+    private void createInstance(String path, ContentInfo contentInfo, TileInfo tileInfo, GaiaFeatureTable featureTable, GaiaBatchTableMap<String, List<String>> batchTableMap) {
         try {
             GaiaScene firstGaiaScene = tileInfo.getScene();
             firstGaiaScene = firstGaiaScene.clone();
@@ -208,7 +198,9 @@ public class Instanced3DModelV2 implements ContentModel {
             GaiaBatcher gaiaBatcher = new GaiaBatcher();
             GaiaSet gaiaSet = gaiaBatcher.runBatching(batchTileInfos, contentInfo.getNodeCode(), contentInfo.getLod());
             GaiaScene resultGaiaScene = new GaiaScene(gaiaSet);
-            gltfWriter.writeGlb(resultGaiaScene, file, featureTable, batchTableMap);
+            ByteArrayOutputStream glbBytes = new ByteArrayOutputStream();
+            gltfWriter.writeGlb(resultGaiaScene, glbBytes, featureTable, batchTableMap);
+            TilesetOutput.write(path, glbBytes.toByteArray());
         } catch (Exception e) {
             log.error("[ERROR] :", e);
             throw new RuntimeException(e);

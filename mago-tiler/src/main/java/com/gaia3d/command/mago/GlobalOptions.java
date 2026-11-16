@@ -97,6 +97,7 @@ public class GlobalOptions {
     private boolean unlit = false;
     private MeshCompression meshCompression = MeshCompression.NONE;
     private TextureCompression textureCompression = TextureCompression.NONE;
+    private OutputArchive outputArchive = OutputArchive.NONE;
     private boolean useByteNormal = false;
     private boolean useShortTexCoord = false;
     private boolean recursive = false;
@@ -390,6 +391,15 @@ public class GlobalOptions {
             instance.setTextureCompression(TextureCompression.NONE);
         }
 
+        if (command.hasOption(ProcessOptions.OUTPUT_ARCHIVE.getLongName())) {
+            instance.setOutputArchive(OutputArchive.fromOption(command.getOptionValue(ProcessOptions.OUTPUT_ARCHIVE.getLongName())));
+        } else {
+            instance.setOutputArchive(OutputArchive.NONE);
+        }
+        if (instance.outputArchive != OutputArchive.NONE && command.hasOption(ProcessOptions.MERGE.getLongName())) {
+            throw new IllegalArgumentException("'--outputArchive' is not supported with '--merge'.");
+        }
+
         /* Point Cloud Options */
         instance.setMaximumPointPerTile(command.hasOption(ProcessOptions.MAX_POINTS.getLongName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_POINTS.getLongName())) : GlobalConstants.DEFAULT_POINT_PER_TILE);
         instance.setPointRatio(command.hasOption(ProcessOptions.POINT_RATIO.getLongName()) ? Float.parseFloat(command.getOptionValue(ProcessOptions.POINT_RATIO.getLongName())) : GlobalConstants.DEFAULT_POINT_RATIO);
@@ -543,6 +553,7 @@ public class GlobalOptions {
         log.info("Implicit Subtree Levels: {}", instance.implicitSubtreeLevels);
         log.info("Input Path: {}", instance.inputPath);
         log.info("Output Path: {}", instance.outputPath);
+        log.info("Output Archive: {}", instance.outputArchive);
         log.info("Temp path: {}", instance.tempPath);
         log.info("Input Format: {}", instance.inputFormat);
         log.info("Output Format: {}", instance.outputFormat);

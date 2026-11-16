@@ -8,6 +8,7 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.types.LevelOfDetail;
 import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
+import com.gaia3d.process.output.TilesetOutput;
 import com.gaia3d.process.tileprocess.Tiler;
 import com.gaia3d.process.tileprocess.TilesetBuildResult;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
@@ -22,9 +23,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -108,7 +107,6 @@ public class Instanced3DModelExplicitTiler extends DefaultTiler implements Tiler
         }
 
         Path outputPath = new File(globalOptions.getOutputPath()).toPath();
-        File tilesetFile = outputPath.resolve("tileset.json").toFile();
         ObjectMapper objectMapper = new ObjectMapper();
         if (!globalOptions.isDebug()) {
             objectMapper.getFactory().configure(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature(), true);
@@ -122,10 +120,10 @@ public class Instanced3DModelExplicitTiler extends DefaultTiler implements Tiler
             log.error("[ERROR] Failed to create output directory: {}", outputPath, e);
             throw new TileProcessingException("Failed to create output directory: " + outputPath, e);
         }
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(tilesetFile))) {
+        try {
             String result = objectMapper.writeValueAsString(tileset);
             log.info("[Tile][Tileset] write 'tileset.json' file.");
-            writer.write(result);
+            TilesetOutput.writeJson("tileset.json", result);
             globalOptions.setTilesetSize(result.length());
         } catch (IOException e) {
             log.error("[ERROR] :", e);

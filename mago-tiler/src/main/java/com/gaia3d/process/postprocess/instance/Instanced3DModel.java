@@ -12,6 +12,7 @@ import com.gaia3d.converter.gltf.GltfWriter;
 import com.gaia3d.converter.gltf.GltfWriterOptions;
 import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.io.LittleEndianDataOutputStream;
+import com.gaia3d.process.output.TilesetOutput;
 import com.gaia3d.process.postprocess.ContentModel;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTableMap;
 import com.gaia3d.process.postprocess.batch.GaiaBatcher;
@@ -25,10 +26,7 @@ import org.joml.Matrix3d;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.nio.file.Path;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -132,11 +130,6 @@ public class Instanced3DModel implements ContentModel {
         instanced3DModelBinary.setScales(scales);
 
         GlobalOptions globalOptions = GlobalOptions.getInstance();
-        File outputFile = new File(globalOptions.getOutputPath());
-        Path outputRoot = outputFile.toPath().resolve("data");
-        if (!outputRoot.toFile().exists() && outputRoot.toFile().mkdir()) {
-            log.debug("[Create][data] Created output data directory, {}", outputRoot);
-        }
 
         byte[] positionBytes = instanced3DModelBinary.getPositionBytes();
         byte[] normalUpBytes = instanced3DModelBinary.getNormalUpBytes();
@@ -226,9 +219,9 @@ public class Instanced3DModel implements ContentModel {
         String gltfUrl = "instance-" + lod + ".glb";
         int byteLength = 32 + featureTableJSONByteLength + featureTableBinaryByteLength + batchTableJSONByteLength + batchTableBinaryByteLength + gltfUrl.length();
 
-        File gltfOutputFile = outputRoot.resolve(gltfUrl).toFile();
-        if (!gltfOutputFile.exists()) {
-            createInstance(gltfOutputFile, contentInfo, tileInfos.getFirst());
+        String gltfOutputPath = "data/" + gltfUrl;
+        if (!TilesetOutput.get().exists(gltfOutputPath)) {
+            createInstance(gltfOutputPath, contentInfo, tileInfos.getFirst());
         }
 
         boolean isFeatureTableAligned = (32 + featureTableJSONByteLength) % 8 == 0;
@@ -262,8 +255,8 @@ public class Instanced3DModel implements ContentModel {
             byteLength += lastPadLength;
         }
 
-        File i3dmOutputFile = contentInfo.resolveContentFile(outputRoot, MAGIC);
-        try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(i3dmOutputFile)))) {
+        ByteArrayOutputStream i3dmBytes = new ByteArrayOutputStream(byteLength);
+        try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(i3dmBytes)) {
             // 32-byte header (first 20 bytes)
             stream.writePureText(MAGIC);
             stream.writeInt(VERSION);
@@ -313,16 +306,18 @@ public class Instanced3DModel implements ContentModel {
                 }
                 stream.write(filePadding);
             }
+            stream.flush();
+            TilesetOutput.write(contentInfo.resolveContentPath(MAGIC), i3dmBytes.toByteArray());
         } catch (Exception e) {
             log.error("[ERROR] :", e);
         }
         return contentInfo;
     }
 
-    private synchronized void createInstance(File file, ContentInfo contentInfo, TileInfo tileInfo) {
+    private synchronized void createInstance(String path, ContentInfo contentInfo, TileInfo tileInfo) {
         try {
-            if (!file.exists()) {
-                log.info("[Create][Instance] Create instance file : {}", file.getName());
+            if (!TilesetOutput.get().exists(path)) {
+                log.info("[Create][Instance] Create instance file : {}", path);
                 GaiaScene firstGaiaScene = tileInfo.getScene();
                 firstGaiaScene = firstGaiaScene.clone();
 
@@ -336,7 +331,9 @@ public class Instanced3DModel implements ContentModel {
                 GaiaSet gaiaSet = gaiaBatcher.runBatching(batchTileInfos, contentInfo.getNodeCode(), contentInfo.getLod());
                 GaiaScene resultGaiaScene = new GaiaScene(gaiaSet);
                 resultGaiaScene.updateBoundingBox();
-                gltfWriter.writeGlb(resultGaiaScene, file);
+                ByteArrayOutputStream glbBytes = new ByteArrayOutputStream();
+                gltfWriter.writeGlb(resultGaiaScene, glbBytes);
+                TilesetOutput.write(path, glbBytes.toByteArray());
             }
         } catch (Exception e) {
             log.error("[ERROR] :", e);

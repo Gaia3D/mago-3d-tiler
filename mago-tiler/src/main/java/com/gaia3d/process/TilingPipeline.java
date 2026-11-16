@@ -4,6 +4,7 @@ import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.assimp.validation.GaiaSceneValidationReportCollector;
 import com.gaia3d.converter.loader.FileLoader;
+import com.gaia3d.process.output.TilesetOutput;
 import com.gaia3d.process.postprocess.PostProcess;
 import com.gaia3d.process.preprocess.PreProcess;
 import com.gaia3d.process.tileprocess.Pipeline;
@@ -67,9 +68,11 @@ public class TilingPipeline implements Pipeline {
             createTemp(fileLoader);
             executePreProcesses(fileLoader);
             /* Main-process */
+            TilesetOutput.open(globalOptions);
             executeTilingProcess();
             /* Post-process */
             executePostProcesses();
+            TilesetOutput.finish();
             /* Write validation summary if requested */
             if (globalOptions.isValidationReport()) {
                 writeValidationSummary();
@@ -78,6 +81,8 @@ public class TilingPipeline implements Pipeline {
             log.error("[ERROR][Pipeline] : ", e);
             throw new RuntimeException(e);
         } finally {
+            /* Discard an unfinished archive, no-op after finish() */
+            TilesetOutput.abort();
             /* Delete temp files */
             deleteTemp();
             try {
@@ -315,6 +320,7 @@ public class TilingPipeline implements Pipeline {
     // and retry the delete for files that were still open
     private void cleanupOnShutdown() {
         if (globalOptions.isLeaveTemp()) {
+            TilesetOutput.abort();
             return;
         }
         log.warn("[WARN] The process was stopped, deleting temp files.");
@@ -327,6 +333,7 @@ public class TilingPipeline implements Pipeline {
                 Thread.currentThread().interrupt();
             }
         }
+        TilesetOutput.abort();
         File tempFile = new File(globalOptions.getTempPath());
         for (int attempt = 0; attempt < 5 && tempFile.exists(); attempt++) {
             if (attempt > 0) {

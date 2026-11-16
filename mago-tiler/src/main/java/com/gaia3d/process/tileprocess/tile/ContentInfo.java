@@ -1,6 +1,5 @@
 package com.gaia3d.process.tileprocess.tile;
 
-import com.gaia3d.basic.exception.TileProcessingException;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.types.LevelOfDetail;
@@ -10,10 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.joml.Matrix4d;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 
 @Slf4j
@@ -39,17 +34,9 @@ public class ContentInfo {
         return contentPath;
     }
 
-    public File resolveContentFile(Path outputRoot, String extension) {
-        Path outputPath = outputRoot.resolve(getContentPath() + "." + extension);
-        Path parent = outputPath.getParent();
-        if (parent != null) {
-            try {
-                Files.createDirectories(parent);
-            } catch (IOException e) {
-                throw new TileProcessingException("Failed to create content output directory: " + parent, e);
-            }
-        }
-        return outputPath.toFile();
+    // path of the content file relative to the tileset root, e.g. "data/R0.b3dm", written through the TilesetSink
+    public String resolveContentPath(String extension) {
+        return "data/" + getContentPath() + "." + extension;
     }
 
     public void deleteTexture() {

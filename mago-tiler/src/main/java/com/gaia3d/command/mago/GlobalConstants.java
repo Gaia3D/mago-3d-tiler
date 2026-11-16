@@ -13,6 +13,7 @@ public class GlobalConstants {
     public static final String DEFAULT_INPUT_FORMAT = "kml";
     public static final String DEFAULT_INSTANCE_FILE = "instance.dae";
     public static final String DEFAULT_TEMP_FOLDER = "temp";
+    public static final String DEFAULT_ARCHIVE_FILE = "tileset.3tz";
     public static final long DEFAULT_RECOMMENDED_MEMORY = 64L * 1024 * 1024 * 1024;
 
     public static final int DEFAULT_MIN_LOD = 0;
