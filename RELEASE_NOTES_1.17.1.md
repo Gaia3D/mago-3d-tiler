@@ -26,3 +26,4 @@ This release makes long conversions **easier on the disks** they run on. Tempora
 - Fixed temp files staying behind after failed or interrupted runs.
 - Fixed `temp_backup_*` folders piling up on reruns with `--leaveTemp`.
 - Fixed the point cloud shuffle keeping two section-sized (about 2 GB each) buffers in memory.
+- Fixed photogrammetry `reMeshTemp` being written to `<output>/temp` instead of the `--temp` directory.
