@@ -10,9 +10,13 @@ import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -24,16 +28,19 @@ import java.util.stream.Stream;
 public class DiskSpaceChecker {
     // headroom left for the OS, logs and other programs on the same drive
     static final long RESERVED_BYTES = 1L << 30;
+    private static final int TEXTURE_SEARCH_DEPTH = 3; // the model folder and two levels below, like ./textures/a.jpg
+    private static final Set<String> IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png", "tif", "tiff", "bmp", "tga", "gif", "webp", "dds", "ktx2");
 
     /**
      * @throws IllegalStateException when a drive has less room than the estimated minimum
      */
-    public static void check(File tempDir, File outputDir, File input, FormatType inputFormat, FormatType outputFormat, boolean photogrammetry) {
-        long inputBytes = sizeOf(input); // the whole input folder, textures next to the models count too
+    public static void check(File tempDir, File outputDir, List<File> inputFiles, FormatType inputFormat, FormatType outputFormat, boolean photogrammetry) {
+        Ratio ratio = Ratio.of(inputFormat, outputFormat, photogrammetry);
+        boolean textured = ratio == Ratio.MESH || ratio == Ratio.PHOTOGRAMMETRY;
+        long inputBytes = sizeOf(inputFiles, textured, List.of(tempDir, outputDir));
         if (inputBytes <= 0) {
             return;
         }
-        Ratio ratio = Ratio.of(inputFormat, outputFormat, photogrammetry);
         Map<FileStore, Need> needs = new LinkedHashMap<>();
         addNeed(needs, tempDir, "temp", inputBytes * ratio.minimumTemp, inputBytes * ratio.expectedTemp);
         addNeed(needs, outputDir, "output", inputBytes * ratio.minimumOutput, inputBytes * ratio.expectedOutput);
@@ -77,19 +84,60 @@ public class DiskSpaceChecker {
         need.dirs.add(name + " " + dir.getAbsolutePath());
     }
 
-    static long sizeOf(File input) {
-        if (input.isFile()) {
-            return input.length();
+    /**
+     * Size of the files selected for conversion and what they bring along: side files with the same name (.dbf, .shx,
+     * .mtl...) and, for textured models, the images in their folders and the two levels below. Other data in the input
+     * folder and the temp/output trees are not counted.
+     */
+    static long sizeOf(List<File> inputFiles, boolean textured, List<File> excludedDirs) {
+        List<Path> excluded = excludedDirs.stream().map(dir -> dir.getAbsoluteFile().toPath().normalize()).toList();
+        Set<Path> counted = new HashSet<>();
+        Map<Path, Map<String, List<Path>>> folderFiles = new HashMap<>(); // folder -> base name -> files
+        for (File inputFile : inputFiles) {
+            Path path = inputFile.getAbsoluteFile().toPath().normalize();
+            counted.add(path);
+            Path folder = path.getParent();
+            if (folder == null) {
+                continue;
+            }
+            boolean newFolder = !folderFiles.containsKey(folder);
+            Map<String, List<Path>> byBaseName = folderFiles.computeIfAbsent(folder, DiskSpaceChecker::listByBaseName);
+            counted.addAll(byBaseName.getOrDefault(getBaseName(path.getFileName().toString()), List.of()));
+            if (textured && newFolder) {
+                try (Stream<Path> paths = Files.walk(folder, TEXTURE_SEARCH_DEPTH)) {
+                    paths.filter(file -> excluded.stream().noneMatch(file::startsWith))
+                            .filter(file -> IMAGE_EXTENSIONS.contains(getExtension(file.getFileName().toString())))
+                            .forEach(counted::add);
+                } catch (IOException | UncheckedIOException e) {
+                    log.warn("[WARN][Disk] Can not list the textures in {}: {}", folder, e.getMessage());
+                }
+            }
         }
-        try (Stream<Path> paths = Files.walk(input.toPath())) {
-            return paths.mapToLong(path -> {
-                File file = path.toFile();
-                return file.isFile() ? file.length() : 0L;
-            }).sum();
-        } catch (IOException | UncheckedIOException e) {
-            log.warn("[WARN][Disk] Can not read the size of the input {}: {}", input.getAbsolutePath(), e.getMessage());
-            return 0L;
+        return counted.stream().mapToLong(path -> {
+            File file = path.toFile();
+            return file.isFile() ? file.length() : 0L;
+        }).sum();
+    }
+
+    private static Map<String, List<Path>> listByBaseName(Path folder) {
+        Map<String, List<Path>> byBaseName = new HashMap<>();
+        File[] files = folder.toFile().listFiles(File::isFile);
+        if (files != null) {
+            for (File file : files) {
+                byBaseName.computeIfAbsent(getBaseName(file.getName()), key -> new ArrayList<>()).add(file.getAbsoluteFile().toPath().normalize());
+            }
         }
+        return byBaseName;
+    }
+
+    private static String getBaseName(String fileName) {
+        int dot = fileName.indexOf('.');
+        return (dot < 0 ? fileName : fileName.substring(0, dot)).toLowerCase(Locale.ROOT);
+    }
+
+    private static String getExtension(String fileName) {
+        int dot = fileName.lastIndexOf('.');
+        return dot < 0 ? "" : fileName.substring(dot + 1).toLowerCase(Locale.ROOT);
     }
 
     // the directory may not exist yet, so look up the drive of its nearest existing parent

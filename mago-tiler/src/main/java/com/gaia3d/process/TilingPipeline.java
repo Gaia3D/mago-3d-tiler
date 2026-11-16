@@ -205,7 +205,7 @@ public class TilingPipeline implements Pipeline {
         /* create temp directory */
         File tempFile = new File(globalOptions.getTempPath());
         boolean photogrammetry = globalOptions.isPhotogrammetry() || globalOptions.getOutputFormat() == FormatType.PHOTOGRAMMETRY;
-        DiskSpaceChecker.check(tempFile, new File(globalOptions.getOutputPath()), new File(globalOptions.getInputPath()), globalOptions.getInputFormat(), globalOptions.getOutputFormat(), photogrammetry);
+        DiskSpaceChecker.check(tempFile, new File(globalOptions.getOutputPath()), fileList, globalOptions.getInputFormat(), globalOptions.getOutputFormat(), photogrammetry);
         backupExistingTempDirectory(tempFile);
         if (!tempFile.exists() && tempFile.mkdirs()) {
             log.info("[Pre] Created temp directory in {}", tempFile.getAbsolutePath());
