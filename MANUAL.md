@@ -47,6 +47,26 @@ docker run --rm --memory=24g \
   --input /workspace/3ds-samples --output /workspace/sample-3d-tiles --inputType 3ds --crs 5186
 ```
 
+### Docker example with compression options
+Converts textured OBJ buildings with Draco geometry, KTX2 textures and unlit materials (see [Compressing Geometry and Textures](#compressing-geometry-and-textures-draco--ktx2--unlit)).
+The `LANG`, `LC_ALL` and `sun.jnu.encoding` settings keep non-ASCII (for example Korean) file and folder names intact.
+
+```bash
+docker pull gaia3d/mago-3d-tiler:1.17.0
+
+docker run --rm -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 \
+  -e "JAVA_TOOL_OPTIONS=-Xmx20g -Dfile.encoding=UTF-8 -Dsun.jnu.encoding=UTF-8" \
+  -v "/workspace:/workspace" \
+  gaia3d/mago-3d-tiler:1.17.0 \
+  -i "/workspace/obj-buildings" \
+  -o "/workspace/obj-buildings-tiles" \
+  -t /tmp/mago -it obj -r -c 5186 \
+  -mcp draco -tcp ktx2 -ul \
+  -l "/workspace/obj-buildings-tiles/tiler.log"
+```
+
+On Windows, replace the line-ending `\` with `^` in Command Prompt or with `` ` `` in PowerShell, and mount a Windows folder such as `-v "D:\data:/workspace"`.
+
 When building a custom Docker image with Jib, JVM options can be set in `mago-tiler/build.gradle`. If a custom `entrypoint` is used, include the JVM options in the entrypoint or pass them at runtime with `JAVA_TOOL_OPTIONS`.
 
 ### Using Docker Compose
@@ -317,6 +337,31 @@ java -jar mago-3d-tiler.jar --input "/input_path/kml_with_collada" --inputType "
 ```
 
 ---
+
+### Compressing Geometry and Textures (Draco / KTX2 / Unlit)
+Batched models (b3dm/glb) can compress their geometry and textures. The options can be combined.
+
+| Option | Extension | Effect |
+| ------ | --------- | ------ |
+| `--meshCompression draco` | `KHR_draco_mesh_compression` | Geometry about 30-40% of its original size. Positions are quantized to 16 bits, texture coordinates to 14 and colors to 8; normals and feature IDs are kept exact |
+| `--meshCompression quantize` | `KHR_mesh_quantization` | 16-bit positions and byte normals, about 10% smaller geometry; same as the former `--quantize` |
+| `--textureCompression ktx2` | `KHR_texture_basisu` | Basis Universal ETC1S textures with mipmaps, about 1/8 of the GPU memory of JPEG/PNG; conversion takes about 2.5 times longer |
+| `--unlit` | `KHR_materials_unlit` | Textures show their own colors without scene lighting, suited to photo-textured buildings |
+
+Draco applies to batched models only; i3dm and pnts content is written uncompressed with a warning.
+Viewers must support the extensions used (CesiumJS supports all of them).
+
+Smallest output and GPU memory:
+```
+java -jar mago-3d-tiler.jar --input "/input_path/obj" --output "/output_path/obj" --inputType obj --crs 5186 --meshCompression draco --textureCompression ktx2 --unlit
+```
+
+Faster conversion, geometry compression only:
+```
+java -jar mago-3d-tiler.jar --input "/input_path/obj" --output "/output_path/obj" --inputType obj --crs 5186 --meshCompression draco
+```
+
+For photogrammetry (`--photogrammetry`), `--meshCompression quantize --textureCompression ktx2 --unlit` is the tested combination.
 
 ## GPU Instance Model Conversion Cases
 
