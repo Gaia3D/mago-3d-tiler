@@ -25,6 +25,7 @@ import com.gaia3d.basic.remesher.*;
 import com.gaia3d.basic.remesher.information.GaiaStatistics;
 import com.gaia3d.basic.texture.atlas.TextureAtlasManager;
 import com.gaia3d.basic.types.TextureType;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
 import com.gaia3d.util.GaiaTextureUtils;
 import com.gaia3d.util.ImageResizer;
@@ -1556,7 +1557,7 @@ public class MagoReTextureByObliqueCamera {
         }
 
         // save atlas texture data**********************************************************************************
-        String netTempPathString = outputPathString + File.separator + "temp" + File.separator + "reMeshTemp";
+        String netTempPathString = GlobalOptions.getInstance().getTempPath() + File.separator + "reMeshTemp";
         Path netTempPath = Paths.get(netTempPathString);
         // create dirs if not exists
         File netTempFile = netTempPath.toFile();
