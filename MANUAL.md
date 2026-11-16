@@ -232,6 +232,7 @@ Options for 3D Tiles tileset generation.
 | `-mcp`, `--meshCompression <arg>`  |    No    | Mesh compression: `none` (Default), `quantize` (`KHR_mesh_quantization`) or `draco` (`KHR_draco_mesh_compression`, batched models only) |
 | `-tcp`, `--textureCompression <arg>` | No     | Texture compression: `none` (Default, source JPEG/PNG) or `ktx2` (Basis Universal ETC1S with mipmaps, `KHR_texture_basisu`, about 1/8 of the GPU memory). On Windows a JDK whose `msvcp140.dll` is older than 14.40 turns `ktx2` off with a warning |
 | `-ul`, `--unlit`                   |    No    | Write unlit materials (`KHR_materials_unlit`): textures show their own colors without scene lighting |
+| `-oa`, `--outputArchive <arg>`     |    No    | Output container: `none` (Default, a folder of files) or `3tz` (one 3D Tiles Archive, `{OUTPUT}/tileset.3tz`). See [3D Tiles Archive Output](#3d-tiles-archive-output-3tz) |
 | `-qt`, `--quantize`                |    No    | Deprecated, same as `--meshCompression quantize` |
 | `-tv`, `--tilesVersion <arg>`      |    No    | 3D Tiles version: `1.0` or `1.1` (Default: `1.1`) |
 | `-vr`, `--validationReport`        |    No    | Write per-file validation reports and a batch summary |
@@ -362,6 +363,20 @@ java -jar mago-3d-tiler.jar --input "/input_path/obj" --output "/output_path/obj
 ```
 
 For photogrammetry (`--photogrammetry`), `--meshCompression quantize --textureCompression ktx2 --unlit` is the tested combination.
+
+### 3D Tiles Archive Output (3TZ)
+`--outputArchive 3tz` writes the whole tileset (`tileset.json`, implicit subtrees and all tile contents) into one file, `{OUTPUT}/tileset.3tz`, instead of a `data` folder with one file per tile.
+A large tileset becomes a single file that is quicker to copy, upload or serve, and the file system does not have to hold hundreds of thousands of small files.
+
+```
+java -jar mago-3d-tiler.jar --input "/input_path/obj" --output "/output_path/obj" --inputType obj --crs 5186 --outputArchive 3tz
+```
+
+- The archive follows the [3D Tiles Archive Format v1.3](https://github.com/erikdahlstrom/3tz-specification): a zip file (ZIP64 when it has more than 65,535 entries or grows past 4 GB) with the `@3dtilesIndex1@` hash index as its last entry. Tile contents (`b3dm`, `i3dm`, `pnts`, `glb`) are stored uncompressed, JSON files are deflated.
+- The archive is written as `tileset.3tz.part` and renamed when the run finishes; a failed or stopped run deletes it.
+- The log, the temp folder and the `--validationReport` summary stay normal files in the output folder.
+- `--merge` does not support archives.
+- To read the archive, use a viewer or server that supports 3TZ, or unpack it into a folder with [3d-tiles-tools](https://github.com/CesiumGS/3d-tiles-tools): `npx 3d-tiles-tools convert -i tileset.3tz -o tileset-folder`.
 
 ## GPU Instance Model Conversion Cases
 

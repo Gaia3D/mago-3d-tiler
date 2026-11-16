@@ -24,6 +24,7 @@ developed with Java, this open-source marvel stands as a beacon for flexibility 
 - **2D to 3D Extrusion**: Turn 2D geospatial data (***ESRI SHP, GeoJSON, GeoPackage***) into detailed 3D extrusion models, breathing life into flat representations.​
 - **On-The-Fly CRS Conversion**: Leverage the power of multi-threading and on-the-fly coordinate conversion with comprehensive PCS and GCS support via the Proj4 library.​
 - **Lightweight Output**: Compress geometry with ***Draco*** (`--meshCompression draco`) and textures with ***KTX2*** (`--textureCompression ktx2`), and write unlit materials (`--unlit`).
+- **Single-File Output**: Write the whole tileset into one ***3D Tiles Archive (3TZ)*** file instead of a folder of many files (`--outputArchive 3tz`).
 
 ## Quick Start Guide
 download the mago-3d-tiler jar file or use the Docker image to get started quickly.
@@ -117,6 +118,9 @@ Usage: command options
                                        (default: none)(options: none, ktx2)
                                        (none: source JPEG/PNG, ktx2: Basis Universal ETC1S with mipmaps via "KHR_texture_basisu", about 1/8 of the GPU memory)
  -ul, --unlit                          Write unlit materials via "KHR_materials_unlit" Extension, so textures show their own colors without scene lighting
+ -oa, --outputArchive <arg>            Write the tileset into one archive file instead of a folder of files
+                                       (default: none)(options: none, 3tz)
+                                       (3tz: 3D Tiles Archive written to {OUTPUT}/tileset.3tz)
  -tv, --tilesVersion <arg>             3DTiles Version
                                        (default: 1.1)(options: 1.0, 1.1)
  -c, --crs <arg>                       Set input data CRS (Coordinate Reference System)
