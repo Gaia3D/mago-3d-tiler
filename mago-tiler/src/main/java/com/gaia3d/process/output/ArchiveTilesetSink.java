@@ -107,10 +107,6 @@ public class ArchiveTilesetSink implements TilesetSink {
         this.writerThread.start();
     }
 
-    public Path getArchiveFile() {
-        return archiveFile;
-    }
-
     @Override
     public void write(String path, byte[] data) throws IOException {
         String name = TilesetSink.normalize(path);
@@ -195,7 +191,10 @@ public class ArchiveTilesetSink implements TilesetSink {
         }
         aborted = true;
         closed = true;
+        failure = failure != null ? failure : new IOException("3TZ archive was aborted.");
         writerThread.interrupt();
+        // wake callers waiting for queue space, they see the failure and stop
+        queueBudget.release(queuePermits);
         try {
             writerThread.join(5000);
         } catch (InterruptedException e) {
