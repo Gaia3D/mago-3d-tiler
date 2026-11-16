@@ -1,6 +1,7 @@
 package com.gaia3d.converter.pointcloud;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.process.TempPack;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -34,6 +35,8 @@ public class GaiaPointCloud {
     private long pointCount = 0;
     @Builder.Default
     private File minimizedFile = null;
+    @Builder.Default
+    private TempPack.Entry minimizedEntry = null; // node points in the temp pack
 
     @Builder.Default
     private long limitPointCount = -1;
@@ -155,6 +158,27 @@ public class GaiaPointCloud {
     public void setLasPoints(List<GaiaLasPoint> lasPoints) {
         this.lasPoints = lasPoints;
         this.pointCount = lasPoints.size();
+    }
+
+    /**
+     * Appends the points to the temp pack instead of writing a file per node.
+     */
+    public void minimize(TempPack pack) {
+        List<GaiaLasPoint> points = this.lasPoints;
+        this.pointCount = points == null ? 0 : points.size();
+        try {
+            this.minimizedEntry = pack.write(outputStream -> {
+                if (points != null) {
+                    for (GaiaLasPoint point : points) {
+                        outputStream.write(point.toBytes());
+                    }
+                }
+            });
+        } catch (IOException e) {
+            log.error("Failed to minimize point cloud to the temp pack: {}", getFullCode(), e);
+        } finally {
+            clearPoints();
+        }
     }
 
     public void minimize(File minimizedFile) {
@@ -313,6 +337,11 @@ public class GaiaPointCloud {
     }
 
     public void maximize(boolean deleteAfterMaximize) {
+        if (this.minimizedEntry != null) {
+            // pack entries are not deleted one by one, the pack goes with the temp directory
+            maximizeFromPack();
+            return;
+        }
         if (this.minimizedFile == null) {
             log.warn("No minimized file to maximize.");
             return;
@@ -362,6 +391,31 @@ public class GaiaPointCloud {
             this.minimizedFile = null;
         } catch (IOException e) {
             log.error("Failed to maximize point cloud from file: {}", file.getAbsolutePath(), e);
+        }
+    }
+
+    private void maximizeFromPack() {
+        TempPack.Entry entry = this.minimizedEntry;
+        long totalPointsLong = entry.length() / GaiaLasPoint.BYTES_SIZE;
+        if (totalPointsLong > Integer.MAX_VALUE) {
+            throw new IllegalStateException("Too many points to load into memory: " + totalPointsLong);
+        }
+        int totalPoints = (int) totalPointsLong;
+        List<GaiaLasPoint> points = new ArrayList<>(totalPoints > 0 ? totalPoints : 16);
+        byte[] pointBytes = new byte[GaiaLasPoint.BYTES_SIZE];
+        try (InputStream in = TempPack.of(entry.pack().getParent()).read(entry)) {
+            for (int i = 0; i < totalPoints; i++) {
+                if (in.readNBytes(pointBytes, 0, GaiaLasPoint.BYTES_SIZE) != GaiaLasPoint.BYTES_SIZE) {
+                    log.error("Unexpected end of the temp pack while reading point cloud: {}", entry);
+                    break;
+                }
+                points.add(GaiaLasPoint.fromBytes(pointBytes));
+            }
+            this.lasPoints = points;
+            this.pointCount = points.size();
+            this.minimizedEntry = null;
+        } catch (IOException e) {
+            log.error("Failed to maximize point cloud from the temp pack: {}", entry, e);
         }
     }
 

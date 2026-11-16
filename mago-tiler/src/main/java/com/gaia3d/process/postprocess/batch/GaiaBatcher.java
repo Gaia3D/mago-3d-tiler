@@ -10,6 +10,7 @@ import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.LevelOfDetail;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalOptions;
+import com.gaia3d.process.TempTextures;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import org.lwjgl.opengl.GL20;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -126,8 +128,14 @@ public class GaiaBatcher {
                 String fullPathB = textureB.getFullPath();
                 if (fullPathA.equals(fullPathB)) {
                     hasTextureAreEquals = true;
-                } else if (!textureA.isEqualTexture(textureB, lod)) {
-                    hasTextureAreEquals = false;
+                } else {
+                    // the resized images of the minimization are in temp/images, not next to the originals
+                    Path imagesPath = Path.of(globalOptions.getTempPath(), "images");
+                    TempTextures.loadLodImage(textureA, imagesPath, lod);
+                    TempTextures.loadLodImage(textureB, imagesPath, lod);
+                    if (!textureA.isEqualTexture(textureB, lod)) {
+                        hasTextureAreEquals = false;
+                    }
                 }
             }
         }

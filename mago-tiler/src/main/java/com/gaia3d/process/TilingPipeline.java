@@ -180,6 +180,7 @@ public class TilingPipeline implements Pipeline {
                                     .tileTransformInfo(childTileInfo.getTileTransformInfo())
                                     .scenePath(childTileInfo.getScenePath())
                                     .tempPath(childTileInfo.getTempPath())
+                                    .tempEntry(childTileInfo.getTempEntry())
                                     .transformMatrix(childTileInfo.getTransformMatrix())
                                     .boundingBox(childTileInfo.getBoundingBox())
                                     .pointCloud(childTileInfo.getPointCloud())
@@ -274,6 +275,8 @@ public class TilingPipeline implements Pipeline {
     }
 
     private synchronized void deleteTemp() {
+        // open pack files can not be deleted on Windows
+        TempPack.closeAll();
         if (globalOptions.isLeaveTemp()) {
             return;
         }
