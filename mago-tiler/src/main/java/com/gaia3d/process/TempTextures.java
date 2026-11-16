@@ -14,12 +14,14 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
+import javax.imageio.stream.MemoryCacheImageOutputStream;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.UUID;
 
@@ -88,21 +90,15 @@ public class TempTextures {
             int resizeHeight = Math.max(1, (int) Math.round(bufferedImage.getHeight() * scale));
             BufferedImage resizedImage = ImageResizer.resizeImageGraphic2D(bufferedImage, resizeWidth, resizeHeight);
 
-            // written aside and moved, so that a thread sharing the image never reads a partial file
+            // created exclusively: a thread sharing the image skips it, the images are read only after the pre-process
             Path outputImagePath = lodImage(imagesPath, texture, lod);
-            Path partialImagePath = outputImagePath.resolveSibling(outputImagePath.getFileName() + "." + UUID.randomUUID() + ".tmp");
-            try {
-                writeImage(resizedImage, partialImagePath.toFile(), isJpeg ? "jpg" : "png", isJpeg ? 0.8f : 0.1f);
+            try (OutputStream outputStream = Files.newOutputStream(outputImagePath, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
+                writeImage(resizedImage, outputStream, isJpeg ? "jpg" : "png", isJpeg ? 0.8f : 0.1f);
+            } catch (FileAlreadyExistsException e) {
+                log.debug("Resized image already written by another thread: {}", outputImagePath);
             } catch (IOException e) {
                 log.error("[ERROR] Writing resized image failed: {}", outputImagePath, e);
-                Files.deleteIfExists(partialImagePath);
-                continue;
-            }
-            try {
-                Files.move(partialImagePath, outputImagePath, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-            } catch (IOException e) {
-                log.debug("Resized image already written by another thread: {}", outputImagePath);
-                Files.deleteIfExists(partialImagePath);
+                Files.deleteIfExists(outputImagePath);
             }
         }
     }
@@ -137,9 +133,9 @@ public class TempTextures {
         }
     }
 
-    private static void writeImage(BufferedImage bufferedImage, File outputFile, String formatName, float quality) throws IOException {
+    private static void writeImage(BufferedImage bufferedImage, OutputStream outputStream, String formatName, float quality) throws IOException {
         ImageWriter writer = ImageIO.getImageWritersByFormatName(formatName).next();
-        try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(outputFile)); ImageOutputStream ios = ImageIO.createImageOutputStream(bos)) {
+        try (BufferedOutputStream bos = new BufferedOutputStream(outputStream); ImageOutputStream ios = new MemoryCacheImageOutputStream(bos)) {
             writer.setOutput(ios);
             ImageWriteParam param = writer.getDefaultWriteParam();
             param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
