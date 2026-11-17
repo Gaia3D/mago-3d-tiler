@@ -10,6 +10,7 @@ import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.command.mago.TilingMode;
 import com.gaia3d.converter.pointcloud.GaiaLasPoint;
 import com.gaia3d.converter.pointcloud.GaiaPointCloud;
+import com.gaia3d.process.TempPack;
 import com.gaia3d.process.tileprocess.Tiler;
 import com.gaia3d.process.tileprocess.TilesetBuildResult;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
@@ -31,10 +32,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -501,17 +502,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
                     throw new TileProcessingException("Point count mismatch after combining point clouds.");
                 }
 
-                String tempSubPath = currentPointCloud.createFullCodePath();
-                File tempPath = new File(GlobalOptions.getInstance().getTempPath(), tempSubPath);
-                if (!tempPath.exists()) {
-                    boolean created = tempPath.mkdirs();
-                    if (!created) {
-                        log.error("[ERROR] :Failed to create temp directory: {}", tempPath.getAbsolutePath());
-                        throw new TileProcessingException("Failed to create temp directory: " + tempPath.getAbsolutePath());
-                    }
-                }
-                File tempFile = new File(tempPath, UUID.randomUUID().toString());
-                currentPointCloud.minimize(tempFile);
+                currentPointCloud.minimize(getPointPack());
                 remainPointCloud = divided.getLast();
             } else {
                 remainPointCloud = target;
@@ -686,18 +677,12 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
                 .mapToLong(GaiaPointCloud::getPointCount)
                 .sum();
         log.debug("[Tile][{}/{}][Minimize][TotalPointClouds:{}][TotalPoints:{}]", index, maximumIndex, size, totalPoints);
-        allPointClouds.forEach(pointCloud -> {
-            String tempSubPath = pointCloud.createFullCodePath();
-            File tempPath = new File(GlobalOptions.getInstance().getTempPath(), tempSubPath);
-            if (!tempPath.exists()) {
-                boolean created = tempPath.mkdirs();
-                if (!created) {
-                    log.error("[ERROR] :Failed to create temp directory: {}", tempPath.getAbsolutePath());
-                    throw new TileProcessingException("Failed to create temp directory: " + tempPath.getAbsolutePath());
-                }
-            }
-            File tempFile = new File(tempPath, UUID.randomUUID().toString());
-            pointCloud.minimize(tempFile);
-        });
+        TempPack pointPack = getPointPack();
+        allPointClouds.forEach(pointCloud -> pointCloud.minimize(pointPack));
+    }
+
+    // node points are appended to temp/pack instead of a file per node
+    private TempPack getPointPack() {
+        return TempPack.of(Path.of(GlobalOptions.getInstance().getTempPath(), "pack"));
     }
 }

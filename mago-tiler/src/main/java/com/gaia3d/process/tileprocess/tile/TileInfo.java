@@ -6,6 +6,7 @@ import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.converter.pointcloud.GaiaPointCloud;
+import com.gaia3d.process.TempPack;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,6 +16,7 @@ import org.joml.Matrix4d;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -38,6 +40,7 @@ public class TileInfo {
     private Path scenePath;
     private Path outputPath;
     private Path tempPath; // tempPath lod 0
+    private TempPack.Entry tempEntry; // minimized set in the temp pack, used instead of tempPath when set
 
     private List<Path> tempPathLod; // tempPath lod 0, 1, 2, 3, 4, 5, etc (deprecated)
     private GaiaBoundingBox cartographicBBox;
@@ -56,6 +59,19 @@ public class TileInfo {
      * Load the minimized scene file and create a GaiaSet object.
      */
     public void maximize() {
+        if (this.tempEntry != null) {
+            if (this.set != null) {
+                this.set.deleteTextures();
+                this.set = null;
+            }
+            // textures keep the original image paths stored with the set
+            try (ObjectInputStream inputStream = new ObjectInputStream(TempPack.of(this.tempEntry.pack().getParent()).read(this.tempEntry))) {
+                this.set = (GaiaSet) inputStream.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+                log.error("[ERROR] Failed to read the temp pack: {}", this.tempEntry, e);
+            }
+            return;
+        }
         if (this.tempPath == null) {
             return;
         }
@@ -83,6 +99,7 @@ public class TileInfo {
         scenePath = null;
         outputPath = null;
         tempPath = null;
+        tempEntry = null;
         tempPathLod = null;
         cartographicBBox = null;
     }
@@ -118,6 +135,7 @@ public class TileInfo {
                 .scenePath(this.scenePath)
                 .outputPath(this.outputPath)
                 .tempPath(this.tempPath)
+                .tempEntry(this.tempEntry)
                 .tempPathLod(this.tempPathLod)
                 .cartographicBBox(this.cartographicBBox)
                 .triangleCount(this.triangleCount)
