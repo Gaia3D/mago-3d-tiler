@@ -1,5 +1,6 @@
 package com.gaia3d.process.output;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 /**
@@ -9,6 +10,13 @@ import java.io.IOException;
  */
 public interface TilesetSink {
     void write(String path, byte[] data) throws IOException;
+
+    /**
+     * Writes the content of the stream. Sinks that can write it without copying the buffer override this.
+     */
+    default void write(String path, ByteArrayOutputStream data) throws IOException {
+        write(path, data.toByteArray());
+    }
 
     boolean exists(String path);
 

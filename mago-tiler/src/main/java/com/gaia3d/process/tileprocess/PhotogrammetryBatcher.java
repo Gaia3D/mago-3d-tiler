@@ -154,12 +154,12 @@ public class PhotogrammetryBatcher {
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         gltfWriter.writeGlb(scene, byteArrayOutputStream, featureTable, batchTableMap);
-        byte[] glbBytes = byteArrayOutputStream.toByteArray();
-        if (meshCompressor != null) {
-            glbBytes = meshCompressor.apply(glbBytes);
-        }
         try {
-            TilesetOutput.write(glbOutputPath, glbBytes);
+            if (meshCompressor != null) {
+                TilesetOutput.write(glbOutputPath, meshCompressor.apply(byteArrayOutputStream.toByteArray()));
+            } else {
+                TilesetOutput.write(glbOutputPath, byteArrayOutputStream);
+            }
         } catch (IOException e) {
             log.error("[ERROR] Failed to write glb file.", e);
         }
@@ -346,7 +346,7 @@ public class PhotogrammetryBatcher {
                 stream.write(filePadding);
             }
             stream.flush();
-            TilesetOutput.write("data/" + nodeCode + "." + MAGIC, b3dmBytes.toByteArray());
+            TilesetOutput.write("data/" + nodeCode + "." + MAGIC, b3dmBytes);
         } catch (Exception e) {
             log.error("[ERROR] :", e);
         }

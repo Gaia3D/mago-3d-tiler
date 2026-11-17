@@ -373,9 +373,9 @@ java -jar mago-3d-tiler.jar --input "/input_path/obj" --output "/output_path/obj
 ```
 
 - The archive follows the [3D Tiles Archive Format v1.3](https://github.com/erikdahlstrom/3tz-specification): a zip file (ZIP64 when it has more than 65,535 entries or grows past 4 GB) with the `@3dtilesIndex1@` hash index as its last entry. Tile contents (`b3dm`, `i3dm`, `pnts`, `glb`) are stored uncompressed, JSON files are deflated.
-- The archive is written as `tileset.3tz.part` and renamed when the run finishes; a failed or stopped run deletes it.
+- The archive is written as `tileset.3tz.part` and renamed when the run finishes; a failed or stopped run deletes it. If the old `tileset.3tz` cannot be replaced (e.g. it is open in a viewer), the run fails and keeps the complete archive as `tileset.3tz.part`.
 - The log, the temp folder and the `--validationReport` summary stay normal files in the output folder.
-- `--merge` does not support archives.
+- `--merge` and `--updateRootTransform` do not support archives.
 - To read the archive, use a viewer or server that supports 3TZ, or unpack it into a folder with [3d-tiles-tools](https://github.com/CesiumGS/3d-tiles-tools): `npx 3d-tiles-tools convert -i tileset.3tz -o tileset-folder`.
 
 ## GPU Instance Model Conversion Cases

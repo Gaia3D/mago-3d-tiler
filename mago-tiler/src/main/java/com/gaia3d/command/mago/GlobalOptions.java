@@ -146,6 +146,24 @@ public class GlobalOptions {
         return instance;
     }
 
+    /**
+     * --merge and --updateRootTransform read and write tileset folders, they cannot write an archive.
+     */
+    public static void checkOutputArchiveSupported(CommandLine command) {
+        if (!command.hasOption(ProcessOptions.OUTPUT_ARCHIVE.getLongName())) {
+            return;
+        }
+        if (OutputArchive.fromOption(command.getOptionValue(ProcessOptions.OUTPUT_ARCHIVE.getLongName())) == OutputArchive.NONE) {
+            return;
+        }
+        if (command.hasOption(ProcessOptions.MERGE.getLongName())) {
+            throw new IllegalArgumentException("'--outputArchive' is not supported with '--merge'.");
+        }
+        if (command.hasOption(ProcessOptions.UPDATE_ROOT_TRANSFORM.getLongName())) {
+            throw new IllegalArgumentException("'--outputArchive' is not supported with '--updateRootTransform'.");
+        }
+    }
+
     public static void init(CommandLine command) throws IOException, RuntimeException {
         instance.setCommandLine(command);
 
@@ -396,9 +414,7 @@ public class GlobalOptions {
         } else {
             instance.setOutputArchive(OutputArchive.NONE);
         }
-        if (instance.outputArchive != OutputArchive.NONE && command.hasOption(ProcessOptions.MERGE.getLongName())) {
-            throw new IllegalArgumentException("'--outputArchive' is not supported with '--merge'.");
-        }
+        checkOutputArchiveSupported(command);
 
         /* Point Cloud Options */
         instance.setMaximumPointPerTile(command.hasOption(ProcessOptions.MAX_POINTS.getLongName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_POINTS.getLongName())) : GlobalConstants.DEFAULT_POINT_PER_TILE);

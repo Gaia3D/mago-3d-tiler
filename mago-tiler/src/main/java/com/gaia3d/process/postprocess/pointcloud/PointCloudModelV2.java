@@ -142,7 +142,7 @@ public class PointCloudModelV2 implements ContentModel {
         ByteArrayOutputStream glbBytes = new ByteArrayOutputStream();
         this.gltfWriter.writeGlb(pointCloudBuffer, featureTable, batchTable, glbBytes);
         try {
-            TilesetOutput.write(contentInfo.resolveContentPath(MAGIC), glbBytes.toByteArray());
+            TilesetOutput.write(contentInfo.resolveContentPath(MAGIC), glbBytes);
         } catch (IOException e) {
             log.error("[ERROR] Failed to write glb file.", e);
         }

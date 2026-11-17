@@ -307,7 +307,7 @@ public class Instanced3DModel implements ContentModel {
                 stream.write(filePadding);
             }
             stream.flush();
-            TilesetOutput.write(contentInfo.resolveContentPath(MAGIC), i3dmBytes.toByteArray());
+            TilesetOutput.write(contentInfo.resolveContentPath(MAGIC), i3dmBytes);
         } catch (Exception e) {
             log.error("[ERROR] :", e);
         }
@@ -333,7 +333,7 @@ public class Instanced3DModel implements ContentModel {
                 resultGaiaScene.updateBoundingBox();
                 ByteArrayOutputStream glbBytes = new ByteArrayOutputStream();
                 gltfWriter.writeGlb(resultGaiaScene, glbBytes);
-                TilesetOutput.write(path, glbBytes.toByteArray());
+                TilesetOutput.write(path, glbBytes);
             }
         } catch (Exception e) {
             log.error("[ERROR] :", e);

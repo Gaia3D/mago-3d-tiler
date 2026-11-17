@@ -200,7 +200,7 @@ public class Instanced3DModelV2 implements ContentModel {
             GaiaScene resultGaiaScene = new GaiaScene(gaiaSet);
             ByteArrayOutputStream glbBytes = new ByteArrayOutputStream();
             gltfWriter.writeGlb(resultGaiaScene, glbBytes, featureTable, batchTableMap);
-            TilesetOutput.write(path, glbBytes.toByteArray());
+            TilesetOutput.write(path, glbBytes);
         } catch (Exception e) {
             log.error("[ERROR] :", e);
             throw new RuntimeException(e);

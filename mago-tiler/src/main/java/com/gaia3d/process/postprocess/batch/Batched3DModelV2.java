@@ -156,12 +156,12 @@ public class Batched3DModelV2 implements ContentModel {
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         this.gltfWriter.writeGlb(scene, byteArrayOutputStream, featureTable, batchTableMap);
-        byte[] glbBytes = byteArrayOutputStream.toByteArray();
-        if (meshCompressor != null) {
-            glbBytes = meshCompressor.apply(glbBytes);
-        }
         try {
-            TilesetOutput.write(contentInfo.resolveContentPath(MAGIC), glbBytes);
+            if (meshCompressor != null) {
+                TilesetOutput.write(contentInfo.resolveContentPath(MAGIC), meshCompressor.apply(byteArrayOutputStream.toByteArray()));
+            } else {
+                TilesetOutput.write(contentInfo.resolveContentPath(MAGIC), byteArrayOutputStream);
+            }
         } catch (IOException e) {
             log.error("[ERROR] Failed to write glb file.", e);
         }

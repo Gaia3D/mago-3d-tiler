@@ -258,7 +258,7 @@ public class Batched3DModel implements ContentModel {
                 stream.write(filePadding);
             }
             stream.flush();
-            TilesetOutput.write(contentInfo.resolveContentPath(MAGIC), b3dmBytes.toByteArray());
+            TilesetOutput.write(contentInfo.resolveContentPath(MAGIC), b3dmBytes);
         } catch (Exception e) {
             log.error("[ERROR] :", e);
         }

@@ -114,7 +114,7 @@ public class PointCloudBinaryWriter {
                 stream.write(lastPadding);
             }
             stream.flush();
-            TilesetOutput.write(path, pntsBytes.toByteArray());
+            TilesetOutput.write(path, pntsBytes);
         } catch (Exception e) {
             log.error("[ERROR] :", e);
         }

@@ -70,6 +70,7 @@ public class Mago3DTilerMain {
                 formatter.printHelp("command options", options);
                 return;
             }
+            GlobalOptions.checkOutputArchiveSupported(command);
             Mago3DTiler mago3DTiler = new Mago3DTiler();
             if (isUpdateRootTransform) {
                 mago3DTiler.updateRootTransform(command);

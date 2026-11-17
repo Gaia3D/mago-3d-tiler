@@ -70,8 +70,11 @@ public class TilingPipeline implements Pipeline {
             /* Main-process */
             TilesetOutput.open(globalOptions);
             executeTilingProcess();
+            /* a tileset file that could not be written (full disk, rejected archive entry) stops the run */
+            TilesetOutput.checkFailure();
             /* Post-process */
             executePostProcesses();
+            TilesetOutput.checkFailure();
             TilesetOutput.finish();
             /* Write validation summary if requested */
             if (globalOptions.isValidationReport()) {
@@ -175,6 +178,11 @@ public class TilingPipeline implements Pipeline {
         contentInfos.sort((c1, c2) -> c1.getNodeCode().length() - c2.getNodeCode().length());
         for (ContentInfo contentInfo : contentInfos) {
             Runnable callableTask = () -> {
+                if (TilesetOutput.hasFailed()) {
+                    // writing failed already, the run fails after the post-processing: skip the remaining contents
+                    count.getAndIncrement();
+                    return;
+                }
                 try {
                     log.info("[Post][{}/{}] post-process in progress : {}", count.getAndIncrement(), contentCount, contentInfo.getName());
                     List<TileInfo> tileInfos = contentInfo.getTileInfos();
