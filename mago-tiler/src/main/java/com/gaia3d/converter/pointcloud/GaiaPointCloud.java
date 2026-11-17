@@ -167,7 +167,7 @@ public class GaiaPointCloud {
         List<GaiaLasPoint> points = this.lasPoints;
         this.pointCount = points == null ? 0 : points.size();
         try {
-            this.minimizedEntry = pack.write(outputStream -> {
+            this.minimizedEntry = pack.write(getFullCode(), null, outputStream -> {
                 if (points != null) {
                     for (GaiaLasPoint point : points) {
                         outputStream.write(point.toBytes());
