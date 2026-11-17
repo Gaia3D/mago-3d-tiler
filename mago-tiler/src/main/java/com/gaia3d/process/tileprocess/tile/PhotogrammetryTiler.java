@@ -2252,7 +2252,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 
         String outputPathString = globalOptions.getOutputPath();
         String nodeName = "node_L_" + nodeDepth + "_" + nodeIdx;
-        String netTempPathString = outputPathString + File.separator + "temp" + File.separator + "reMeshTemp";
+        String netTempPathString = globalOptions.getTempPath() + File.separator + "reMeshTemp";
         String netSetFolderPathString = netTempPathString + File.separator + nodeName;
         Path netSetFolderPath = Paths.get(netSetFolderPathString);
 
