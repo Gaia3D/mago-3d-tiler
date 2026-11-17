@@ -1,5 +1,6 @@
 package com.gaia3d.process;
 
+import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.assimp.validation.GaiaSceneValidationReportCollector;
 import com.gaia3d.converter.loader.FileLoader;
@@ -38,6 +39,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TilingPipeline implements Pipeline {
     private static final DateTimeFormatter TEMP_BACKUP_FORMAT = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+    private static final String TEMP_BACKUP_INFIX = "_backup_";
     private final List<PreProcess> preProcesses;
     private final TilingProcess tilingProcess;
     private final List<PostProcess> postProcesses;
@@ -51,10 +53,13 @@ public class TilingPipeline implements Pipeline {
     private Tileset tileset;
     private TilesetBuildResult tilesetBuildResult;
     private List<ContentInfo> contentInfos;
+    private volatile ExecutorService activeExecutor;
 
     @Override
     public void process(FileLoader fileLoader) throws IOException {
-        /* Pre-process */
+        /* Delete temp files also when the run fails or the JVM is stopped (Ctrl+C, docker stop) */
+        Thread cleanupHook = new Thread(this::cleanupOnShutdown, "temp-cleanup");
+        Runtime.getRuntime().addShutdownHook(cleanupHook);
         try {
             /* Load all files */
             readAllFiles(fileLoader);
@@ -69,11 +74,17 @@ public class TilingPipeline implements Pipeline {
             if (globalOptions.isValidationReport()) {
                 writeValidationSummary();
             }
-            /* Delete temp files */
-            deleteTemp();
         } catch (InterruptedException e) {
             log.error("[ERROR][Pipeline] : ", e);
             throw new RuntimeException(e);
+        } finally {
+            /* Delete temp files */
+            deleteTemp();
+            try {
+                Runtime.getRuntime().removeShutdownHook(cleanupHook);
+            } catch (IllegalStateException e) {
+                // the JVM is already shutting down and runs the hook itself
+            }
         }
     }
 
@@ -193,6 +204,8 @@ public class TilingPipeline implements Pipeline {
     private void createTemp(FileLoader fileLoader) {
         /* create temp directory */
         File tempFile = new File(globalOptions.getTempPath());
+        boolean photogrammetry = globalOptions.isPhotogrammetry() || globalOptions.getOutputFormat() == FormatType.PHOTOGRAMMETRY;
+        DiskSpaceChecker.check(tempFile, new File(globalOptions.getOutputPath()), fileList, globalOptions.getInputFormat(), globalOptions.getOutputFormat(), photogrammetry);
         backupExistingTempDirectory(tempFile);
         if (!tempFile.exists() && tempFile.mkdirs()) {
             log.info("[Pre] Created temp directory in {}", tempFile.getAbsolutePath());
@@ -210,7 +223,8 @@ public class TilingPipeline implements Pipeline {
             return;
         }
 
-        String backupName = tempFile.getName() + "_backup_" + LocalDateTime.now().format(TEMP_BACKUP_FORMAT);
+        deleteOldTempBackups(tempFile);
+        String backupName = tempFile.getName() + TEMP_BACKUP_INFIX + LocalDateTime.now().format(TEMP_BACKUP_FORMAT);
         Path backupPath = tempFile.toPath().resolveSibling(backupName);
         int duplicateIndex = 1;
         while (Files.exists(backupPath)) {
@@ -230,6 +244,24 @@ public class TilingPipeline implements Pipeline {
         }
     }
 
+    // keeps the disk from filling up with a backup per rerun: only the backup made by this run is kept
+    private void deleteOldTempBackups(File tempFile) {
+        File parent = tempFile.getAbsoluteFile().getParentFile();
+        String prefix = tempFile.getName() + TEMP_BACKUP_INFIX;
+        File[] backups = parent == null ? null : parent.listFiles(file -> file.isDirectory() && file.getName().startsWith(prefix));
+        if (backups == null) {
+            return;
+        }
+        for (File backup : backups) {
+            try {
+                FileUtils.deleteDirectory(backup);
+                log.info("[Pre] Deleted old temp backup {}", backup.getAbsolutePath());
+            } catch (IOException e) {
+                log.warn("[WARN][Pre] Failed to delete old temp backup {}: {}", backup.getAbsolutePath(), e.getMessage());
+            }
+        }
+    }
+
     private void writeValidationSummary() {
         GaiaSceneValidationReportCollector collector = GaiaSceneValidationReportCollector.getInstance();
         try {
@@ -241,7 +273,7 @@ public class TilingPipeline implements Pipeline {
         }
     }
 
-    private void deleteTemp() {
+    private synchronized void deleteTemp() {
         if (globalOptions.isLeaveTemp()) {
             return;
         }
@@ -249,6 +281,7 @@ public class TilingPipeline implements Pipeline {
         File userTempFile = new File(globalOptions.getTempPath());
         if (userTempFile.exists() && userTempFile.isDirectory()) {
             try {
+                log.info("[Post] Deleting temp directory {}", userTempFile.getAbsolutePath());
                 FileUtils.deleteDirectory(userTempFile);
             } catch (Exception e) {
                 log.error("[WARN] Failed to delete temp directory in {}", userTempFile.getAbsolutePath(), e);
@@ -257,6 +290,7 @@ public class TilingPipeline implements Pipeline {
     }
 
     private void executeThread(ExecutorService executorService, List<Runnable> tasks) throws InterruptedException {
+        activeExecutor = executorService;
         try {
             for (Runnable task : tasks) {
                 Future<?> future = executorService.submit(task);
@@ -274,5 +308,36 @@ public class TilingPipeline implements Pipeline {
                 executorService.shutdownNow();
             }
         } while (!executorService.awaitTermination(2, TimeUnit.SECONDS));
+        activeExecutor = null;
+    }
+
+    // runs when the JVM is stopped mid-run: worker threads keep writing while shutdown hooks run, so stop them first
+    // and retry the delete for files that were still open
+    private void cleanupOnShutdown() {
+        if (globalOptions.isLeaveTemp()) {
+            return;
+        }
+        log.warn("[WARN] The process was stopped, deleting temp files.");
+        ExecutorService executorService = activeExecutor;
+        if (executorService != null) {
+            executorService.shutdownNow();
+            try {
+                executorService.awaitTermination(3, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        File tempFile = new File(globalOptions.getTempPath());
+        for (int attempt = 0; attempt < 5 && tempFile.exists(); attempt++) {
+            if (attempt > 0) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+            }
+            deleteTemp();
+        }
     }
 }

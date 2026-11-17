@@ -7,6 +7,7 @@ import org.apache.commons.io.FileUtils;
 import org.joml.Vector3d;
 
 import java.io.*;
+import java.nio.channels.Channels;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.List;
 public class GaiaPointCloud {
     //public final int CHUNK_SIZE = GaiaLasPoint.BYTES_SIZE * 20_000_000;
     public final long CHUNK_SIZE = GaiaLasPoint.BYTES_SIZE * 40_000_000L;
+    private static final int READ_BUFFER_SIZE = 4 * 1024 * 1024;
 
     private Path originalPath;
     @Builder.Default
@@ -285,12 +287,12 @@ public class GaiaPointCloud {
         } catch (IOException e) {
             log.error("Failed to read point cloud chunk from file: {}", this.minimizedFile.getAbsolutePath(), e);
         }*/
-        try (RandomAccessFile raf = new RandomAccessFile(this.minimizedFile, "r")) {
-            raf.seek(offset);
+        try (RandomAccessFile raf = new RandomAccessFile(this.minimizedFile, "r");
+             InputStream in = new BufferedInputStream(Channels.newInputStream(raf.getChannel().position(offset)), READ_BUFFER_SIZE)) {
             List<GaiaLasPoint> points = new ArrayList<>();
+            byte[] pointBytes = new byte[GaiaLasPoint.BYTES_SIZE];
             for (long i = 0; i < chunkPointCount && (i + offset / GaiaLasPoint.BYTES_SIZE) < (originalFileLength / GaiaLasPoint.BYTES_SIZE); i++) {
-                byte[] pointBytes = new byte[GaiaLasPoint.BYTES_SIZE];
-                int bytesRead = raf.read(pointBytes);
+                int bytesRead = in.readNBytes(pointBytes, 0, GaiaLasPoint.BYTES_SIZE);
                 if (bytesRead != GaiaLasPoint.BYTES_SIZE) {
                     log.error("Unexpected end of file while reading point cloud chunk.");
                     break;
