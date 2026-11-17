@@ -7,6 +7,7 @@ import com.gaia3d.basic.exception.TileProcessingException;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.types.LevelOfDetail;
 import com.gaia3d.command.mago.GlobalOptions;
+import com.gaia3d.process.output.TilesetOutput;
 import com.gaia3d.process.tileprocess.Tiler;
 import com.gaia3d.process.tileprocess.TilesetBuildResult;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
@@ -20,9 +21,7 @@ import com.gaia3d.util.DecimalUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -99,7 +98,6 @@ public abstract class AbstractImplicitModelTiler extends DefaultTiler implements
         }
 
         Path outputPath = new File(globalOptions.getOutputPath()).toPath();
-        File tilesetFile = outputPath.resolve("tileset.json").toFile();
         ObjectMapper objectMapper = new ObjectMapper();
         if (!globalOptions.isDebug()) {
             objectMapper.getFactory().configure(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature(), true);
@@ -112,14 +110,14 @@ public abstract class AbstractImplicitModelTiler extends DefaultTiler implements
         } catch (IOException e) {
             throw new TileProcessingException("Failed to create output directory: " + outputPath, e);
         }
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(tilesetFile))) {
+        try {
             String result = objectMapper.writeValueAsString(tileset);
-            writer.write(result);
+            TilesetOutput.writeJson("tileset.json", result);
             globalOptions.setTilesetSize(result.length());
         } catch (IOException e) {
             throw new TileProcessingException(e.getMessage(), e);
         }
-        writeSubtrees(outputPath.toFile(), objectMapper);
+        writeSubtrees(objectMapper);
     }
 
     protected abstract boolean shouldSplit(List<TileInfo> tileInfos, GaiaBoundingBox cellBoundingBox, int depth);
@@ -279,15 +277,11 @@ public abstract class AbstractImplicitModelTiler extends DefaultTiler implements
         return "R/" + coordinate.level() + "/" + coordinate.x() + "/" + coordinate.y();
     }
 
-    private void writeSubtrees(File outputPath, ObjectMapper objectMapper) {
+    private void writeSubtrees(ObjectMapper objectMapper) {
         for (ImplicitSubtreeArtifact artifact : implicitSubtreeArtifacts) {
             try {
-                File subtreeFile = new File(outputPath, artifact.subtreeUri());
-                File bufferFile = new File(outputPath, artifact.bufferUri());
-                java.nio.file.Files.createDirectories(subtreeFile.toPath().getParent());
-                java.nio.file.Files.createDirectories(bufferFile.toPath().getParent());
-                objectMapper.writeValue(subtreeFile, artifact.subtree());
-                java.nio.file.Files.write(bufferFile.toPath(), artifact.availabilityBuffer());
+                TilesetOutput.write(artifact.subtreeUri(), objectMapper.writeValueAsBytes(artifact.subtree()));
+                TilesetOutput.write(artifact.bufferUri(), artifact.availabilityBuffer());
             } catch (IOException e) {
                 throw new TileProcessingException("Failed to write implicit subtree: " + artifact.subtreeUri(), e);
             }

@@ -5,6 +5,7 @@ import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.gltf.tiles.PointCloudGltfWriter;
 import com.gaia3d.converter.pointcloud.GaiaLasPoint;
 import com.gaia3d.converter.pointcloud.GaiaPointCloud;
+import com.gaia3d.process.output.TilesetOutput;
 import com.gaia3d.process.postprocess.ContentModel;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTable;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
@@ -17,8 +18,8 @@ import org.joml.Matrix3d;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
-import java.io.File;
-import java.nio.file.Path;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -36,12 +37,6 @@ public class PointCloudModelV2 implements ContentModel {
     public ContentInfo run(ContentInfo contentInfo) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
 
-        File outputFile = new File(globalOptions.getOutputPath());
-        Path outputRoot = outputFile.toPath().resolve("data");
-        File outputRootFile = outputRoot.toFile();
-        if (!outputRootFile.mkdir() && !outputRootFile.exists()) {
-            log.error("[ERROR] Failed to create output directory : {}", outputRoot);
-        }
         List<TileInfo> tileInfos = contentInfo.getTileInfos();
 
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
@@ -139,13 +134,18 @@ public class PointCloudModelV2 implements ContentModel {
 
         GaiaBatchTable batchTable = new GaiaBatchTable();
         String nodeCode = contentInfo.getNodeCode();
-        File glbOutputFile = contentInfo.resolveContentFile(outputRoot, MAGIC);
 
         if (pointCloudBuffer.getPositions().length == 0) {
             log.warn("[WARN] Point cloud has no position data. Skip writing glb file for node : {}", nodeCode);
             return contentInfo;
         }
-        this.gltfWriter.writeGlb(pointCloudBuffer, featureTable, batchTable, glbOutputFile);
+        ByteArrayOutputStream glbBytes = new ByteArrayOutputStream();
+        this.gltfWriter.writeGlb(pointCloudBuffer, featureTable, batchTable, glbBytes);
+        try {
+            TilesetOutput.write(contentInfo.resolveContentPath(MAGIC), glbBytes);
+        } catch (IOException e) {
+            log.error("[ERROR] Failed to write glb file.", e);
+        }
         return contentInfo;
     }
 

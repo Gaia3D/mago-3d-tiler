@@ -16,6 +16,7 @@ import com.gaia3d.converter.gltf.Ktx2TextureEncoder;
 import com.gaia3d.converter.gltf.GltfWriterOptions;
 import com.gaia3d.converter.gltf.tiles.BatchedModelGltfWriter;
 import com.gaia3d.io.LittleEndianDataOutputStream;
+import com.gaia3d.process.output.TilesetOutput;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTableMap;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
@@ -106,15 +107,6 @@ public class PhotogrammetryBatcher {
             featureTable.setRtcCenter(rtcCenter);
         }
 
-        File outputFile = new File(globalOptions.getOutputPath());
-        Path outputRoot = outputFile.toPath()
-                .resolve("data");
-        if (!outputRoot.toFile()
-                .exists() && outputRoot.toFile()
-                .mkdir()) {
-            log.debug("[Create][data] Created output data directory,", outputRoot);
-        }
-
         /* create BatchTable */
         GaiaBatchTableMap<String, List<String>> batchTableMap = new GaiaBatchTableMap<>();
         AtomicInteger batchIdIndex = new AtomicInteger(0);
@@ -150,8 +142,7 @@ public class PhotogrammetryBatcher {
             });
         });
 
-        String glbFileName = nodeCode + "." + MAGIC;
-        File glbOutputFile = outputRoot.resolve(glbFileName).toFile();
+        String glbOutputPath = "data/" + nodeCode + "." + MAGIC;
         if (globalOptions.isPhotogrammetry()) {
             scene.deleteNormals();
         }
@@ -161,16 +152,16 @@ public class PhotogrammetryBatcher {
 //        gltfOptions.setUseShortTexCoord(true);
 //        gltfOptions.setUseByteNormal(true);
 
-        if (meshCompressor != null) {
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            gltfWriter.writeGlb(scene, byteArrayOutputStream, featureTable, batchTableMap);
-            try {
-                Files.write(glbOutputFile.toPath(), meshCompressor.apply(byteArrayOutputStream.toByteArray()));
-            } catch (IOException e) {
-                log.error("[ERROR] Failed to write glb file.", e);
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        gltfWriter.writeGlb(scene, byteArrayOutputStream, featureTable, batchTableMap);
+        try {
+            if (meshCompressor != null) {
+                TilesetOutput.write(glbOutputPath, meshCompressor.apply(byteArrayOutputStream.toByteArray()));
+            } else {
+                TilesetOutput.write(glbOutputPath, byteArrayOutputStream);
             }
-        } else {
-            gltfWriter.writeGlb(scene, glbOutputFile, featureTable, batchTableMap);
+        } catch (IOException e) {
+            log.error("[ERROR] Failed to write glb file.", e);
         }
         return contentInfo;
     }
@@ -239,31 +230,17 @@ public class PhotogrammetryBatcher {
             featureTable.setRtcCenter(rtcCenter);
         }
 
-        File outputFile = new File(globalOptions.getOutputPath());
-        Path outputRoot = outputFile.toPath().resolve("data");
-        if (!outputRoot.toFile().exists() && outputRoot.toFile().mkdir()) {
-            log.debug("[Create][data] Created output data directory,", outputRoot);
-        }
-
-        byte[] glbBytes;
-        if (globalOptions.isGlb()) {
-            String glbFileName = nodeCode + ".glb";
-            File glbOutputFile = outputRoot.resolve(glbFileName).toFile();
-            this.gltfWriter.writeGlb(scene, glbOutputFile);
-            glbBytes = readGlb(glbOutputFile);
-        } else {
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            this.gltfWriter.writeGlb(scene, byteArrayOutputStream);
-            glbBytes = byteArrayOutputStream.toByteArray();
-        }
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        this.gltfWriter.writeGlb(scene, byteArrayOutputStream);
+        byte[] glbBytes = byteArrayOutputStream.toByteArray();
         if (meshCompressor != null) {
             glbBytes = meshCompressor.apply(glbBytes);
-            if (globalOptions.isGlb()) {
-                try {
-                    Files.write(outputRoot.resolve(nodeCode + ".glb"), glbBytes);
-                } catch (IOException e) {
-                    log.error("[ERROR] Failed to write glb file.", e);
-                }
+        }
+        if (globalOptions.isGlb()) {
+            try {
+                TilesetOutput.write("data/" + nodeCode + ".glb", glbBytes);
+            } catch (IOException e) {
+                log.error("[ERROR] Failed to write glb file.", e);
             }
         }
         scene = null;
@@ -336,8 +313,8 @@ public class PhotogrammetryBatcher {
             byteLength += lastPadLength;
         }
 
-        File b3dmOutputFile = outputRoot.resolve(nodeCode + "." + MAGIC).toFile();
-        try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(b3dmOutputFile)))) {
+        ByteArrayOutputStream b3dmBytes = new ByteArrayOutputStream(byteLength);
+        try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(b3dmBytes)) {
             // 28-byte header (first 20 bytes)
             stream.writePureText(MAGIC);
             stream.writeInt(VERSION);
@@ -368,17 +345,12 @@ public class PhotogrammetryBatcher {
                 }
                 stream.write(filePadding);
             }
+            stream.flush();
+            TilesetOutput.write("data/" + nodeCode + "." + MAGIC, b3dmBytes);
         } catch (Exception e) {
             log.error("[ERROR] :", e);
         }
         return contentInfo;
-    }
-
-    private byte[] readGlb(File glbOutputFile) {
-        ByteBuffer byteBuffer = readFile(glbOutputFile, true);
-        byte[] bytes = new byte[byteBuffer.remaining()];
-        byteBuffer.get(bytes);
-        return bytes;
     }
 
     public ByteBuffer readFile(File file, boolean flip) {

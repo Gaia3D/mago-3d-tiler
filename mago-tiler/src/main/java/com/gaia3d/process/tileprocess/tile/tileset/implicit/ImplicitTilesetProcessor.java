@@ -2,6 +2,7 @@ package com.gaia3d.process.tileprocess.tile.tileset.implicit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exception.TileProcessingException;
+import com.gaia3d.process.output.TilesetOutput;
 import com.gaia3d.process.tileprocess.TilesetBuildResult;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
@@ -9,9 +10,7 @@ import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Content;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -36,15 +35,11 @@ public class ImplicitTilesetProcessor {
         return new TilesetBuildResult(tileset, contentInfos, artifacts);
     }
 
-    public void writeSubtrees(File outputPath, ObjectMapper objectMapper, List<ImplicitSubtreeArtifact> artifacts) {
+    public void writeSubtrees(ObjectMapper objectMapper, List<ImplicitSubtreeArtifact> artifacts) {
         for (ImplicitSubtreeArtifact artifact : artifacts) {
             try {
-                File subtreeFile = new File(outputPath, artifact.subtreeUri());
-                File bufferFile = new File(outputPath, artifact.bufferUri());
-                Files.createDirectories(subtreeFile.toPath().getParent());
-                Files.createDirectories(bufferFile.toPath().getParent());
-                objectMapper.writeValue(subtreeFile, artifact.subtree());
-                Files.write(bufferFile.toPath(), artifact.availabilityBuffer());
+                TilesetOutput.write(artifact.subtreeUri(), objectMapper.writeValueAsBytes(artifact.subtree()));
+                TilesetOutput.write(artifact.bufferUri(), artifact.availabilityBuffer());
             } catch (IOException e) {
                 throw new TileProcessingException("Failed to write implicit subtree: " + artifact.subtreeUri(), e);
             }

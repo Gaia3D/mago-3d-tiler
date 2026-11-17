@@ -28,6 +28,7 @@ public enum ProcessOptions {
     MESH_COMPRESSION("meshCompression", "mcp", true, false, "Mesh compression of glTF content \n(default: none)(options: none, quantize, draco)\n(quantize: \"KHR_mesh_quantization\", draco: \"KHR_draco_mesh_compression\" for batched models)"),
     TEXTURE_COMPRESSION("textureCompression", "tcp", true, false, "Texture compression of glTF content \n(default: none)(options: none, ktx2)\n(none: source JPEG/PNG, ktx2: Basis Universal ETC1S with mipmaps via \"KHR_texture_basisu\", about 1/8 of the GPU memory)"),
     UNLIT("unlit", "ul", false, false, "Write unlit materials via \"KHR_materials_unlit\" Extension, so textures show their own colors without scene lighting"),
+    OUTPUT_ARCHIVE("outputArchive", "oa", true, false, "Write the tileset into one archive file instead of a folder of files \n(default: none)(options: none, 3tz)\n(3tz: 3D Tiles Archive written to {OUTPUT}/tileset.3tz)"),
     TILES_VERSION("tilesVersion", "tv", true, false, "3DTiles Version \n(default: 1.1)(options: 1.0, 1.1)"),
 
     /* Coordinate Setting Options */

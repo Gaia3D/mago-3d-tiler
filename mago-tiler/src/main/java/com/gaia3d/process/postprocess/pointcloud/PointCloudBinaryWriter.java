@@ -1,12 +1,10 @@
 package com.gaia3d.process.postprocess.pointcloud;
 
 import com.gaia3d.io.LittleEndianDataOutputStream;
+import com.gaia3d.process.output.TilesetOutput;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.nio.file.Path;
+import java.io.ByteArrayOutputStream;
 
 @Slf4j
 public class PointCloudBinaryWriter {
@@ -27,7 +25,7 @@ public class PointCloudBinaryWriter {
         this.batchTableBytes = batchTableBytes;
     }
 
-    public void write(Path outputRoot, String contentPath) {
+    public void write(String path) {
         int featureTableJSONByteLength = featureTableJson.length();
         int batchTableJSONByteLength = batchTableJson.length();
 
@@ -67,13 +65,8 @@ public class PointCloudBinaryWriter {
             byteLength += lastPadLength;
         }
 
-        File b3dmOutputFile = outputRoot.resolve(contentPath + "." + MAGIC).toFile();
-        File parent = b3dmOutputFile.getParentFile();
-        if (parent != null && !parent.exists() && !parent.mkdirs()) {
-            log.error("[ERROR] Failed to create output directory : {}", parent);
-            return;
-        }
-        try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(b3dmOutputFile)))) {
+        ByteArrayOutputStream pntsBytes = new ByteArrayOutputStream(byteLength);
+        try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(pntsBytes)) {
             // 28-byte header (first 20 bytes)
             stream.writePureText(MAGIC);
             stream.writeInt(VERSION);
@@ -120,6 +113,8 @@ public class PointCloudBinaryWriter {
                 }
                 stream.write(lastPadding);
             }
+            stream.flush();
+            TilesetOutput.write(path, pntsBytes);
         } catch (Exception e) {
             log.error("[ERROR] :", e);
         }

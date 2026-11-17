@@ -22,6 +22,7 @@ import org.lwjgl.opengl.GL20;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -51,6 +52,18 @@ public class PointCloudGltfWriter extends GltfWriter {
             GltfModel gltfModel = convert(pointCloudBuffer, featureTable, batchTable, outputPath);
             GltfModelWriter writer = new GltfModelWriter();
             writer.writeBinary(gltfModel, outputPath);
+        } catch (IOException e) {
+            log.error("[ERROR] :", e);
+            log.error("[ERROR] Failed to write glb file.");
+        }
+    }
+
+    public void writeGlb(PointCloudBuffer pointCloudBuffer, GaiaFeatureTable featureTable, GaiaBatchTable batchTable, OutputStream outputStream) {
+        try {
+            GltfModel gltfModel = convert(pointCloudBuffer, featureTable, batchTable, null);
+            GltfModelWriter writer = new GltfModelWriter();
+            writer.writeBinary(gltfModel, outputStream);
+            outputStream.flush();
         } catch (IOException e) {
             log.error("[ERROR] :", e);
             log.error("[ERROR] Failed to write glb file.");

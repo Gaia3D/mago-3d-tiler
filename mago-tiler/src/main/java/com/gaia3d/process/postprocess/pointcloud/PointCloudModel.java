@@ -25,8 +25,6 @@ import org.locationtech.proj4j.BasicCoordinateTransform;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 
-import java.io.File;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -40,12 +38,6 @@ public class PointCloudModel implements ContentModel {
         String featureTableJson;
         String batchTableJson;
 
-        File outputFile = new File(globalOptions.getOutputPath());
-        Path outputRoot = outputFile.toPath().resolve("data");
-        File outputRootFile = outputRoot.toFile();
-        if (!outputRootFile.mkdir() && !outputRootFile.exists()) {
-            log.error("[ERROR] Failed to create output directory : {}", outputRoot);
-        }
         List<TileInfo> tileInfos = contentInfo.getTileInfos();
 
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
@@ -239,7 +231,7 @@ public class PointCloudModel implements ContentModel {
         }
 
         PointCloudBinaryWriter writer = new PointCloudBinaryWriter(featureTableJson, batchTableJson, featureTableBytes, batchTableBytes);
-        writer.write(outputRoot, contentInfo.getContentPath());
+        writer.write(contentInfo.resolveContentPath("pnts"));
         return contentInfo;
     }
 

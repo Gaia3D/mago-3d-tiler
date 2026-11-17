@@ -18,6 +18,7 @@ import com.gaia3d.converter.gltf.GltfWriterOptions;
 import com.gaia3d.io.LittleEndianDataInputStream;
 import com.gaia3d.io.LittleEndianDataOutputStream;
 import com.gaia3d.process.postprocess.ContentModel;
+import com.gaia3d.process.output.TilesetOutput;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
@@ -145,27 +146,14 @@ public class Batched3DModel implements ContentModel {
             featureTable.setRtcCenter(rtcCenter);
         }
 
-        File outputFile = new File(globalOptions.getOutputPath());
-        Path outputRoot = outputFile.toPath().resolve("data");
-        if (!outputRoot.toFile().exists() && outputRoot.toFile().mkdir()) {
-            log.debug("[Create][data] Created output data directory,", outputRoot);
-        }
-
-        byte[] glbBytes;
-        if (globalOptions.isGlb()) {
-            File glbOutputFile = contentInfo.resolveContentFile(outputRoot, "glb");
-            this.gltfWriter.writeGlb(scene, glbOutputFile);
-            glbBytes = readGlb(glbOutputFile);
-        } else {
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            this.gltfWriter.writeGlb(scene, byteArrayOutputStream);
-            glbBytes = byteArrayOutputStream.toByteArray();
-        }
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        this.gltfWriter.writeGlb(scene, byteArrayOutputStream);
+        byte[] glbBytes = byteArrayOutputStream.toByteArray();
         if (meshCompressor != null) {
             glbBytes = meshCompressor.apply(glbBytes);
-            if (globalOptions.isGlb()) {
-                writeCompressedGlb(contentInfo.resolveContentFile(outputRoot, "glb"), glbBytes);
-            }
+        }
+        if (globalOptions.isGlb()) {
+            writeGlbFile(contentInfo.resolveContentPath("glb"), glbBytes);
         }
         scene = null;
 
@@ -237,8 +225,8 @@ public class Batched3DModel implements ContentModel {
             byteLength += lastPadLength;
         }
 
-        File b3dmOutputFile = contentInfo.resolveContentFile(outputRoot, MAGIC);
-        try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(b3dmOutputFile)))) {
+        ByteArrayOutputStream b3dmBytes = new ByteArrayOutputStream(byteLength);
+        try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(b3dmBytes)) {
             // 28-byte header (first 20 bytes)
             stream.writePureText(MAGIC);
             stream.writeInt(VERSION);
@@ -269,25 +257,20 @@ public class Batched3DModel implements ContentModel {
                 }
                 stream.write(filePadding);
             }
+            stream.flush();
+            TilesetOutput.write(contentInfo.resolveContentPath(MAGIC), b3dmBytes);
         } catch (Exception e) {
             log.error("[ERROR] :", e);
         }
         return contentInfo;
     }
 
-    private void writeCompressedGlb(File glbOutputFile, byte[] glbBytes) {
+    private void writeGlbFile(String path, byte[] glbBytes) {
         try {
-            Files.write(glbOutputFile.toPath(), glbBytes);
+            TilesetOutput.write(path, glbBytes);
         } catch (IOException e) {
             log.error("[ERROR] Failed to write glb file.", e);
         }
-    }
-
-    private byte[] readGlb(File glbOutputFile) {
-        ByteBuffer byteBuffer = readFile(glbOutputFile, true);
-        byte[] bytes = new byte[byteBuffer.remaining()];
-        byteBuffer.get(bytes);
-        return bytes;
     }
 
     public void extract(File b3dm, File output) {
