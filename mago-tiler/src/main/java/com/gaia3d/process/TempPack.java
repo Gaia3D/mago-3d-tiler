@@ -1,11 +1,13 @@
 package com.gaia3d.process;
 
+import com.gaia3d.command.mago.GlobalOptions;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -17,16 +19,22 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Append-only pack files for intermediate data, instead of one temp file per object.
  * Every writer thread appends to its own pack file, an entry remembers where its bytes are and is read back with
  * positional reads. Entries are never removed: the temp directory is deleted as a whole after the run.
+ * <p>
+ * An indexed pack (the shared packs when the temp directory is left, {@code --leaveTemp}) also lists its entries in
+ * {@code index.csv} ({@code id,name,pack,offset,length}), so that one object can be found and read from the pack.
  */
 @Slf4j
 public class TempPack implements Closeable {
+    public static final String INDEX_FILE = "index.csv";
     private static final Map<Path, TempPack> PACKS = new ConcurrentHashMap<>();
     private static final int BUFFER_SIZE = 64 * 1024;
 
     private final Path directory;
+    private final boolean indexed;
     private final AtomicInteger packCount = new AtomicInteger();
-    private final Map<Thread, Path> writerPacks = new ConcurrentHashMap<>();
+    private final Map<Long, Path> writerPacks = new ConcurrentHashMap<>(); // by thread id, dead pool threads are not kept
     private final Map<Path, FileChannel> channels = new ConcurrentHashMap<>();
+    private BufferedWriter indexWriter; // guarded by this
     private volatile boolean closed = false;
 
     public record Entry(Path pack, long offset, long length) {}
@@ -37,29 +45,49 @@ public class TempPack implements Closeable {
     }
 
     public TempPack(Path directory) {
+        this(directory, false);
+    }
+
+    public TempPack(Path directory, boolean indexed) {
         this.directory = directory;
+        this.indexed = indexed;
     }
 
     /**
-     * The shared pack of a directory, created on first use. {@link #closeAll()} closes it.
+     * The shared pack of a directory, created on first use, indexed when the temp directory is left.
+     * {@link #closeAll()} closes it.
      */
     public static TempPack of(Path directory) {
-        return PACKS.computeIfAbsent(directory.toAbsolutePath().normalize(), TempPack::new);
+        return PACKS.computeIfAbsent(directory.toAbsolutePath().normalize(), path -> new TempPack(path, GlobalOptions.getInstance().isLeaveTemp()));
     }
 
     /**
      * Closes every shared pack, so that the temp directory can be deleted (open files can not be deleted on Windows).
+     * Each pack is removed before it is closed: a pack created meanwhile by {@link #of(Path)} stays in the map, open,
+     * and is closed by the next call, a writer still holding a closed pack gets a {@link ClosedChannelException}.
      */
     public static void closeAll() {
-        PACKS.values().forEach(TempPack::close);
-        PACKS.clear();
+        for (Path directory : PACKS.keySet()) {
+            TempPack pack = PACKS.remove(directory);
+            if (pack != null) {
+                pack.close();
+            }
+        }
     }
 
     /**
      * Appends the bytes written by the writer to the pack file of the calling thread.
      */
     public Entry write(Writer writer) throws IOException {
-        Path pack = writerPacks.computeIfAbsent(Thread.currentThread(), thread -> directory.resolve("pack-" + packCount.getAndIncrement() + ".bin"));
+        return write(null, null, writer);
+    }
+
+    /**
+     * Appends the bytes written by the writer to the pack file of the calling thread, an indexed pack lists the entry
+     * with the given id and name.
+     */
+    public Entry write(String id, String name, Writer writer) throws IOException {
+        Path pack = writerPacks.computeIfAbsent(Thread.currentThread().threadId(), thread -> directory.resolve("pack-" + packCount.getAndIncrement() + ".bin"));
         FileChannel channel = channel(pack);
         long offset = channel.size();
         channel.position(offset);
@@ -74,7 +102,11 @@ public class TempPack implements Closeable {
             }
             throw e;
         }
-        return new Entry(pack, offset, channel.position() - offset);
+        Entry entry = new Entry(pack, offset, channel.position() - offset);
+        if (indexed) {
+            index(id, name, entry);
+        }
+        return entry;
     }
 
     /**
@@ -82,6 +114,35 @@ public class TempPack implements Closeable {
      */
     public InputStream read(Entry entry) throws IOException {
         return new BufferedInputStream(new ChannelInputStream(entry), BUFFER_SIZE);
+    }
+
+    // the index is for debugging, a failure is only logged
+    private synchronized void index(String id, String name, Entry entry) {
+        if (closed) {
+            return;
+        }
+        try {
+            if (indexWriter == null) {
+                Files.createDirectories(directory);
+                indexWriter = Files.newBufferedWriter(directory.resolve(INDEX_FILE), StandardCharsets.UTF_8);
+                indexWriter.write("id,name,pack,offset,length");
+                indexWriter.newLine();
+            }
+            indexWriter.write(csv(id) + "," + csv(name) + "," + csv(entry.pack().getFileName().toString()) + "," + entry.offset() + "," + entry.length());
+            indexWriter.newLine();
+        } catch (IOException e) {
+            log.warn("[WARN] Failed to write the temp pack index: {}", e.getMessage());
+        }
+    }
+
+    private static String csv(String value) {
+        if (value == null) {
+            return "";
+        }
+        if (value.contains(",") || value.contains("\"") || value.contains("\n") || value.contains("\r")) {
+            return "\"" + value.replace("\"", "\"\"") + "\"";
+        }
+        return value;
     }
 
     // reopens a channel that was closed by an interrupted thread, FileChannel closes itself for everyone in that case
@@ -116,6 +177,14 @@ public class TempPack implements Closeable {
         }
         channels.clear();
         writerPacks.clear();
+        if (indexWriter != null) {
+            try {
+                indexWriter.close();
+            } catch (IOException e) {
+                log.warn("[WARN] Failed to close the temp pack index: {}", e.getMessage());
+            }
+            indexWriter = null;
+        }
     }
 
     private static class ChannelOutputStream extends OutputStream {

@@ -4,6 +4,7 @@ import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.modifier.topology.*;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.process.TempSets;
+import com.gaia3d.process.TempTextures;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.extern.slf4j.Slf4j;
 
@@ -59,7 +60,7 @@ public class PhotogrammetryMinimization implements PreProcess {
      * @return the path the set is read back by
      */
     private Path writeToPack(GaiaSet tempSet, Path tempRoot) {
-        TempSets.referenceTextures(tempSet, tempRoot.resolve("images"));
+        TempTextures.referenceTextures(tempSet, tempRoot.resolve("images"));
         TempSets.resolveMissingParents(tempSet, tempRoot.resolve("images"));
         Path name = tempRoot.resolve("sets").resolve(tempSet.getProjectName() + "_" + UUID.randomUUID() + ".tmp");
         try {

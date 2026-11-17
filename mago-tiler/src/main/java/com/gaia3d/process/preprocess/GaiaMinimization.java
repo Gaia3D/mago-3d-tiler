@@ -1,7 +1,6 @@
 package com.gaia3d.process.preprocess;
 
 import com.gaia3d.basic.exchangable.GaiaSet;
-import com.gaia3d.basic.model.GaiaMaterial;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.model.GaiaTexture;
 import com.gaia3d.basic.types.LevelOfDetail;
@@ -59,19 +58,23 @@ public class GaiaMinimization implements PreProcess {
     }
 
     /**
-     * Appends the set to the temp pack of this thread. The original textures are referenced where they are,
-     * only their resized images for the LODs above 0 are written to the images folder.
+     * Appends the set to the temp pack of this thread. The original textures are referenced where they are (an image
+     * extracted by the loader is copied), only their resized images for the LODs above 0 are written to the images
+     * folder. The resized images are optional: a failure there is logged and the set is written anyway.
      * @return the pack entry, or null when the set could not be written
      */
     private TempPack.Entry writeToPack(GaiaSet tempSet, Path packPath, Path imagesPath) {
         try {
-            for (GaiaMaterial material : tempSet.getMaterials()) {
-                GaiaTexture texture = TempTextures.reference(material);
-                if (texture != null) {
-                    TempTextures.writeLodImages(texture, imagesPath, lodList);
-                }
+            for (GaiaTexture texture : TempTextures.referenceTextures(tempSet, imagesPath)) {
+                TempTextures.writeLodImages(texture, imagesPath, lodList);
             }
-            return TempPack.of(packPath).write(outputStream -> {
+        } catch (RuntimeException e) {
+            log.error("[ERROR] Preparing the temp textures failed, the set is written without resized images : ", e);
+        }
+        try {
+            String fileName = tempSet.getAttribute() != null ? tempSet.getAttribute().getFileName() : null;
+            String identifier = tempSet.getAttribute() != null ? String.valueOf(tempSet.getAttribute().getIdentifier()) : null;
+            return TempPack.of(packPath).write(identifier, fileName, outputStream -> {
                 ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
                 objectOutputStream.writeObject(tempSet);
                 objectOutputStream.flush();

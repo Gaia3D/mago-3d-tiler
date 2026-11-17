@@ -13,7 +13,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -28,7 +27,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public final class TempSets {
     private static final Map<Path, TempPack.Entry> ENTRIES = new ConcurrentHashMap<>();
-    private static final String EMBEDDED_TEXTURES = "embedded_textures";
 
     private TempSets() {
     }
@@ -46,7 +44,7 @@ public final class TempSets {
      * @return the name
      */
     public static Path write(GaiaSet set, Path packDirectory, Path name) throws IOException {
-        TempPack.Entry entry = TempPack.of(packDirectory).write(outputStream -> serialize(set, outputStream));
+        TempPack.Entry entry = TempPack.of(packDirectory).write(name.toString(), set.getProjectName(), outputStream -> serialize(set, outputStream));
         if (ENTRIES.put(key(name), entry) != null) {
             log.warn("[WARN] Temp set written twice, the last one is kept: {}", name);
         }
@@ -70,48 +68,6 @@ public final class TempSets {
             throw e;
         }
         return file;
-    }
-
-    /**
-     * Points the diffuse textures of the set to their images: an input image is referenced where it is, an image
-     * extracted by the loader into an {@code embedded_textures} folder is copied to {@code <imagesPath>/<id>/<name>},
-     * as that folder is shared by the models of the input folder and its images are overwritten by later models.
-     * A missing or failed image is logged and the texture is kept as it is, the set is written anyway.
-     */
-    public static void referenceTextures(GaiaSet set, Path imagesPath) {
-        if (set.getMaterials() == null) {
-            return;
-        }
-        for (GaiaMaterial material : set.getMaterials()) {
-            GaiaTexture texture;
-            try {
-                texture = TempTextures.reference(material);
-            } catch (IOException e) {
-                log.error("[ERROR] Texture Input Image Path is not exists. {}", e.getMessage());
-                continue;
-            }
-            if (texture == null || !isLoaderImage(texture)) {
-                continue;
-            }
-            Path source = Path.of(texture.getFullPath());
-            Path copy = imagesPath.resolve(UUID.randomUUID().toString()).resolve(texture.getPath());
-            try {
-                Files.createDirectories(copy.getParent());
-                Files.copy(source, copy);
-                texture.setParentPath(copy.getParent().toString());
-            } catch (IOException e) {
-                log.error("[ERROR] Copying the embedded texture failed, it is referenced where it is: {}", source, e);
-            }
-        }
-    }
-
-    private static boolean isLoaderImage(GaiaTexture texture) {
-        for (Path element : Path.of(texture.getParentPath())) {
-            if (EMBEDDED_TEXTURES.equalsIgnoreCase(element.toString())) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

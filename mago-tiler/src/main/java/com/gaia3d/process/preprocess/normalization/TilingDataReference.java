@@ -6,6 +6,7 @@ import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.converter.pointcloud.GaiaPointCloud;
 import com.gaia3d.process.TempSets;
+import com.gaia3d.process.TempTextures;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -33,7 +34,7 @@ public class TilingDataReference {
     public void minimize(Path parentPath) {
         GaiaSet tempSet = GaiaSet.fromGaiaScene(scene);
         // the textures reference the input images, only images extracted by the loader are copied
-        TempSets.referenceTextures(tempSet, parentPath.resolve("images"));
+        TempTextures.referenceTextures(tempSet, parentPath.resolve("images"));
         try {
             this.tempPath = TempSets.write(tempSet, parentPath.resolve("pack"), parentPath.resolve("sets").resolve(id + "_" + UUID.randomUUID() + ".tmp"));
         } catch (IOException e) {

@@ -67,7 +67,7 @@ class TempSetsTest {
         set.getMaterials().add(createSet(model.toString(), "missing.png").getMaterials().getFirst());
         Path images = dir.resolve("temp").resolve("images");
 
-        TempSets.referenceTextures(set, images);
+        TempTextures.referenceTextures(set, images);
 
         assertEquals(model.resolve("input.png").toFile().getCanonicalPath(), new File(diffuse(set).getFullPath()).getCanonicalPath());
         GaiaTexture copied = embeddedMaterial.getTextures().get(TextureType.DIFFUSE).getFirst();
@@ -77,8 +77,8 @@ class TempSetsTest {
         ImageIO.write(new BufferedImage(2, 2, BufferedImage.TYPE_INT_RGB), "png", embedded.resolve("0.png").toFile());
         assertEquals(new Dimension(16, 4), TempTextures.imageSize(Path.of(copied.getFullPath())));
         assertEquals(List.of("0.png"), filesIn(images));
-        // the missing image is kept as it was
-        assertEquals("missing.png", set.getMaterials().get(2).getTextures().get(TextureType.DIFFUSE).getFirst().getPath());
+        // the texture of the missing image is removed, the material and the geometry are kept
+        assertTrue(set.getMaterials().get(2).getTextures().get(TextureType.DIFFUSE).isEmpty());
     }
 
     @Test
