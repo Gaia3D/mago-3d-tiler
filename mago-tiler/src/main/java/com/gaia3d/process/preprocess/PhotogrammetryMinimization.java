@@ -3,10 +3,13 @@ package com.gaia3d.process.preprocess;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.modifier.topology.*;
 import com.gaia3d.basic.model.GaiaScene;
+import com.gaia3d.process.TempSets;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.nio.file.Path;
+import java.util.UUID;
 
 
 @Slf4j
@@ -41,8 +44,7 @@ public class PhotogrammetryMinimization implements PreProcess {
             log.info("[Pre][Photogrammetry] Minimize GaiaScene LOD 0 , Path : {}", tileInfo.getTempPath());
 
             GaiaSet tempSetLod0 = GaiaSet.fromGaiaScene(scene);
-            Path tempPathLod0 = tempSetLod0.writeFile(tileInfo.getTempPath(), tileInfo.getSerial());
-            tileInfo.setTempPath(tempPathLod0);
+            tileInfo.setTempPath(writeToPack(tempSetLod0, tileInfo.getTempPath()));
             tempSetLod0.clear();
             tempSetLod0 = null;
 
@@ -50,5 +52,20 @@ public class PhotogrammetryMinimization implements PreProcess {
             scene = null;
         }
         return tileInfo;
+    }
+
+    /**
+     * Appends the set to the temp pack, the textures reference the input images where they are.
+     * @return the path the set is read back by
+     */
+    private Path writeToPack(GaiaSet tempSet, Path tempRoot) {
+        TempSets.referenceTextures(tempSet, tempRoot.resolve("images"));
+        TempSets.resolveMissingParents(tempSet, tempRoot.resolve("images"));
+        Path name = tempRoot.resolve("sets").resolve(tempSet.getProjectName() + "_" + UUID.randomUUID() + ".tmp");
+        try {
+            return TempSets.write(tempSet, tempRoot.resolve("pack"), name);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to write the temp set: " + name, e);
+        }
     }
 }

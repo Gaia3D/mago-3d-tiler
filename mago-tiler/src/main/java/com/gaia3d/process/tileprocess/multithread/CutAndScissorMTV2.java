@@ -18,6 +18,8 @@ import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.TileTransformInfo;
+import com.gaia3d.process.TempSets;
+import com.gaia3d.process.TempTextures;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
@@ -27,6 +29,7 @@ import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.joml.Vector3i;
 
+import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Files;
@@ -792,7 +795,7 @@ public class CutAndScissorMTV2 {
         HalfEdgeScene halfEdgeScene = null;
 
         try {
-            gaiaSet = GaiaSet.readFile(path);
+            gaiaSet = TempSets.read(path);
 
             if (gaiaSet == null) {
                 return;
@@ -820,7 +823,6 @@ public class CutAndScissorMTV2 {
             boolean makeSkirt = GlobalConstants.MAKE_SKIRT;
 
             Path cutTempPath = Path.of(globalOptions.getTempPath(), "cutTemp");
-            Files.createDirectories(cutTempPath);
 
             cutHalfEdgeSceneByGaiaAAPlanesAndSaveTileInfosAllLodMode(halfEdgeScene, scissorTextures, makeSkirt, tileInfo, lod, rootNodeBoundingVolume, depthIdx, cutTempPath, scenePositionRelToCellGrid, localResults, boundaryWriter);
 
@@ -975,25 +977,13 @@ public class CutAndScissorMTV2 {
 
                 // Save.*****************************************************************************************
                 Path cutTempLodPath = cutTempPath.resolve("lod" + currLod);
-                if (!cutTempLodPath.toFile().exists() && cutTempLodPath.toFile().mkdirs()) {
-                    log.debug("cutTempLod folder created.");
-                }
-
                 UUID identifier = UUID.randomUUID();
                 Path gaiaSetCutFolderPath = cutTempLodPath.resolve(identifier.toString());
-                if (!gaiaSetCutFolderPath.toFile().exists() && gaiaSetCutFolderPath.toFile().mkdirs()) {
-                    log.debug("gaiaSetCut folder created.");
-                }
 
                 // save the materials
                 // save material atlas textures/////////////////////////////////////////////////////
-                //Path parentPath = path.getParent();
+                // only new images are written (to <cutTemp>/lod<N>/<id>/images), an unchanged original is referenced
                 Path imagesPath = gaiaSetCutFolderPath.resolve("images");
-                // make directories if not exists
-                File imagesFolder = imagesPath.toFile();
-                if (!imagesFolder.exists() && imagesFolder.mkdirs()) {
-                    log.debug("images folder created.");
-                }
                 for (GaiaMaterial material : materials) {
                     List<GaiaTexture> textures = material.getTextures().get(TextureType.DIFFUSE);
                     for (GaiaTexture texture : textures) {
@@ -1013,6 +1003,14 @@ public class CutAndScissorMTV2 {
                             String parentPath = texture.getParentPath();
                             if (parentPath == null || parentPath.isEmpty()) {
                                 log.debug("Texture path is null or empty for texture: " + texture.getFullPath());
+                                continue;
+                            }
+
+                            // the original image, unchanged when it is not subsampled below: referenced where it is
+                            Dimension imageSize = TempTextures.imageSize(Path.of(texture.getFullPath()));
+                            if (imageSize != null && (currLod <= 2 || (imageSize.width <= 4096 && imageSize.height <= 4096))) {
+                                texture.setWidth(imageSize.width);
+                                texture.setHeight(imageSize.height);
                                 continue;
                             }
 
@@ -1040,14 +1038,22 @@ public class CutAndScissorMTV2 {
                             log.debug("Texture already has bufferedImage for texture: " + texture.getFullPath());
                         }
 
-                        texture.setParentPath(imagesPath.toString());
-                        texture.saveImage(texture.getFullPath());
+                        try {
+                            Files.createDirectories(imagesPath);
+                            texture.setParentPath(imagesPath.toString());
+                            texture.saveImage(texture.getFullPath());
+                        } catch (IOException e) {
+                            log.error("[ERROR] Writing the cut texture failed: {}", imagesPath, e);
+                        }
                         texture.deleteBufferedImage();
                     }
                 }
 
-                boolean copyTexturesToNewPath = false;
-                Path tempPathLod = gaiaSetCut.writeFileForPR(gaiaSetCutFolderPath, copyTexturesToNewPath);
+                TempSets.copyTexturePaths(materials, gaiaSetCut);
+
+                TempSets.resolveMissingParents(gaiaSetCut, imagesPath);
+
+                Path tempPathLod = TempSets.write(gaiaSetCut, TempSets.packDirectory(), cutTempLodPath.resolve(identifier + ".tmp"));
 
                 /////////////////////////////////////////////////////////////////////////////////////////
 

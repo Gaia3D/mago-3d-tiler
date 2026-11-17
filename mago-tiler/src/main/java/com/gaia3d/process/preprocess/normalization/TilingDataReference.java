@@ -5,11 +5,12 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.converter.pointcloud.GaiaPointCloud;
+import com.gaia3d.process.TempSets;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.UUID;
 
 @Slf4j
 public class TilingDataReference {
@@ -31,9 +32,14 @@ public class TilingDataReference {
 
     public void minimize(Path parentPath) {
         GaiaSet tempSet = GaiaSet.fromGaiaScene(scene);
-        Path tempPath = tempSet.writeFile(parentPath, id);
+        // the textures reference the input images, only images extracted by the loader are copied
+        TempSets.referenceTextures(tempSet, parentPath.resolve("images"));
+        try {
+            this.tempPath = TempSets.write(tempSet, parentPath.resolve("pack"), parentPath.resolve("sets").resolve(id + "_" + UUID.randomUUID() + ".tmp"));
+        } catch (IOException e) {
+            log.error("[ERROR] Failed to write the temp set: {}", id, e);
+        }
         this.tempSet = tempSet;
-        this.tempPath = tempPath;
 
         tempSet = null;
         scene.clear();
@@ -48,7 +54,7 @@ public class TilingDataReference {
         this.tempSet.deleteTextures();
         this.tempSet = null;
         try {
-            this.tempSet = GaiaSet.readFile(this.tempPath);
+            this.tempSet = TempSets.read(this.tempPath);
         } catch (IOException e) {
             log.error("[ERROR] Failed to read the temp file: {}", this.tempPath);
         }
@@ -59,7 +65,6 @@ public class TilingDataReference {
             log.warn("[WARN] Temp path is null, cannot check existence.");
             return false;
         }
-        File tempFile = this.tempPath.toFile();
-        return tempFile.isFile();
+        return TempSets.exists(this.tempPath);
     }
 }

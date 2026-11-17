@@ -11,10 +11,13 @@ import org.apache.commons.io.FilenameUtils;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
+import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -22,6 +25,7 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
@@ -130,6 +134,35 @@ public class TempTextures {
             }
         } catch (IOException e) {
             log.error("[ERROR] Reading image failed: {}", lodImageFile.getAbsolutePath(), e);
+        }
+    }
+
+    /**
+     * Width and height of an image, read from its header without decoding it.
+     * @return the size, or null when the image can not be read
+     */
+    public static Dimension imageSize(Path imagePath) {
+        if (imagePath == null || !Files.isRegularFile(imagePath)) {
+            return null;
+        }
+        try (ImageInputStream inputStream = ImageIO.createImageInputStream(imagePath.toFile())) {
+            if (inputStream == null) {
+                return null;
+            }
+            Iterator<ImageReader> readers = ImageIO.getImageReaders(inputStream);
+            if (!readers.hasNext()) {
+                return null;
+            }
+            ImageReader reader = readers.next();
+            try {
+                reader.setInput(inputStream, true, true);
+                return new Dimension(reader.getWidth(0), reader.getHeight(0));
+            } finally {
+                reader.dispose();
+            }
+        } catch (IOException e) {
+            log.debug("Reading image size failed: {}", imagePath, e);
+            return null;
         }
     }
 

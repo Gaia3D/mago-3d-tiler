@@ -277,6 +277,7 @@ public class TilingPipeline implements Pipeline {
     private synchronized void deleteTemp() {
         // open pack files can not be deleted on Windows
         TempPack.closeAll();
+        TempSets.clear();
         if (globalOptions.isLeaveTemp()) {
             return;
         }
