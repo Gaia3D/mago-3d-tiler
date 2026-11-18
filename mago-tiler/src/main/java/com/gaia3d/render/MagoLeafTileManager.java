@@ -12,6 +12,7 @@ import com.gaia3d.basic.halfedge.*;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.texture.atlas.TextureAtlasManager;
 import com.gaia3d.basic.types.TextureType;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.TempSets;
 import com.gaia3d.util.ImageResizer;
 import lombok.extern.slf4j.Slf4j;
@@ -221,7 +222,7 @@ public class MagoLeafTileManager {
         }
 
         // save atlas texture data**********************************************************************************
-        String netTempPathString = outputPathString + File.separator + "temp" + File.separator + "reMeshTemp";
+        String netTempPathString = GlobalOptions.getInstance().getTempPath() + File.separator + "reMeshTemp";
         Path netTempPath = Paths.get(netTempPathString);
         // create dirs if not exists
         File netTempFile = netTempPath.toFile();

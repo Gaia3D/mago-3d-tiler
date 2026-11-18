@@ -49,12 +49,12 @@ docker run --rm -v "/workspace:/workspace" gaia3d/mago-3d-tiler -input /workspac
 ```
 #### running with Draco / KTX2 compression:
 ```bash
-docker pull gaia3d/mago-3d-tiler:1.17.0
+docker pull gaia3d/mago-3d-tiler:1.17.1
 
 docker run --rm -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 \
   -e "JAVA_TOOL_OPTIONS=-Xmx20g -Dfile.encoding=UTF-8 -Dsun.jnu.encoding=UTF-8" \
   -v "/workspace:/workspace" \
-  gaia3d/mago-3d-tiler:1.17.0 \
+  gaia3d/mago-3d-tiler:1.17.1 \
   -i "/workspace/obj-buildings" \
   -o "/workspace/obj-buildings-tiles" \
   -t /tmp/mago -it obj -r -c 5186 \
