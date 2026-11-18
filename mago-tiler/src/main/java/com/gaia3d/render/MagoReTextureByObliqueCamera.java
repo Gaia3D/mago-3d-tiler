@@ -26,6 +26,7 @@ import com.gaia3d.basic.remesher.information.GaiaStatistics;
 import com.gaia3d.basic.texture.atlas.TextureAtlasManager;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalOptions;
+import com.gaia3d.process.TempSets;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
 import com.gaia3d.util.GaiaTextureUtils;
 import com.gaia3d.util.ImageResizer;
@@ -153,7 +154,7 @@ public class MagoReTextureByObliqueCamera {
                 MagoRenderableScene magoRenderableScene = null;
                 Path path = Paths.get(scenePath);
                 try {
-                    gaiaSet = GaiaSet.readFile(path);
+                    gaiaSet = TempSets.read(path);
                     gaiaScene = new GaiaScene(gaiaSet);
                     gaiaSceneToRender = new GaiaScene(gaiaSet);
                     triangulator.apply(gaiaSceneToRender);
@@ -459,7 +460,7 @@ public class MagoReTextureByObliqueCamera {
 
             Path path = Paths.get(scenePath);
             try {
-                gaiaSet = GaiaSet.readFile(path);
+                gaiaSet = TempSets.read(path);
                 gaiaScene = new GaiaScene(gaiaSet);
 
             } catch (Exception e) {
@@ -975,7 +976,7 @@ public class MagoReTextureByObliqueCamera {
                 MagoRenderableScene magoRenderableScene = null;
                 Path path = Paths.get(scenePath);
                 try {
-                    gaiaSet = GaiaSet.readFile(path);
+                    gaiaSet = TempSets.read(path);
                     gaiaScene = new GaiaScene(gaiaSet);
                     gaiaSceneToRender = new GaiaScene(gaiaSet);
                     triangulator.apply(gaiaSceneToRender);
@@ -1334,7 +1335,7 @@ public class MagoReTextureByObliqueCamera {
                 MagoRenderableScene renderableScene = null;
                 Path path = Paths.get(scenePath);
                 try {
-                    gaiaSet = GaiaSet.readFile(path);
+                    gaiaSet = TempSets.read(path);
                     gaiaScene = new GaiaScene(gaiaSet);
                     triangulator.apply(gaiaScene);
                     GaiaNode gaiaNode = gaiaScene.getNodes().get(0);

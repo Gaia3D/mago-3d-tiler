@@ -13,6 +13,7 @@ import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.texture.atlas.TextureAtlasManager;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalOptions;
+import com.gaia3d.process.TempSets;
 import com.gaia3d.util.ImageResizer;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
@@ -66,7 +67,7 @@ public class MagoLeafTileManager {
 
                 Path path = Paths.get(scenePath);
                 try {
-                    gaiaSet = GaiaSet.readFile(path);
+                    gaiaSet = TempSets.read(path);
                     gaiaScene = new GaiaScene(gaiaSet);
                 } catch (Exception e) {
                     log.error("[ERROR] reading the file: ", e);

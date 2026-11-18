@@ -26,6 +26,7 @@ import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.TileTransformInfo;
+import com.gaia3d.process.TempSets;
 import com.gaia3d.process.tileprocess.PhotogrammetryBatcher;
 import com.gaia3d.process.tileprocess.Tiler;
 import com.gaia3d.process.tileprocess.multithread.CutAndScissorMT;
@@ -1944,7 +1945,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         // load the file
         GaiaSet gaiaSet = null;
         try {
-            gaiaSet = GaiaSet.readFile(path);
+            gaiaSet = TempSets.read(path);
         } catch (Exception e) {
             log.error("[ERROR] reading GaiaSet from path: " + path, e);
             return;
@@ -2172,8 +2173,14 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                     }
                 }
 
-                boolean copyTexturesToNewPath = false;
-                Path tempPathLod = gaiaSetCut.writeFileForPR(gaiaSetCutFolderPath, copyTexturesToNewPath);
+                Path tempPathLod;
+                try {
+                    TempSets.copyTexturePaths(materials, gaiaSetCut);
+                    TempSets.resolveMissingParents(gaiaSetCut, imagesPath);
+                    tempPathLod = TempSets.write(gaiaSetCut, TempSets.packDirectory(), cutTempLodPath.resolve(identifier + ".tmp"));
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to write the cut set: " + identifier, e);
+                }
 
                 /////////////////////////////////////////////////////////////////////////////////////////
 

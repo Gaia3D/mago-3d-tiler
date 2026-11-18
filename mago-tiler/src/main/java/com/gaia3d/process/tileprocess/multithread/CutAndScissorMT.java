@@ -19,6 +19,7 @@ import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.TileTransformInfo;
+import com.gaia3d.process.TempSets;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
@@ -32,6 +33,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -500,7 +502,7 @@ public class CutAndScissorMT {
         HalfEdgeScene halfEdgeScene = null;
 
         try {
-            gaiaSet = GaiaSet.readFile(path);
+            gaiaSet = TempSets.read(path);
 
             if (gaiaSet == null) {
                 return;
@@ -764,8 +766,14 @@ public class CutAndScissorMT {
                     }
                 }
 
-                boolean copyTexturesToNewPath = false;
-                Path tempPathLod = gaiaSetCut.writeFileForPR(gaiaSetCutFolderPath, copyTexturesToNewPath);
+                Path tempPathLod;
+                try {
+                    TempSets.copyTexturePaths(materials, gaiaSetCut);
+                    TempSets.resolveMissingParents(gaiaSetCut, imagesPath);
+                    tempPathLod = TempSets.write(gaiaSetCut, TempSets.packDirectory(), cutTempLodPath.resolve(identifier + ".tmp"));
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to write the cut set: " + identifier, e);
+                }
 
                 /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -974,8 +982,14 @@ public class CutAndScissorMT {
                     }
                 }
 
-                boolean copyTexturesToNewPath = false;
-                Path tempPathLod = gaiaSetCut.writeFileForPR(gaiaSetCutFolderPath, copyTexturesToNewPath);
+                Path tempPathLod;
+                try {
+                    TempSets.copyTexturePaths(materials, gaiaSetCut);
+                    TempSets.resolveMissingParents(gaiaSetCut, imagesPath);
+                    tempPathLod = TempSets.write(gaiaSetCut, TempSets.packDirectory(), cutTempLodPath.resolve(identifier + ".tmp"));
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to write the cut set: " + identifier, e);
+                }
 
                 /////////////////////////////////////////////////////////////////////////////////////////
 
