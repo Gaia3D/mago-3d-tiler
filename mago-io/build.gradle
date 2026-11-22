@@ -17,6 +17,7 @@ dependencies {
     implementation "org.lwjgl:lwjgl-stb"
 
     implementation "de.javagl:jgltf-model:2.0.4"
+    implementation "de.javagl:jgltf-model-builder:2.0.4"
     implementation "de.javagl:jgltf-validator:2.0.4"
     implementation "de.javagl:jgltf-impl-v1:2.0.4"
     implementation "de.javagl:jgltf-impl-v2:2.0.4"
